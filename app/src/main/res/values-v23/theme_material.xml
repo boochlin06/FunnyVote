@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+        <style name="MyMaterialTheme.Base" parent="Theme.AppCompat.Light">
+                <item name="windowNoTitle">true</item>
+                <item name="windowActionBar">false</item>
+                <item name="colorPrimary">@color/color_primary</item>
+                <item name="colorPrimaryDark">@color/color_primaryDark</item>
+                <item name="colorAccent">@color/color_accent</item>
+                <item name="android:titleTextColor">#ffffff</item>
+        </style>
+</resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+    <group android:id="@+id/nav_classification" android:checkableBehavior="single">
+        <item
+            android:id="@+id/navigation_item_main"
+            android:icon="@android:drawable/ic_menu_agenda"
+            android:title="@string/drawer_home" />
+        <item
+            android:id="@+id/navigation_item_list_history"
+            android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="@string/drawer_history" />
+        <item
+            android:id="@+id/navigation_item_list_favorite"
+            android:icon="@android:drawable/star_big_on"
+            android:title="@string/drawer_favorite" />
+    </group>
+    <group android:id="@+id/nav_feature" android:checkableBehavior="single">
+        <item
+            android:id="@+id/navigation_item_create_vote"
+            android:icon="@android:drawable/ic_menu_add"
+            android:title="@string/drawer_create_new_vote" />
+        <item
+            android:id="@+id/navigation_item_invite_code"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:title="@string/drawer_invite_code" />
+    </group>
+
+    <group android:id="@+id/nav_information" android:checkableBehavior="single">
+        <item
+            android:id="@+id/navigation_settings"
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="@string/drawer_settings" />
+        <item
+            android:id="@+id/navigation_account"
+            android:icon="@drawable/ic_account_box_black_24dp"
+            android:title="@string/drawer_account" />
+        <item
+            android:id="@+id/navigation_about"
+            android:icon="@android:drawable/ic_menu_info_details"
+            android:title="@string/drawer_about" />
+    </group>
+</menu>
