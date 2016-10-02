@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_add) {
+            startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
             return true;
         }
 

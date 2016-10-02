@@ -6,15 +6,17 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
+
     <include
         android:id="@+id/main_toolbar"
         layout="@layout/include_toolbar" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="3dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
+        android:layout_marginLeft="@dimen/vote_detail_margin"
+        android:layout_marginRight="@dimen/vote_detail_margin"
         android:padding="2dp">
 
         <ImageView
@@ -55,7 +57,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="5dp"
+            android:layout_marginRight="@dimen/vote_detail_margin"
             android:src="@drawable/ic_star_border_black_24dp" />
     </RelativeLayout>
 
@@ -63,19 +65,19 @@
         android:id="@+id/txtTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/vote_detail_margin"
+        android:layout_marginRight="@dimen/vote_detail_margin"
         android:textColor="@color/secondary_text"
         android:textSize="18sp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
         tools:text="Do your mother know what you do in front of computer? NO , Please tell her what app you used." />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingRight="5dp"
-        android:paddingLeft="5dp"
         android:layout_gravity="center_vertical"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:layout_marginRight="@dimen/vote_detail_margin"
+        android:layout_marginLeft="@dimen/vote_detail_margin">
 
         <ImageView
             android:id="@+id/imgClockIcon"
@@ -112,7 +114,7 @@
                 app:contentScrim="?attr/colorPrimary"
                 app:expandedTitleMarginEnd="4dp"
                 app:expandedTitleMarginStart="8dp"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+                app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                 <ImageView
                     android:id="@+id/imgMain"

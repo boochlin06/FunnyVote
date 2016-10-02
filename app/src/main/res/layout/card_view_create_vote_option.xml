@@ -35,10 +35,10 @@
             android:textSize="20sp" />
 
         <ImageView
-            android:id="@+id/imgChoice"
+            android:id="@+id/imgDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_radio_button_checked_black_24dp"
+            android:src="@android:drawable/ic_delete"
             android:contentDescription=""
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true" />
@@ -52,7 +52,7 @@
             android:gravity="center_vertical"
             android:textSize="15sp"
             android:layout_centerVertical="true"
-            android:layout_toLeftOf="@id/imgChoice"
+            android:layout_toLeftOf="@id/imgDelete"
             android:layout_toRightOf="@id/txtOptionNumber"
             />
 

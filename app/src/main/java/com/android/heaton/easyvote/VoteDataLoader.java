@@ -61,4 +61,15 @@ public class VoteDataLoader {
         }
         return list;
     }
+
+    public List<Option> queryCreateOptionsByVoteId() {
+
+        List<Option> list = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            Option data = new Option();
+            data.setContent("I dont want to tell my mother:" + i);
+            list.add(data);
+        }
+        return list;
+    }
 }

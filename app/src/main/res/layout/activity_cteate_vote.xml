@@ -1,96 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <include android:id="@+id/create_vote_toolbar"
+        layout="@layout/include_toolbar"/>
     <TextView
         android:id="@+id/txtTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="25sp"
+        android:layout_marginTop="16dp"
+        android:textSize="12sp"
+        android:fontFamily="sans-serif-light"
+        android:layout_below="@id/create_vote_toolbar"
+        android:layout_marginLeft="16dp"
+        android:layout_gravity="center"
+        android:layout_marginRight="12dp"
+        android:textStyle="bold"
         android:text="@string/create_vote_title"/>
     <EditText
         android:id="@+id/edtTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/txtTitle"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-light"
         android:hint="@string/create_vote_title_hint"/>
-
-    <TextView
-        android:id="@+id/txtDescription"
+    <!--To do : add picture here-->
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tabLayoutCreateVote"
+        android:layout_width="fill_parent"
+        android:layout_height="36dp"
+        android:minHeight="36dp"
+        android:layout_gravity="center"
+        app:tabSelectedTextColor="?android:attr/textColorPrimaryInverse"
+        app:tabIndicatorColor="?android:attr/textColorPrimaryInverse"
+        app:tabIndicatorHeight="4dp"
+        />
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vpSubArea"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/edtTitle"
-        android:textSize="25sp"
-        android:text="@string/create_vote_description"/>
-    <EditText
-        android:id="@+id/edtDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/txtDescription"
-        android:hint="@string/create_vote_description_hint"/>
-    <TextView
-        android:id="@+id/txtOption"
-        android:layout_below="@+id/edtDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="25sp"
-        android:text="@string/create_vote_option"/>
-    <TextView
-        android:id="@+id/txtMaxChoice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/txtOption"
-        android:text="@string/create_vote_max_choice_per_people"/>
-    <EditText
-        android:id="@+id/edtMaxOption"
-        android:layout_below="@id/txtMaxChoice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/create_vote_default_choice_value"
-        android:numeric="integer"
-        android:inputType="number"/>
-    <TextView
-        android:id="@+id/txtMinChoice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/txtOption"
-        android:layout_toRightOf="@id/txtMaxChoice"
-        android:layout_marginLeft="25px"
-        android:text="@string/create_vote_min_choice_per_people"/>
-    <EditText
-        android:id="@+id/edtMinOption"
-        android:layout_below="@id/txtMinChoice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@id/txtMinChoice"
-        android:text="@string/create_vote_default_choice_value"
-        android:numeric="integer"
-        android:inputType="number"/>
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rycOption"
-        android:layout_below="@id/edtMaxOption"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-    <CheckBox
-        android:id="@+id/chbSetPassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/rycOption"
-        android:text="@string/cteate_vote_set_password"/>
-    <CheckBox
-        android:id="@+id/chbMemberOnly"
-        android:text="@string/create_vote_member_only"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:checked="false"
-        android:layout_below="@id/chbSetPassword"/>
-    <Button
-        android:id="@+id/btnCreate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/rycOption"
-        android:text="@string/create_vote_create_btn"
-        android:checked="false"
-        android:layout_alignParentRight="true"/>
-</RelativeLayout>
+        android:layout_height="wrap_content">
+    </android.support.v4.view.ViewPager>
+</LinearLayout>

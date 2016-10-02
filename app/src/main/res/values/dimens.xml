@@ -5,5 +5,8 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="card_margin">10dp</dimen>
     <dimen name="btn_fab_size">56dp</dimen>
-    <dimen name="btn_fab_margins">10dp</dimen>>
+    <dimen name="btn_fab_margins">1dp</dimen>>
+
+    <!--vote detail-->
+    <dimen name="vote_detail_margin">10dp</dimen>>
 </resources>
