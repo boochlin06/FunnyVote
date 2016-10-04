@@ -10,7 +10,7 @@
     android:layout_marginRight="@dimen/card_margin"
     style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
     android:foreground="?android:attr/selectableItemBackground"
-    card_view:cardBackgroundColor="@color/md_red_100"
+    card_view:cardBackgroundColor="@color/md_blue_100"
     android:clickable="true"
     app:cardCornerRadius="5dp"
     app:cardElevation="3dp">
@@ -28,6 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
             android:textColor="@color/secondary_text"
             tools:text="1"
             android:gravity="center"

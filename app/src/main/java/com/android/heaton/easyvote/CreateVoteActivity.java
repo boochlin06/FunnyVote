@@ -1,6 +1,7 @@
 package com.android.heaton.easyvote;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -10,10 +11,14 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import butterknife.Bind;
+import org.greenrobot.eventbus.EventBus;
+
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -22,15 +27,15 @@ import butterknife.ButterKnife;
 public class CreateVoteActivity extends AppCompatActivity {
 
 
-    @Bind(R.id.create_vote_toolbar)
+    @BindView(R.id.create_vote_toolbar)
     Toolbar mainToolbar;
-    @Bind(R.id.txtTitle)
+    @BindView(R.id.txtTitle)
     TextView txtTitle;
-    @Bind(R.id.edtTitle)
+    @BindView(R.id.edtTitle)
     EditText edtTitle;
-    @Bind(R.id.tabLayoutCreateVote)
+    @BindView(R.id.tabLayoutCreateVote)
     TabLayout tabLayoutCreateVote;
-    @Bind(R.id.vpSubArea)
+    @BindView(R.id.vpSubArea)
     ViewPager vpSubArea;
     private Toolbar toolbar;
 
@@ -82,6 +87,26 @@ public class CreateVoteActivity extends AppCompatActivity {
             }
             return "";
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_create_vote, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.menu_submit) {
+            EventBus.getDefault().post(new MessageEvent("SUBMIT"));
+            finish();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 }

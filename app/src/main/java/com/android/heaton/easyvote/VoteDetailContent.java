@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -22,21 +23,21 @@ import butterknife.ButterKnife;
 
 public class VoteDetailContent extends AppCompatActivity {
 
-    @Bind(R.id.imgAuthorIcon)
+    @BindView(R.id.imgAuthorIcon)
     ImageView imgAuthorIcon;
-    @Bind(R.id.txtAuthorName)
+    @BindView(R.id.txtAuthorName)
     TextView txtAuthorName;
-    @Bind(R.id.txtPubTime)
+    @BindView(R.id.txtPubTime)
     TextView txtPubTime;
-    @Bind(R.id.imgFavorite)
+    @BindView(R.id.imgFavorite)
     ImageView imgFavorite;
-    @Bind(R.id.txtTitle)
+    @BindView(R.id.txtTitle)
     TextView txtTitle;
-    @Bind(R.id.imgClockIcon)
+    @BindView(R.id.imgClockIcon)
     ImageView imgClockIcon;
-    @Bind(R.id.imgMain)
+    @BindView(R.id.imgMain)
     ImageView imgMain;
-    @Bind(R.id.ryOptionArea)
+    @BindView(R.id.ryOptionArea)
     RecyclerView ryOptionArea;
     ArrayList OptionList;
     private Toolbar toolbar;
@@ -78,9 +79,6 @@ public class VoteDetailContent extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
 

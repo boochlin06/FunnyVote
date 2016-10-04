@@ -9,4 +9,16 @@
 
     <!--vote detail-->
     <dimen name="vote_detail_margin">10dp</dimen>>
+
+    <!--create vote settings-->
+    <dimen name="create_vote_settings_main_margin">16dp</dimen>
+    <dimen name="create_vote_settings_sub_margin">24dp</dimen>>
+    <dimen name="create_vote_settings_sep_margin">8dp</dimen>
+    <dimen name="create_vote_settings_time_margin">1dp</dimen>
+    <dimen name="create_vote_settings_main_topic_sep_margin">8dp</dimen>
+
+
+    <dimen name="create_vote_settings_main_topic_text_size">24sp</dimen>
+    <dimen name="create_vote_settings_sub_topic_text_size">18sp</dimen>
+    <dimen name="create_vote_settings_sub_topic_time_text_size">18sp</dimen>
 </resources>

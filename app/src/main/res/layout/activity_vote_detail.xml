@@ -58,7 +58,7 @@
             android:layout_height="24dp"
             android:layout_alignParentRight="true"
             android:layout_marginRight="@dimen/vote_detail_margin"
-            android:src="@drawable/ic_star_border_black_24dp" />
+            android:src="@drawable/ic_star_border_24dp" />
     </RelativeLayout>
 
     <TextView

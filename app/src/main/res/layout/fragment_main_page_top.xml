@@ -39,7 +39,7 @@
             android:minHeight="36dp"
             android:layout_gravity="center"
             app:tabSelectedTextColor="?android:attr/textColorPrimaryInverse"
-            app:tabIndicatorColor="?android:attr/textColorPrimaryInverse"
+            app:tabIndicatorColor="@color/md_blue_100"
             app:tabIndicatorHeight="4dp"
             />
     </android.support.design.widget.AppBarLayout>

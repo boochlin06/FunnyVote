@@ -4,5 +4,5 @@
     android:layout_height="40dp"
     android:layout_width="match_parent"
     android:minHeight="40dp"
-    android:background="@color/color_primary2"
+    android:background="@color/color_primary"
     android:titleTextColor="@color/md_blue_50"/>

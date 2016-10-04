@@ -4,9 +4,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +25,7 @@ public class CreateVoteTabFragment extends Fragment {
     RecyclerView ryOptions;
     private View rootView;
     private String tab = TAB_OPTIONS;
+    private OptionCreateItemAdapter optionAdapter;
     public static final String TAB_OPTIONS = "tab_options";
     public static final String TAB_SETTINGS = "tab_settings";
 
@@ -28,6 +35,18 @@ public class CreateVoteTabFragment extends Fragment {
 
     public CreateVoteTabFragment(String tab) {
         this.tab = tab;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Nullable
@@ -55,14 +74,8 @@ public class CreateVoteTabFragment extends Fragment {
     }
 
     private void initOptionsRecyclerView() {
-        List<Option> optionList = new ArrayList<>();
-        for (int i = 0 ; i < 2 ; i++) {
-            Option initialOption = new Option();
-            initialOption.setContent("Please input vote option content.");
-            optionList.add(new Option());
-        }
-
-        ryOptions.setAdapter(new OptionCreateItemAdapter(getActivity(), optionList));
+        optionAdapter = new OptionCreateItemAdapter(getActivity());
+        ryOptions.setAdapter(optionAdapter);
     }
 
     public static CreateVoteTabFragment newTabFragment(String tab) {
@@ -72,5 +85,17 @@ public class CreateVoteTabFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEventSubmit(MessageEvent event) {
+        if (TAB_OPTIONS.equals(tab)) {
+            // Save options to db.
+            optionAdapter.getOptionList();
+            Log.d("test","save options");
+        } else if (TAB_SETTINGS.equals(tab)) {
+            // Save vote settings
+            Log.d("test","save options settings");
+        }
     }
 }

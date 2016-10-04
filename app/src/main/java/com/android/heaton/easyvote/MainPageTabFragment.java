@@ -14,40 +14,47 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
+
 public class MainPageTabFragment extends Fragment {
-	private RecyclerView mRootView;
+    private RecyclerView mRootView;
     private RecyclerView ryMain;
 
-	@Nullable
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		mRootView = (RecyclerView) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mRootView = (RecyclerView) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
         ryMain = (RecyclerView) mRootView.findViewById(R.id.ryMainPage);
-		Log.d("heaton1","MainPageTabFragment oncreateview null:"+(ryMain == null));
         initRecyclerView();
-		return mRootView;
-	}
+        return mRootView;
+    }
 
-	@Override public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-        Log.d("heaton1","MainPageTabFragment onActivityCreated:");
-		initRecyclerView();
-	}
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        initRecyclerView();
+    }
 
-	private void initRecyclerView() {
-        Log.d("heaton1","MainPageTabFragment initRecyclerView:");
-        ryMain.setAdapter(new VoteItemAdapter(getActivity(), VoteDataLoader.getInstance(getContext()).queryHotVotes(10)));
-	}
+    private void initRecyclerView() {
 
-	public static Fragment newInstance() {
 
-        Log.d("heaton1","MainPageTabFragment new main page tab fragment:");
-		return new MainPageTabFragment();
-	}
+        ScaleInAnimationAdapter adapter = new ScaleInAnimationAdapter(new VoteItemAdapter(getActivity()
+                , VoteDataLoader.getInstance(getContext()).queryHotVotes(30)));
+        adapter.setDuration(200);
+        adapter.setFirstOnly(false);
+        ryMain.setAdapter(adapter);
+        // ryMain.setAdapter(new VoteItemAdapter(getActivity(), VoteDataLoader.getInstance(getContext()).queryHotVotes(30)));
+    }
+
+    public static Fragment newInstance() {
+
+        return new MainPageTabFragment();
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Log.d("heaton1","MainPageTabFragment onDestroyView:");
+        Log.d("heaton1", "MainPageTabFragment onDestroyView:");
     }
+
 }

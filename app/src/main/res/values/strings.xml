@@ -35,4 +35,19 @@
     <!--Create vote page tab classification-->
     <string name="create_vote_tab_options">Options</string>
     <string name="create_vote_tab_settings">Settings</string>
+
+    <!--Create vote page tab options settings-->
+    <string name="create_vote_tab_settings_options">Options</string>
+    <string name="create_vote_tab_setting_max_options">Max :</string>
+    <string name="create_vote_tab_setting_min_options">Min :</string>
+    <string name="create_vote_tab_setting_user_add_option">Let poller add :</string>
+    <string name="create_vote_tab_settings_author">Author</string>
+    <string name="create_vote_tab_settings_anonymous">Anonymous</string>
+    <string name="create_vote_tab_settings_name">Name:</string>
+    <string name="create_vote_tab_settings_behavior">Behavior</string>
+    <string name="create_vote_tab_settings_pre_result">View result before poll:</string>
+    <string name="create_vote_tab_settings_end_time">End time:</string>
+    <string name="create_vote_tab_settings_member_only">Member only:</string>
+    <string name="create_vote_tab_settings_need_password">Need password:</string>
+    <string name="create_vote_tab_settings_password">Password:</string>
 </resources>

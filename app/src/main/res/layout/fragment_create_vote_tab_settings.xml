@@ -1,10 +1,287 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <TextView
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/action_settings"
-        android:textSize="58sp"/>
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/create_vote_settings_main_topic_sep_margin">
+
+        <View
+            android:id="@+id/lineOption"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
+            android:layout_marginRight="@dimen/create_vote_settings_main_margin"
+            android:layout_marginTop="12dp"
+            android:background="@color/md_blue_200" />
+
+        <TextView
+            android:id="@+id/txtOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/lineOption"
+            android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
+            android:text="@string/create_vote_tab_settings_options"
+            android:textSize="@dimen/create_vote_settings_main_topic_text_size" />
+
+        <TextView
+            android:id="@+id/txtMaxOption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtOption"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_setting_max_options"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <EditText
+            android:id="@+id/edtMaxOption"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/txtMaxOption"
+            android:layout_below="@id/txtOption"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_toRightOf="@id/txtMaxOption"
+            android:inputType="number"
+            android:maxLines="1"
+            android:text="1"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/txtMinOption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/txtMaxOption"
+            android:layout_below="@id/txtOption"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:layout_toRightOf="@id/edtMaxOption"
+            android:text="@string/create_vote_tab_setting_min_options"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <EditText
+            android:id="@+id/edtMinOption"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/txtMaxOption"
+            android:layout_below="@id/txtOption"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_toRightOf="@id/txtMinOption"
+            android:inputType="number"
+            android:maxLines="1"
+            android:text="1"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/txtUserAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtMaxOption"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_setting_user_add_option"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <Switch
+            android:id="@+id/swtUserAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/txtUserAdd"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/txtMaxOption"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin" />
+
+        <View
+            android:id="@+id/lineAuthor"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_below="@id/txtUserAdd"
+            android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
+            android:layout_marginRight="@dimen/create_vote_settings_main_margin"
+            android:layout_marginTop="12dp"
+            android:background="@color/md_blue_200" />
+
+        <TextView
+            android:id="@+id/txtAuthor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/lineAuthor"
+            android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_main_topic_sep_margin"
+            android:text="@string/create_vote_tab_settings_author"
+            android:textSize="@dimen/create_vote_settings_main_topic_text_size" />
+
+        <TextView
+            android:id="@+id/txtAnonymous"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtAuthor"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_settings_anonymous"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <Switch
+            android:id="@+id/swtAnonymous"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/txtAnonymous"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/txtAuthor"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin" />
+
+        <TextView
+            android:id="@+id/txtAuthorName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtAnonymous"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_settings_name"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <EditText
+            android:id="@+id/edtAuthorName"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/txtAuthorName"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/txtOption"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:maxLines="1"
+            android:textAlignment="textEnd"
+            android:textSize="16sp"
+            tools:text="Heaton" />
+
+        <View
+            android:id="@+id/lineVote"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_below="@id/txtAuthorName"
+            android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
+            android:layout_marginRight="@dimen/create_vote_settings_main_margin"
+            android:layout_marginTop="12dp"
+            android:background="@color/md_blue_200" />
+
+        <TextView
+            android:id="@+id/txtVote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/lineVote"
+            android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_main_topic_sep_margin"
+            android:text="@string/create_vote_tab_settings_behavior"
+            android:textSize="@dimen/create_vote_settings_main_topic_text_size" />
+
+        <TextView
+            android:id="@+id/txtPreResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtVote"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_settings_pre_result"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <Switch
+            android:id="@+id/swtPreResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/txtPreResult"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/txtVote"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin" />
+
+        <TextView
+            android:id="@+id/txtEndTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtPreResult"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_settings_end_time"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <TextView
+            android:id="@+id/txtEndTimeDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtEndTime"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_time_margin"
+            android:text="2016/10/10"
+            android:textColor="@color/md_blue_300"
+            android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size" />
+
+        <TextView
+            android:id="@+id/txtMemberOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtEndTimeDetail"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_settings_member_only"
+            android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size" />
+
+        <Switch
+            android:id="@+id/swtMemberOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/txtMemberOnly"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/txtEndTimeDetail"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin" />
+
+        <TextView
+            android:id="@+id/txtNeedPwd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtMemberOnly"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_settings_need_password"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <Switch
+            android:id="@+id/swtNeedPwd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/txtNeedPwd"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/txtMemberOnly"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin" />
+
+        <TextView
+            android:id="@+id/txtPwd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtNeedPwd"
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:text="@string/create_vote_tab_settings_password"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+
+        <EditText
+            android:id="@+id/edtPwd"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/txtPwd"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/txtOption"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:maxLines="1"
+            android:textAlignment="textEnd"
+            android:textSize="16sp"
+            tools:text="test" />
+    </RelativeLayout>
+</ScrollView>
