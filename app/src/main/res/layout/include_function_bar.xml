@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="36dp"
+    android:layout_below="@id/imgMain"
+    android:background="@android:color/background_light"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingBottom="6dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="6dp">
+
+    <RelativeLayout
+        android:id="@+id/relBarPollCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/imgBarPollCount"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:scaleType="fitXY"
+            android:src="@mipmap/ic_poll_count_analyze" />
+
+        <TextView
+            android:id="@+id/txtBarPollCount"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:layout_toRightOf="@id/imgBarPollCount"
+            android:gravity="center"
+            android:text="Ｖote: 10" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relBarFavorite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/imgBarFavorite"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_star_border_24dp" />
+
+        <TextView
+            android:id="@+id/txtBarFavorite"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:layout_toRightOf="@id/imgBarFavorite"
+            android:gravity="center"
+            android:text="Favorite" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relBarShare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/imgBarShare"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_share_black_24dp" />
+
+        <TextView
+            android:id="@+id/txtBarShare"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:layout_toRightOf="@id/imgBarShare"
+            android:gravity="center"
+            android:text="Share" />
+
+    </RelativeLayout>
+
+</LinearLayout>

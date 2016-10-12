@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:layout_marginLeft="@dimen/card_margin"
+    android:layout_marginRight="@dimen/card_margin"
+    android:clickable="false"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardCornerRadius="5dp"
+    app:cardElevation="3dp"
+    card_view:cardBackgroundColor="@color/md_blue_100">
+
+
+    <RelativeLayout
+        android:id="@+id/relAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginLeft="5dp"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center"
+        android:padding="2dp">
+
+
+        <ImageView
+            android:id="@+id/imgAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="add"
+            android:foregroundGravity="center"
+            android:src="@android:drawable/ic_input_add" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relNormal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="5dp"
+        android:gravity="center_vertical"
+        android:padding="2dp">
+
+        <TextView
+            android:id="@+id/txtOptionNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:background="@drawable/bg_oval_with_gradient"
+            android:gravity="center"
+            android:textColor="@color/secondary_text"
+            android:textSize="20sp"
+            tools:text="1" />
+
+
+        <ImageView
+            android:id="@+id/imgChoice"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_radio_button_checked_40dp"
+            android:scaleType="fitXY"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"/>
+
+        <EditText
+            android:id="@+id/edtOptionTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:layout_toLeftOf="@id/imgChoice"
+            android:layout_toRightOf="@id/txtOptionNumber"
+            android:textColor="@color/secondary_text"
+            android:textSize="15sp"
+            tools:text="Yes, i have tell my mother" />
+        <ImageView
+            android:id="@+id/imgDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_delete"
+            android:layout_below="@id/edtOptionTitle"
+            android:layout_centerHorizontal="true"/>
+
+
+    </RelativeLayout>
+
+
+</android.support.v7.widget.CardView>

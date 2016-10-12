@@ -4,19 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="16dp"
     android:layout_marginLeft="@dimen/card_margin"
     android:layout_marginRight="@dimen/card_margin"
     android:clickable="true"
-    android:animateLayoutChanges="true"
     app:cardCornerRadius="3dp"
     app:cardElevation="5dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
+        android:animateLayoutChanges="true"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -58,15 +59,6 @@
                 android:textColor="@color/secondary_text"
                 android:textSize="8sp"
                 tools:text="2016/04/08" />
-
-            <ImageView
-                android:id="@+id/imgFavorite"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentRight="true"
-                android:layout_marginRight="5dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_star_border_24dp" />
         </RelativeLayout>
 
         <TextView
@@ -85,6 +77,10 @@
             android:layout_height="150dp"
             android:scaleType="fitXY"
             android:src="@mipmap/handsup" />
+
+        <include
+            android:id="@+id/function_bar"
+            layout="@layout/include_function_bar" />
 
         <LinearLayout
             android:id="@+id/btnFirstOption"
@@ -121,8 +117,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:paddingRight="8dp"
                 android:paddingLeft="8dp"
+                android:paddingRight="8dp"
                 android:text="option 1" />
 
         </LinearLayout>
@@ -142,9 +138,9 @@
                 android:id="@+id/txtOptionNumber2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
                 android:background="@drawable/bg_oval_with_gradient"
                 android:gravity="center"
-                android:layout_marginLeft="8dp"
                 android:text="2"
                 android:textColor="@color/md_red_50"
                 android:textSize="16sp"
@@ -183,13 +179,14 @@
                 android:id="@+id/txtOptionNumber3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
                 android:background="@drawable/bg_oval_with_gradient"
                 android:gravity="center"
-                android:layout_marginLeft="8dp"
                 android:text=">"
                 android:textColor="@color/md_red_50"
                 android:textSize="16sp"
                 android:visibility="gone" />
+
             <ImageView
                 android:id="@+id/imgThirdOption"
                 android:layout_width="wrap_content"
@@ -203,47 +200,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:paddingRight="8dp"
                 android:paddingLeft="8dp"
+                android:paddingRight="8dp"
                 android:text="more ..." />
 
         </LinearLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
-            android:layout_marginLeft="5dp"
-            android:padding="2dp">
-
-            <ImageView
-                android:id="@+id/imgPollCount"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentLeft="true"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_timeline_black_24dp" />
-
-            <TextView
-                android:id="@+id/txtPollCount"
-                android:layout_width="wrap_content"
-                android:layout_height="24dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="3dp"
-                android:layout_toRightOf="@id/imgPollCount"
-                android:textSize="18sp"
-                tools:text="100" />
-
-            <ImageView
-                android:id="@+id/imgShare"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="2dp"
-                android:layout_toRightOf="@id/txtPollCount"
-                android:src="@drawable/ic_share_black_24dp" />
-        </RelativeLayout>
-
 
     </LinearLayout>
 

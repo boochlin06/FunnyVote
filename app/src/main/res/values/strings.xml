@@ -32,9 +32,17 @@
     <string name="main_page_tab_hot">Hot</string>
     <string name="main_page_tab_new">New</string>
 
+    <!--Hot Wall item-->
+    <string name="Wall_item_vote_end">Vote END</string>
+    <string name="Wall_item_more">More...</string>
+    <string name="Wall_item_no_one_poll">No one poll</string>
+    <string name="Wall_item_bar_vote_count" formatted="false">Vote:%d </string>
+    <string name="Wall_item_bar_Share">Share</string>
+
     <!--Create vote page tab classification-->
     <string name="create_vote_tab_options">Options</string>
     <string name="create_vote_tab_settings">Settings</string>
+    <string name="create_vote_toolbar_title">New Vote</string>
 
     <!--Create vote page tab options settings-->
     <string name="create_vote_tab_settings_options">Options</string>
@@ -45,9 +53,39 @@
     <string name="create_vote_tab_settings_anonymous">Anonymous</string>
     <string name="create_vote_tab_settings_name">Name:</string>
     <string name="create_vote_tab_settings_behavior">Behavior</string>
-    <string name="create_vote_tab_settings_pre_result">View result before poll:</string>
     <string name="create_vote_tab_settings_end_time">End time:</string>
     <string name="create_vote_tab_settings_member_only">Member only:</string>
     <string name="create_vote_tab_settings_need_password">Need password:</string>
+    <string name="create_vote_tab_settings_pre_result">View result before poll:</string>
     <string name="create_vote_tab_settings_password">Password:</string>
+    <!--Vote detail activity-->
+    <string name="vote_detail_toast_option_choice_hint" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
+    <string name="vote_detail_toast_option_over_max" formatted="false">"Over the max option:%d votes."</string>
+    <string name="vote_detail_toast_option_at_least_min" formatted="false">"Please choice at least :%d votes."</string>
+    <string name="vote_detail_toast_add_favorite" >"Add to favorite"</string>
+    <string name="vote_detail_toast_remove_favorite" >"Remove favorite"</string>
+
+    <string name="vote_detail_circle_loading" formatted="false">"Loading..."</string>
+    <string name="vote_detail_circle_updating" formatted="false">"Updating..."</string>
+    <string name="vote_detail_title">Detail</string>
+
+    <string name="vote_detail_menu_share">Share</string>
+    <string name="vote_detail_menu_share_to">Share the vote to ...</string>
+    <string name="vote_detail_menu_submit">Submit</string>
+    <string name="vote_detail_menu_info">Information</string>
+
+    <string name="vote_detail_fab_top">Top</string>
+    <string name="vote_detail_fab_search_option">Search option</string>
+    <string name="vote_detail_fab_pre_result">Preview result</string>
+    <string name="vote_detail_fab_return_poll">Return to poll</string>
+
+    <string name="vote_share_to_other_app_default_message" formatted="false">A question I need your help: %s</string>
+
+    <!--Dialog vote detail-->
+    <string name="vote_detail_dialog_title_info">Information</string>
+    <string name="vote_detail_dialog_option">Option</string>
+    <string name="vote_detail_dialog_done">Done</string>
+    <string name="vote_detail_dialog_time">Time</string>
+    <string name="vote_detail_dialog_single_option">Single option</string>
+    <string name="vote_detail_dialog_multi_option" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
 </resources>

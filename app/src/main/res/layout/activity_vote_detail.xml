@@ -1,143 +1,183 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:CircleProgressView="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical">
+    android:fitsSystemWindows="true">
 
-    <include
-        android:id="@+id/main_toolbar"
-        layout="@layout/include_toolbar" />
-
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="3dp"
-        android:layout_marginLeft="@dimen/vote_detail_margin"
-        android:layout_marginRight="@dimen/vote_detail_margin"
-        android:padding="2dp">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/imgAuthorIcon"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_alignParentLeft="true"
-            android:layout_gravity="center_vertical"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_person_black_24dp" />
+        <include
+            android:id="@+id/main_toolbar"
+            layout="@layout/include_toolbar" />
 
-        <TextView
-            android:id="@+id/txtAuthorName"
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="3dp"
-            android:layout_toRightOf="@id/imgAuthorIcon"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            tools:text="Heaton Lin" />
-
-        <TextView
-            android:id="@+id/txtPubTime"
-            android:layout_width="wrap_content"
-            android:layout_height="8dp"
-            android:layout_below="@id/txtAuthorName"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="3dp"
-            android:layout_toRightOf="@id/imgAuthorIcon"
-            android:textColor="@color/secondary_text"
-            android:textSize="7sp"
-            tools:text="2016/04/08" />
-
-        <ImageView
-            android:id="@+id/imgFavorite"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_alignParentRight="true"
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:layout_marginLeft="@dimen/vote_detail_margin"
             android:layout_marginRight="@dimen/vote_detail_margin"
-            android:src="@drawable/ic_star_border_24dp" />
-    </RelativeLayout>
+            android:padding="2dp">
 
-    <TextView
-        android:id="@+id/txtTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/vote_detail_margin"
-        android:layout_marginRight="@dimen/vote_detail_margin"
-        android:textColor="@color/secondary_text"
-        android:textSize="18sp"
-        tools:text="Do your mother know what you do in front of computer? NO , Please tell her what app you used." />
+            <ImageView
+                android:id="@+id/imgAuthorIcon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_alignParentLeft="true"
+                android:layout_gravity="center_vertical"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_person_black_24dp" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:gravity="center_vertical"
-        android:layout_marginRight="@dimen/vote_detail_margin"
-        android:layout_marginLeft="@dimen/vote_detail_margin">
+            <TextView
+                android:id="@+id/txtAuthorName"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="3dp"
+                android:layout_toRightOf="@id/imgAuthorIcon"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Heaton Lin" />
 
-        <ImageView
-            android:id="@+id/imgClockIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:src="@drawable/ic_alarm_on_black_24dp" />
+            <TextView
+                android:id="@+id/txtPubTime"
+                android:layout_width="wrap_content"
+                android:layout_height="12dp"
+                android:layout_below="@id/txtAuthorName"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="3dp"
+                android:layout_toRightOf="@id/imgAuthorIcon"
+                android:textColor="@color/secondary_text"
+                android:textSize="8sp"
+                tools:text="2016/04/08" />
+        </RelativeLayout>
 
         <TextView
+            android:id="@+id/txtTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="3dp"
-            android:layout_toRightOf="@id/imgClockIcon"
-            android:gravity="clip_vertical"
-            android:textSize="16sp"
-            tools:text=" 08/15 ~ 08/21" />
-    </RelativeLayout>
+            android:layout_marginLeft="@dimen/vote_detail_margin"
+            android:layout_marginRight="@dimen/vote_detail_margin"
+            android:textColor="@color/secondary_text"
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size"
+            tools:text="Do your mother know what you do in front of computer? NO , Please tell her what app you used." />
 
-    <android.support.design.widget.CoordinatorLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/background_light">
-
-        <android.support.design.widget.AppBarLayout
+        <android.support.design.widget.CoordinatorLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+            android:layout_height="match_parent"
+            android:background="@android:color/background_light">
 
-            <android.support.design.widget.CollapsingToolbarLayout
-                android:id="@+id/collapsing_toolbar"
+            <android.support.design.widget.AppBarLayout
+                android:id="@+id/appBarMain"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fitsSystemWindows="true"
-                app:contentScrim="?attr/colorPrimary"
-                app:expandedTitleMarginEnd="4dp"
-                app:expandedTitleMarginStart="8dp"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed">
+                android:layout_height="wrap_content">
 
-                <ImageView
-                    android:id="@+id/imgMain"
+                <android.support.design.widget.CollapsingToolbarLayout
+                    android:id="@+id/collapsing_toolbar"
                     android:layout_width="match_parent"
-                    android:layout_height="120dp"
-                    android:scaleType="fitXY"
-                    android:src="@mipmap/handsup" />
+                    android:layout_height="match_parent"
+                    android:fitsSystemWindows="true"
+                    app:contentScrim="?attr/colorPrimary"
+                    app:expandedTitleMarginEnd="4dp"
+                    app:expandedTitleMarginStart="8dp"
+                    app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            </android.support.design.widget.CollapsingToolbarLayout>
 
-        </android.support.design.widget.AppBarLayout>
+                        <ImageView
+                            android:id="@+id/imgMain"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:scaleType="fitXY"
+                            tools:src="@mipmap/handsup" />
 
-        <android.support.v4.widget.NestedScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fillViewport="true"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+                </android.support.design.widget.CollapsingToolbarLayout>
+
+                <include
+                    android:id="@+id/function_bar"
+                    layout="@layout/include_function_bar" />
+
+            </android.support.design.widget.AppBarLayout>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/ryOptionArea"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="15dp"></android.support.v7.widget.RecyclerView>
-        </android.support.v4.widget.NestedScrollView>
-    </android.support.design.widget.CoordinatorLayout>
-</LinearLayout>
+                android:paddingTop="6dp"
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+        </android.support.design.widget.CoordinatorLayout>
+    </LinearLayout>
+
+    <com.getbase.floatingactionbutton.FloatingActionsMenu
+        android:id="@+id/famOther"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="36dp"
+        android:layout_marginRight="36dp"
+        fab:fab_addButtonColorNormal="@color/md_blue_50"
+        fab:fab_addButtonColorPressed="@color/md_blue_100"
+        fab:fab_addButtonPlusIconColor="@color/md_blue_500"
+        fab:fab_labelStyle="@style/menu_labels_style">
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabTop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_colorNormal="@color/md_red_50"
+            fab:fab_colorPressed="@color/md_red_100"
+            fab:fab_icon="@drawable/ic_vertical_align_top_24dp"
+            fab:fab_title="@string/vote_detail_fab_top" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabOptionSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_colorNormal="@color/md_red_50"
+            fab:fab_colorPressed="@color/md_red_100"
+            fab:fab_icon="@mipmap/ic_search"
+            fab:fab_title="@string/vote_detail_fab_search_option" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabPreResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            fab:fab_colorNormal="@color/md_red_50"
+            fab:fab_colorPressed="@color/md_red_100"
+            fab:fab_icon="@mipmap/ic_vote_result"
+            fab:fab_title="@string/vote_detail_fab_pre_result" />
+
+    </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
+    <at.grabner.circleprogress.CircleProgressView
+        android:id="@+id/circleLoad"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_centerInParent="true"
+        CircleProgressView:cpv_autoTextSize="true"
+        CircleProgressView:cpv_barColor="@color/primary"
+        CircleProgressView:cpv_barWidth="25dp"
+        CircleProgressView:cpv_innerContourSize="0dp"
+        CircleProgressView:cpv_outerContourSize="2dp"
+        CircleProgressView:cpv_rimColor="@color/primary_light"
+        CircleProgressView:cpv_rimWidth="25dp"
+        CircleProgressView:cpv_seekMode="false"
+        CircleProgressView:cpv_spinColor="@color/primary"
+        CircleProgressView:cpv_textColor="@color/primary_dark"
+        CircleProgressView:cpv_textScale="1"
+        CircleProgressView:cpv_unitColor="@color/primary_light"
+        CircleProgressView:cpv_unitPosition="right_top"
+        CircleProgressView:cpv_value="10" />
+</RelativeLayout>

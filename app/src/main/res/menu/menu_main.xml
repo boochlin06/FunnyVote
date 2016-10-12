@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.android.heaton.easyvote.MainActivity" >
+    tools:context="com.android.heaton.funnyvote.com.android.heaton.funnyvote.MainActivity" >
 
     <item android:id="@+id/menu_search"
         android:title="Search"

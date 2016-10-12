@@ -5,9 +5,9 @@
     <color name="colorAccent">#FF4081</color>
 
 
-    <color name="primary">#009688</color>
-    <color name="primary_dark">#00897b</color>
-    <color name="primary_light">#B2DFDB</color>
+    <color name="primary">@color/md_blue_A400</color>
+    <color name="primary_dark">@color/md_blue_700</color>
+    <color name="primary_light">@color/md_light_blue_A400</color>
     <color name="accent">#ffb74d</color>
     <color name="primary_text">#212121</color>
     <color name="secondary_text">#727272</color>
@@ -16,4 +16,5 @@
 
     <color name="window_background">#FFF5F5F5</color>
     <color name="tab_bgcolor">#eeeeee</color>
+    <color name="black_semi_transparent">#B2000000</color>
 </resources>
