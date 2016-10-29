@@ -18,6 +18,9 @@
     <string name="drawer_close">close</string>
     <string name="drawer_open">open</string>
 
+    <!--Facebook SDK-->
+    <string name="facebook_app_id">1685340518447041</string>
+
     <!--Drawer Menu and toolbar title-->
     <string name="drawer_home">Home</string>
     <string name="drawer_history">History</string>
