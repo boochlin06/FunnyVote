@@ -62,8 +62,9 @@
     <string name="vote_detail_toast_option_choice_hint" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
     <string name="vote_detail_toast_option_over_max" formatted="false">"Over the max option:%d votes."</string>
     <string name="vote_detail_toast_option_at_least_min" formatted="false">"Please choice at least :%d votes."</string>
-    <string name="vote_detail_toast_add_favorite" >"Add to favorite"</string>
-    <string name="vote_detail_toast_remove_favorite" >"Remove favorite"</string>
+    <string name="vote_detail_toast_add_favorite">"Add to favorite"</string>
+    <string name="vote_detail_toast_remove_favorite">"Remove favorite"</string>
+    <string name="vote_detail_toast_fill_all_new_option">"Please fill all new option's content"</string>
 
     <string name="vote_detail_circle_loading" formatted="false">"Loading..."</string>
     <string name="vote_detail_circle_updating" formatted="false">"Updating..."</string>
@@ -73,9 +74,10 @@
     <string name="vote_detail_menu_share_to">Share the vote to ...</string>
     <string name="vote_detail_menu_submit">Submit</string>
     <string name="vote_detail_menu_info">Information</string>
+    <string name="vote_detail_menu_search_hint">Search Options</string>
 
     <string name="vote_detail_fab_top">Top</string>
-    <string name="vote_detail_fab_search_option">Search option</string>
+    <string name="vote_detail_fab_sort_option">Sort option</string>
     <string name="vote_detail_fab_pre_result">Preview result</string>
     <string name="vote_detail_fab_return_poll">Return to poll</string>
 
@@ -88,4 +90,10 @@
     <string name="vote_detail_dialog_time">Time</string>
     <string name="vote_detail_dialog_single_option">Single option</string>
     <string name="vote_detail_dialog_multi_option" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
+
+    <string name="vote_detail_dialog_sort_option">Sort Option By:</string>
+    <string name="vote_detail_dialog_sort_default">Default</string>
+    <string name="vote_detail_dialog_sort_alphabet">Alphabet</string>
+    <string name="vote_detail_dialog_sort_poll">Poll count</string>
+    <string name="vote_detail_dialog_sort_select">Select</string>
 </resources>

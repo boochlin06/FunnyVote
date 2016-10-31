@@ -15,7 +15,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.android.heaton.funnyvote.eventbus.EventBusController.OptionChoiceEvent.EVENT_CHOICED;
+import static com.android.heaton.funnyvote.eventbus.EventBusController.OptionChoiceEvent.OPTION_CHOICED;
 
 /**
  * Created by heaton on 2016/8/22.
@@ -53,7 +53,7 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     @OnClick(R.id.imgChoice)
     public void onOptionChoice() {
         setUpImgChoiceLaout();
-        EventBus.getDefault().post(new EventBusController.OptionChoiceEvent(getAdapterPosition(), EVENT_CHOICED));
+        EventBus.getDefault().post(new EventBusController.OptionChoiceEvent(option.getId(), OPTION_CHOICED));
     }
 
     private void setUpImgChoiceLaout() {
@@ -69,7 +69,7 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     @Override
     public void onClick(View v) {
         EventBus.getDefault().post(new EventBusController
-                .OptionControlEvent(getAdapterPosition(), null, EventBusController.OptionControlEvent.OPTION_EXPAND));
+                .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND));
         isExpand = !isExpand;
         setUpOptionExpandLayout();
     }

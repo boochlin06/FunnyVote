@@ -145,7 +145,7 @@ public class VoteDataLoader {
 
                 data.setIsUserCanAddOption(false);
 
-                data.setEndTime(System.currentTimeMillis() + 3600 * 1000);
+                data.setEndTime(System.currentTimeMillis() + 7 * 86400 * 1000);
                 options.addAll(mockOptionData(data, maxOptionCount, 0, -1));
             } else if (optionType == 1) {
                 // TWO MORE TYPE
@@ -161,7 +161,7 @@ public class VoteDataLoader {
                 data.setOptionTopCode(i + "_" + 2);
                 data.setOptionTopTitle("option 2 title:" + i);
 
-                data.setEndTime(System.currentTimeMillis() + 3600 * 1000);
+                data.setEndTime(System.currentTimeMillis() + 7 * 86400 * 1000);
 
                 options.addAll(mockOptionData(data, maxOptionCount, 1, -1));
             } else if (optionType == 2) {
@@ -177,7 +177,7 @@ public class VoteDataLoader {
                 // option 1,2 is NOT the same with top.
                 data.setOptionTopTitle("option top title mock:" + i);
 
-                data.setEndTime(System.currentTimeMillis() + 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() + 7 * 86400 * 1000);
 
                 options.addAll(mockOptionData(data, maxOptionCount, 3, -1));
             } else if (optionType == 3) {
@@ -196,7 +196,7 @@ public class VoteDataLoader {
                 data.setOptionTopTitle("option user mock:" + i);
 
                 // time end and user choiced option that not 1 and 2.
-                data.setEndTime(System.currentTimeMillis() - 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() - 7 * 86400 * 1000);
                 data.setOptionUserChoiceCode("option_user_code_mock");
                 data.setOptionUserChoiceTitle("option user mock" + i);
 
@@ -218,7 +218,7 @@ public class VoteDataLoader {
                 data.setOptionTopTitle("option top mock:" + i);
 
                 // time end and user choiced.
-                data.setEndTime(System.currentTimeMillis() - 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() - 7 * 86400 * 1000);
 
                 options.addAll(mockOptionData(data, maxOptionCount, 2, -1));
             } else if (optionType == 5) {
@@ -235,7 +235,7 @@ public class VoteDataLoader {
                 data.setOptionTopCode("option_top_code_mock");
                 data.setOptionTopTitle("option top mock:" + i);
 
-                data.setEndTime(System.currentTimeMillis() - 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() - 7 * 86400 * 1000);
                 options.addAll(mockOptionData(data, maxOptionCount, 2, 3));
             } else if (optionType == 6) {
 
@@ -255,7 +255,7 @@ public class VoteDataLoader {
 
                 options.addAll(mockOptionData(data, 0, -1, -1));
 
-                data.setEndTime(System.currentTimeMillis() + 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() + 7 * 86400 * 1000);
             } else if (optionType == 7) {
                 // TOP 2 TYPE.
                 data.setTitle("TOP 2 TYPE: time not end and user choiced. user choice is 1 , top is 2");
@@ -272,7 +272,7 @@ public class VoteDataLoader {
                 data.setOptionTopTitle("option top mock:" + i);
                 data.setOptionTopCount(3);
 
-                data.setEndTime(System.currentTimeMillis() - 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() - 7 * 86400 * 1000);
 
                 options.addAll(mockOptionData(data, maxOptionCount, 1, 0));
             } else if (optionType == 8) {
@@ -291,7 +291,7 @@ public class VoteDataLoader {
                 data.setOptionTopTitle("option top mock:" + i);
                 data.setOptionTopCount(3);
 
-                data.setEndTime(System.currentTimeMillis() + 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() + 7 * 86400 * 1000);
 
                 options.addAll(mockOptionData(data, maxOptionCount, 2, 2));
             } else if (optionType == 9) {
@@ -311,7 +311,7 @@ public class VoteDataLoader {
                 data.setOptionTopCode(i + "_" + 2);
                 data.setOptionTopTitle("option 2 mock:" + i);
 
-                data.setEndTime(System.currentTimeMillis() + 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() + 7 * 86400 * 1000);
 
                 data.setMinOption(2);
                 data.setMaxOption(2);
@@ -333,7 +333,7 @@ public class VoteDataLoader {
 
                 options.addAll(mockOptionData(data, 0, -1, -1));
 
-                data.setEndTime(System.currentTimeMillis() - 36000 * 1000);
+                data.setEndTime(System.currentTimeMillis() - 7 * 86400 * 1000);
             }
             list.add(data);
         }

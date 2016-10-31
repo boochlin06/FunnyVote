@@ -14,31 +14,31 @@ public class EventBusController {
         }
     }
 
-    public static class OptionChoiceEvent {
-        public static final String EVENT_CHOICED = "CHOICED";
+    public final static class OptionChoiceEvent {
+        public static final String OPTION_CHOICED = "OPTION_CHOICED";
+        public static final String OPTION_EXPAND = "OPTION_EXPAND";
         public final String message;
-        public final int optionPosition;
+        public final long Id;
 
-        public OptionChoiceEvent(int position, String message) {
+        public OptionChoiceEvent(Long Id, String message) {
             this.message = message;
-            this.optionPosition = position;
+            this.Id = Id;
         }
     }
 
-    public static class OptionControlEvent {
+    public final static class OptionControlEvent {
         public static final String OPTION_ADD = "OPTION_ADD";
         public static final String OPTION_REMOVE = "OPTION_REMOVE";
         public static final String OPTION_INPUT_TEXT = "OPTION_INPUT_TEXT";
-        public static final String OPTION_EXPAND = "OPTION_EXPAND";
 
         public final String message;
-        public final int position;
+        public final long Id;
         public final String inputText;
 
-        public OptionControlEvent(int position, String inputText, String message) {
+        public OptionControlEvent(long id, String inputText, String message) {
             this.inputText = inputText;
             this.message = message;
-            this.position = position;
+            this.Id = id;
         }
     }
 }

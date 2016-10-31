@@ -7,6 +7,6 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@mipmap/funny_vote_eng_50"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true"
+        android:src="@mipmap/funny_vote_eng_50" />
 </RelativeLayout>

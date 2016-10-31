@@ -62,10 +62,10 @@
             android:id="@+id/imgChoice"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_radio_button_checked_40dp"
-            android:scaleType="fitXY"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"/>
+            android:layout_alignParentTop="true"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_radio_button_checked_40dp" />
 
         <EditText
             android:id="@+id/edtOptionTitle"
@@ -77,13 +77,14 @@
             android:textColor="@color/secondary_text"
             android:textSize="15sp"
             tools:text="Yes, i have tell my mother" />
+
         <ImageView
             android:id="@+id/imgDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_delete"
             android:layout_below="@id/edtOptionTitle"
-            android:layout_centerHorizontal="true"/>
+            android:layout_centerHorizontal="true"
+            android:src="@android:drawable/ic_delete" />
 
 
     </RelativeLayout>

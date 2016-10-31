@@ -38,6 +38,7 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
     private boolean isChoice = false;
     private boolean isMultiChoice = false;
     private boolean isExpand = false;
+    private Option option;
 
     public VHResultOptionItem(View itemView, boolean isMultiChoice, int totalPollCount) {
         super(itemView);
@@ -49,6 +50,7 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
     public void setLayout(boolean isChoice, boolean isExpand, boolean isTop, Option option) {
         this.isChoice = isChoice;
         this.isExpand = isExpand;
+        this.option = option;
         txtOptionTitle.setText(option.getTitle());
         txtOptionNumber.setText(Integer.toString(getAdapterPosition() + 1));
         txtPollCount.setText(Integer.toString(option.getCount()));
@@ -90,8 +92,8 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
 
     @Override
     public void onClick(View v) {
-        EventBus.getDefault().post(new EventBusController.OptionControlEvent(getAdapterPosition()
-                , null, EventBusController.OptionControlEvent.OPTION_EXPAND));
+        EventBus.getDefault().post(new EventBusController
+                .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND));
         isExpand = !isExpand;
         setUpOptionExpandLayout();
     }

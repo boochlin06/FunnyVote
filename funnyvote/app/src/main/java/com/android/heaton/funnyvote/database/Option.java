@@ -15,7 +15,7 @@ public class Option {
     private String title;
     private Integer count;
     private String code;
-    private boolean isUserChoiced;
+    private boolean isUserChoiced = false;
 
     @Generated(hash = 259294054)
     public Option(Long id, String voteCode, String title, Integer count,

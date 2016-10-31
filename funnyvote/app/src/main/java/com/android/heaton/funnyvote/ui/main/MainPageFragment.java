@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +53,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
     @Override
     public void onDestroyView() {
-        Log.d("heaton1", "MainPageFragment onDestroyView :");
         super.onDestroyView();
     }
 

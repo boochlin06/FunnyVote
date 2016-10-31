@@ -74,9 +74,9 @@ public class OptionCreateItemAdapter extends RecyclerView.Adapter<VHCreateOption
 
     public void removeOption(int position) {
         optionList.remove(position);
-        Log.d("test", "remove position: " + position);
+        Log.d("test", "remove Id: " + position);
         this.notifyDataSetChanged();
-        //this.notifyItemRemoved(position);
+        //this.notifyItemRemoved(Id);
     }
 
 }

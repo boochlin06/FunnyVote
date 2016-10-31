@@ -19,10 +19,12 @@
             app:expandedTitleMarginEnd="4dp"
             app:expandedTitleMarginStart="8dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
             <android.support.v4.view.ViewPager
                 android:id="@+id/vpHeader"
                 android:layout_width="match_parent"
                 android:layout_height="180dp" />
+
             <com.viewpagerindicator.CirclePageIndicator
                 android:id="@+id/vpIndicator"
                 android:layout_width="match_parent"
@@ -36,20 +38,18 @@
             android:id="@+id/tabLayoutMainPage"
             android:layout_width="fill_parent"
             android:layout_height="36dp"
-            android:minHeight="36dp"
             android:layout_gravity="center"
-            app:tabSelectedTextColor="?android:attr/textColorPrimaryInverse"
+            android:minHeight="36dp"
             app:tabIndicatorColor="@color/md_blue_100"
             app:tabIndicatorHeight="4dp"
-            />
+            app:tabSelectedTextColor="?android:attr/textColorPrimaryInverse" />
     </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/vpMainPage"
-        android:layout_marginTop="2dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        />
+        android:layout_marginTop="2dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     ​
 </android.support.design.widget.CoordinatorLayout>

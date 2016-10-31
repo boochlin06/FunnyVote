@@ -9,10 +9,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,6 +42,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import at.grabner.circleprogress.CircleProgressView;
@@ -85,8 +89,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     TextView txtBarPollCount;
     @BindView(R.id.imgBarFavorite)
     ImageView imgBarFavorite;
-    @BindView(R.id.fabOptionSearch)
-    FloatingActionButton fabOptionSearch;
+    @BindView(R.id.fabOptionSort)
+    FloatingActionButton fabOptionSort;
     @BindView(R.id.imgBarPollCount)
     ImageView imgBarPollCount;
     @BindView(R.id.relBarPollCount)
@@ -101,7 +105,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     RelativeLayout relBarFavorite;
     @BindView(R.id.appBarMain)
     AppBarLayout appBarMain;
-    Menu menu;
+    private Menu menu;
+    private SearchView searchView;
     private OptionItemAdapter optionItemAdapter;
     private VoteData data;
     private Activity context;
@@ -109,6 +114,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private int optionType = OptionItemAdapter.OPTION_UNPOLL;
     private boolean isMultiChoice = false;
     private boolean isUserPreResult = false;
+    // all new option id is negative auto increment.
+    private long newOptionIdAuto = -1;
+    private int sortType = 0;
 
     public static void sendShareIntent(Context context, VoteData data) {
         Intent sendIntent = new Intent();
@@ -173,13 +181,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         txtPubTime.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
         txtTitle.setText(data.getTitle());
-
-        imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
-                R.drawable.ic_star_border_24dp);
-
         txtBarPollCount.setText(String.format(this
                 .getString(R.string.Wall_item_bar_vote_count), data.getPollCount()));
 
+        imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
+                R.drawable.ic_star_border_24dp);
         imgMain.setImageResource(data.getLocalImage());
 
         if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT || !data.getIsCanPreviewResult()) {
@@ -244,7 +250,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         sendShareIntent(this, data);
     }
 
-    @OnClick({R.id.fabOptionSearch, R.id.fabTop, R.id.fabPreResult})
+    @OnClick({R.id.fabOptionSort, R.id.fabTop, R.id.fabPreResult})
     public void onFabClick(FloatingActionButton button) {
         int id = button.getId();
         if (id == R.id.fabTop) {
@@ -258,8 +264,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 showUnpollOption();
             }
             setUpSubmit();
-        } else if (id == R.id.fabOptionSearch) {
-
+        } else if (id == R.id.fabOptionSort) {
+            showSortOptionDialog();
         }
         famOther.collapse();
     }
@@ -272,7 +278,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         optionItemAdapter.setOptionType(optionType);
         ryOptionArea.setAdapter(this.optionItemAdapter);
         ryOptionArea.scrollToPosition(currentFirstVisibleItem);
-        optionItemAdapter.notifyDataSetChanged();
         // Todo: set animation to make transfer funny and smooth.
     }
 
@@ -284,8 +289,77 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         optionItemAdapter.setOptionType(optionType);
         ryOptionArea.setAdapter(this.optionItemAdapter);
         ryOptionArea.scrollToPosition(currentFirstVisibleItem);
-        optionItemAdapter.notifyDataSetChanged();
         // Todo: set animation to make transfer funny and smooth.
+    }
+
+    private void showSortOptionDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        String[] allType = null;
+        if (data.getIsCanPreviewResult()) {
+            allType = new String[]{getString(R.string.vote_detail_dialog_sort_default)
+                    , getString(R.string.vote_detail_dialog_sort_alphabet)
+                    , getString(R.string.vote_detail_dialog_sort_poll)};
+        } else {
+            allType = new String[]{getString(R.string.vote_detail_dialog_sort_default)
+                    , getString(R.string.vote_detail_dialog_sort_alphabet)};
+        }
+        builder.setSingleChoiceItems(allType, this.sortType, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                sortType = which;
+            }
+        });
+        builder.setPositiveButton(getString(R.string.vote_detail_dialog_sort_select)
+                , new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        sortOptions();
+                    }
+                });
+        builder.setTitle(getString(R.string.vote_detail_dialog_sort_option));
+        builder.show();
+    }
+
+    private void sortOptions() {
+        Comparator<Option> comparator = null;
+        switch (sortType) {
+            case 0:
+                comparator = new Comparator<Option>() {
+                    @Override
+                    public int compare(Option option1, Option option2) {
+                        // TODO:Add user add new option case id compare.
+                        if (option1.getId() < 0 || option2.getId() < 0) {
+                            return ((Long) (Math.abs(option1.getId()) + 100000))
+                                    .compareTo(Math.abs(option2.getId()) + 100000);
+                        } else {
+                            return option1.getId().compareTo(option2.getId());
+                        }
+                    }
+                };
+                break;
+            case 1:
+                comparator = new Comparator<Option>() {
+                    @Override
+                    public int compare(Option option1, Option option2) {
+                        return option1.getTitle().compareTo(option2.getTitle());
+                    }
+                };
+                break;
+            case 2:
+                comparator = new Comparator<Option>() {
+                    @Override
+                    public int compare(Option option1, Option option2) {
+                        return option2.getCount().compareTo(option1.getCount());
+                    }
+                };
+                break;
+        }
+        Collections.sort(optionItemAdapter.getCurrentList(),comparator);
+        optionItemAdapter.notifyDataSetChanged();
+        if (!optionItemAdapter.isSearchMode()) {
+            Collections.sort(optionList,comparator);
+        }
     }
 
     @Override
@@ -293,24 +367,71 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.menu_content_detail, menu);
         this.menu = menu;
-        return true;
+        setUpSubmit();
+        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
+        searchView.setIconifiedByDefault(true);
+        searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
+        searchView.setOnQueryTextListener(queryListener);
+        return super.onCreateOptionsMenu(menu);
     }
+
+    final private android.support.v7.widget.SearchView.OnQueryTextListener queryListener =
+            new android.support.v7.widget.SearchView.OnQueryTextListener() {
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+
+                    if (newText.length() > 0) {
+                        List<Option> searchList = new ArrayList<>();
+                        for (int i = 0; i < optionList.size(); i++) {
+                            if (optionList.get(i).getTitle().contains(newText)) {
+                                searchList.add(optionList.get(i));
+                            }
+                        }
+                        optionItemAdapter.setSearchList(searchList);
+                        appBarMain.setExpanded(false);
+                        return false;
+                    } else {
+                        optionItemAdapter.setSearchMode(false);
+                        optionItemAdapter.notifyDataSetChanged();
+                        appBarMain.setExpanded(true);
+                    }
+
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+            };
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.menu_submit) {
-            // Save to db and updating to db.
             if (optionItemAdapter.getChoiceList().size() < data.getMinOption()) {
                 Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_at_least_min)
                         , data.getMinOption()), Toast.LENGTH_LONG).show();
             } else {
-                new UpdateVoteDataTask().execute();
+                boolean isFailureContext = false;
+                for (int i = 0; i < optionList.size(); i++) {
+                    String title = optionList.get(i).getTitle();
+                    if (title == null || title.isEmpty()) {
+                        isFailureContext = true;
+                    }
+                }
+                if (isFailureContext) {
+                    Toast.makeText(this, getString(R.string.vote_detail_toast_fill_all_new_option)
+                            , Toast.LENGTH_LONG).show();
+                } else {
+                    new UpdateVoteDataTask().execute();
+                }
             }
             return true;
         } else if (id == R.id.menu_info) {
-            showVoteInfo();
+            showVoteInfoDialog();
         } else if (id == android.R.id.home) {
             finish();
         }
@@ -323,10 +444,19 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             famOther.collapse();
         } else {
             super.onBackPressed();
+//            if (searchView != null && !searchView.isIconified()) {
+//                searchView.setIconified(true);
+//                if (optionItemAdapter.isSearchMode()) {
+//                    optionItemAdapter.setSearchMode(false);
+//                    optionItemAdapter.notifyDataSetChanged();
+//                }
+//            } else {
+//                super.onBackPressed();
+//            }
         }
     }
 
-    private void showVoteInfo() {
+    private void showVoteInfoDialog() {
         View content = LayoutInflater.from(this).inflate(R.layout.dialog_vote_detail_info, null);
         TextView option = ButterKnife.findById(content, R.id.txtOptionInfo);
         TextView time = ButterKnife.findById(content, R.id.txtTime);
@@ -354,51 +484,75 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onOptionChoice(EventBusController.OptionChoiceEvent event) {
-        int position = event.optionPosition;
-        if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
-            return;
-        }
-        if (!isMultiChoice) {
-            optionItemAdapter.getChoiceList().clear();
-            optionItemAdapter.getChoiceList().add(position);
-            optionItemAdapter.notifyDataSetChanged();
-        } else {
-            if (optionItemAdapter.getChoiceList().contains(position)) {
-                optionItemAdapter.getChoiceList().remove(optionItemAdapter.getChoiceList()
-                        .indexOf(position));
+        long id = event.Id;
+        if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_CHOICED)) {
+
+            if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
+                return;
+            }
+            if (!isMultiChoice) {
+                optionItemAdapter.getChoiceList().clear();
+                optionItemAdapter.getChoiceList().add(id);
                 optionItemAdapter.notifyDataSetChanged();
             } else {
-                if (optionItemAdapter.getChoiceList().size() < data.getMaxOption()) {
-                    optionItemAdapter.getChoiceList().add(position);
+                if (optionItemAdapter.getChoiceList().contains(id)) {
+                    optionItemAdapter.getChoiceList().remove(optionItemAdapter.getChoiceList()
+                            .indexOf(id));
                     optionItemAdapter.notifyDataSetChanged();
                 } else {
-                    Toast.makeText(this
-                            , String.format(this.getString(R.string.vote_detail_toast_option_over_max)
-                                    , data.getMaxOption()), Toast.LENGTH_SHORT).show();
+                    if (optionItemAdapter.getChoiceList().size() < data.getMaxOption()) {
+                        optionItemAdapter.getChoiceList().add(id);
+                        optionItemAdapter.notifyDataSetChanged();
+                    } else {
+                        Toast.makeText(this
+                                , String.format(this.getString(R.string.vote_detail_toast_option_over_max)
+                                        , data.getMaxOption()), Toast.LENGTH_SHORT).show();
+                    }
                 }
+            }
+        } else if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_EXPAND)) {
+            if (optionItemAdapter.getExpandOptionlist().contains(id)) {
+                optionItemAdapter.getExpandOptionlist().remove(optionItemAdapter.getExpandOptionlist()
+                        .indexOf(id));
+            } else {
+                optionItemAdapter.getExpandOptionlist().add(id);
             }
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onOptionControl(EventBusController.OptionControlEvent event) {
-        int position = event.position;
+        long id = event.Id;
         if (event.message.equals(EventBusController.OptionControlEvent.OPTION_ADD)) {
-            optionItemAdapter.getNewOptionList().add(new Option());
+            Option option = new Option();
+            option.setCount(0);
+            option.setId(newOptionIdAuto--);
+            optionList.add(option);
             optionItemAdapter.notifyDataSetChanged();
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_REMOVE)) {
-            optionItemAdapter.getNewOptionList().remove(position - optionList.size());
-            optionItemAdapter.notifyDataSetChanged();
+            int removePosition = -1;
+            for (int i = 0; i < optionList.size(); i++) {
+                if (optionList.get(i).getId() == id) {
+                    removePosition = i;
+                    break;
+                }
+            }
+            if (removePosition >= 0) {
+                optionList.remove(removePosition);
+                optionItemAdapter.getChoiceList().remove(optionItemAdapter.getChoiceList().indexOf(id));
+                optionItemAdapter.notifyDataSetChanged();
+            }
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_INPUT_TEXT)) {
-            int target = position - optionList.size();
-            optionItemAdapter.getNewOptionList().get(target).setTitle(event.inputText);
-        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_EXPAND)) {
-
-            if (optionItemAdapter.getExpandOptionlist().contains(event.position)) {
-                optionItemAdapter.getExpandOptionlist().remove(optionItemAdapter.getExpandOptionlist()
-                        .indexOf(position));
-            } else {
-                optionItemAdapter.getExpandOptionlist().add(event.position);
+            appBarMain.setExpanded(false);
+            int targetPosition = -1;
+            for (int i = 0; i < optionList.size(); i++) {
+                if (optionList.get(i).getId() == id) {
+                    targetPosition = i;
+                    break;
+                }
+            }
+            if (targetPosition >= 0) {
+                optionList.get(targetPosition).setTitle(event.inputText);
             }
         }
     }
@@ -457,7 +611,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             circleLoad.setVisibility(View.GONE);
             fabPreResult.setVisibility(View.GONE);
 
-
             checkCurrentOptionType();
             setUpViews();
             showResultOption();
@@ -468,22 +621,35 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         protected Void doInBackground(Void... params) {
             // todo:Update to db.
             data.setIsPolled(true);
-            optionList.addAll(optionItemAdapter.getNewOptionList());
-            optionItemAdapter.getNewOptionList().clear();
+            //optionList.addAll(optionItemAdapter.getNewOptionList());
+            //optionItemAdapter.getNewOptionList().clear();
             for (int i = 0; i < optionItemAdapter.getChoiceList().size(); i++) {
-                int count = optionList.get(optionItemAdapter.getChoiceList().get(i)).getCount();
-                Option option = optionList.get(optionItemAdapter.getChoiceList().get(i));
-                option.setCount(count + 1);
+                long targetId = optionItemAdapter.getChoiceList().get(i);
+                Option option = null;
+                for (int j = 0; j < optionList.size(); j++) {
+                    if (optionList.get(j).getId() == targetId) {
+                        option = optionList.get(j);
+                        break;
+                    }
+                }
+                option.setCount(option.getCount() + 1);
                 if (option.getCount() > data.getOptionTopCount()) {
                     data.setOptionTopCode(option.getCode());
                     data.setOptionTopCount(option.getCount());
                     data.setOptionTopTitle(option.getTitle());
                 }
+                // if id < 0 , this option is user add new , it need make id to be null
+                // then insert to db.
+                if (option.getId() < 0) {
+                    option.setId(null);
+                }
 
             }
+            // call option insert or replace
             data.setPollCount(data.getPollCount() + optionItemAdapter.getChoiceList().size());
+            // call vote data update.
             try {
-                Thread.currentThread().sleep(1000);
+                Thread.currentThread().sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

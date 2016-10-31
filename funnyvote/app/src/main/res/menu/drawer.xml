@@ -2,7 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.android.heaton.funnyvote.MainActivity">
-    <group android:id="@+id/nav_classification" android:checkableBehavior="single">
+    <group
+        android:id="@+id/nav_classification"
+        android:checkableBehavior="single">
         <item
             android:id="@+id/navigation_item_main"
             android:icon="@android:drawable/ic_menu_agenda"
@@ -16,7 +18,9 @@
             android:icon="@android:drawable/star_big_on"
             android:title="@string/drawer_favorite" />
     </group>
-    <group android:id="@+id/nav_feature" android:checkableBehavior="single">
+    <group
+        android:id="@+id/nav_feature"
+        android:checkableBehavior="single">
         <item
             android:id="@+id/navigation_item_create_vote"
             android:icon="@android:drawable/ic_menu_add"
@@ -27,7 +31,9 @@
             android:title="@string/drawer_invite_code" />
     </group>
 
-    <group android:id="@+id/nav_information" android:checkableBehavior="single">
+    <group
+        android:id="@+id/nav_information"
+        android:checkableBehavior="single">
         <item
             android:id="@+id/navigation_settings"
             android:icon="@drawable/ic_settings_black_24dp"

@@ -91,12 +91,12 @@
                     app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
 
-                        <ImageView
-                            android:id="@+id/imgMain"
-                            android:layout_width="match_parent"
-                            android:layout_height="120dp"
-                            android:scaleType="fitXY"
-                            tools:src="@mipmap/handsup" />
+                    <ImageView
+                        android:id="@+id/imgMain"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:scaleType="fitXY"
+                        tools:src="@mipmap/handsup" />
 
                 </android.support.design.widget.CollapsingToolbarLayout>
 
@@ -142,13 +142,13 @@
             fab:fab_title="@string/vote_detail_fab_top" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabOptionSearch"
+            android:id="@+id/fabOptionSort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/md_red_50"
             fab:fab_colorPressed="@color/md_red_100"
-            fab:fab_icon="@mipmap/ic_search"
-            fab:fab_title="@string/vote_detail_fab_search_option" />
+            fab:fab_icon="@android:drawable/ic_menu_sort_by_size"
+            fab:fab_title="@string/vote_detail_fab_sort_option" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabPreResult"
