@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.android.heaton.funnyvote.MainActivity;
 import com.android.heaton.funnyvote.R;
-import com.android.heaton.funnyvote.database.VoteDataLoader;
+import com.android.heaton.funnyvote.database.DataLoader;
 
 /**
  * Created by heaton on 2016/10/26.
@@ -28,7 +28,8 @@ public class WelcomeActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             if (sp.getBoolean(SP_FIRST_MOCK_DATA, true)) {
-                VoteDataLoader.getInstance(getApplicationContext()).mockData(30, 5);
+                DataLoader.getInstance(getApplicationContext()).mockVoteData(30, 5);
+                DataLoader.getInstance(getApplicationContext()).mockPromotions(5);
             }
             return null;
         }

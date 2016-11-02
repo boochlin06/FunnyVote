@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.android.heaton.funnyvote.R;
-import com.android.heaton.funnyvote.database.VoteDataLoader;
+import com.android.heaton.funnyvote.database.DataLoader;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
@@ -55,7 +55,7 @@ public class MainPageTabFragment extends Fragment {
 
     private void initRecyclerView() {
         ScaleInAnimationAdapter adapter = new ScaleInAnimationAdapter(new VoteWallItemAdapter(getActivity()
-                , VoteDataLoader.getInstance(getContext()).queryHotVotes(30)));
+                , DataLoader.getInstance(getContext()).queryHotVotes(30)));
         adapter.setDuration(500);
         ryMain.setAdapter(adapter);
     }

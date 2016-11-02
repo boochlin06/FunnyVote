@@ -68,7 +68,7 @@
 
 
         <EditText
-            android:id="@+id/txtOptionContent"
+            android:id="@+id/edtOptionTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"

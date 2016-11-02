@@ -105,5 +105,19 @@
             android:textColor="@color/md_red_100"
             android:textSize="16sp"
             tools:text="5" />
+        <TextView
+            android:id="@+id/txtPollCountPercent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/txtOptionTitle"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginTop="13dp"
+            android:layout_marginRight="12dp"
+            android:layout_alignRight="@id/progressPollCount"
+            android:maxLines="1"
+            android:textColor="@color/md_red_100"
+            android:textSize="16sp"
+            tools:text="5/5" />
     </RelativeLayout>
 </android.support.v7.widget.CardView>

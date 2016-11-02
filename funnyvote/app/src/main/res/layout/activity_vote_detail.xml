@@ -68,8 +68,16 @@
             android:layout_marginRight="@dimen/vote_detail_margin"
             android:textColor="@color/secondary_text"
             android:textSize="@dimen/create_vote_settings_sub_topic_text_size"
-            tools:text="Do your mother know what you do in front of computer? NO , Please tell her what app you used." />
-
+            android:maxLines="3"
+            android:ellipsize="end"
+            tools:text="Do your mother know what you do in front of computer? "/>
+        <ImageView
+            android:id="@+id/imgTitleExtend"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_expand_more_24dp"
+            />
         <android.support.design.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -94,7 +102,7 @@
                     <ImageView
                         android:id="@+id/imgMain"
                         android:layout_width="match_parent"
-                        android:layout_height="120dp"
+                        android:layout_height="150dp"
                         android:scaleType="fitXY"
                         tools:src="@mipmap/handsup" />
 
@@ -125,8 +133,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="16dp"
-        android:layout_marginEnd="36dp"
-        android:layout_marginRight="36dp"
+        android:layout_marginRight="72dp"
         fab:fab_addButtonColorNormal="@color/md_blue_50"
         fab:fab_addButtonColorPressed="@color/md_blue_100"
         fab:fab_addButtonPlusIconColor="@color/md_blue_500"

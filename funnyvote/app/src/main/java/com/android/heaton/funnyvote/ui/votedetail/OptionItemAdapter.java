@@ -20,18 +20,18 @@ import java.util.List;
 public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
 
 
-    public static final int OPTION_UNPOLL_VIEW_TYPE_ADD_NEW = 0;
-    public static final int OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT = 1;
+    public static final int OPTION_UNPOLL_VIEW_TYPE_ADD_NEW = 20;
+    public static final int OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT = 21;
     public static final int OPTION_UNPOLL = 2;
     public static final int OPTION_SHOW_RESULT = 3;
     private List<Option> optionList;
-    private int optionChoiceType = OPTION_UNPOLL;
+    private List<Option> searchList;
     private List<Long> choiceList;
     private List<Long> expandOptionlist;
     private int pollCount = 0;
+    private int optionChoiceType = OPTION_UNPOLL;
     private VoteData data;
     private boolean isSearchMode = false;
-    private List<Option> searchList;
 
 
     public OptionItemAdapter(int optionType, List<Option> optionList, VoteData data) {
@@ -48,6 +48,11 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         this.searchList = searchList;
         this.isSearchMode = true;
         this.notifyDataSetChanged();
+    }
+
+    public void setVoteData(VoteData data) {
+        this.data = data;
+        this.pollCount = data.getPollCount();
     }
 
     public boolean isSearchMode() {

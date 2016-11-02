@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import com.android.heaton.funnyvote.database.VoteDataLoader;
+import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.ui.main.VoteWallItemAdapter;
 
 /**
@@ -36,7 +36,7 @@ public class HistoryFragment extends android.support.v4.app.Fragment {
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
 
-        mAdapter = new VoteWallItemAdapter(getActivity(), VoteDataLoader.getInstance(getContext()).queryCreateByVotes(10));
+        mAdapter = new VoteWallItemAdapter(getActivity(), DataLoader.getInstance(getContext()).queryCreateByVotes(10));
         mRecyclerView.setAdapter(mAdapter);
         mProgressBar.setVisibility(View.INVISIBLE);
 

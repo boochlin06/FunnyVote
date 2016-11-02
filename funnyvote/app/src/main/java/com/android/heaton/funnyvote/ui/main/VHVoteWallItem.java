@@ -14,6 +14,7 @@ import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
+import com.bumptech.glide.Glide;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -100,7 +101,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp
                 : R.drawable.ic_star_border_24dp);
 
-        if (data.getAuthorIcon().isEmpty()) {
+        if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
             imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
         } else {
             // use GLIDE to load bitmap.
@@ -111,7 +112,12 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         if (data.getVoteImage() == null || data.getVoteImage().isEmpty()) {
             imgMain.setImageResource(data.getLocalImage());
         } else {
-            // use GLIDE to load bitmap.
+            Glide.with(itemView.getContext())
+                    .load(data.getVoteImage())
+                    .override(320,150)
+                    .fitCenter()
+                    .crossFade()
+                    .into(imgMain);
         }
 
         // Check vote is end.

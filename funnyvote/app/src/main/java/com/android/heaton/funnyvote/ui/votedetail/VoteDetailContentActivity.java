@@ -31,9 +31,10 @@ import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
-import com.android.heaton.funnyvote.database.VoteDataLoader;
+import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
+import com.bumptech.glide.Glide;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
@@ -59,6 +60,7 @@ import butterknife.OnClick;
 public class VoteDetailContentActivity extends AppCompatActivity {
 
     private static final int FAB_THRESHOD = 100;
+    private static final int TITLE_EXTEND_MAX_LINE = 3;
     @BindView(R.id.imgAuthorIcon)
     ImageView imgAuthorIcon;
     @BindView(R.id.txtAuthorName)
@@ -105,6 +107,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     RelativeLayout relBarFavorite;
     @BindView(R.id.appBarMain)
     AppBarLayout appBarMain;
+    @BindView(R.id.imgTitleExtend)
+    ImageView imgTitleExtend;
     private Menu menu;
     private SearchView searchView;
     private OptionItemAdapter optionItemAdapter;
@@ -181,12 +185,24 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         txtPubTime.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
         txtTitle.setText(data.getTitle());
+        txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
         txtBarPollCount.setText(String.format(this
                 .getString(R.string.Wall_item_bar_vote_count), data.getPollCount()));
 
         imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
                 R.drawable.ic_star_border_24dp);
-        imgMain.setImageResource(data.getLocalImage());
+        Glide.with(this)
+                .load(data.getVoteImage())
+                .override(320,150)
+                .fitCenter()
+                .crossFade()
+                .into(imgMain);
+
+        if (txtTitle.getLineCount() >= TITLE_EXTEND_MAX_LINE) {
+            imgTitleExtend.setVisibility(View.VISIBLE);
+        } else {
+            imgTitleExtend.setVisibility(View.GONE);
+        }
 
         if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT || !data.getIsCanPreviewResult()) {
             fabPreResult.setVisibility(View.GONE);
@@ -230,6 +246,17 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+    }
+
+    @OnClick(R.id.imgTitleExtend)
+    public void onTitleExtendClick() {
+        if (txtTitle.getMaxLines() == TITLE_EXTEND_MAX_LINE) {
+            txtTitle.setMaxLines(30);
+            imgTitleExtend.setImageResource(R.drawable.ic_expand_less_24dp);
+        } else if (txtTitle.getMaxLines() == 30){
+            txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
+            imgTitleExtend.setImageResource(R.drawable.ic_expand_more_24dp);
+        }
     }
 
     @OnClick(R.id.relBarFavorite)
@@ -355,10 +382,10 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 };
                 break;
         }
-        Collections.sort(optionItemAdapter.getCurrentList(),comparator);
+        Collections.sort(optionItemAdapter.getCurrentList(), comparator);
         optionItemAdapter.notifyDataSetChanged();
         if (!optionItemAdapter.isSearchMode()) {
-            Collections.sort(optionList,comparator);
+            Collections.sort(optionList, comparator);
         }
     }
 
@@ -375,8 +402,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    final private android.support.v7.widget.SearchView.OnQueryTextListener queryListener =
-            new android.support.v7.widget.SearchView.OnQueryTextListener() {
+    final private SearchView.OnQueryTextListener queryListener =
+            new SearchView.OnQueryTextListener() {
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
@@ -444,15 +471,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             famOther.collapse();
         } else {
             super.onBackPressed();
-//            if (searchView != null && !searchView.isIconified()) {
-//                searchView.setIconified(true);
-//                if (optionItemAdapter.isSearchMode()) {
-//                    optionItemAdapter.setSearchMode(false);
-//                    optionItemAdapter.notifyDataSetChanged();
-//                }
-//            } else {
-//                super.onBackPressed();
-//            }
         }
     }
 
@@ -460,6 +478,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         View content = LayoutInflater.from(this).inflate(R.layout.dialog_vote_detail_info, null);
         TextView option = ButterKnife.findById(content, R.id.txtOptionInfo);
         TextView time = ButterKnife.findById(content, R.id.txtTime);
+        TextView security = ButterKnife.findById(content, R.id.txtSecurity);
         if (!isMultiChoice) {
             option.setText(getString(R.string.vote_detail_dialog_single_option));
         } else {
@@ -469,6 +488,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         }
         time.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
+        security.setText(data.getSecurity());
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(getString(R.string.vote_detail_dialog_title_info));
         dialog.setView(content);
@@ -590,7 +610,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            data = VoteDataLoader.getInstance(context).queryVoteDataById(this.voteCode);
+            data = DataLoader.getInstance(context).queryVoteDataById(this.voteCode);
             optionList = data.getOptions();
             return null;
         }
@@ -647,6 +667,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             }
             // call option insert or replace
             data.setPollCount(data.getPollCount() + optionItemAdapter.getChoiceList().size());
+            optionItemAdapter.setVoteData(data);
             // call vote data update.
             try {
                 Thread.currentThread().sleep(500);

@@ -1,6 +1,8 @@
 package com.android.heaton.funnyvote.ui.createvote;
 
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -9,6 +11,9 @@ import android.widget.TextView;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.Option;
+import com.android.heaton.funnyvote.eventbus.EventBusController;
+
+import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,38 +33,74 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
     TextView txtOptionNumber;
     @BindView(R.id.imgDelete)
     ImageView imgDelete;
-    @BindView(R.id.txtOptionContent)
-    EditText txtOptionContent;
+    @BindView(R.id.edtOptionTitle)
+    EditText edtOptionTitle;
     @BindView(R.id.relNormal)
     RelativeLayout relNormal;
-    OptionCreateItemAdapter adapter;
     int position = 0;
+    private optionEditTextListener optionEditTextListener;
+    private Option option;
 
-    public VHCreateOptionItem(View itemView, OptionCreateItemAdapter adapter) {
+    public VHCreateOptionItem(View itemView) {
         super(itemView);
         ButterKnife.bind(this, itemView);
-        this.adapter = adapter;
     }
 
-    public void setLayout(int viewType, int position, Option data) {
+    public void setLayout(int viewType, int position, Option option) {
         this.position = position;
+        this.option = option;
         if (viewType == OptionCreateItemAdapter.VIEW_TYPE_ADD_OPTION) {
             relNormal.setVisibility(View.INVISIBLE);
             relAdd.setVisibility(View.VISIBLE);
+            imgDelete.setVisibility(View.GONE);
+            edtOptionTitle.setVisibility(View.GONE);
+            edtOptionTitle.removeTextChangedListener(optionEditTextListener);
         } else if (viewType == OptionCreateItemAdapter.VIEW_TYPE_NORMAL_OPTION) {
             relNormal.setVisibility(View.VISIBLE);
             relAdd.setVisibility(View.INVISIBLE);
-            txtOptionNumber.setText(String.valueOf(position + 1));
+            imgDelete.setVisibility(View.VISIBLE);
+            txtOptionNumber.setText(Integer.toString(getAdapterPosition() + 1));
+            edtOptionTitle.setVisibility(View.VISIBLE);
+            edtOptionTitle.removeTextChangedListener(optionEditTextListener);
+            edtOptionTitle.setText(option.getTitle());
+            if (optionEditTextListener == null) {
+                optionEditTextListener = new optionEditTextListener();
+            }
+            edtOptionTitle.addTextChangedListener(optionEditTextListener);
         }
     }
 
     @OnClick(R.id.relAdd)
-    public void AddNewOption() {
-        adapter.addNewOption();
+    public void addNewOption() {
+        EventBus.getDefault().post(new EventBusController.OptionControlEvent(0
+                , null, EventBusController.OptionControlEvent.OPTION_ADD));
     }
 
     @OnClick(R.id.imgDelete)
     public void removeOption() {
-        adapter.removeOption(position);
+        EventBus.getDefault().post(new EventBusController
+                .OptionControlEvent(option.getId(), null
+                , EventBusController.OptionControlEvent.OPTION_REMOVE));
+    }
+
+    private final class optionEditTextListener implements TextWatcher {
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            EventBus.getDefault().post(new EventBusController
+                    .OptionControlEvent(option.getId(), s.toString()
+                    , EventBusController.OptionControlEvent.OPTION_INPUT_TEXT));
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
     }
 }

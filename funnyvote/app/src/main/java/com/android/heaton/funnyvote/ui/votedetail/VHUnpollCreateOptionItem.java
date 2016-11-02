@@ -107,7 +107,6 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
     @OnClick(R.id.imgChoice)
     public void onOptionChoice() {
         setUpImgChoiceLayout();
-        Log.d("test", "VHUnpollCreateOptionItem onOptionChoice");
         EventBus.getDefault().post(new EventBusController
                 .OptionChoiceEvent(option.getId(), OPTION_CHOICED));
     }
@@ -121,7 +120,6 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            Log.d("test", "VHUnpollCreateOptionItem onTextChanged:" + s);
             EventBus.getDefault().post(new EventBusController
                     .OptionControlEvent(option.getId(), s.toString()
                     , EventBusController.OptionControlEvent.OPTION_INPUT_TEXT));

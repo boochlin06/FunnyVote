@@ -11,21 +11,26 @@ import java.util.List;
 /**
  * Created by heaton on 16/4/7.
  */
-public class VoteDataLoader {
-    private static VoteDataLoader sInstance;
+public class DataLoader {
+    private static DataLoader sInstance;
     private VoteDataDao voteDataDao;
     private OptionDao optionDao;
+    private PromotionDao promotionDao;
+    private Context context;
 
-    public VoteDataLoader(Context context) {
+    public DataLoader(Context context) {
         voteDataDao = ((FunnyVoteApplication) (context.getApplicationContext()))
                 .getDaoSession().getVoteDataDao();
         optionDao = ((FunnyVoteApplication) (context.getApplicationContext()))
                 .getDaoSession().getOptionDao();
+        promotionDao = ((FunnyVoteApplication) (context.getApplicationContext()))
+                .getDaoSession().getPromotionDao();
+        this.context = context;
     }
 
-    public static synchronized VoteDataLoader getInstance(Context context) {
+    public static synchronized DataLoader getInstance(Context context) {
         if (sInstance == null) {
-            sInstance = new VoteDataLoader(context);
+            sInstance = new DataLoader(context);
         }
         return sInstance;
     }
@@ -87,9 +92,10 @@ public class VoteDataLoader {
         return options;
     }
 
-    public void mockData(int limit, int maxOptionCount) {
+    public void mockVoteData(int limit, int maxOptionCount) {
         List<VoteData> list = new ArrayList<>();
         List<Option> options = new ArrayList<>();
+        String[] IMAGE_URL = context.getResources().getStringArray(R.array.imageURL);
         for (int i = 0; i < limit; i++) {
             VoteData data = new VoteData();
             data.setIsCanPreviewResult(true);
@@ -107,7 +113,7 @@ public class VoteDataLoader {
             data.setMinOption(1);
             data.setIsUserCanAddOption(true);
 
-            data.setSecurity("public");
+            data.setSecurity(VoteData.SECURITY_PUBLIC);
             data.setTitle("Do your mother know what do you do?:" + i);
             data.setStartTime(System.currentTimeMillis() - 864200 * 1000);
             int randomImage = (int) (Math.random() * 4);
@@ -126,6 +132,7 @@ public class VoteDataLoader {
                     image = R.mipmap.ballot_box;
 
             }
+            data.setVoteImage(IMAGE_URL[randomImage]);
             data.setLocalImage(image);
 
             int optionType = i % 11;
@@ -183,7 +190,9 @@ public class VoteDataLoader {
             } else if (optionType == 3) {
                 // TOP 1 TYPE.
 
-                data.setTitle("TOP 1 TYPE: time end and user choiced option that not 1 and 2 , is 5, top is 4");
+                data.setTitle("TOP 1 TYPE: time end and user choiced option that not 1" +
+                        " and 2 , is 5, top is 4 long title long title long title long title" +
+                        " long title long title long title long title long title long title");
                 data.setIsPolled(true);
 
                 data.setOptionCount(15);
@@ -341,6 +350,19 @@ public class VoteDataLoader {
         optionDao.insertInTx(options);
     }
 
+    public void mockPromotions(int limit) {
+        String imageURL[] = context.getResources().getStringArray(R.array.imageURL);
+        List<Promotion> promotions = new ArrayList<>();
+        for (int i = 0; i < limit; i++) {
+            Promotion promotion = new Promotion();
+            promotion.setImageURL(imageURL[i%imageURL.length]);
+            promotion.setActionURL("https://vinta.ws/booch/?p=226");
+            promotion.setTitle("title:" + i);
+            promotions.add(promotion);
+        }
+        promotionDao.insertInTx(promotions);
+    }
+
     public List<VoteData> queryCreateByVotes(int limit) {
         List<VoteData> list = new ArrayList<>();
         for (int i = 0; i < limit; i++) {
@@ -362,6 +384,10 @@ public class VoteDataLoader {
 
     public VoteData queryVoteDataById(String code) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(code)).list().get(0);
+    }
+
+    public List<Promotion> queryAllPromotion() {
+        return promotionDao.loadAll();
     }
 
 }

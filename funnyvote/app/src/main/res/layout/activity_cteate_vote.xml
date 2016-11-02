@@ -32,13 +32,16 @@
         android:fontFamily="sans-serif-light"
         android:hint="@string/create_vote_title_hint"
         android:textSize="16sp" />
-    <!--To do : add picture here-->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_add_circle_outline_24dp"/>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/vpSubArea"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"></android.support.v4.view.ViewPager>
+        android:layout_weight="1"/>
 
     <android.support.design.widget.TabLayout
         android:id="@+id/tabLayoutCreateVote"

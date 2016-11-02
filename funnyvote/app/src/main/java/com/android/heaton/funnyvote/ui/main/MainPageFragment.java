@@ -1,5 +1,7 @@
 package com.android.heaton.funnyvote.ui.main;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -14,6 +16,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.database.DataLoader;
+import com.android.heaton.funnyvote.database.Promotion;
+import com.bumptech.glide.Glide;
 import com.viewpagerindicator.CirclePageIndicator;
 
 import java.util.ArrayList;
@@ -59,32 +64,28 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     private void initialHeaderView() {
         final LayoutInflater mInflater = getActivity().getLayoutInflater().from(getActivity());
         headerViewList = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
+        final List<Promotion> promotionList = DataLoader.getInstance(getContext()).queryAllPromotion();
+        for (int i = 0; i < promotionList.size(); i++) {
             View headerItem = mInflater.inflate(R.layout.main_page_header_item, null);
             ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
-            int imageOrder = (int) (Math.random() * 5);
-            int imageId = R.mipmap.ballot_box;
-            switch (imageOrder) {
-                case 0:
-                    imageId = R.mipmap.ballot_box;
-                    break;
-                case 1:
-                    imageId = R.mipmap.handsup;
-                    break;
-                case 2:
-                    imageId = R.mipmap.vote_banner;
-                    break;
-                case 3:
-                    imageId = R.mipmap.vote_box;
-                    break;
-                case 4:
-                    imageId = R.mipmap.vote_finger;
-
-            }
-            promotion.setImageResource(imageId);
+            // TODO: only for test , use long as image id.
+            Glide.with(this)
+                    .load(promotionList.get(i).getImageURL())
+                    .override(320,180)
+                    .fitCenter()
+                    .crossFade()
+                    .into(promotion);
+            final String actionURL = promotionList.get(i).getActionURL();
+            promotion.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW
+                            , Uri.parse(actionURL));
+                    startActivity(browserIntent);
+                }
+            });
             headerViewList.add(headerItem);
         }
-
     }
 
 

@@ -2,6 +2,7 @@ package com.android.heaton.funnyvote.ui.votedetail;
 
 import android.animation.ObjectAnimator;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
@@ -33,16 +34,20 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
     TextView txtOptionTitle;
     @BindView(R.id.txtPollCount)
     TextView txtPollCount;
+    @BindView(R.id.txtPollCountPercent)
+    TextView txtPollCountPercent;
     @BindView(R.id.progressPollCount)
     RoundCornerProgressBar progressPollCount;
     private boolean isChoice = false;
     private boolean isMultiChoice = false;
     private boolean isExpand = false;
+    private int totalPollCount;
     private Option option;
 
     public VHResultOptionItem(View itemView, boolean isMultiChoice, int totalPollCount) {
         super(itemView);
         this.isMultiChoice = isMultiChoice;
+        this.totalPollCount = totalPollCount;
         ButterKnife.bind(this, itemView);
         progressPollCount.setMax(totalPollCount);
     }
@@ -54,6 +59,8 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
         txtOptionTitle.setText(option.getTitle());
         txtOptionNumber.setText(Integer.toString(getAdapterPosition() + 1));
         txtPollCount.setText(Integer.toString(option.getCount()));
+        double percent = (double)option.getCount()/totalPollCount * 100;
+        txtPollCountPercent.setText(String.format("%3.1f%%",percent));
         setUpImgChampion(isTop);
         setUpOptionExpandLayout();
         ObjectAnimator animator = ObjectAnimator.ofFloat(progressPollCount, "progress", 0, option.getCount());

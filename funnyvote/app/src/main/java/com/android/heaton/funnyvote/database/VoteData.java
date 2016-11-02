@@ -15,6 +15,8 @@ import java.util.List;
  */
 @Entity
 public class VoteData {
+    public static final String SECURITY_PRIVATE = "Private";
+    public static final String SECURITY_PUBLIC = "Public";
     @Id
     private Long id;
     @ToMany(referencedJoinProperty = "voteCode")
@@ -52,7 +54,7 @@ public class VoteData {
     private boolean isCanPreviewResult = true;
     private boolean isUserCanAddOption = true;
     private boolean isNeedPassword = false;
-    private String security;
+    private String security = SECURITY_PUBLIC;
 
     private String category;
 

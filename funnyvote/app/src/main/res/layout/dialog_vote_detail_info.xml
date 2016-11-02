@@ -4,7 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="30dp">
+    android:paddingBottom="16dp"
+    android:paddingTop="16dp"
+    android:paddingRight="30dp"
+    android:paddingLeft="30dp">
 
     <TextView
         android:layout_width="wrap_content"
@@ -25,7 +28,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="12dp"
         android:text="@string/vote_detail_dialog_time"
         android:textColor="#80000000"
         android:textSize="@dimen/customTitle" />
@@ -38,6 +41,23 @@
         android:textColor="#000000"
         android:textSize="@dimen/customEntry"
         tools:text="10/12 12:10 - 10/19 12:23" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/vote_detail_dialog_security"
+        android:textColor="#80000000"
+        android:textSize="@dimen/customTitle" />
+
+    <TextView
+        android:id="@+id/txtSecurity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#000000"
+        android:textSize="@dimen/customEntry"
+        tools:text="Public" />
 
 
 </LinearLayout>

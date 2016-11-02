@@ -16,9 +16,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -39,34 +45,56 @@ public class CreateVoteActivity extends AppCompatActivity {
     TabLayout tabLayoutCreateVote;
     @BindView(R.id.vpSubArea)
     ViewPager vpSubArea;
-    private Toolbar toolbar;
+    private CreateVoteTabSettingFragment settingFragment;
+    private CreateVoteTabOptionFragment optionFragment;
+    private long newOptionIdAuto = 0;
+    private List<Option> optionList;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cteate_vote);
-
         ButterKnife.bind(this);
-        toolbar = (Toolbar) findViewById(R.id.create_vote_toolbar);
-        toolbar.setTitle(getString(R.string.create_vote_toolbar_title));
-        toolbar.setTitleTextColor(Color.WHITE);
-        toolbar.setElevation(10);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mainToolbar.setTitle(getString(R.string.create_vote_toolbar_title));
+        mainToolbar.setTitleTextColor(Color.WHITE);
+        mainToolbar.setElevation(10);
+
+        mainToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mainToolbar);
+
+        optionList = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            Option option = new Option();
+            option.setId(newOptionIdAuto++);
+            option.setCount(0);
+            optionList.add(option);
+        }
+
         vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
         tabLayoutCreateVote.setupWithViewPager(vpSubArea);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        ButterKnife.bind(this);
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -81,8 +109,7 @@ public class CreateVoteActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.menu_submit) {
-            EventBus.getDefault().post(new EventBusController.SubmitMessageEvent
-                    (EventBusController.SubmitMessageEvent.EVENT_SUBMIT));
+
             finish();
             return true;
         } else if (id == android.R.id.home) {
@@ -106,9 +133,15 @@ public class CreateVoteActivity extends AppCompatActivity {
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    return CreateVoteTabFragment.newTabFragment(CreateVoteTabFragment.TAB_OPTIONS);
+                    if (optionFragment == null) {
+                        optionFragment = CreateVoteTabOptionFragment.newTabFragment(optionList);
+                    }
+                    return optionFragment;
                 case 1:
-                    return CreateVoteTabFragment.newTabFragment(CreateVoteTabFragment.TAB_SETTINGS);
+                    if (settingFragment == null) {
+                        settingFragment = CreateVoteTabSettingFragment.newTabFragment();
+                    }
+                    return settingFragment;
             }
             return null;
         }
@@ -125,4 +158,39 @@ public class CreateVoteActivity extends AppCompatActivity {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onOptionControl(EventBusController.OptionControlEvent event) {
+        long id = event.Id;
+        if (event.message.equals(EventBusController.OptionControlEvent.OPTION_ADD)) {
+            Option option = new Option();
+            option.setCount(0);
+            option.setId(newOptionIdAuto++);
+            optionList.add(option);
+            optionFragment.notifyOptionChange();
+            // refresh option
+        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_REMOVE)) {
+            int removePosition = -1;
+            for (int i = 0; i < optionList.size(); i++) {
+                if (optionList.get(i).getId() == id) {
+                    removePosition = i;
+                    break;
+                }
+            }
+            if (removePosition >= 0) {
+                optionList.remove(removePosition);
+                optionFragment.notifyOptionChange();
+            }
+        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_INPUT_TEXT)) {
+            int targetPosition = -1;
+            for (int i = 0; i < optionList.size(); i++) {
+                if (optionList.get(i).getId() == id) {
+                    targetPosition = i;
+                    break;
+                }
+            }
+            if (targetPosition >= 0) {
+                optionList.get(targetPosition).setTitle(event.inputText);
+            }
+        }
+    }
 }

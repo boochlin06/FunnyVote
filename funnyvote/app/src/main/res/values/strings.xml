@@ -91,6 +91,7 @@
     <string name="vote_detail_dialog_option">Option</string>
     <string name="vote_detail_dialog_done">Done</string>
     <string name="vote_detail_dialog_time">Time</string>
+    <string name="vote_detail_dialog_security">Security</string>
     <string name="vote_detail_dialog_single_option">Single option</string>
     <string name="vote_detail_dialog_multi_option" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
 
