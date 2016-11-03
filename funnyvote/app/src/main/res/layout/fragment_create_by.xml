@@ -20,7 +20,6 @@
         android:layout_gravity="bottom|right"
         android:layout_marginBottom="5dp"
         android:layout_marginRight="10dp"
-        android:src="@drawable/common_ic_googleplayservices"
         app:borderWidth="0dp"
         app:elevation="6dp"
         app:pressedTranslationZ="12dp" />

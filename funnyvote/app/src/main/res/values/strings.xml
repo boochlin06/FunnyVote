@@ -99,4 +99,7 @@
     <string name="vote_detail_dialog_sort_alphabet">Alphabet</string>
     <string name="vote_detail_dialog_sort_poll">Poll count</string>
     <string name="vote_detail_dialog_sort_select">Select</string>
+
+    <!-- Account-->
+    <string name="sign_out">Sign out</string>
 </resources>

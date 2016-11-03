@@ -5,13 +5,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -28,6 +31,14 @@ import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,16 +53,36 @@ import java.util.Arrays;
  * Created by chiu_mac on 2016/10/28.
  */
 
-public class AccountFragment extends android.support.v4.app.Fragment {
+public class AccountFragment extends android.support.v4.app.Fragment
+        implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private static final String TAG = AccountFragment.class.getSimpleName();
+    private static final int RC_GOOGLE_SIGN_IN = 101;
 
     //Facebook API
     private CallbackManager mCallbackManager;
     private AccessTokenTracker mAccessTokenTracker;
 
+    //Google Sign in API
+    private GoogleApiClient mGoogleApiClient;
+
     //Views
     ImageView mPicImageView;
     TextView mNameTextView;
+    View mGoogleSignInBtn;
+    Button mSignoutBtn;
+    LoginButton mFBLoginBtn;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                .enableAutoManage(getActivity(), this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+    }
 
     @Nullable
     @Override
@@ -88,16 +119,20 @@ public class AccountFragment extends android.support.v4.app.Fragment {
                 Log.d(TAG, "onCurrentAccessTokenChanged");
                 if (currentAccessToken == null) {
                     removeUserProfile();
-                    updateUserProfile();
                 }
             }
         };
 
         //Views
-        mNameTextView = (TextView) view.findViewById(R.id.profile_name);
+        mFBLoginBtn = loginButton;
+        mNameTextView = (TextView)view.findViewById(R.id.profile_name);
         mPicImageView = (ImageView)view.findViewById(R.id.profile_picture);
+        mGoogleSignInBtn = view.findViewById(R.id.google_sign_in_button);
+        mGoogleSignInBtn.setOnClickListener(this);
+        mSignoutBtn = (Button)view.findViewById(R.id.sign_out_button);
+        mSignoutBtn.setOnClickListener(this);
 
-        updateUserProfile();
+        updateUI();
 
         return view;
     }
@@ -112,15 +147,44 @@ public class AccountFragment extends android.support.v4.app.Fragment {
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         mAccessTokenTracker.stopTracking();
+        mGoogleApiClient.stopAutoManage(getActivity());
+        mGoogleApiClient.disconnect();
         super.onDestroy();
     }
-
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         mCallbackManager.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_GOOGLE_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            handleGoogleSignInResult(result);
+        }
+    }
+
+    private void handleGoogleSignInResult(GoogleSignInResult result) {
+        Log.d(TAG, "handleSignInResult:" + result.isSuccess());
+        if (result.isSuccess()) {
+            try {
+                // Signed in successfully
+                GoogleSignInAccount googleAccount = result.getSignInAccount();
+                String name = googleAccount.getDisplayName();
+                String googleID = googleAccount.getId();
+                String email = googleAccount.getEmail();
+                Uri picLink = googleAccount.getPhotoUrl();
+                User user = new User(null, name, email, googleID, User.TYPE_GOOGLE);
+                saveUserProfile(user);
+                Log.d(TAG, "name:" + name);
+                Log.d(TAG, "google ID:" + googleID);
+                Log.d(TAG, "email:" + email);
+                Log.d(TAG, "pic link:" + picLink.toString());
+                URL url = new URL(picLink.toString());
+                new GetProfilePictureTask().execute(url);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void getFacebookProfile() {
@@ -179,21 +243,77 @@ public class AccountFragment extends android.support.v4.app.Fragment {
         SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
         userPref.edit().clear().commit();
         getContext().deleteFile(FunnyVoteApplication.PROFILE_PICTURE_FILE);
+        updateUI();
     }
 
-    private void updateUserProfile() {
+    private void updateUI() {
         SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
         if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
-            mNameTextView.setText(userPref.getString(FunnyVoteApplication.KEY_NAME, "user"));
+            String name = userPref.getString(FunnyVoteApplication.KEY_NAME, "user");
+            String type = userPref.getString(FunnyVoteApplication.KEY_TYPE, null);
+            mNameTextView.setText(name);
             try {
                 Bitmap pic = BitmapFactory.decodeStream(getContext().openFileInput(FunnyVoteApplication.PROFILE_PICTURE_FILE));
                 mPicImageView.setImageBitmap(pic);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            switch (type) {
+                case User.TYPE_FACEBOOK:
+                    mGoogleSignInBtn.setVisibility(View.GONE);
+                    mSignoutBtn.setVisibility(View.GONE);
+                    break;
+                case User.TYPE_GOOGLE:
+                    mFBLoginBtn.setVisibility(View.GONE);
+                    mSignoutBtn.setVisibility(View.VISIBLE);
+                    mGoogleSignInBtn.setVisibility(View.GONE);
+                    break;
+                case User.TYPE_TWITTER:
+                    break;
+                default:
+                    removeUserProfile();
+            }
         } else {
             mNameTextView.setText("");
             mPicImageView.setImageBitmap(null);
+            mFBLoginBtn.setVisibility(View.VISIBLE);
+            mSignoutBtn.setVisibility(View.GONE);
+            mGoogleSignInBtn.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void googleSignIn() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
+    }
+
+    private void googleSignOut() {
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        Log.d(TAG, "status:" + status.isSuccess());
+                        if (status.isSuccess()) {
+                            removeUserProfile();
+                        }
+                    }
+                });
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.google_sign_in_button:
+                googleSignIn();
+                break;
+            case R.id.sign_out_button:
+                googleSignOut();
+                break;
         }
     }
 
@@ -217,7 +337,7 @@ public class AccountFragment extends android.support.v4.app.Fragment {
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
-            updateUserProfile();
+            updateUI();
         }
     }
 }
