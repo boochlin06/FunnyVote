@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.android.heaton.funnyvote.ui.AccountFragment;
 import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.android.heaton.funnyvote.ui.main.MainPageFragment;
 
@@ -66,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
                             case R.id.navigation_item_list_favorite:
                                 getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new FavoriteFragment()).commit();
                                 toolbar.setTitle(R.string.drawer_favorite);
+                                break;
+                            case R.id.navigation_account:
+                                getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new AccountFragment()).commit();
                                 break;
                         }
                         menuItem.setChecked(true);

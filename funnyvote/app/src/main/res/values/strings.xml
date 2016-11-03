@@ -18,6 +18,9 @@
     <string name="drawer_close">close</string>
     <string name="drawer_open">open</string>
 
+    <!--Facebook SDK-->
+    <string name="facebook_app_id">1685340518447041</string>
+
     <!--Drawer Menu and toolbar title-->
     <string name="drawer_home">Home</string>
     <string name="drawer_history">History</string>
@@ -96,4 +99,7 @@
     <string name="vote_detail_dialog_sort_alphabet">Alphabet</string>
     <string name="vote_detail_dialog_sort_poll">Poll count</string>
     <string name="vote_detail_dialog_sort_select">Select</string>
+
+    <!-- Account-->
+    <string name="sign_out">Sign out</string>
 </resources>
