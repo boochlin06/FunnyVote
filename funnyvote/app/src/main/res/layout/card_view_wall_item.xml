@@ -76,7 +76,7 @@
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:scaleType="fitXY"
-            android:src="@mipmap/handsup" />
+            android:src="@drawable/handsup" />
 
         <include
             android:id="@+id/function_bar"

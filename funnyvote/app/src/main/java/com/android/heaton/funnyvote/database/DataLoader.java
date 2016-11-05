@@ -120,16 +120,16 @@ public class DataLoader {
             int image;
             switch (randomImage) {
                 case 1:
-                    image = R.mipmap.vote_finger;
+                    image = R.drawable.vote_finger;
                     break;
                 case 2:
-                    image = R.mipmap.vote_box;
+                    image = R.drawable.vote_box;
                     break;
                 case 3:
-                    image = R.mipmap.handsup;
+                    image = R.drawable.handsup;
                     break;
                 default:
-                    image = R.mipmap.ballot_box;
+                    image = R.drawable.ballot_box;
 
             }
             data.setVoteImage(IMAGE_URL[randomImage]);

@@ -563,7 +563,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 optionItemAdapter.notifyDataSetChanged();
             }
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_INPUT_TEXT)) {
-            appBarMain.setExpanded(false);
+            //appBarMain.setExpanded(false);
             int targetPosition = -1;
             for (int i = 0; i < optionList.size(); i++) {
                 if (optionList.get(i).getId() == id) {

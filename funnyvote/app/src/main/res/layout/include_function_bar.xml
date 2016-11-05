@@ -23,7 +23,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:scaleType="fitXY"
-            android:src="@mipmap/ic_poll_count_analyze" />
+            android:src="@drawable/ic_poll_count_analyze" />
 
         <TextView
             android:id="@+id/txtBarPollCount"

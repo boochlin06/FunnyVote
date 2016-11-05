@@ -117,7 +117,7 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/ryOptionArea"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:paddingTop="6dp"
                 app:layoutManager="android.support.v7.widget.LinearLayoutManager"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior" />
@@ -163,7 +163,7 @@
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/md_red_50"
             fab:fab_colorPressed="@color/md_red_100"
-            fab:fab_icon="@mipmap/ic_vote_result"
+            fab:fab_icon="@drawable/ic_vote_result"
             fab:fab_title="@string/vote_detail_fab_pre_result" />
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>

@@ -27,20 +27,9 @@ public class HistoryFragment extends android.support.v4.app.Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_create_by, null);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-        mRecyclerView.setHasFixedSize(true);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
 
-        mAdapter = new VoteWallItemAdapter(getActivity(), DataLoader.getInstance(getContext()).queryCreateByVotes(10));
-        mRecyclerView.setAdapter(mAdapter);
-        mProgressBar.setVisibility(View.INVISIBLE);
-
-        return view;
+        return null;
     }
 
 
