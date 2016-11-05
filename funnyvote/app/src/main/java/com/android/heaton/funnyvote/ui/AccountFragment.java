@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.heaton.funnyvote.FunnyVoteApplication;
@@ -71,6 +72,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
     View mGoogleSignInBtn;
     Button mSignoutBtn;
     LoginButton mFBLoginBtn;
+    ProgressBar mLoadingProgressBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -99,6 +101,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d(TAG, "onSuccess");
+                showLoadingProgressBar();
                 getFacebookProfile();
             }
 
@@ -131,10 +134,17 @@ public class AccountFragment extends android.support.v4.app.Fragment
         mGoogleSignInBtn.setOnClickListener(this);
         mSignoutBtn = (Button)view.findViewById(R.id.sign_out_button);
         mSignoutBtn.setOnClickListener(this);
+        mLoadingProgressBar = (ProgressBar)view.findViewById(R.id.loading_progress_bar);
 
         updateUI();
 
         return view;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
     }
 
     @Override
@@ -166,6 +176,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
     private void handleGoogleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
+            showLoadingProgressBar();
             try {
                 // Signed in successfully
                 GoogleSignInAccount googleAccount = result.getSignInAccount();
@@ -250,35 +261,10 @@ public class AccountFragment extends android.support.v4.app.Fragment
         SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
         if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
             String name = userPref.getString(FunnyVoteApplication.KEY_NAME, "user");
-            String type = userPref.getString(FunnyVoteApplication.KEY_TYPE, null);
             mNameTextView.setText(name);
-            try {
-                Bitmap pic = BitmapFactory.decodeStream(getContext().openFileInput(FunnyVoteApplication.PROFILE_PICTURE_FILE));
-                mPicImageView.setImageBitmap(pic);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            switch (type) {
-                case User.TYPE_FACEBOOK:
-                    mGoogleSignInBtn.setVisibility(View.GONE);
-                    mSignoutBtn.setVisibility(View.GONE);
-                    break;
-                case User.TYPE_GOOGLE:
-                    mFBLoginBtn.setVisibility(View.GONE);
-                    mSignoutBtn.setVisibility(View.VISIBLE);
-                    mGoogleSignInBtn.setVisibility(View.GONE);
-                    break;
-                case User.TYPE_TWITTER:
-                    break;
-                default:
-                    removeUserProfile();
-            }
+            new LoadProfilePictureTask().execute(getContext().getFileStreamPath(FunnyVoteApplication.PROFILE_PICTURE_FILE).getAbsolutePath());
         } else {
-            mNameTextView.setText("");
-            mPicImageView.setImageBitmap(null);
-            mFBLoginBtn.setVisibility(View.VISIBLE);
-            mSignoutBtn.setVisibility(View.GONE);
-            mGoogleSignInBtn.setVisibility(View.VISIBLE);
+            showLoginButton();
         }
     }
 
@@ -300,6 +286,60 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 });
     }
 
+    private void showUserProfile() {
+        mPicImageView.setVisibility(View.VISIBLE);
+        mNameTextView.setVisibility(View.VISIBLE);
+        mLoadingProgressBar.setVisibility(View.GONE);
+        showLogoutButton();
+    }
+
+    private void showLoginButton() {
+        mPicImageView.setImageBitmap(null);
+        mNameTextView.setText("");
+        mPicImageView.setVisibility(View.GONE);
+        mNameTextView.setVisibility(View.GONE);
+        mFBLoginBtn.setVisibility(View.VISIBLE);
+        mSignoutBtn.setVisibility(View.GONE);
+        mGoogleSignInBtn.setVisibility(View.VISIBLE);
+        mLoadingProgressBar.setVisibility(View.GONE);
+    }
+
+    private void showLogoutButton() {
+        SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
+        if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
+            String type = userPref.getString(FunnyVoteApplication.KEY_TYPE, null);
+            switch (type) {
+                case User.TYPE_FACEBOOK:
+                    mFBLoginBtn.setVisibility(View.VISIBLE);
+                    mGoogleSignInBtn.setVisibility(View.GONE);
+                    mSignoutBtn.setVisibility(View.GONE);
+                    break;
+                case User.TYPE_GOOGLE:
+                    mFBLoginBtn.setVisibility(View.GONE);
+                    mGoogleSignInBtn.setVisibility(View.GONE);
+                    mSignoutBtn.setVisibility(View.VISIBLE);
+                    break;
+                case User.TYPE_TWITTER:
+                    break;
+                default:
+                    removeUserProfile();
+            }
+            mLoadingProgressBar.setVisibility(View.GONE);
+        } else {
+            showLoginButton();
+        }
+    }
+
+    private void showLoadingProgressBar() {
+        mLoadingProgressBar.setVisibility(View.VISIBLE);
+        mFBLoginBtn.setVisibility(View.GONE);
+        mSignoutBtn.setVisibility(View.GONE);
+        mGoogleSignInBtn.setVisibility(View.GONE);
+        mPicImageView.setVisibility(View.GONE);
+        mNameTextView.setVisibility(View.GONE);
+
+    }
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
@@ -314,6 +354,26 @@ public class AccountFragment extends android.support.v4.app.Fragment
             case R.id.sign_out_button:
                 googleSignOut();
                 break;
+        }
+    }
+
+    class LoadProfilePictureTask extends  AsyncTask<String, Void, Bitmap> {
+        @Override
+        protected void onPreExecute() {
+            showLoadingProgressBar();
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            Bitmap pic = BitmapFactory.decodeFile(strings[0]);
+            return pic;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            mPicImageView.setImageBitmap(bitmap);
+            showUserProfile();
         }
     }
 
