@@ -23,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private NavigationView navigationView;
 
+    private int mCurrentPage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
         navigationView.getMenu().getItem(0).setChecked(true);
+        mCurrentPage = R.id.navigation_item_main;
 
         setupDrawerContent(navigationView);
     }
@@ -52,27 +55,31 @@ public class MainActivity extends AppCompatActivity {
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        switch (menuItem.getItemId()) {
-                            case R.id.navigation_item_main:
-                                getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new MainPageFragment()).commit();
-                                toolbar.setTitle(getString(R.string.drawer_home));
-                                break;
-                            case R.id.navigation_item_create_vote:
-                                startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
-                                break;
-                            case R.id.navigation_item_list_history:
-                                getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new HistoryFragment()).commit();
-                                toolbar.setTitle(R.string.drawer_history);
-                                break;
-                            case R.id.navigation_item_list_favorite:
-                                getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new FavoriteFragment()).commit();
-                                toolbar.setTitle(R.string.drawer_favorite);
-                                break;
-                            case R.id.navigation_account:
-                                getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new AccountFragment()).commit();
-                                break;
+                        if (mCurrentPage != menuItem.getItemId()) {
+                            mCurrentPage = menuItem.getItemId();
+                            switch (menuItem.getItemId()) {
+                                case R.id.navigation_item_main:
+                                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new MainPageFragment()).commit();
+                                    toolbar.setTitle(getString(R.string.drawer_home));
+                                    break;
+                                case R.id.navigation_item_create_vote:
+                                    startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
+                                    break;
+                                case R.id.navigation_item_list_history:
+                                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new HistoryFragment()).commit();
+                                    toolbar.setTitle(R.string.drawer_history);
+                                    break;
+                                case R.id.navigation_item_list_favorite:
+                                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new FavoriteFragment()).commit();
+                                    toolbar.setTitle(R.string.drawer_favorite);
+                                    break;
+                                case R.id.navigation_account:
+                                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new AccountFragment()).commit();
+                                    toolbar.setTitle(R.string.drawer_account);
+                                    break;
+                            }
+                            menuItem.setChecked(true);
                         }
-                        menuItem.setChecked(true);
                         drawerLayout.closeDrawers();
                         return true;
                     }
