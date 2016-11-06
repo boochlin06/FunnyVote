@@ -102,5 +102,6 @@
     <string name="vote_detail_dialog_sort_select">Select</string>
 
     <!-- Account-->
-    <string name="sign_out">Sign out</string>
+    <string name="log_in">Log In</string>
+    <string name="log_out">Log out</string>
 </resources>

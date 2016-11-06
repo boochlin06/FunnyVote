@@ -26,4 +26,9 @@
         <item name="android:background">@drawable/fab_label_background</item>
         <item name="android:textColor">@color/md_red_50</item>
     </style>
+
+    <style name="MDButton" parent="Theme.AppCompat.Light">
+        <item name="colorControlHighlight">@color/primary_dark</item>
+        <item name="colorButtonNormal">@color/primary_light</item>
+    </style>
 </resources>

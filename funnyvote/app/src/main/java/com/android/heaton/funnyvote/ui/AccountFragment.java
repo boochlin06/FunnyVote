@@ -30,6 +30,7 @@ import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
@@ -44,11 +45,11 @@ import com.google.android.gms.common.api.Status;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Created by chiu_mac on 2016/10/28.
@@ -71,7 +72,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
     TextView mNameTextView;
     View mGoogleSignInBtn;
     Button mSignoutBtn;
-    LoginButton mFBLoginBtn;
+    Button mFBLoginBtn;
     ProgressBar mLoadingProgressBar;
 
     @Override
@@ -94,10 +95,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
         mCallbackManager = CallbackManager.Factory.create();
 
-        LoginButton loginButton = (LoginButton) view.findViewById(R.id.fb_login_button);
-        loginButton.setFragment(this);
-        loginButton.setReadPermissions(Arrays.asList("email"));
-        loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+        LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d(TAG, "onSuccess");
@@ -127,7 +125,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
         };
 
         //Views
-        mFBLoginBtn = loginButton;
+        mFBLoginBtn = (Button)view.findViewById(R.id.fb_login_button);
+        mFBLoginBtn.setOnClickListener(this);
         mNameTextView = (TextView)view.findViewById(R.id.profile_name);
         mPicImageView = (ImageView)view.findViewById(R.id.profile_picture);
         mGoogleSignInBtn = view.findViewById(R.id.google_sign_in_button);
@@ -286,48 +285,32 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 });
     }
 
+    private void facebookLogout() {
+        LoginManager.getInstance().logOut();
+    }
+
     private void showUserProfile() {
-        mPicImageView.setVisibility(View.VISIBLE);
-        mNameTextView.setVisibility(View.VISIBLE);
-        mLoadingProgressBar.setVisibility(View.GONE);
-        showLogoutButton();
-    }
-
-    private void showLoginButton() {
-        mPicImageView.setImageBitmap(null);
-        mNameTextView.setText("");
-        mPicImageView.setVisibility(View.GONE);
-        mNameTextView.setVisibility(View.GONE);
-        mFBLoginBtn.setVisibility(View.VISIBLE);
-        mSignoutBtn.setVisibility(View.GONE);
-        mGoogleSignInBtn.setVisibility(View.VISIBLE);
-        mLoadingProgressBar.setVisibility(View.GONE);
-    }
-
-    private void showLogoutButton() {
         SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
         if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
-            String type = userPref.getString(FunnyVoteApplication.KEY_TYPE, null);
-            switch (type) {
-                case User.TYPE_FACEBOOK:
-                    mFBLoginBtn.setVisibility(View.VISIBLE);
-                    mGoogleSignInBtn.setVisibility(View.GONE);
-                    mSignoutBtn.setVisibility(View.GONE);
-                    break;
-                case User.TYPE_GOOGLE:
-                    mFBLoginBtn.setVisibility(View.GONE);
-                    mGoogleSignInBtn.setVisibility(View.GONE);
-                    mSignoutBtn.setVisibility(View.VISIBLE);
-                    break;
-                case User.TYPE_TWITTER:
-                    break;
-                default:
-                    removeUserProfile();
-            }
+            mPicImageView.setVisibility(View.VISIBLE);
+            mNameTextView.setVisibility(View.VISIBLE);
+            mLoadingProgressBar.setVisibility(View.GONE);
+            mFBLoginBtn.setVisibility(View.GONE);
+            mGoogleSignInBtn.setVisibility(View.GONE);
+            mSignoutBtn.setVisibility(View.VISIBLE);
             mLoadingProgressBar.setVisibility(View.GONE);
         } else {
             showLoginButton();
         }
+    }
+
+    private void showLoginButton() {
+        mPicImageView.setImageResource(R.drawable.ic_action_account_circle);
+        mNameTextView.setText("");
+        mFBLoginBtn.setVisibility(View.VISIBLE);
+        mSignoutBtn.setVisibility(View.GONE);
+        mGoogleSignInBtn.setVisibility(View.VISIBLE);
+        mLoadingProgressBar.setVisibility(View.GONE);
     }
 
     private void showLoadingProgressBar() {
@@ -348,11 +331,26 @@ public class AccountFragment extends android.support.v4.app.Fragment
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.fb_login_button:
+                LoginManager.getInstance().logInWithReadPermissions(this,
+                        Arrays.asList("public_profile", "email"));
+                break;
             case R.id.google_sign_in_button:
                 googleSignIn();
                 break;
             case R.id.sign_out_button:
-                googleSignOut();
+                SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
+                if (userPref.contains(FunnyVoteApplication.KEY_TYPE)) {
+                    String type = userPref.getString(FunnyVoteApplication.KEY_TYPE, null);
+                    switch (type) {
+                        case User.TYPE_GOOGLE:
+                            googleSignOut();
+                            break;
+                        case User.TYPE_FACEBOOK:
+                            facebookLogout();
+                            break;
+                    }
+                }
                 break;
         }
     }
