@@ -26,9 +26,9 @@
             android:icon="@android:drawable/ic_menu_add"
             android:title="@string/drawer_create_new_vote" />
         <item
-            android:id="@+id/navigation_item_invite_code"
-            android:icon="@android:drawable/ic_menu_edit"
-            android:title="@string/drawer_invite_code" />
+            android:id="@+id/navigation_item_search"
+            android:icon="@android:drawable/ic_menu_search"
+            android:title="@string/drawer_search" />
     </group>
 
     <group

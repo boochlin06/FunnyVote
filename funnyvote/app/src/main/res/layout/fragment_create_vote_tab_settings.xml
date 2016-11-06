@@ -222,30 +222,30 @@
             android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size" />
 
         <TextView
-            android:id="@+id/txtMemberOnly"
+            android:id="@+id/txtSecurity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/txtEndTimeDetail"
             android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
-            android:text="@string/create_vote_tab_settings_member_only"
+            android:text="@string/create_vote_tab_settings_security"
             android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size" />
 
-        <Switch
-            android:id="@+id/swtMemberOnly"
+        <TextView
+            android:id="@+id/txtSecurityDetail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/txtMemberOnly"
-            android:layout_alignParentRight="true"
-            android:layout_below="@id/txtEndTimeDetail"
-            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
-            android:layout_marginTop="@dimen/create_vote_settings_sep_margin" />
+            android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="@dimen/create_vote_settings_time_margin"
+            android:layout_below="@id/txtSecurity"
+            android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size"
+            android:textColor="@color/md_blue_300" />
 
         <TextView
             android:id="@+id/txtNeedPwd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/txtMemberOnly"
+            android:layout_below="@id/txtSecurityDetail"
             android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
             android:text="@string/create_vote_tab_settings_need_password"
@@ -257,7 +257,7 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/txtNeedPwd"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/txtMemberOnly"
+            android:layout_below="@id/txtSecurity"
             android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_sep_margin" />
 

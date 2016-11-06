@@ -7,6 +7,7 @@ import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Keep;
 import org.greenrobot.greendao.annotation.OrderBy;
 import org.greenrobot.greendao.annotation.ToMany;
+import org.greenrobot.greendao.annotation.Transient;
 
 import java.util.List;
 
@@ -27,33 +28,35 @@ public class VoteData {
     private String authorName;
     private String authorCode;
     private String authorIcon;
-    private String voteImage = "";
+    private String voteImage;
     private int localImage;
     private long startTime;
     private long endTime;
-    private String option1Title = "Option 1 Option 1 Option 1 Option 1Option 1 Option 1Option 1 Option 1";
-    private String option1Code = "option 1 code";
-    private int option1Count = 0;
+    private String option1Title;
+    private String option1Code;
+    private int option1Count;
 
-    private String option2Title = "Option 2";
-    private String option2Code = "option 2 code";
-    private int option2Count = 0;
-    private String optionTopTitle = "Option Champion Option Champion Option Champion Option Champion Option Champion";
-    private String optionTopCode = "NONE";
-    private int optionTopCount = 2;
-    private String optionUserChoiceTitle = "Option User";
-    private String optionUserChoiceCode = "2";
-    private int optionUserChoiceCount = 0;
-    private int minOption = 1;
-    private int maxOption = 1;
-    private int optionCount = 5;
+    private String option2Title;
+    private String option2Code;
+    private int option2Count;
+    private String optionTopTitle;
+    private String optionTopCode;
+    private int optionTopCount;
+    private String optionUserChoiceTitle;
+    private String optionUserChoiceCode;
+    private int optionUserChoiceCount;
+    private int minOption;
+    private int maxOption;
+    private int optionCount;
     private int pollCount;
-    private boolean isPolled = false;
+    private boolean isPolled;
     private boolean isFavorite;
 
-    private boolean isCanPreviewResult = true;
-    private boolean isUserCanAddOption = true;
-    private boolean isNeedPassword = false;
+    private boolean isCanPreviewResult;
+    private boolean isUserCanAddOption;
+    private boolean isNeedPassword;
+    @Transient
+    public String password;
     private String security = SECURITY_PUBLIC;
 
     private String category;

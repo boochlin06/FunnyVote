@@ -103,8 +103,7 @@
                         android:id="@+id/imgMain"
                         android:layout_width="match_parent"
                         android:layout_height="150dp"
-                        android:scaleType="fitXY"
-                        tools:src="@mipmap/handsup" />
+                        android:scaleType="fitXY" />
 
                 </android.support.design.widget.CollapsingToolbarLayout>
 

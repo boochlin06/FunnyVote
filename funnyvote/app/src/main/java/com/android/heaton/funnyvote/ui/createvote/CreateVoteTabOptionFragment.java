@@ -30,9 +30,6 @@ public class CreateVoteTabOptionFragment extends Fragment {
     private OptionCreateItemAdapter optionAdapter;
     private List<Option> optionList;
 
-    public CreateVoteTabOptionFragment(List<Option> optionList) {
-        this.optionList = optionList;
-    }
     public CreateVoteTabOptionFragment(){
         optionList = new ArrayList<>();
         for (long i = 0; i < 2; i++) {
@@ -43,8 +40,8 @@ public class CreateVoteTabOptionFragment extends Fragment {
         }
     }
 
-    public static CreateVoteTabOptionFragment newTabFragment(List<Option> optionList) {
-        return new CreateVoteTabOptionFragment(optionList);
+    public static CreateVoteTabOptionFragment newTabFragment() {
+        return new CreateVoteTabOptionFragment();
     }
 
     @Nullable
@@ -65,6 +62,9 @@ public class CreateVoteTabOptionFragment extends Fragment {
     private void initOptionsRecyclerView() {
         optionAdapter = new OptionCreateItemAdapter(optionList);
         ryOptions.setAdapter(optionAdapter);
+    }
+    public List<Option> getOptionList() {
+        return optionList;
     }
 
     @Override

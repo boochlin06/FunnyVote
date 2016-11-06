@@ -27,7 +27,6 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<VHVoteWallItem> {
 
     @Override
     public VHVoteWallItem onCreateViewHolder(final ViewGroup parent, int viewType) {
-
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_wall_item, parent, false);
         VHVoteWallItem vh = new VHVoteWallItem(v);
         return vh;
@@ -42,5 +41,6 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<VHVoteWallItem> {
     public int getItemCount() {
         return voteList.size();
     }
+
 
 }

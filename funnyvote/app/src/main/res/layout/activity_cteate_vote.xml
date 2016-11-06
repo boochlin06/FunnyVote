@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:CircleProgressView="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include
-        android:id="@+id/create_vote_toolbar"
-        layout="@layout/include_toolbar" />
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/main_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/color_primary"
+        android:minHeight="40dp"
+        android:titleTextColor="@color/md_blue_50" />
 
     <TextView
         android:id="@+id/txtTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/create_vote_toolbar"
+        android:layout_below="@id/main_toolbar"
         android:layout_gravity="center"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="12dp"
@@ -29,28 +34,54 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="12dp"
         android:layout_marginRight="12dp"
+        android:layout_below="@id/txtTitle"
         android:fontFamily="sans-serif-light"
         android:hint="@string/create_vote_title_hint"
         android:textSize="16sp" />
     <ImageView
+        android:id="@+id/imgMain"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/edtTitle"
         android:src="@drawable/ic_add_circle_outline_24dp"/>
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/vpSubArea"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
 
     <android.support.design.widget.TabLayout
         android:id="@+id/tabLayoutCreateVote"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_alignParentBottom="true"
         android:background="@color/md_blue_300"
         android:minHeight="36dp"
         app:tabIndicatorColor="@color/md_blue_100"
         app:tabIndicatorHeight="4dp"
         app:tabSelectedTextColor="?android:attr/textColorPrimaryInverse" />
-</LinearLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vpSubArea"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/imgMain"
+        android:layout_above="@id/tabLayoutCreateVote"
+        android:layout_weight="1"/>
+    <at.grabner.circleprogress.CircleProgressView
+        android:id="@+id/circleLoad"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        CircleProgressView:cpv_autoTextSize="true"
+        CircleProgressView:cpv_barColor="@color/primary"
+        CircleProgressView:cpv_barWidth="25dp"
+        CircleProgressView:cpv_innerContourSize="0dp"
+        CircleProgressView:cpv_outerContourSize="2dp"
+        CircleProgressView:cpv_rimColor="@color/primary_light"
+        CircleProgressView:cpv_rimWidth="25dp"
+        CircleProgressView:cpv_seekMode="false"
+        CircleProgressView:cpv_spinColor="@color/primary"
+        CircleProgressView:cpv_textColor="@color/primary_dark"
+        CircleProgressView:cpv_textScale="1"
+        CircleProgressView:cpv_unitColor="@color/primary_light"
+        CircleProgressView:cpv_unitPosition="right_top" />
+</RelativeLayout>

@@ -16,6 +16,7 @@ public class DataLoader {
     private VoteDataDao voteDataDao;
     private OptionDao optionDao;
     private PromotionDao promotionDao;
+    private UserDao userDao;
     private Context context;
 
     public DataLoader(Context context) {
@@ -25,6 +26,8 @@ public class DataLoader {
                 .getDaoSession().getOptionDao();
         promotionDao = ((FunnyVoteApplication) (context.getApplicationContext()))
                 .getDaoSession().getPromotionDao();
+        userDao = ((FunnyVoteApplication) (context.getApplicationContext()))
+                .getDaoSession().getUserDao();
         this.context = context;
     }
 
@@ -33,6 +36,22 @@ public class DataLoader {
             sInstance = new DataLoader(context);
         }
         return sInstance;
+    }
+
+    public VoteDataDao getVoteDataDao() {
+        return voteDataDao;
+    }
+
+    public OptionDao getOptionDao() {
+        return optionDao;
+    }
+
+    public PromotionDao getPromotionDao() {
+        return promotionDao;
+    }
+
+    public UserDao getUserDao() {
+        return userDao;
     }
 
     public List<Option> loadAllOption() {
@@ -355,7 +374,7 @@ public class DataLoader {
         List<Promotion> promotions = new ArrayList<>();
         for (int i = 0; i < limit; i++) {
             Promotion promotion = new Promotion();
-            promotion.setImageURL(imageURL[i%imageURL.length]);
+            promotion.setImageURL(imageURL[i % imageURL.length]);
             promotion.setActionURL("https://vinta.ws/booch/?p=226");
             promotion.setTitle("title:" + i);
             promotions.add(promotion);
@@ -375,13 +394,22 @@ public class DataLoader {
     }
 
     public List<VoteData> queryHotVotes(int limit) {
+        // TODO : SECURITY AND HOT CLASS
         return voteDataDao.queryBuilder().limit(limit).list();
     }
 
-    public List<Option> queryOptionsByVoteId(String voteCode) {
+    public List<VoteData> queryNewVotes(int limit) {
+        // TODO: SECURITY HOT AND TIME
+        return voteDataDao.queryBuilder().orderDesc(VoteDataDao.Properties.StartTime).orderDesc().list();
+    }
+
+    public List<Option> queryOptionsByVoteCode(String voteCode) {
         return optionDao.queryBuilder().where(OptionDao.Properties.VoteCode.eq(voteCode)).list();
     }
 
+    public List<Option> queryOptionsByVoteCode(String voteCode , int limit) {
+        return optionDao.queryBuilder().where(OptionDao.Properties.VoteCode.eq(voteCode)).limit(limit).list();
+    }
     public VoteData queryVoteDataById(String code) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(code)).list().get(0);
     }

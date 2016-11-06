@@ -26,7 +26,9 @@ public class UserDao extends AbstractDao<User, Long> {
         public final static Property UserName = new Property(1, String.class, "userName", false, "USER_NAME");
         public final static Property Email = new Property(2, String.class, "email", false, "EMAIL");
         public final static Property UserID = new Property(3, String.class, "userID", false, "USER_ID");
-        public final static Property Type = new Property(4, String.class, "type", false, "TYPE");
+        public final static Property UserCode = new Property(4, String.class, "userCode", false, "USER_CODE");
+        public final static Property UserIcon = new Property(5, String.class, "userIcon", false, "USER_ICON");
+        public final static Property Type = new Property(6, String.class, "type", false, "TYPE");
     }
 
 
@@ -46,7 +48,9 @@ public class UserDao extends AbstractDao<User, Long> {
                 "\"USER_NAME\" TEXT," + // 1: userName
                 "\"EMAIL\" TEXT," + // 2: email
                 "\"USER_ID\" TEXT," + // 3: userID
-                "\"TYPE\" TEXT);"); // 4: type
+                "\"USER_CODE\" TEXT," + // 4: userCode
+                "\"USER_ICON\" TEXT," + // 5: userIcon
+                "\"TYPE\" TEXT);"); // 6: type
     }
 
     /** Drops the underlying database table. */
@@ -79,9 +83,19 @@ public class UserDao extends AbstractDao<User, Long> {
             stmt.bindString(4, userID);
         }
  
+        String userCode = entity.getUserCode();
+        if (userCode != null) {
+            stmt.bindString(5, userCode);
+        }
+ 
+        String userIcon = entity.getUserIcon();
+        if (userIcon != null) {
+            stmt.bindString(6, userIcon);
+        }
+ 
         String type = entity.getType();
         if (type != null) {
-            stmt.bindString(5, type);
+            stmt.bindString(7, type);
         }
     }
 
@@ -109,9 +123,19 @@ public class UserDao extends AbstractDao<User, Long> {
             stmt.bindString(4, userID);
         }
  
+        String userCode = entity.getUserCode();
+        if (userCode != null) {
+            stmt.bindString(5, userCode);
+        }
+ 
+        String userIcon = entity.getUserIcon();
+        if (userIcon != null) {
+            stmt.bindString(6, userIcon);
+        }
+ 
         String type = entity.getType();
         if (type != null) {
-            stmt.bindString(5, type);
+            stmt.bindString(7, type);
         }
     }
 
@@ -127,7 +151,9 @@ public class UserDao extends AbstractDao<User, Long> {
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // userName
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // email
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // userID
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4) // type
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // userCode
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // userIcon
+            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6) // type
         );
         return entity;
     }
@@ -138,7 +164,9 @@ public class UserDao extends AbstractDao<User, Long> {
         entity.setUserName(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
         entity.setEmail(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
         entity.setUserID(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setType(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setUserCode(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setUserIcon(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
+        entity.setType(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
      }
     
     @Override

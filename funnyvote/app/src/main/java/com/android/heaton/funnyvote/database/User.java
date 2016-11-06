@@ -22,16 +22,20 @@ public class User {
     private String email;
 
     private String userID;
+    private String userCode;
+    private String userIcon;
     
     private String type;
 
-    @Generated(hash = 1115745234)
+    @Generated(hash = 1931231789)
     public User(Long id, String userName, String email, String userID,
-            String type) {
+            String userCode, String userIcon, String type) {
         this.id = id;
         this.userName = userName;
         this.email = email;
         this.userID = userID;
+        this.userCode = userCode;
+        this.userIcon = userIcon;
         this.type = type;
     }
 
@@ -77,5 +81,21 @@ public class User {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getUserCode() {
+        return this.userCode;
+    }
+
+    public void setUserCode(String userCode) {
+        this.userCode = userCode;
+    }
+
+    public String getUserIcon() {
+        return this.userIcon;
+    }
+
+    public void setUserIcon(String userIcon) {
+        this.userIcon = userIcon;
     }
 }

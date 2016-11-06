@@ -16,6 +16,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,9 +30,11 @@ import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
-import com.android.heaton.funnyvote.database.Option;
-import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.database.DataLoader;
+import com.android.heaton.funnyvote.database.Option;
+import com.android.heaton.funnyvote.database.OptionDao;
+import com.android.heaton.funnyvote.database.VoteData;
+import com.android.heaton.funnyvote.database.VoteDataDao;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.bumptech.glide.Glide;
@@ -149,8 +152,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        String voteId = getIntent().getExtras().getString(VHVoteWallItem.BUNDLE_KEY_VOTE_ID);
-        data.setVoteCode(voteId);
+        String voteCode = getIntent().getExtras().getString(VHVoteWallItem.BUNDLE_KEY_VOTE_CODE);
+        data.setVoteCode(voteCode);
 
         circleLoad.setText(getString(R.string.vote_detail_circle_loading));
         circleLoad.setTextMode(TextMode.TEXT);
@@ -177,7 +180,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 famOther.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
             }
         });
-        new LoadVoteDataTask(voteId).execute();
+        new LoadVoteDataTask(voteCode).execute();
     }
 
     private void setUpViews() {
@@ -193,7 +196,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 R.drawable.ic_star_border_24dp);
         Glide.with(this)
                 .load(data.getVoteImage())
-                .override(320,150)
+                .override(320, 150)
                 .fitCenter()
                 .crossFade()
                 .into(imgMain);
@@ -222,8 +225,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         }
     }
 
-    private void setUpOptionAdapter(List<Option> optionData) {
-        optionItemAdapter = new OptionItemAdapter(optionType, optionData, data);
+    private void setUpOptionAdapter(List<Option> optionList) {
+        optionItemAdapter = new OptionItemAdapter(optionType, optionList, data);
         ryOptionArea.setAdapter(optionItemAdapter);
     }
 
@@ -253,7 +256,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         if (txtTitle.getMaxLines() == TITLE_EXTEND_MAX_LINE) {
             txtTitle.setMaxLines(30);
             imgTitleExtend.setImageResource(R.drawable.ic_expand_less_24dp);
-        } else if (txtTitle.getMaxLines() == 30){
+        } else if (txtTitle.getMaxLines() == 30) {
             txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
             imgTitleExtend.setImageResource(R.drawable.ic_expand_more_24dp);
         }
@@ -269,7 +272,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
         }
-        // TODO: Update to db.
+        DataLoader.getInstance(this).getVoteDataDao().insertOrReplace(data);
     }
 
     @OnClick(R.id.relBarShare)
@@ -506,6 +509,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     public void onOptionChoice(EventBusController.OptionChoiceEvent event) {
         long id = event.Id;
         if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_CHOICED)) {
+            Log.d("test","onOptionChoice message:"+event.message+" id:"+id);
 
             if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
                 return;
@@ -641,34 +645,57 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         protected Void doInBackground(Void... params) {
             // todo:Update to db.
             data.setIsPolled(true);
-            //optionList.addAll(optionItemAdapter.getNewOptionList());
-            //optionItemAdapter.getNewOptionList().clear();
-            for (int i = 0; i < optionItemAdapter.getChoiceList().size(); i++) {
-                long targetId = optionItemAdapter.getChoiceList().get(i);
-                Option option = null;
-                for (int j = 0; j < optionList.size(); j++) {
-                    if (optionList.get(j).getId() == targetId) {
-                        option = optionList.get(j);
+            for (int i = 0; i < optionList.size(); i++) {
+                Option option = optionList.get(i);
+                for (int j = 0; j < optionItemAdapter.getChoiceList().size(); j++) {
+                    Log.d("test", "choice option:id:" + optionItemAdapter.getChoiceList().get(j)
+                            +" nor id:"+option.getId());
+                    if (optionItemAdapter.getChoiceList().get(j).longValue() == option.getId().longValue()) {
+                        Log.d("test", "1 choice option:id:" + optionItemAdapter.getChoiceList().get(j));
+                        option.setCount(option.getCount() + 1);
+                        option.setIsUserChoiced(true);
+                        data.setOptionUserChoiceTitle(option.getTitle());
+                        data.setOptionUserChoiceCount(option.getCount());
+                        data.setOptionUserChoiceCode(option.getId() > 0 ? option.getCode() :
+                                data.getVoteCode() + "_" + (optionList.size() + option.getId()));
+                        option.dumpDetail();
                         break;
                     }
                 }
-                option.setCount(option.getCount() + 1);
+                if (option.getId() < 0) {
+                    // add new option api to sync db
+                    Log.d("test", "new option:id:" + option.getId());
+                    option.setCode(data.getVoteCode() + "_" + (optionList.size() + option.getId()));
+                    option.setVoteCode(data.getVoteCode());
+                    option.setId(null);
+                }
                 if (option.getCount() > data.getOptionTopCount()) {
                     data.setOptionTopCode(option.getCode());
                     data.setOptionTopCount(option.getCount());
                     data.setOptionTopTitle(option.getTitle());
                 }
-                // if id < 0 , this option is user add new , it need make id to be null
-                // then insert to db.
-                if (option.getId() < 0) {
-                    option.setId(null);
+                if (i == 0) {
+                    data.setOption1Title(option.getTitle());
+                    data.setOption1Code(option.getCode());
+                    data.setOption1Count(option.getCount());
+                } else if (i == 1) {
+                    data.setOption2Code(option.getCode());
+                    data.setOption2Count(option.getCount());
+                    data.setOption2Title(option.getTitle());
                 }
-
+                option.dumpDetail();
             }
-            // call option insert or replace
             data.setPollCount(data.getPollCount() + optionItemAdapter.getChoiceList().size());
             optionItemAdapter.setVoteData(data);
-            // call vote data update.
+
+            VoteDataDao voteDataDao = DataLoader.getInstance(context).getVoteDataDao();
+            voteDataDao.insertOrReplace(data);
+            OptionDao optionDao = DataLoader.getInstance(context).getOptionDao();
+            optionDao.insertOrReplaceInTx(optionList);
+            optionList = data.getOptions();
+            EventBus.getDefault().post(new EventBusController
+                    .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
+
             try {
                 Thread.currentThread().sleep(500);
             } catch (InterruptedException e) {

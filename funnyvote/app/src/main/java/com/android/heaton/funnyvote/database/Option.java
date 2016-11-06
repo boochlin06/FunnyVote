@@ -1,5 +1,7 @@
 package com.android.heaton.funnyvote.database;
 
+import android.util.Log;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
@@ -26,6 +28,11 @@ public class Option {
         this.count = count;
         this.code = code;
         this.isUserChoiced = isUserChoiced;
+    }
+
+    public void dumpDetail() {
+        Log.d("test", "Id:" + id + " voteCode:" + voteCode + " title:" + title + " count:"
+                + count + " code:" + code + " userchoice:" + isUserChoiced);
     }
 
     @Generated(hash = 104107376)

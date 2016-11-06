@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.android.heaton.funnyvote.FunnyVoteApplication;
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.User;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -32,7 +33,6 @@ import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Created by chiu_mac on 2016/10/28.
@@ -125,15 +124,15 @@ public class AccountFragment extends android.support.v4.app.Fragment
         };
 
         //Views
-        mFBLoginBtn = (Button)view.findViewById(R.id.fb_login_button);
+        mFBLoginBtn = (Button) view.findViewById(R.id.fb_login_button);
         mFBLoginBtn.setOnClickListener(this);
-        mNameTextView = (TextView)view.findViewById(R.id.profile_name);
-        mPicImageView = (ImageView)view.findViewById(R.id.profile_picture);
+        mNameTextView = (TextView) view.findViewById(R.id.profile_name);
+        mPicImageView = (ImageView) view.findViewById(R.id.profile_picture);
         mGoogleSignInBtn = view.findViewById(R.id.google_sign_in_button);
         mGoogleSignInBtn.setOnClickListener(this);
-        mSignoutBtn = (Button)view.findViewById(R.id.sign_out_button);
+        mSignoutBtn = (Button) view.findViewById(R.id.sign_out_button);
         mSignoutBtn.setOnClickListener(this);
-        mLoadingProgressBar = (ProgressBar)view.findViewById(R.id.loading_progress_bar);
+        mLoadingProgressBar = (ProgressBar) view.findViewById(R.id.loading_progress_bar);
 
         updateUI();
 
@@ -183,7 +182,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 String googleID = googleAccount.getId();
                 String email = googleAccount.getEmail();
                 Uri picLink = googleAccount.getPhotoUrl();
-                User user = new User(null, name, email, googleID, User.TYPE_GOOGLE);
+                User user = new User(null, name, email, googleID, email, picLink.toString(), User.TYPE_GOOGLE);
                 saveUserProfile(user);
                 Log.d(TAG, "name:" + name);
                 Log.d(TAG, "google ID:" + googleID);
@@ -199,7 +198,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     private void getFacebookProfile() {
         Bundle params = new Bundle();
-        params.putString("fields","email,name,picture.type(large)");
+        params.putString("fields", "email,name,picture.type(large)");
         new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
                 "/me",
@@ -216,15 +215,16 @@ public class AccountFragment extends android.support.v4.app.Fragment
                             if (profile.has("email")) {
                                 email = profile.getString("email");
                             }
-                            User user = new User(null, name, email, facebookID,User.TYPE_FACEBOOK);
-                            saveUserProfile(user);
                             //download user's profile picture
+                            String link = null;
                             if (profile.has("picture")) {
                                 JSONObject picture = profile.getJSONObject("picture");
-                                String link = picture.getJSONObject("data").getString("url");
+                                link = picture.getJSONObject("data").getString("url");
                                 URL url = new URL(link);
                                 new GetProfilePictureTask().execute(url);
                             }
+                            User user = new User(null, name, email, facebookID, email, link, User.TYPE_FACEBOOK);
+                            saveUserProfile(user);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (MalformedURLException e) {
@@ -246,7 +246,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
             spEditor.putString(FunnyVoteApplication.KEY_EMAIL, user.getEmail());
         }
         spEditor.commit();
-        //TODO: save user data to DB
+        DataLoader.getInstance(getContext()).getUserDao().insertOrReplace(user);
     }
 
     private void removeUserProfile() {
@@ -254,6 +254,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         userPref.edit().clear().commit();
         getContext().deleteFile(FunnyVoteApplication.PROFILE_PICTURE_FILE);
         updateUI();
+        DataLoader.getInstance(getContext()).getUserDao().deleteAll();
     }
 
     private void updateUI() {
@@ -355,7 +356,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         }
     }
 
-    class LoadProfilePictureTask extends  AsyncTask<String, Void, Bitmap> {
+    class LoadProfilePictureTask extends AsyncTask<String, Void, Bitmap> {
         @Override
         protected void onPreExecute() {
             showLoadingProgressBar();

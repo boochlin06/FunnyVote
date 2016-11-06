@@ -133,9 +133,9 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    return MainPageTabFragment.newInstance();
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_HOT);
                 case 1:
-                    return MainPageTabFragment.newInstance();
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_NEW);
             }
             return null;
         }

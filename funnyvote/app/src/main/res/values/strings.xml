@@ -29,7 +29,7 @@
     <string name="drawer_settings">Settings</string>
     <string name="drawer_account">Account</string>
     <string name="drawer_about">About</string>
-    <string name="drawer_invite_code">Invite Code</string>
+    <string name="drawer_search">Search</string>
 
     <!--Main page tab classification-->
     <string name="main_page_tab_hot">Hot</string>
@@ -57,10 +57,31 @@
     <string name="create_vote_tab_settings_name">Name:</string>
     <string name="create_vote_tab_settings_behavior">Behavior</string>
     <string name="create_vote_tab_settings_end_time">End time:</string>
-    <string name="create_vote_tab_settings_member_only">Member only:</string>
+    <string name="create_vote_tab_settings_security">Security:</string>
     <string name="create_vote_tab_settings_need_password">Need password:</string>
     <string name="create_vote_tab_settings_pre_result">View result before poll:</string>
     <string name="create_vote_tab_settings_password">Password:</string>
+
+    <string name="create_vote_tab_settings_public">Public</string>
+    <string name="create_vote_tab_settings_public_hint">Public:Vote show to all user.</string>
+    <string name="create_vote_tab_settings_private">Private</string>
+    <string name="create_vote_tab_settings_private_hint">Private:Vote only show to user that link to here.</string>
+    <string name="create_vote_create_successful">Create vote successful.</string>
+
+    <string name="create_vote_toast_less_than_2_option">Option number cant less than 2.</string>
+    <string name="create_vote_toast_endtime_more_than_current">Vote end time should over now.</string>
+
+    <string name="create_vote_dialog_error_title">Error</string>
+    <string name="create_vote_dialog_error_done">DONE</string>
+    <string name="create_vote_error_hint_fill_all">Please fill all option content.</string>
+    <string name="create_vote_error_hint_max_option_0">Max option cant be 0.</string>
+    <string name="create_vote_error_hint_min_option_0">Min option cant be 0.</string>
+    <string name="create_vote_error_hint_max_smaller_than_min">Max option number should more than min option number.</string>
+    <string name="create_vote_error_hint_max_smaller_than_total">Max option number should smaller than option count.</string>
+    <string name="create_vote_error_hint_title_empty">Vote title cant be empty.</string>
+    <string name="create_vote_error_hint_password_empty">Vote password cant be empty.</string>
+    <string name="create_vote_error_hint_endtime_more_than_now">Vote End time should over now.</string>
+
     <!--Vote detail activity-->
     <string name="vote_detail_toast_option_choice_hint" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
     <string name="vote_detail_toast_option_over_max" formatted="false">"Over the max option:%d votes."</string>

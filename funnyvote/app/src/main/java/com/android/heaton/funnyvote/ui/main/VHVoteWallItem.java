@@ -4,17 +4,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
+import com.android.heaton.funnyvote.database.DataLoader;
+import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 import com.bumptech.glide.Glide;
+
+import java.util.List;
+
+import javax.microedition.khronos.opengles.GL;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,7 +35,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     public static final int OPTION_TYPE_UNPOLL_2_MORE = 1;
     public static final int OPTION_TYPE_POLLED_TOP_2 = 2;
     public static final int OPTION_TYPE_POLLED_TOP_1 = 3;
-    public static String BUNDLE_KEY_VOTE_ID = "VOTE_ID";
+    public static String BUNDLE_KEY_VOTE_CODE = "VOTE_ID";
     public VoteData data;
     public View.OnClickListener MoveToVoteDetailOnClickListener = new View.OnClickListener() {
         @Override
@@ -104,7 +112,12 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
             imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
         } else {
-            // use GLIDE to load bitmap.
+            Glide.with(itemView.getContext())
+                    .load(data.getAuthorIcon())
+                    .override(36,36)
+                    .fitCenter()
+                    .crossFade()
+                    .into(imgAuthorIcon);
         }
 
         txtAuthorName.setText(data.getAuthorName());
@@ -131,7 +144,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         txtBarPollCount.setText(String.format(itemView.getContext()
                 .getString(R.string.Wall_item_bar_vote_count), data.getPollCount()));
         // Check option type.
-        if (data.getIsPolled()) {
+        if (data.getIsPolled() && data.getOptionUserChoiceCode() != null) {
             if (data.getOptionUserChoiceCode().equals(data.getOptionTopCode())) {
                 optionType = OPTION_TYPE_POLLED_TOP_1;
             } else {
@@ -237,7 +250,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         Intent intent = new Intent(context, VoteDetailContentActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         Bundle bundle = new Bundle();
-        bundle.putString(BUNDLE_KEY_VOTE_ID, data.getVoteCode());
+        bundle.putString(BUNDLE_KEY_VOTE_CODE, data.getVoteCode());
         intent.putExtras(bundle);
         context.startActivity(intent);
     }
@@ -247,7 +260,14 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         data.setIsFavorite(!data.getIsFavorite());
         imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
                 R.drawable.ic_star_border_24dp);
-        // TODO: Update to db.
+        if (data.getIsFavorite()) {
+            Toast.makeText(itemView.getContext()
+                    , R.string.vote_detail_toast_add_favorite, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(itemView.getContext()
+                    , R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
+        }
+        DataLoader.getInstance(itemView.getContext()).getVoteDataDao().insertOrReplace(data);
     }
 
     @OnClick(R.id.relBarShare)
@@ -280,6 +300,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                         setLayout();
                     }
                 }, 500);
+                new Thread(new SyncDBRunnable(data,0)).start();
             } else if (optionId == R.id.btnSecondOption) {
                 data.setIsPolled(true);
                 data.setOptionUserChoiceTitle(data.getOption2Title());
@@ -297,16 +318,34 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                         setLayout();
                     }
                 }, 500);
+                new Thread(new SyncDBRunnable(data,1)).start();
             } else if (optionId == R.id.btnThirdOption) {
                 startActivityToVoteDetail(optionButton.getContext());
             }
-
-            // TODO: update to db.
         } else if (OPTION_TYPE_POLLED_TOP_1 == optionType) {
             startActivityToVoteDetail(optionButton.getContext());
         } else if (OPTION_TYPE_POLLED_TOP_2 == optionType) {
             startActivityToVoteDetail(optionButton.getContext());
         }
         return true;
+    }
+    private class SyncDBRunnable implements Runnable {
+
+        private VoteData data;
+        private int clickPosition;
+        public SyncDBRunnable(VoteData data , int clickPosition) {
+            this.data = data;
+            this.clickPosition = clickPosition;
+        }
+        @Override
+        public void run() {
+            DataLoader.getInstance(itemView.getContext()).getVoteDataDao().insertOrReplace(data);
+            List<Option> optionList = DataLoader.getInstance(itemView.getContext())
+                    .queryOptionsByVoteCode(data.getVoteCode(),2);
+            Option option = optionList.get(clickPosition);
+            option.setCount(option.getCount()+1);
+            DataLoader.getInstance(itemView.getContext()).getOptionDao().insertOrReplace(option);
+            Log.d("test"," Quick vote successful"+data.getTitle());
+        }
     }
 }
