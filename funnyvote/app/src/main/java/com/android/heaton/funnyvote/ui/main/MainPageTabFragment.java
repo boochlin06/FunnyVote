@@ -8,17 +8,22 @@ package com.android.heaton.funnyvote.ui.main;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
+import com.android.heaton.funnyvote.ui.HidingScrollListener;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.greenrobot.eventbus.EventBus;
@@ -34,17 +39,20 @@ public class MainPageTabFragment extends Fragment {
     public static final String TAB_NEW = "NEW";
     public RecyclerView ryMain;
     private RelativeLayout RootView;
-    private FloatingActionButton fabTop;
     private String tab = TAB_HOT;
     private List<VoteData> voteDataList;
-    private ScaleInAnimationAdapter adapter;
+    private VoteWallItemAdapter adapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private FloatingActionButton fabTop;
 
-    public static Fragment newInstance(String tab) {
+    public static MainPageTabFragment newInstance(String tab) {
         return new MainPageTabFragment(tab);
     }
+
     public MainPageTabFragment(String tab) {
         this.tab = tab;
     }
+
     public MainPageTabFragment() {
         this.tab = TAB_HOT;
     }
@@ -55,15 +63,20 @@ public class MainPageTabFragment extends Fragment {
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
         ryMain = (RecyclerView) RootView.findViewById(R.id.ryMainPage);
         fabTop = (FloatingActionButton) RootView.findViewById(R.id.fabTop);
-        fabTop.setVisibility(View.GONE);
-        fabTop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ryMain.scrollToPosition(0);
-            }
-        });
+        swipeRefreshLayout = (SwipeRefreshLayout) RootView.findViewById(R.id.swipeLayout);
+        swipeRefreshLayout.setOnRefreshListener(new WallItemOnRefreshListener());
         initRecyclerView();
         return RootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        LinearLayoutManager manager = (LinearLayoutManager)ryMain.getLayoutManager();
+        int position = manager.findFirstVisibleItemPosition();
+        if (position == 0) {
+            refreshData();
+        }
     }
 
     @Override
@@ -74,18 +87,49 @@ public class MainPageTabFragment extends Fragment {
 
     private void initRecyclerView() {
         if (tab.equals(TAB_HOT)) {
-            Log.d("test","wall item : hot");
             voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(50);
-            adapter = new ScaleInAnimationAdapter(new VoteWallItemAdapter(getActivity()
-                    , voteDataList));
+            adapter = new VoteWallItemAdapter(getActivity()
+                    , voteDataList);
         } else {
-            Log.d("test","wall item : new");
             voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(50);
-            adapter = new ScaleInAnimationAdapter(new VoteWallItemAdapter(getActivity()
-                    , voteDataList));
+            adapter = new VoteWallItemAdapter(getActivity()
+                    , voteDataList);
         }
-        adapter.setDuration(800);
+        ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
+        scaleInAnimationAdapter.setDuration(1000);
         ryMain.setAdapter(adapter);
+        ryMain.addOnScrollListener(new HidingScrollListener() {
+            @Override
+            public void onHide() {
+                fabTop.animate().translationY(
+                        fabTop.getHeight() + 50)
+                        .setInterpolator(new AccelerateInterpolator(2));
+            }
+
+            @Override
+            public void onShow() {
+                this.resetScrollDistance();
+                fabTop.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
+            }
+        });
+        fabTop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                LinearLayoutManager manager = (LinearLayoutManager)ryMain.getLayoutManager();
+                int position = manager.findFirstVisibleItemPosition();
+                if (position > 5) {
+                    ryMain.scrollToPosition(5);
+                }
+                ryMain.smoothScrollToPosition(0);
+                ryMain.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                       EventBus.getDefault().post(new EventBusController.UIControlEvent(
+                               EventBusController.UIControlEvent.SCROLL_TO_TOP));
+                    }
+                },200);
+            }
+        });
     }
 
     @Override
@@ -104,11 +148,10 @@ public class MainPageTabFragment extends Fragment {
     public void onVoteControl(EventBusController.VoteDataControlEvent event) {
         if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT)) {
             VoteData data = event.data;
-            for (int i = 0; i < voteDataList.size() ; i++) {
+            for (int i = 0; i < voteDataList.size(); i++) {
                 if (data.getVoteCode().equals(voteDataList.get(i).getVoteCode())) {
-                    voteDataList.set(i,data);
+                    voteDataList.set(i, data);
                     adapter.notifyItemChanged(i);
-                    Log.d("test","sync i:"+i);
                     break;
                 }
             }
@@ -121,4 +164,22 @@ public class MainPageTabFragment extends Fragment {
         super.onDestroyView();
     }
 
+    private class WallItemOnRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
+
+        @Override
+        public void onRefresh() {
+            refreshData();
+            swipeRefreshLayout.setRefreshing(false);
+        }
+    }
+    private void refreshData() {
+        if (tab.equals(TAB_HOT)) {
+            voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(50);
+        } else {
+            voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(50);
+        }
+        Log.d("test", "Refresh wall item :" + tab);
+        adapter.setVoteList(voteDataList);
+        adapter.notifyDataSetChanged();
+    }
 }

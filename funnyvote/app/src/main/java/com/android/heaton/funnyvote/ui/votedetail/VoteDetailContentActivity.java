@@ -36,6 +36,7 @@ import com.android.heaton.funnyvote.database.OptionDao;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.database.VoteDataDao;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
+import com.android.heaton.funnyvote.ui.HidingScrollListener;
 import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.bumptech.glide.Glide;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -62,7 +63,6 @@ import butterknife.OnClick;
 
 public class VoteDetailContentActivity extends AppCompatActivity {
 
-    private static final int FAB_THRESHOD = 100;
     private static final int TITLE_EXTEND_MAX_LINE = 3;
     @BindView(R.id.imgAuthorIcon)
     ImageView imgAuthorIcon;
@@ -165,7 +165,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         setUpSubmit();
         setUpOptionAdapter(new ArrayList<Option>());
 
-        ryOptionArea.addOnScrollListener(new HidingScrollListener(FAB_THRESHOD) {
+        ryOptionArea.addOnScrollListener(new HidingScrollListener() {
             @Override
             public void onHide() {
                 famOther.collapse();
@@ -703,53 +703,5 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             }
             return null;
         }
-    }
-
-    private abstract class HidingScrollListener extends RecyclerView.OnScrollListener {
-
-        public boolean mControlsVisible = true;
-        private int HIDE_THRESHOLD = 50;
-        private int mScrolledDistance = 0;
-
-        public HidingScrollListener(int threshold) {
-            this.HIDE_THRESHOLD = threshold;
-        }
-
-        private HidingScrollListener() {
-        }
-
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
-
-            int firstVisibleItem = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
-            if (firstVisibleItem == 0) {
-                if (!mControlsVisible) {
-                    onShow();
-                    mControlsVisible = true;
-                }
-            } else {
-                if (mScrolledDistance > HIDE_THRESHOLD && mControlsVisible) {
-                    onHide();
-                    mControlsVisible = false;
-                    mScrolledDistance = 0;
-                } else if (mScrolledDistance < -HIDE_THRESHOLD && !mControlsVisible) {
-                    onShow();
-                    mControlsVisible = true;
-                    mScrolledDistance = 0;
-                }
-            }
-            if ((mControlsVisible && dy > 0) || (!mControlsVisible && dy < 0)) {
-                mScrolledDistance += dy;
-            }
-        }
-
-        public void resetScrollDistance() {
-            mControlsVisible = true;
-            mScrolledDistance = 0;
-        }
-
-        public abstract void onHide();
-
-        public abstract void onShow();
     }
 }

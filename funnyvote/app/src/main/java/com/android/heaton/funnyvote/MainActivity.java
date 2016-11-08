@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -57,33 +59,60 @@ public class MainActivity extends AppCompatActivity {
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         if (mCurrentPage != menuItem.getItemId()) {
                             mCurrentPage = menuItem.getItemId();
-                            switch (menuItem.getItemId()) {
-                                case R.id.navigation_item_main:
-                                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new MainPageFragment()).commit();
-                                    toolbar.setTitle(getString(R.string.drawer_home));
-                                    break;
-                                case R.id.navigation_item_create_vote:
-                                    startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
-                                    break;
-                                case R.id.navigation_item_list_history:
-                                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new HistoryFragment()).commit();
-                                    toolbar.setTitle(R.string.drawer_history);
-                                    break;
-                                case R.id.navigation_item_list_favorite:
-                                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new FavoriteFragment()).commit();
-                                    toolbar.setTitle(R.string.drawer_favorite);
-                                    break;
-                                case R.id.navigation_account:
-                                    getSupportFragmentManager().beginTransaction().replace(R.id.frame_content, new AccountFragment()).commit();
-                                    toolbar.setTitle(R.string.drawer_account);
-                                    break;
-                            }
+                            switchFragment(menuItem);
                             menuItem.setChecked(true);
                         }
                         drawerLayout.closeDrawers();
                         return true;
                     }
                 });
+    }
+
+    private void switchFragment(MenuItem menuItem) {
+        final int menuId = menuItem.getItemId();
+        drawerLayout.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.setCustomAnimations(R.anim.fragment_enter_from_left, 0);
+                switch (menuId) {
+                    case R.id.navigation_item_main:
+                        ft.replace(R.id.frame_content, new MainPageFragment()).commit();
+                        toolbar.setTitle(getString(R.string.drawer_home));
+                        break;
+                    case R.id.navigation_item_create_vote:
+                        startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
+                        break;
+                    case R.id.navigation_item_list_history:
+                        ft.replace(R.id.frame_content, new HistoryFragment()).commit();
+                        toolbar.setTitle(R.string.drawer_history);
+                        break;
+                    case R.id.navigation_item_list_favorite:
+                        ft.replace(R.id.frame_content, new FavoriteFragment()).commit();
+                        toolbar.setTitle(R.string.drawer_favorite);
+                        break;
+                    case R.id.navigation_account:
+                        ft.replace(R.id.frame_content, new AccountFragment()).commit();
+                        toolbar.setTitle(R.string.drawer_account);
+                        break;
+                }
+            }
+        }, 200);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+
+        }
+        if (mCurrentPage != navigationView.getMenu().getItem(0).getItemId()) {
+            mCurrentPage = navigationView.getMenu().getItem(0).getItemId();
+            navigationView.getMenu().getItem(0).setChecked(true);
+            switchFragment(navigationView.getMenu().getItem(0));
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override

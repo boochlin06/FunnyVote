@@ -24,6 +24,9 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<VHVoteWallItem> {
         this.context = context;
         voteList = datas;
     }
+    public void setVoteList(List<VoteData> voteList) {
+        this.voteList = voteList;
+    }
 
     @Override
     public VHVoteWallItem onCreateViewHolder(final ViewGroup parent, int viewType) {

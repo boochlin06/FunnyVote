@@ -4,12 +4,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +20,13 @@ import android.widget.ImageView;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Promotion;
+import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.bumptech.glide.Glide;
 import com.viewpagerindicator.CirclePageIndicator;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +40,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
     private ViewPager vpHeader;
     private List<View> headerViewList;
+    private AppBarLayout appBarMain;
 
     @Nullable
     @Override
@@ -43,7 +51,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         vpHeader = (ViewPager) view.findViewById(R.id.vpHeader);
         vpHeader.setAdapter(new HeaderAdapter(headerViewList));
         vpHeader.setCurrentItem(0);
-
+        appBarMain = (AppBarLayout) view.findViewById(R.id.appBarMain);
         ViewPager vpMainPage = (ViewPager) view.findViewById(R.id.vpMainPage);
         vpMainPage.setAdapter(new TabsAdapter(getChildFragmentManager()));
 
@@ -54,6 +62,27 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         titleIndicator.setViewPager(vpHeader);
 
         return view;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUIChange(EventBusController.UIControlEvent event) {
+        Log.d("test", "message:" + event.message);
+        if (event.message.equals(EventBusController.UIControlEvent.SCROLL_TO_TOP)) {
+            Log.d("test", "message:" + event.message);
+            appBarMain.setExpanded(true);
+        }
     }
 
     @Override
@@ -71,7 +100,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             // TODO: only for test , use long as image id.
             Glide.with(this)
                     .load(promotionList.get(i).getImageURL())
-                    .override(320,180)
+                    .override(320, 180)
                     .fitCenter()
                     .crossFade()
                     .into(promotion);

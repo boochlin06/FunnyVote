@@ -6,18 +6,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/ryMainPage"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-        tools:listitem="@layout/card_view_wall_item" />
+        android:orientation="vertical">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/ryMainPage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            tools:listitem="@layout/card_view_wall_item" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <com.getbase.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="36dp"
         fab:fab_colorNormal="@color/md_red_50"
         fab:fab_colorPressed="@color/md_red_100"
         fab:fab_icon="@drawable/ic_vertical_align_top_24dp"

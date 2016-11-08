@@ -15,6 +15,14 @@ public class EventBusController {
             this.message = message;
         }
     }
+    public static class UIControlEvent {
+        public static final String SCROLL_TO_TOP = "SCROLL_TO_TOP";
+        public final String message;
+
+        public UIControlEvent(String message) {
+            this.message = message;
+        }
+    }
 
     public final static class OptionChoiceEvent {
         public static final String OPTION_CHOICED = "OPTION_CHOICED";
