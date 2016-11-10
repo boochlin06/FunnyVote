@@ -56,6 +56,13 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
+        <provider android:authorities="com.facebook.app.FacebookContentProvider862171800585725"
+            android:name="com.facebook.FacebookContentProvider"
+            android:exported="true"/>
+        <activity android:name=".ui.ShareDialogActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/MDDialog">
+        </activity>
     </application>
 
 </manifest>
