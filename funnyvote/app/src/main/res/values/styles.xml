@@ -31,4 +31,8 @@
         <item name="colorControlHighlight">@color/primary_dark</item>
         <item name="colorButtonNormal">@color/primary_light</item>
     </style>
+
+    <style name="MDDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="windowNoTitle">true</item>
+    </style>
 </resources>

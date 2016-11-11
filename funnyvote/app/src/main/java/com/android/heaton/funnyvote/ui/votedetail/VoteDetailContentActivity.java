@@ -37,6 +37,7 @@ import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.database.VoteDataDao;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.HidingScrollListener;
+import com.android.heaton.funnyvote.ui.ShareDialogActivity;
 import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.bumptech.glide.Glide;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -126,13 +127,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private int sortType = 0;
 
     public static void sendShareIntent(Context context, VoteData data) {
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.setType("text/plain");
-        sendIntent.putExtra(Intent.EXTRA_TEXT, String.format(
-                context.getString(R.string.vote_share_to_other_app_default_message), data.getTitle()));
-        context.startActivity(Intent.createChooser(sendIntent
-                , context.getResources().getText(R.string.vote_detail_menu_share_to)));
+        Intent shareDialog = new Intent(context, ShareDialogActivity.class);
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_TITLE, data.getTitle());
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_IMG_URL, data.getVoteImage());
+        //shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, );
+        context.startActivity(shareDialog);
     }
 
     @Override
@@ -158,7 +157,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         circleLoad.setText(getString(R.string.vote_detail_circle_loading));
         circleLoad.setTextMode(TextMode.TEXT);
         circleLoad.setShowTextWhileSpinning(true);
-        circleLoad.setFillCircleColor(getColor(R.color.md_amber_50));
+        circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
 
         checkCurrentOptionType();
         setUpViews();

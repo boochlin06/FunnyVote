@@ -22,8 +22,6 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
-import javax.microedition.khronos.opengles.GL;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
