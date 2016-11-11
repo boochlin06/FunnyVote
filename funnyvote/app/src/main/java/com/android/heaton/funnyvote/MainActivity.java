@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.setCustomAnimations(R.anim.fragment_enter_from_left, 0);
+                toolbar.setBackgroundColor(getColor(R.color.color_primary));
                 switch (menuId) {
                     case R.id.navigation_item_main:
                         ft.replace(R.id.frame_content, new MainPageFragment()).commit();
@@ -93,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.navigation_account:
                         ft.replace(R.id.frame_content, new AccountFragment()).commit();
+                        toolbar.setBackgroundColor(getColor(R.color.md_light_blue_100));
                         toolbar.setTitle(R.string.drawer_account);
                         break;
                 }

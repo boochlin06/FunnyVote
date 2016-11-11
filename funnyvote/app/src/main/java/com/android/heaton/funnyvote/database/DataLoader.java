@@ -122,6 +122,7 @@ public class DataLoader {
             data.setAuthorName("Heaton mock" + i);
             data.setAuthorCode("Author_" + i);
             data.setAuthorIcon("");
+            data.setVoteLink("https://vinta.ws/booch/");
 
             data.setIsFavorite(false);
             data.setIsNeedPassword(false);
@@ -407,11 +408,24 @@ public class DataLoader {
         return optionDao.queryBuilder().where(OptionDao.Properties.VoteCode.eq(voteCode)).list();
     }
 
-    public List<Option> queryOptionsByVoteCode(String voteCode , int limit) {
+    public List<Option> queryOptionsByVoteCode(String voteCode, int limit) {
         return optionDao.queryBuilder().where(OptionDao.Properties.VoteCode.eq(voteCode)).limit(limit).list();
     }
+
     public VoteData queryVoteDataById(String code) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(code)).list().get(0);
+    }
+
+    public User getUser() {
+        List<User> userList = userDao.loadAll();
+        return userList.size() == 0 ? null : userList.get(0);
+    }
+
+    public void initFirstUser() {
+        User user = new User();
+        user.setUserCode(Long.toString(System.currentTimeMillis()));
+        user.setUserName(context.getString(R.string.account_default_name));
+        userDao.insert(user);
     }
 
     public List<Promotion> queryAllPromotion() {

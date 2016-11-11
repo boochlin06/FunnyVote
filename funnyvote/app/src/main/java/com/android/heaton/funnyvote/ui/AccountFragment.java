@@ -1,6 +1,7 @@
 package com.android.heaton.funnyvote.ui;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -10,11 +11,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -127,6 +130,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         mFBLoginBtn = (Button) view.findViewById(R.id.fb_login_button);
         mFBLoginBtn.setOnClickListener(this);
         mNameTextView = (TextView) view.findViewById(R.id.profile_name);
+        mNameTextView.setOnClickListener(this);
         mPicImageView = (ImageView) view.findViewById(R.id.profile_picture);
         mGoogleSignInBtn = view.findViewById(R.id.google_sign_in_button);
         mGoogleSignInBtn.setOnClickListener(this);
@@ -252,7 +256,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
     private void removeUserProfile() {
         SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
         userPref.edit().clear().commit();
-        getContext().deleteFile(FunnyVoteApplication.PROFILE_PICTURE_FILE);
+        userPref.edit().putString(FunnyVoteApplication.KEY_NAME, getString(R.string.account_default_name)).commit();
+        //getContext().deleteFile(FunnyVoteApplication.PROFILE_PICTURE_FILE);
         updateUI();
         DataLoader.getInstance(getContext()).getUserDao().deleteAll();
     }
@@ -260,7 +265,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
     private void updateUI() {
         SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
         if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
-            String name = userPref.getString(FunnyVoteApplication.KEY_NAME, "user");
+            String name = userPref.getString(FunnyVoteApplication.KEY_NAME, getString(R.string.account_default_name));
+            Log.d("test", "update ui name:" + name);
             mNameTextView.setText(name);
             new LoadProfilePictureTask().execute(getContext().getFileStreamPath(FunnyVoteApplication.PROFILE_PICTURE_FILE).getAbsolutePath());
         } else {
@@ -291,9 +297,11 @@ public class AccountFragment extends android.support.v4.app.Fragment
     }
 
     private void showUserProfile() {
-        SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
-        if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
+        SharedPreferences userPref = getActivity().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
+        if (userPref.contains(FunnyVoteApplication.KEY_USER_ID)) {
             mPicImageView.setVisibility(View.VISIBLE);
+            String name =userPref.getString(FunnyVoteApplication.KEY_NAME, getString(R.string.account_default_name));
+            mNameTextView.setText(name);
             mNameTextView.setVisibility(View.VISIBLE);
             mLoadingProgressBar.setVisibility(View.GONE);
             mFBLoginBtn.setVisibility(View.GONE);
@@ -306,8 +314,18 @@ public class AccountFragment extends android.support.v4.app.Fragment
     }
 
     private void showLoginButton() {
+        SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
+        String name;
+        if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
+            name = userPref.getString(FunnyVoteApplication.KEY_NAME, getString(R.string.account_default_name));
+        } else {
+            name = getString(R.string.account_default_name);
+            userPref.edit().putString(FunnyVoteApplication.KEY_NAME, name).commit();
+        }
+        mNameTextView.setText(name);
+        mNameTextView.setVisibility(View.VISIBLE);
         mPicImageView.setImageResource(R.drawable.ic_action_account_circle);
-        mNameTextView.setText("");
+        mPicImageView.setVisibility(View.VISIBLE);
         mFBLoginBtn.setVisibility(View.VISIBLE);
         mSignoutBtn.setVisibility(View.GONE);
         mGoogleSignInBtn.setVisibility(View.VISIBLE);
@@ -321,6 +339,36 @@ public class AccountFragment extends android.support.v4.app.Fragment
         mGoogleSignInBtn.setVisibility(View.GONE);
         mPicImageView.setVisibility(View.GONE);
         mNameTextView.setVisibility(View.GONE);
+    }
+
+    private void showNameEditDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View input = LayoutInflater.from(getContext()).inflate(R.layout.dialog_account_name_edit
+                , null);
+        final EditText editText = (EditText) input.findViewById(R.id.edtName);
+        editText.setText(mNameTextView.getText().toString());
+        final User user = DataLoader.getInstance(getContext()).getUser();
+        builder.setView(input);
+        builder.setTitle(getString(R.string.account_dialog_new_name_title));
+        builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER
+                        , Context.MODE_PRIVATE);
+                userPref.edit().putString(FunnyVoteApplication.KEY_NAME, editText.getText().toString()).commit();
+                if (user != null) {
+                    user.setUserName(editText.getText().toString());
+                    DataLoader.getInstance(getContext()).getUserDao().insertOrReplace(user);
+                }
+                mNameTextView.setText(editText.getText().toString());
+            }
+        });
+        builder.setNegativeButton(R.string.account_dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+        builder.show();
 
     }
 
@@ -352,6 +400,9 @@ public class AccountFragment extends android.support.v4.app.Fragment
                             break;
                     }
                 }
+                break;
+            case R.id.profile_name:
+                showNameEditDialog();
                 break;
         }
     }

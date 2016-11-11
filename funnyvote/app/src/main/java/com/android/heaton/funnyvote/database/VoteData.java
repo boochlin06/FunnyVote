@@ -24,6 +24,7 @@ public class VoteData {
     @OrderBy("id ASC")
     private List<Option> options;
     private String voteCode;
+    private String voteLink;
     private String title;
     private String authorName;
     private String authorCode;
@@ -74,15 +75,16 @@ public class VoteData {
     @Generated(hash = 621134322)
     private transient VoteDataDao myDao;
 
-    @Generated(hash = 809127268)
-    public VoteData(Long id, String voteCode, String title, String authorName, String authorCode, String authorIcon, String voteImage,
-                    int localImage, long startTime, long endTime, String option1Title, String option1Code, int option1Count, String option2Title,
-                    String option2Code, int option2Count, String optionTopTitle, String optionTopCode, int optionTopCount, String optionUserChoiceTitle,
-                    String optionUserChoiceCode, int optionUserChoiceCount, int minOption, int maxOption, int optionCount, int pollCount,
-                    boolean isPolled, boolean isFavorite, boolean isCanPreviewResult, boolean isUserCanAddOption, boolean isNeedPassword,
-                    String security, String category, String pollType) {
+    @Generated(hash = 1774840857)
+    public VoteData(Long id, String voteCode, String voteLink, String title, String authorName, String authorCode, String authorIcon, String voteImage,
+            int localImage, long startTime, long endTime, String option1Title, String option1Code, int option1Count, String option2Title,
+            String option2Code, int option2Count, String optionTopTitle, String optionTopCode, int optionTopCount, String optionUserChoiceTitle,
+            String optionUserChoiceCode, int optionUserChoiceCount, int minOption, int maxOption, int optionCount, int pollCount, boolean isPolled,
+            boolean isFavorite, boolean isCanPreviewResult, boolean isUserCanAddOption, boolean isNeedPassword, String security, String category,
+            String pollType) {
         this.id = id;
         this.voteCode = voteCode;
+        this.voteLink = voteLink;
         this.title = title;
         this.authorName = authorName;
         this.authorCode = authorCode;
@@ -471,5 +473,13 @@ public class VoteData {
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getVoteDataDao() : null;
+    }
+
+    public String getVoteLink() {
+        return this.voteLink;
+    }
+
+    public void setVoteLink(String voteLink) {
+        this.voteLink = voteLink;
     }
 }

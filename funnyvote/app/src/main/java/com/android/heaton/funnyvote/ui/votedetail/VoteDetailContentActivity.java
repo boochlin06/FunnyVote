@@ -130,7 +130,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         Intent shareDialog = new Intent(context, ShareDialogActivity.class);
         shareDialog.putExtra(ShareDialogActivity.EXTRA_TITLE, data.getTitle());
         shareDialog.putExtra(ShareDialogActivity.EXTRA_IMG_URL, data.getVoteImage());
-        //shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, );
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, data.getVoteLink());
         context.startActivity(shareDialog);
     }
 

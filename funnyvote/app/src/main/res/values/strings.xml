@@ -123,6 +123,13 @@
     <string name="vote_detail_dialog_sort_select">Select</string>
 
     <!-- Account-->
-    <string name="log_in">Log In</string>
-    <string name="log_out">Log out</string>
+    <string name="account_fb_log_in">Facebook Log In</string>
+    <string name="account_google_log_in">Google Log In</string>
+    <string name="account_log_out">Log out</string>
+
+    <string name="account_default_name">village people 9527</string>
+
+    <string name="account_dialog_new_name_title">Enter new name</string>
+    <string name="account_dialog_ok">OK</string>
+    <string name="account_dialog_cancel">Cancel</string>
 </resources>

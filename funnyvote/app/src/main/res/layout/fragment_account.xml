@@ -2,7 +2,8 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/md_light_blue_100">
 
     <ProgressBar
         style="@style/Widget.AppCompat.ProgressBar"
@@ -18,11 +19,17 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:orientation="vertical">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/funny_vote_eng_50"/>
         <de.hdodenhof.circleimageview.CircleImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/profile_picture"
-            android:layout_width="128dp"
-            android:layout_height="128dp"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:layout_marginTop="24dp"
             android:src="@drawable/ic_action_account_circle"
             app:civ_border_width="2dp"
             app:civ_border_color="@color/primary_light"
@@ -31,6 +38,8 @@
             android:id="@+id/profile_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/color_primary"
+            android:textSize="24sp"
             android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 
@@ -43,13 +52,13 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/user_profile"
         android:layout_alignParentStart="true"
-        android:orientation="horizontal">
+        android:orientation="vertical">
         <Button
             android:id="@+id/fb_login_button"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_weight="1"
-            android:text="@string/log_in"
+            android:text="@string/account_fb_log_in"
             android:drawableLeft="@drawable/ic_action_facebook"
             android:theme="@style/MDButton"/>
         <Button
@@ -57,14 +66,14 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_weight="1"
-            android:text="@string/log_in"
+            android:text="@string/account_google_log_in"
             android:drawableLeft="@drawable/ic_action_gplus"
             android:theme="@style/MDButton"/>
         <Button
             android:id="@+id/sign_out_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/log_out"
+            android:text="@string/account_log_out"
             android:theme="@style/MDButton"/>
     </LinearLayout>
 </RelativeLayout>
