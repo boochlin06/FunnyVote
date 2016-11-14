@@ -53,7 +53,7 @@ public class EventBusController {
     }
     public final static class VoteDataControlEvent {
         public static final String VOTE_SYNC_WALL_AND_CONTENT = "VOTE_SYNC_WALL_AND_CONTENT";
-
+        public static final String VOTE_SYNC_WALL_FOR_FAVORITE = "VOTE_SYNC_WALL_FOR_FAVORITE";
         public final String message;
         public final VoteData data;
 

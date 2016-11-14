@@ -272,6 +272,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
         }
         DataLoader.getInstance(this).getVoteDataDao().insertOrReplace(data);
+        EventBus.getDefault().post(new EventBusController
+                .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE));
     }
 
     @OnClick(R.id.relBarShare)

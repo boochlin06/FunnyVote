@@ -63,6 +63,7 @@ public class MainPageTabFragment extends Fragment {
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
         ryMain = (RecyclerView) RootView.findViewById(R.id.ryMainPage);
         fabTop = (FloatingActionButton) RootView.findViewById(R.id.fabTop);
+        fabTop.setVisibility(View.GONE);
         swipeRefreshLayout = (SwipeRefreshLayout) RootView.findViewById(R.id.swipeLayout);
         swipeRefreshLayout.setOnRefreshListener(new WallItemOnRefreshListener());
         initRecyclerView();
@@ -72,7 +73,7 @@ public class MainPageTabFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        LinearLayoutManager manager = (LinearLayoutManager)ryMain.getLayoutManager();
+        LinearLayoutManager manager = (LinearLayoutManager) ryMain.getLayoutManager();
         int position = manager.findFirstVisibleItemPosition();
         if (position == 0) {
             refreshData();
@@ -115,7 +116,7 @@ public class MainPageTabFragment extends Fragment {
         fabTop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LinearLayoutManager manager = (LinearLayoutManager)ryMain.getLayoutManager();
+                LinearLayoutManager manager = (LinearLayoutManager) ryMain.getLayoutManager();
                 int position = manager.findFirstVisibleItemPosition();
                 if (position > 5) {
                     ryMain.scrollToPosition(5);
@@ -124,10 +125,10 @@ public class MainPageTabFragment extends Fragment {
                 ryMain.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                       EventBus.getDefault().post(new EventBusController.UIControlEvent(
-                               EventBusController.UIControlEvent.SCROLL_TO_TOP));
+                        EventBus.getDefault().post(new EventBusController.UIControlEvent(
+                                EventBusController.UIControlEvent.SCROLL_TO_TOP));
                     }
-                },200);
+                }, 200);
             }
         });
     }
@@ -172,6 +173,7 @@ public class MainPageTabFragment extends Fragment {
             swipeRefreshLayout.setRefreshing(false);
         }
     }
+
     private void refreshData() {
         if (tab.equals(TAB_HOT)) {
             voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(50);

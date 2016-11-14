@@ -17,8 +17,11 @@ import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
+import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 import com.bumptech.glide.Glide;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -266,6 +269,8 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                     , R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
         }
         DataLoader.getInstance(itemView.getContext()).getVoteDataDao().insertOrReplace(data);
+        EventBus.getDefault().post(new EventBusController
+                .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE));
     }
 
     @OnClick(R.id.relBarShare)

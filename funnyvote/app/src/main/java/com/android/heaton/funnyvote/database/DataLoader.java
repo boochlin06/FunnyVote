@@ -398,6 +398,9 @@ public class DataLoader {
         // TODO : SECURITY AND HOT CLASS
         return voteDataDao.queryBuilder().limit(limit).list();
     }
+    public List<VoteData> queryFavoriteVotes(int limit) {
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).limit(limit).list();
+    }
 
     public List<VoteData> queryNewVotes(int limit) {
         // TODO: SECURITY HOT AND TIME
