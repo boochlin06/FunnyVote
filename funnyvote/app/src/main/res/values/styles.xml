@@ -35,4 +35,8 @@
     <style name="MDDialog" parent="Theme.AppCompat.Light.Dialog">
         <item name="windowNoTitle">true</item>
     </style>
+
+    <style name="ToolBarWithNavigationBack">
+        <item name="navigationIcon">@drawable/abc_ic_ab_back_material</item>
+    </style>
 </resources>

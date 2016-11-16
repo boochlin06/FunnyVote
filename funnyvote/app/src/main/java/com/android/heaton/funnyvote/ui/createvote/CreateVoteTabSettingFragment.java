@@ -1,6 +1,5 @@
 package com.android.heaton.funnyvote.ui.createvote;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -15,16 +14,13 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.heaton.funnyvote.FunnyVoteApplication;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
-import com.android.heaton.funnyvote.database.DataLoader;
-import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
+import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.Calendar;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -148,13 +144,23 @@ public class CreateVoteTabSettingFragment extends Fragment {
                 voteSettings.setAuthorName(edtAuthorName.getText().toString());
             }
         } else {
-            List<User> users = DataLoader.getInstance(getContext()).getUserDao().loadAll();
-            if (users.size() > 0) {
-                User user = users.get(0);
-                voteSettings.setAuthorIcon(user.getUserIcon());
-                voteSettings.setAuthorCode(user.getEmail());
-                voteSettings.setAuthorName(user.getUserName());
+
+            SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
+            if (userPref.contains(UserSharepreferenceController.KEY_NAME)) {
+                String name = userPref.getString(UserSharepreferenceController.KEY_NAME, getString(R.string.account_default_name));
+                String code = userPref.getString(UserSharepreferenceController.KEY_USER_ID, "");
+                String icon = userPref.getString(UserSharepreferenceController.KEY_ICON, "");
+                voteSettings.setAuthorName(name);
+                voteSettings.setAuthorCode(code);
+                voteSettings.setAuthorIcon(icon);
             }
+//            List<User> users = DataLoader.getInstance(getContext()).getUserDao().loadAll();
+//            if (users.size() > 0) {
+//                User user = users.get(0);
+//                voteSettings.setAuthorIcon(user.getUserIcon());
+//                voteSettings.setAuthorCode(user.getEmail());
+//                voteSettings.setAuthorName(user.getUserName());
+//            }
         }
         voteSettings.setIsCanPreviewResult(swtPreResult.isChecked());
         voteSettings.setStartTime(System.currentTimeMillis());

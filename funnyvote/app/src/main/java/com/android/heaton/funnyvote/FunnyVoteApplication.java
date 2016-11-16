@@ -15,12 +15,6 @@ import org.greenrobot.greendao.identityscope.IdentityScopeType;
  */
 
 public class FunnyVoteApplication extends Application {
-    public static final String SHARED_PREF_USER = "user";
-    public static final String KEY_NAME = "name";
-    public static final String KEY_USER_ID = "user_id";
-    public static final String KEY_EMAIL = "email";
-    public static final String KEY_TYPE = "account_type";
-    public static final String PROFILE_PICTURE_FILE = "profile_pic.png";
 
     public static final boolean ENCRYPTED = false;
     private DaoSession daoSession;

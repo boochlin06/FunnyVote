@@ -131,6 +131,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         shareDialog.putExtra(ShareDialogActivity.EXTRA_TITLE, data.getTitle());
         shareDialog.putExtra(ShareDialogActivity.EXTRA_IMG_URL, data.getVoteImage());
         shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, data.getVoteLink());
+        shareDialog.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(shareDialog);
     }
 

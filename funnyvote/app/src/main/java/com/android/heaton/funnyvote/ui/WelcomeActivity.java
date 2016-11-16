@@ -30,7 +30,7 @@ public class WelcomeActivity extends AppCompatActivity {
             if (sp.getBoolean(SP_FIRST_MOCK_DATA, true)) {
                 DataLoader.getInstance(getApplicationContext()).mockVoteData(30, 5);
                 DataLoader.getInstance(getApplicationContext()).mockPromotions(5);
-                DataLoader.getInstance(getApplicationContext()).initFirstUser();
+                DataLoader.getInstance(getApplicationContext()).initTempUser();
             }
             return null;
         }

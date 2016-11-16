@@ -132,4 +132,8 @@
     <string name="account_dialog_new_name_title">Enter new name</string>
     <string name="account_dialog_ok">OK</string>
     <string name="account_dialog_cancel">Cancel</string>
+
+    <!--Personal -->
+    <string name="personal_tab_create">CREATE</string>
+    <string name="personal_tab_participate">PARTICIPATE</string>
 </resources>

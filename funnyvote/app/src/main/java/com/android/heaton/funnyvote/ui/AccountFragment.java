@@ -22,7 +22,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.android.heaton.funnyvote.FunnyVoteApplication;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.User;
@@ -186,7 +185,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 String googleID = googleAccount.getId();
                 String email = googleAccount.getEmail();
                 Uri picLink = googleAccount.getPhotoUrl();
-                User user = new User(null, name, email, googleID, email, picLink.toString(), User.TYPE_GOOGLE);
+                User user = new User(null, name, email, googleID, googleID, picLink.toString(), User.TYPE_GOOGLE);
                 saveUserProfile(user);
                 Log.d(TAG, "name:" + name);
                 Log.d(TAG, "google ID:" + googleID);
@@ -227,7 +226,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                                 URL url = new URL(link);
                                 new GetProfilePictureTask().execute(url);
                             }
-                            User user = new User(null, name, email, facebookID, email, link, User.TYPE_FACEBOOK);
+                            User user = new User(null, name, email, facebookID, facebookID, link, User.TYPE_FACEBOOK);
                             saveUserProfile(user);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -241,34 +240,36 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     private void saveUserProfile(User user) {
         Log.d(TAG, "saveUserProfile");
-        SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
+        SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
+        if (userPref.getString(UserSharepreferenceController.KEY_TYPE, User.TYPE_TEMP).equals(User.TYPE_TEMP)) {
+            DataLoader.getInstance(getContext()).linkTempUserToLoginUser(
+                    userPref.getString(UserSharepreferenceController.KEY_USER_ID, ""), user);
+        }
         SharedPreferences.Editor spEditor = userPref.edit();
-        spEditor.putString(FunnyVoteApplication.KEY_NAME, user.getUserName());
-        spEditor.putString(FunnyVoteApplication.KEY_USER_ID, user.getUserID());
-        spEditor.putString(FunnyVoteApplication.KEY_TYPE, user.getType());
+        spEditor.putString(UserSharepreferenceController.KEY_NAME, user.getUserName());
+        spEditor.putString(UserSharepreferenceController.KEY_USER_ID, user.getUserID());
+        spEditor.putString(UserSharepreferenceController.KEY_TYPE, user.getType());
+        spEditor.putString(UserSharepreferenceController.KEY_ICON, user.getUserIcon());
         if (user.getEmail() != null) {
-            spEditor.putString(FunnyVoteApplication.KEY_EMAIL, user.getEmail());
+            spEditor.putString(UserSharepreferenceController.KEY_EMAIL, user.getEmail());
         }
         spEditor.commit();
-        DataLoader.getInstance(getContext()).getUserDao().insertOrReplace(user);
     }
 
     private void removeUserProfile() {
-        SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
-        userPref.edit().clear().commit();
-        userPref.edit().putString(FunnyVoteApplication.KEY_NAME, getString(R.string.account_default_name)).commit();
-        //getContext().deleteFile(FunnyVoteApplication.PROFILE_PICTURE_FILE);
+        UserSharepreferenceController.removeUser(getContext());
+        getContext().deleteFile(UserSharepreferenceController.PROFILE_PICTURE_FILE);
         updateUI();
-        DataLoader.getInstance(getContext()).getUserDao().deleteAll();
     }
 
     private void updateUI() {
-        SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
-        if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
-            String name = userPref.getString(FunnyVoteApplication.KEY_NAME, getString(R.string.account_default_name));
-            Log.d("test", "update ui name:" + name);
+        SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
+        if (userPref.contains(UserSharepreferenceController.KEY_NAME)) {
+            String name = userPref.getString(UserSharepreferenceController.KEY_NAME
+                    , getString(R.string.account_default_name));
             mNameTextView.setText(name);
-            new LoadProfilePictureTask().execute(getContext().getFileStreamPath(FunnyVoteApplication.PROFILE_PICTURE_FILE).getAbsolutePath());
+            new LoadProfilePictureTask().execute(getContext()
+                    .getFileStreamPath(UserSharepreferenceController.PROFILE_PICTURE_FILE).getAbsolutePath());
         } else {
             showLoginButton();
         }
@@ -297,10 +298,11 @@ public class AccountFragment extends android.support.v4.app.Fragment
     }
 
     private void showUserProfile() {
-        SharedPreferences userPref = getActivity().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
-        if (userPref.contains(FunnyVoteApplication.KEY_USER_ID)) {
+        SharedPreferences userPref = getActivity().getSharedPreferences(UserSharepreferenceController.SHARED_PREF_USER, Context.MODE_PRIVATE);
+        String type = userPref.getString(UserSharepreferenceController.KEY_TYPE, User.TYPE_TEMP);
+        if (!type.equals(User.TYPE_TEMP)) {
             mPicImageView.setVisibility(View.VISIBLE);
-            String name =userPref.getString(FunnyVoteApplication.KEY_NAME, getString(R.string.account_default_name));
+            String name = userPref.getString(UserSharepreferenceController.KEY_NAME, getString(R.string.account_default_name));
             mNameTextView.setText(name);
             mNameTextView.setVisibility(View.VISIBLE);
             mLoadingProgressBar.setVisibility(View.GONE);
@@ -314,13 +316,13 @@ public class AccountFragment extends android.support.v4.app.Fragment
     }
 
     private void showLoginButton() {
-        SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
+        SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
         String name;
-        if (userPref.contains(FunnyVoteApplication.KEY_NAME)) {
-            name = userPref.getString(FunnyVoteApplication.KEY_NAME, getString(R.string.account_default_name));
+        if (userPref.contains(UserSharepreferenceController.KEY_NAME)) {
+            name = userPref.getString(UserSharepreferenceController.KEY_NAME, getString(R.string.account_default_name));
         } else {
             name = getString(R.string.account_default_name);
-            userPref.edit().putString(FunnyVoteApplication.KEY_NAME, name).commit();
+            userPref.edit().putString(UserSharepreferenceController.KEY_NAME, name).commit();
         }
         mNameTextView.setText(name);
         mNameTextView.setVisibility(View.VISIBLE);
@@ -353,13 +355,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
         builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER
-                        , Context.MODE_PRIVATE);
-                userPref.edit().putString(FunnyVoteApplication.KEY_NAME, editText.getText().toString()).commit();
-                if (user != null) {
-                    user.setUserName(editText.getText().toString());
-                    DataLoader.getInstance(getContext()).getUserDao().insertOrReplace(user);
-                }
+                SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
+                userPref.edit().putString(UserSharepreferenceController.KEY_NAME, editText.getText().toString()).commit();
                 mNameTextView.setText(editText.getText().toString());
             }
         });
@@ -388,9 +385,9 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 googleSignIn();
                 break;
             case R.id.sign_out_button:
-                SharedPreferences userPref = getContext().getSharedPreferences(FunnyVoteApplication.SHARED_PREF_USER, Context.MODE_PRIVATE);
-                if (userPref.contains(FunnyVoteApplication.KEY_TYPE)) {
-                    String type = userPref.getString(FunnyVoteApplication.KEY_TYPE, null);
+                SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
+                if (userPref.contains(UserSharepreferenceController.KEY_TYPE)) {
+                    String type = userPref.getString(UserSharepreferenceController.KEY_TYPE, null);
                     switch (type) {
                         case User.TYPE_GOOGLE:
                             googleSignOut();
@@ -434,7 +431,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
             try {
                 Bitmap pic = BitmapFactory.decodeStream(params[0].openStream());
                 pic.compress(Bitmap.CompressFormat.PNG, 90,
-                        getContext().openFileOutput(FunnyVoteApplication.PROFILE_PICTURE_FILE,
+                        getContext().openFileOutput(UserSharepreferenceController.PROFILE_PICTURE_FILE,
                                 Context.MODE_PRIVATE));
                 pic.recycle();
                 return pic;

@@ -63,6 +63,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/MDDialog">
         </activity>
+        <activity android:name=".ui.personal.PersonalActivity"/>
     </application>
 
 </manifest>

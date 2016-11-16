@@ -1,5 +1,7 @@
 package com.android.heaton.funnyvote.ui.createvote;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,11 +21,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.heaton.funnyvote.FunnyVoteApplication;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
+import com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -281,12 +285,15 @@ public class CreateVoteActivity extends AppCompatActivity {
             circleLoad.stopSpinning();
             circleLoad.setVisibility(View.GONE);
             Toast.makeText(getApplicationContext(), R.string.create_vote_create_successful, Toast.LENGTH_LONG).show();
-            // todo:show share dialog
+            VoteDetailContentActivity.sendShareIntent(getApplicationContext(),voteSetting);
         }
 
         @Override
         protected Void doInBackground(Void... params) {
             voteSetting.setVoteCode(Long.toString(System.currentTimeMillis()));
+            voteSetting.setOptionCount(optionList.size());
+            // For test.
+            voteSetting.setVoteImage("http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png");
             for (int i = 0; i < optionList.size(); i++) {
                 Option option = optionList.get(i);
                 option.setVoteCode(voteSetting.getVoteCode());
@@ -305,9 +312,6 @@ public class CreateVoteActivity extends AppCompatActivity {
                     voteSetting.setOption2Count(0);
                 }
             }
-            voteSetting.setOptionCount(optionList.size());
-            // For test.
-            voteSetting.setVoteImage("http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png");
             DataLoader.getInstance(getApplicationContext()).getVoteDataDao().insert(voteSetting);
             DataLoader.getInstance(getApplicationContext()).getOptionDao().insertInTx(optionList);
             return null;

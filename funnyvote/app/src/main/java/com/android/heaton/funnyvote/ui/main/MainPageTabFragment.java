@@ -24,6 +24,7 @@ import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.HidingScrollListener;
+import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.greenrobot.eventbus.EventBus;
@@ -37,6 +38,10 @@ import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 public class MainPageTabFragment extends Fragment {
     public static final String TAB_HOT = "HOT";
     public static final String TAB_NEW = "NEW";
+
+    public static final String TAB_CREATE = "CREATE";
+    public static final String TAB_PARTICIPATE = "PARTICIPATE";
+
     public RecyclerView ryMain;
     private RelativeLayout RootView;
     private String tab = TAB_HOT;
@@ -91,8 +96,18 @@ public class MainPageTabFragment extends Fragment {
             voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
-        } else {
+        } else if (tab.equals(TAB_NEW)) {
             voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(50);
+            adapter = new VoteWallItemAdapter(getActivity()
+                    , voteDataList);
+        } else if (tab.equals(TAB_CREATE)) {
+            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
+                    UserSharepreferenceController.getUser(getContext()).getUserCode(), 50);
+            adapter = new VoteWallItemAdapter(getActivity()
+                    , voteDataList);
+        } else if (tab.equals(TAB_PARTICIPATE)) {
+            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
+                    UserSharepreferenceController.getUser(getContext()).getUserCode(), 50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
         }
@@ -177,8 +192,14 @@ public class MainPageTabFragment extends Fragment {
     private void refreshData() {
         if (tab.equals(TAB_HOT)) {
             voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(50);
-        } else {
+        } else if (tab.equals(TAB_NEW)) {
             voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(50);
+        } else if (tab.equals(TAB_CREATE)) {
+            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
+                    UserSharepreferenceController.getUser(getContext()).getUserCode(), 50);
+        } else if (tab.equals(TAB_PARTICIPATE)) {
+            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
+                    UserSharepreferenceController.getUser(getContext()).getUserCode(), 50);
         }
         Log.d("test", "Refresh wall item :" + tab);
         adapter.setVoteList(voteDataList);

@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.android.heaton.funnyvote.FunnyVoteApplication;
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,8 +120,8 @@ public class DataLoader {
             VoteData data = new VoteData();
             data.setIsCanPreviewResult(true);
             data.setVoteCode(System.currentTimeMillis() + "_" + Integer.toString(i));
-            data.setAuthorName("Heaton mock" + i);
-            data.setAuthorCode("Author_" + i);
+            data.setAuthorName("Heaton" + i);
+            data.setAuthorCode("AuthorMock_" + i);
             data.setAuthorIcon("");
             data.setVoteLink("https://vinta.ws/booch/");
 
@@ -398,6 +399,7 @@ public class DataLoader {
         // TODO : SECURITY AND HOT CLASS
         return voteDataDao.queryBuilder().limit(limit).list();
     }
+
     public List<VoteData> queryFavoriteVotes(int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).limit(limit).list();
     }
@@ -419,17 +421,36 @@ public class DataLoader {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(code)).list().get(0);
     }
 
+    public List<VoteData> queryVoteDataByAuthor(String authorCode, int limit) {
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.AuthorCode.eq(authorCode))
+                .limit(limit).orderDesc(VoteDataDao.Properties.StartTime).list();
+    }
+
     public User getUser() {
         List<User> userList = userDao.loadAll();
         return userList.size() == 0 ? null : userList.get(0);
     }
 
-    public void initFirstUser() {
+    public void initTempUser() {
         User user = new User();
         user.setUserCode(Long.toString(System.currentTimeMillis()));
         user.setUserName(context.getString(R.string.account_default_name));
-        userDao.insert(user);
+        user.setUserIcon("");
+        user.setType(User.TYPE_TEMP);
+        user.setEmail("");
+        UserSharepreferenceController.updtaeUser(context,user);
     }
+    public void linkTempUserToLoginUser(String oldUserCode, User newUser) {
+        List<VoteData> dataList = voteDataDao.queryBuilder()
+                .where(VoteDataDao.Properties.AuthorCode.eq(oldUserCode)).list();
+        for (int i = 0 ; i < dataList.size() ; i ++) {
+            dataList.get(i).setAuthorCode(newUser.getUserCode());
+            dataList.get(i).setAuthorIcon(newUser.getUserIcon());
+            dataList.get(i).setAuthorName(newUser.getUserName());
+        }
+        voteDataDao.updateInTx(dataList);
+    }
+
 
     public List<Promotion> queryAllPromotion() {
         return promotionDao.loadAll();

@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import com.android.heaton.funnyvote.ui.AccountFragment;
 import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.android.heaton.funnyvote.ui.main.MainPageFragment;
+import com.android.heaton.funnyvote.ui.personal.PersonalActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,15 +53,13 @@ public class MainActivity extends AppCompatActivity {
         setupDrawerContent(navigationView);
     }
 
-    private void setupDrawerContent(NavigationView navigationView) {
+    private void setupDrawerContent(final NavigationView navigationView) {
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         if (mCurrentPage != menuItem.getItemId()) {
-                            mCurrentPage = menuItem.getItemId();
                             switchFragment(menuItem);
-                            menuItem.setChecked(true);
                         }
                         drawerLayout.closeDrawers();
                         return true;
@@ -68,7 +67,13 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void switchFragment(MenuItem menuItem) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        navigationView.setCheckedItem(mCurrentPage);
+    }
+
+    private void switchFragment(final MenuItem menuItem) {
         final int menuId = menuItem.getItemId();
         drawerLayout.postDelayed(new Runnable() {
             @Override
@@ -76,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.setCustomAnimations(R.anim.fragment_enter_from_left, 0);
                 toolbar.setBackgroundColor(getColor(R.color.color_primary));
+                mCurrentPage = menuItem.getItemId();
                 switch (menuId) {
                     case R.id.navigation_item_main:
                         ft.replace(R.id.frame_content, new MainPageFragment()).commit();
@@ -85,8 +91,9 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
                         break;
                     case R.id.navigation_item_list_history:
-                        ft.replace(R.id.frame_content, new HistoryFragment()).commit();
-                        toolbar.setTitle(R.string.drawer_history);
+//                        ft.replace(R.id.frame_content, new HistoryFragment()).commit();
+//                        toolbar.setTitle(R.string.drawer_history);
+                        startActivity(new Intent(MainActivity.this, PersonalActivity.class));
                         break;
                     case R.id.navigation_item_list_favorite:
                         ft.replace(R.id.frame_content, new FavoriteFragment()).commit();
