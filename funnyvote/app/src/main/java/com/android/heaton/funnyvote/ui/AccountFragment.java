@@ -358,6 +358,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
                 userPref.edit().putString(UserSharepreferenceController.KEY_NAME, editText.getText().toString()).commit();
                 mNameTextView.setText(editText.getText().toString());
+                new UpdateUserName().execute(userPref.getString(UserSharepreferenceController.KEY_USER_ID, "")
+                        , editText.getText().toString());
             }
         });
         builder.setNegativeButton(R.string.account_dialog_cancel, new DialogInterface.OnClickListener() {
@@ -401,6 +403,17 @@ public class AccountFragment extends android.support.v4.app.Fragment
             case R.id.profile_name:
                 showNameEditDialog();
                 break;
+        }
+    }
+
+    class UpdateUserName extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            if (!strings[0].isEmpty()) {
+                DataLoader.getInstance(getContext()).updateUserName(strings[0], strings[1]);
+            }
+            return null;
         }
     }
 

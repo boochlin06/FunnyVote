@@ -450,6 +450,15 @@ public class DataLoader {
         }
         voteDataDao.updateInTx(dataList);
     }
+    public void updateUserName(String code ,String userName) {
+        List<VoteData> dataList = voteDataDao.queryBuilder()
+                .where(VoteDataDao.Properties.AuthorCode.eq(code)).list();
+        for (int i = 0 ; i < dataList.size() ; i ++) {
+            dataList.get(i).setAuthorName(userName);
+        }
+        voteDataDao.updateInTx(dataList);
+    }
+
 
 
     public List<Promotion> queryAllPromotion() {
