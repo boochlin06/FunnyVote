@@ -25,6 +25,8 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     private Context context;
     private List<VoteData> voteList;
+    private long mMaxCount;
+    private boolean showReload;
 
     private View.OnClickListener mReloadItemClickListener = new View.OnClickListener() {
         @Override
@@ -52,6 +54,10 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.voteList = voteList;
     }
 
+    public void setMaxCount(long count) {
+        mMaxCount = count;
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(final ViewGroup parent, int viewType) {
         if (viewType == ITEM_TYPE_VOTE) {
@@ -73,12 +79,21 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemCount() {
-        return voteList.size() + 1;
+        if (voteList.size() > 0 && voteList.size() < mMaxCount) {
+            showReload = true;
+        } else {
+            showReload = false;
+        }
+        if (showReload) {
+            return voteList.size() + 1;
+        } else {
+            return voteList.size();
+        }
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (position == getItemCount() - 1) {
+        if (showReload && position == getItemCount() - 1) {
             return ITEM_TYPE_RELOAD;
         } else {
             return ITEM_TYPE_VOTE;

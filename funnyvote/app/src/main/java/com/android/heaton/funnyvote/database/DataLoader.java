@@ -395,18 +395,26 @@ public class DataLoader {
         return list;
     }
 
-    public List<VoteData> queryHotVotes(int limit) {
+    public List<VoteData> queryHotVotes(int offset, int limit) {
         // TODO : SECURITY AND HOT CLASS
-        return voteDataDao.queryBuilder().limit(limit).list();
+        return voteDataDao.queryBuilder().offset(offset).limit(limit).list();
     }
 
-    public List<VoteData> queryFavoriteVotes(int limit) {
-        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).limit(limit).list();
+    public long queryHotVotesCount() {
+        return voteDataDao.queryBuilder().buildCount().count();
     }
 
-    public List<VoteData> queryNewVotes(int limit) {
+    public long queryFavoriteVotesCount() {
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).buildCount().count();
+    }
+
+    public List<VoteData> queryFavoriteVotes(int offset, int limit) {
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).offset(offset).limit(limit).list();
+    }
+
+    public List<VoteData> queryNewVotes(int offset, int limit) {
         // TODO: SECURITY HOT AND TIME
-        return voteDataDao.queryBuilder().orderDesc(VoteDataDao.Properties.StartTime).orderDesc().list();
+        return voteDataDao.queryBuilder().orderDesc(VoteDataDao.Properties.StartTime).orderDesc().offset(offset).limit(limit).list();
     }
 
     public List<Option> queryOptionsByVoteCode(String voteCode) {

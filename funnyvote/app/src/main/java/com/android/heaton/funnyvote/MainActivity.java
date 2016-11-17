@@ -2,6 +2,7 @@ package com.android.heaton.funnyvote;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
@@ -80,7 +81,11 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.setCustomAnimations(R.anim.fragment_enter_from_left, 0);
-                toolbar.setBackgroundColor(getColor(R.color.color_primary));
+                if (Build.VERSION.SDK_INT > 21) {
+                    toolbar.setBackgroundColor(getColor(R.color.color_primary));
+                } else {
+                    toolbar.setBackgroundColor(getResources().getColor(R.color.color_primary));
+                }
                 mCurrentPage = menuItem.getItemId();
                 switch (menuId) {
                     case R.id.navigation_item_main:

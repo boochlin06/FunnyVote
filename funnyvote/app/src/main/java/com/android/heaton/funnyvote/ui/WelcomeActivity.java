@@ -28,7 +28,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             if (sp.getBoolean(SP_FIRST_MOCK_DATA, true)) {
-                DataLoader.getInstance(getApplicationContext()).mockVoteData(30, 5);
+                DataLoader.getInstance(getApplicationContext()).mockVoteData(200, 5);
                 DataLoader.getInstance(getApplicationContext()).mockPromotions(5);
                 DataLoader.getInstance(getApplicationContext()).initTempUser();
             }

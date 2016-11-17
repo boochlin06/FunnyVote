@@ -35,7 +35,8 @@ import java.util.List;
 
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 
-public class MainPageTabFragment extends Fragment {
+public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter.OnReloadClickListener{
+    private static final int LIMIT = 50;
     public static final String TAB_HOT = "HOT";
     public static final String TAB_NEW = "NEW";
 
@@ -93,11 +94,11 @@ public class MainPageTabFragment extends Fragment {
 
     private void initRecyclerView() {
         if (tab.equals(TAB_HOT)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(50);
+            voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(0, 50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
         } else if (tab.equals(TAB_NEW)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(50);
+            voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(0, 50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
         } else if (tab.equals(TAB_CREATE)) {
@@ -111,6 +112,8 @@ public class MainPageTabFragment extends Fragment {
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
         }
+        adapter.setOnReloadClickListener(this);
+        adapter.setMaxCount(DataLoader.getInstance(getContext()).queryHotVotesCount());
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
         scaleInAnimationAdapter.setDuration(1000);
         ryMain.setAdapter(adapter);
@@ -191,18 +194,40 @@ public class MainPageTabFragment extends Fragment {
 
     private void refreshData() {
         if (tab.equals(TAB_HOT)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(50);
+            voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(0, LIMIT);
         } else if (tab.equals(TAB_NEW)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(50);
+            voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(0, LIMIT);
         } else if (tab.equals(TAB_CREATE)) {
             voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
-                    UserSharepreferenceController.getUser(getContext()).getUserCode(), 50);
+                    UserSharepreferenceController.getUser(getContext()).getUserCode(), LIMIT);
         } else if (tab.equals(TAB_PARTICIPATE)) {
             voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
-                    UserSharepreferenceController.getUser(getContext()).getUserCode(), 50);
+                    UserSharepreferenceController.getUser(getContext()).getUserCode(), LIMIT);
         }
         Log.d("test", "Refresh wall item :" + tab);
         adapter.setVoteList(voteDataList);
+        adapter.setMaxCount(DataLoader.getInstance(getContext()).queryHotVotesCount());
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onReloadClicked() {
+        int offset = voteDataList.size();
+        List<VoteData> moreData = null;
+        if (tab.equals(TAB_HOT)) {
+            moreData = DataLoader.getInstance(getContext()).queryHotVotes(offset, LIMIT);
+        } else if (tab.equals(TAB_NEW)) {
+            moreData = DataLoader.getInstance(getContext()).queryNewVotes(offset, LIMIT);
+        } else if (tab.equals(TAB_CREATE)) {
+            moreData = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
+                    UserSharepreferenceController.getUser(getContext()).getUserCode(), LIMIT);
+        } else if (tab.equals(TAB_PARTICIPATE)) {
+            moreData = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
+                    UserSharepreferenceController.getUser(getContext()).getUserCode(), LIMIT);
+        }
+        if (moreData != null && moreData.size() > 0) {
+            voteDataList.addAll(moreData);
+            adapter.notifyDataSetChanged();
+        }
     }
 }
