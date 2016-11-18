@@ -67,9 +67,10 @@ public class FavoriteFragment extends android.support.v4.app.Fragment {
     }
 
     private void initRecyclerView() {
-        voteDataList = DataLoader.getInstance(getContext()).queryFavoriteVotes(50);
+        voteDataList = DataLoader.getInstance(getContext()).queryFavoriteVotes(0, 50);
         adapter = new VoteWallItemAdapter(getActivity()
                 , voteDataList);
+        adapter.setMaxCount(DataLoader.getInstance(getContext()).queryFavoriteVotesCount());
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
         scaleInAnimationAdapter.setDuration(1000);
         ryMain.setAdapter(adapter);
@@ -119,8 +120,9 @@ public class FavoriteFragment extends android.support.v4.app.Fragment {
     }
 
     private void refreshData() {
-        voteDataList = DataLoader.getInstance(getContext()).queryFavoriteVotes(50);
+        voteDataList = DataLoader.getInstance(getContext()).queryFavoriteVotes(0, 50);
         adapter.setVoteList(voteDataList);
+        adapter.setMaxCount(DataLoader.getInstance(getContext()).queryFavoriteVotesCount());
         adapter.notifyDataSetChanged();
     }
 }
