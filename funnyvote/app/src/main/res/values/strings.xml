@@ -107,7 +107,7 @@
 
     <string name="vote_share_to_other_app_default_message" formatted="false">A question I need your help: %s</string>
 
-    <!--Dialog vote detail-->
+    <!-- vote detail Dialog-->
     <string name="vote_detail_dialog_title_info">Information</string>
     <string name="vote_detail_dialog_option">Option</string>
     <string name="vote_detail_dialog_done">Done</string>
@@ -121,6 +121,12 @@
     <string name="vote_detail_dialog_sort_alphabet">Alphabet</string>
     <string name="vote_detail_dialog_sort_poll">Poll count</string>
     <string name="vote_detail_dialog_sort_select">Select</string>
+
+    <!-- vote password dialog-->
+    <string name="vote_detail_dialog_password_hint">Input password</string>
+    <string name="vote_detail_dialog_password_title">Please enter password to continue</string>
+    <string name="vote_detail_dialog_password_toast_retry">Incorrect. Please retry password</string>
+    <string name="vote_detail_dialog_password_input">Input</string>
 
     <!-- Account-->
     <string name="account_fb_log_in">Facebook Log In</string>

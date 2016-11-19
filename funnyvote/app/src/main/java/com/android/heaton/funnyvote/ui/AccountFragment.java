@@ -349,7 +349,6 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 , null);
         final EditText editText = (EditText) input.findViewById(R.id.edtName);
         editText.setText(mNameTextView.getText().toString());
-        final User user = DataLoader.getInstance(getContext()).getUser();
         builder.setView(input);
         builder.setTitle(getString(R.string.account_dialog_new_name_title));
         builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {

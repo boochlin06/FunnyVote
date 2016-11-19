@@ -22,7 +22,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -353,6 +357,42 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         builder.show();
     }
 
+    private void showPasswordDialog() {
+        data.password = "test";
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(R.layout.password_dialog);
+        builder.setPositiveButton(getApplicationContext().getResources()
+                .getString(R.string.vote_detail_dialog_password_input), null);
+        builder.setNegativeButton(getApplicationContext().getResources()
+                .getString(R.string.account_dialog_cancel), null);
+        builder.setTitle(getApplicationContext().getString(R.string.vote_detail_dialog_password_title));
+        final AlertDialog dialog = builder.create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
+                Button ok = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                ok.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        if (password.getText().toString().equals(data.password)) {
+                            dialog.dismiss();
+                            new UpdateVoteDataTask().execute();
+                        } else {
+                            Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
+                            password.startAnimation(shake);
+                            Toast.makeText(getApplicationContext(), getString(R.string.vote_detail_dialog_password_toast_retry)
+                                    , Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        });
+        dialog.show();
+    }
+
     private void sortOptions() {
         Comparator<Option> comparator = null;
         switch (sortType) {
@@ -447,18 +487,22 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_at_least_min)
                         , data.getMinOption()), Toast.LENGTH_LONG).show();
             } else {
-                boolean isFailureContext = false;
+                boolean isFailureOption = false;
                 for (int i = 0; i < optionList.size(); i++) {
                     String title = optionList.get(i).getTitle();
                     if (title == null || title.isEmpty()) {
-                        isFailureContext = true;
+                        isFailureOption = true;
                     }
                 }
-                if (isFailureContext) {
+                if (isFailureOption) {
                     Toast.makeText(this, getString(R.string.vote_detail_toast_fill_all_new_option)
                             , Toast.LENGTH_LONG).show();
                 } else {
-                    new UpdateVoteDataTask().execute();
+                    if (data.getIsNeedPassword()) {
+                        showPasswordDialog();
+                    } else {
+                        new UpdateVoteDataTask().execute();
+                    }
                 }
             }
             return true;
@@ -511,7 +555,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     public void onOptionChoice(EventBusController.OptionChoiceEvent event) {
         long id = event.Id;
         if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_CHOICED)) {
-            Log.d("test","onOptionChoice message:"+event.message+" id:"+id);
+            Log.d("test", "onOptionChoice message:" + event.message + " id:" + id);
 
             if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
                 return;
@@ -651,7 +695,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 Option option = optionList.get(i);
                 for (int j = 0; j < optionItemAdapter.getChoiceList().size(); j++) {
                     Log.d("test", "choice option:id:" + optionItemAdapter.getChoiceList().get(j)
-                            +" nor id:"+option.getId());
+                            + " nor id:" + option.getId());
                     if (optionItemAdapter.getChoiceList().get(j).longValue() == option.getId().longValue()) {
                         Log.d("test", "1 choice option:id:" + optionItemAdapter.getChoiceList().get(j));
                         option.setCount(option.getCount() + 1);

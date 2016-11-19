@@ -1,11 +1,17 @@
 package com.android.heaton.funnyvote.ui.main;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -115,7 +121,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         } else {
             Glide.with(itemView.getContext())
                     .load(data.getAuthorIcon())
-                    .override(36,36)
+                    .override(36, 36)
                     .fitCenter()
                     .crossFade()
                     .into(imgAuthorIcon);
@@ -128,7 +134,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         } else {
             Glide.with(itemView.getContext())
                     .load(data.getVoteImage())
-                    .override(320,150)
+                    .override(320, 150)
                     .fitCenter()
                     .crossFade()
                     .into(imgMain);
@@ -280,11 +286,20 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
     @OnLongClick({R.id.btnFirstOption, R.id.btnSecondOption, R.id.btnThirdOption})
     public boolean onOptionClick(LinearLayout optionButton) {
-        int optionId = optionButton.getId();
         if (!(data.getMinOption() == 1 && data.getMaxOption() == 1)) {
             startActivityToVoteDetail(optionButton.getContext());
             return true;
         }
+        if (data.getIsNeedPassword()) {
+            showPasswordDialog(optionButton);
+        } else {
+            updateUI(optionButton);
+        }
+        return true;
+    }
+
+    private void updateUI(LinearLayout optionButton) {
+        int optionId = optionButton.getId();
         if (OPTION_TYPE_UNPOLL_2 == optionType || OPTION_TYPE_UNPOLL_2_MORE == optionType) {
             if (optionId == R.id.btnFirstOption) {
                 data.setIsPolled(true);
@@ -303,7 +318,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                         setLayout();
                     }
                 }, 500);
-                new Thread(new SyncDBRunnable(data,0)).start();
+                new Thread(new SyncDBRunnable(data, 0)).start();
             } else if (optionId == R.id.btnSecondOption) {
                 data.setIsPolled(true);
                 data.setOptionUserChoiceTitle(data.getOption2Title());
@@ -321,34 +336,70 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                         setLayout();
                     }
                 }, 500);
-                new Thread(new SyncDBRunnable(data,1)).start();
+                new Thread(new SyncDBRunnable(data, 1)).start();
             } else if (optionId == R.id.btnThirdOption) {
-                startActivityToVoteDetail(optionButton.getContext());
+                startActivityToVoteDetail(itemView.getContext());
             }
         } else if (OPTION_TYPE_POLLED_TOP_1 == optionType) {
-            startActivityToVoteDetail(optionButton.getContext());
+            startActivityToVoteDetail(itemView.getContext());
         } else if (OPTION_TYPE_POLLED_TOP_2 == optionType) {
-            startActivityToVoteDetail(optionButton.getContext());
+            startActivityToVoteDetail(itemView.getContext());
         }
-        return true;
     }
+
+    private void showPasswordDialog(final LinearLayout optionButton) {
+        data.password = "test";
+        final AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
+        builder.setView(R.layout.password_dialog);
+        builder.setPositiveButton(itemView.getContext().getResources().getString(R.string.vote_detail_dialog_password_input), null);
+        builder.setNegativeButton(itemView.getContext().getResources().getString(R.string.account_dialog_cancel),null);
+        builder.setTitle(itemView.getContext().getString(R.string.vote_detail_dialog_password_title));
+        final AlertDialog dialog = builder.create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
+                Button ok = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                ok.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        if (password.getText().toString().equals(data.password)) {
+                            dialog.dismiss();
+                            updateUI(optionButton);
+                        } else {
+                            Animation shake = AnimationUtils.loadAnimation(itemView.getContext(), R.anim.edittext_shake);
+                            password.startAnimation(shake);
+                            Toast.makeText(itemView.getContext(), itemView.getResources()
+                                    .getString(R.string.vote_detail_dialog_password_toast_retry), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        });
+        dialog.show();
+    }
+
     private class SyncDBRunnable implements Runnable {
 
         private VoteData data;
         private int clickPosition;
-        public SyncDBRunnable(VoteData data , int clickPosition) {
+
+        public SyncDBRunnable(VoteData data, int clickPosition) {
             this.data = data;
             this.clickPosition = clickPosition;
         }
+
         @Override
         public void run() {
             DataLoader.getInstance(itemView.getContext()).getVoteDataDao().insertOrReplace(data);
             List<Option> optionList = DataLoader.getInstance(itemView.getContext())
-                    .queryOptionsByVoteCode(data.getVoteCode(),2);
+                    .queryOptionsByVoteCode(data.getVoteCode(), 2);
             Option option = optionList.get(clickPosition);
-            option.setCount(option.getCount()+1);
+            option.setCount(option.getCount() + 1);
             DataLoader.getInstance(itemView.getContext()).getOptionDao().insertOrReplace(option);
-            Log.d("test"," Quick vote successful"+data.getTitle());
+            Log.d("test", " Quick vote successful" + data.getTitle());
         }
     }
 }

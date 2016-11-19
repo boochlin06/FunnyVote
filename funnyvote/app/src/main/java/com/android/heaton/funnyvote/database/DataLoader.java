@@ -156,7 +156,7 @@ public class DataLoader {
             data.setVoteImage(IMAGE_URL[randomImage]);
             data.setLocalImage(image);
 
-            int optionType = i % 11;
+            int optionType = i % 12;
             if (optionType == 0) {
                 // TWO POLL TYPE
                 data.setTitle("TWO POLL TYPE: option 1 , top are the same.");
@@ -364,6 +364,24 @@ public class DataLoader {
                 options.addAll(mockOptionData(data, 0, -1, -1));
 
                 data.setEndTime(System.currentTimeMillis() - 7 * 86400 * 1000);
+            } else if (optionType == 11) {
+                // TWO MORE TYPE
+                data.setTitle("TWO MORE TYPE: option 2 , top are the same. nedd password");
+                data.setIsPolled(false);
+                data.setIsNeedPassword(true);
+
+                data.setOptionCount(3);
+                data.setOption1Code(i + "_" + 0);
+                data.setOption1Title("option 1 title:" + i);
+                data.setOption2Code(i + "_" + 2);
+                data.setOption2Title("option 2 title:" + i);
+                // option 2 and top is the same
+                data.setOptionTopCode(i + "_" + 2);
+                data.setOptionTopTitle("option 2 title:" + i);
+
+                data.setEndTime(System.currentTimeMillis() + 7 * 86400 * 1000);
+
+                options.addAll(mockOptionData(data, maxOptionCount, 1, -1));
             }
             list.add(data);
         }
