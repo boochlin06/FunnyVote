@@ -45,6 +45,7 @@
     <string name="Wall_item_no_vote">No vote in list.</string>
     <string name="Wall_item_no_vote_refresh">No vote in list.\nPlease refresh list.</string>
     <string name="Wall_item_toast_no_vote_refresh">No vote after refresh</string>
+    <string name="Wall_item_toast_double_click_to_exit">Please click BACK again to exit</string>
 
     <!--Create vote page tab classification-->
     <string name="create_vote_tab_options">Options</string>

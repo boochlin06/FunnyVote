@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -17,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.ui.AccountFragment;
@@ -115,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         navigationView.setCheckedItem(mCurrentPage);
-        setupDrawerHeader();
     }
 
     private void switchFragment(final MenuItem menuItem) {
@@ -159,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 200);
     }
-
+    boolean doubleBackToExitPressedOnce = false;
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -171,7 +172,20 @@ public class MainActivity extends AppCompatActivity {
             navigationView.getMenu().getItem(0).setChecked(true);
             switchFragment(navigationView.getMenu().getItem(0));
         } else {
-            super.onBackPressed();
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                return;
+            }
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, R.string.Wall_item_toast_double_click_to_exit, Toast.LENGTH_SHORT).show();
+
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    doubleBackToExitPressedOnce=false;
+                }
+            }, 2000);
         }
     }
 
