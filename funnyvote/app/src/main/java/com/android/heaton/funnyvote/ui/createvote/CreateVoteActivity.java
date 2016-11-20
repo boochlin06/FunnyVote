@@ -1,7 +1,5 @@
 package com.android.heaton.funnyvote.ui.createvote;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,12 +19,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.heaton.funnyvote.FunnyVoteApplication;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
+import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 
 import org.greenrobot.eventbus.EventBus;
@@ -285,7 +283,13 @@ public class CreateVoteActivity extends AppCompatActivity {
             circleLoad.stopSpinning();
             circleLoad.setVisibility(View.GONE);
             Toast.makeText(getApplicationContext(), R.string.create_vote_create_successful, Toast.LENGTH_LONG).show();
-            VoteDetailContentActivity.sendShareIntent(getApplicationContext(),voteSetting);
+            VHVoteWallItem.startActivityToVoteDetail(getApplicationContext(), voteSetting.getVoteCode());
+            circleLoad.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    VoteDetailContentActivity.sendShareIntent(getApplicationContext(), voteSetting);
+                }
+            }, 1000);
         }
 
         @Override

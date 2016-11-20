@@ -425,7 +425,9 @@ public class DataLoader {
     public long queryFavoriteVotesCount() {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).buildCount().count();
     }
-
+    public long queryVoteDataByAuthorCount(String authorCode) {
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.AuthorCode.eq(authorCode)).buildCount().count();
+    }
     public List<VoteData> queryFavoriteVotes(int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).offset(offset).limit(limit).list();
     }
@@ -447,9 +449,9 @@ public class DataLoader {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(code)).list().get(0);
     }
 
-    public List<VoteData> queryVoteDataByAuthor(String authorCode, int limit) {
+    public List<VoteData> queryVoteDataByAuthor(String authorCode, int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.AuthorCode.eq(authorCode))
-                .limit(limit).orderDesc(VoteDataDao.Properties.StartTime).list();
+                .limit(limit).offset(offset).orderDesc(VoteDataDao.Properties.StartTime).list();
     }
 
     public User getUser() {
@@ -464,27 +466,28 @@ public class DataLoader {
         user.setUserIcon("");
         user.setType(User.TYPE_TEMP);
         user.setEmail("");
-        UserSharepreferenceController.updtaeUser(context,user);
+        UserSharepreferenceController.updtaeUser(context, user);
     }
+
     public void linkTempUserToLoginUser(String oldUserCode, User newUser) {
         List<VoteData> dataList = voteDataDao.queryBuilder()
                 .where(VoteDataDao.Properties.AuthorCode.eq(oldUserCode)).list();
-        for (int i = 0 ; i < dataList.size() ; i ++) {
+        for (int i = 0; i < dataList.size(); i++) {
             dataList.get(i).setAuthorCode(newUser.getUserCode());
             dataList.get(i).setAuthorIcon(newUser.getUserIcon());
             dataList.get(i).setAuthorName(newUser.getUserName());
         }
         voteDataDao.updateInTx(dataList);
     }
-    public void updateUserName(String code ,String userName) {
+
+    public void updateUserName(String code, String userName) {
         List<VoteData> dataList = voteDataDao.queryBuilder()
                 .where(VoteDataDao.Properties.AuthorCode.eq(code)).list();
-        for (int i = 0 ; i < dataList.size() ; i ++) {
+        for (int i = 0; i < dataList.size(); i++) {
             dataList.get(i).setAuthorName(userName);
         }
         voteDataDao.updateInTx(dataList);
     }
-
 
 
     public List<Promotion> queryAllPromotion() {

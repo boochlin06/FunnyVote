@@ -21,38 +21,33 @@ import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
 import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.bumptech.glide.Glide;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class PersonalActivity extends AppCompatActivity
         implements AppBarLayout.OnOffsetChangedListener {
 
     private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 20;
-    private boolean mIsAvatarShown = true;
+    private boolean isAvatarShown = true;
 
-    private ImageView mProfileImage;
+    private CircleImageView imgUserIcon;
     TextView txtUserName;
     TextView txtSubTitle;
-    private int mMaxScrollSize;
+    private int maxScrollSize;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_material_up_concept);
+        setContentView(R.layout.activity_personal);
 
         txtSubTitle = (TextView) findViewById(R.id.txtSubTitle);
         txtUserName = (TextView) findViewById(R.id.txtUserName);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayoutPersonal);
         ViewPager viewPager = (ViewPager) findViewById(R.id.vpMain);
         AppBarLayout appbarLayout = (AppBarLayout) findViewById(R.id.appBarMain);
-        mProfileImage = (ImageView) findViewById(R.id.imgProfileImage);
+        imgUserIcon = (CircleImageView) findViewById(R.id.imgUserIcon);
         User user = UserSharepreferenceController.getUser(this);
         txtUserName.setText(user.getUserName());
         txtSubTitle.setText(user.getType() + ":" + user.getEmail());
-        Glide.with(this)
-                .load(user.getUserIcon())
-                .override(92, 92)
-                .placeholder(R.drawable.user_avatar)
-                .fitCenter()
-                .crossFade()
-                .into(mProfileImage);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarSub);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -63,11 +58,19 @@ public class PersonalActivity extends AppCompatActivity
         });
 
         appbarLayout.addOnOffsetChangedListener(this);
-        mMaxScrollSize = appbarLayout.getTotalScrollRange();
+        maxScrollSize = appbarLayout.getTotalScrollRange();
 
         viewPager.setAdapter(new TabsAdapter(getSupportFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
+        Glide.with(this)
+                .load(user.getUserIcon())
+                .override(120, 120)
+                .dontAnimate()
+                .fitCenter()
+                .crossFade()
+                .into(imgUserIcon);
     }
+
 
     public static void start(Context c) {
         c.startActivity(new Intent(c, PersonalActivity.class));
@@ -75,20 +78,20 @@ public class PersonalActivity extends AppCompatActivity
 
     @Override
     public void onOffsetChanged(AppBarLayout appBarLayout, int i) {
-        if (mMaxScrollSize == 0)
-            mMaxScrollSize = appBarLayout.getTotalScrollRange();
+        if (maxScrollSize == 0)
+            maxScrollSize = appBarLayout.getTotalScrollRange();
 
-        int percentage = (Math.abs(i)) * 100 / mMaxScrollSize;
+        int percentage = (Math.abs(i)) * 100 / maxScrollSize;
 
-        if (percentage >= PERCENTAGE_TO_ANIMATE_AVATAR && mIsAvatarShown) {
-            mIsAvatarShown = false;
-            mProfileImage.animate().scaleY(0).scaleX(0).setDuration(200).start();
+        if (percentage >= PERCENTAGE_TO_ANIMATE_AVATAR && isAvatarShown) {
+            isAvatarShown = false;
+            imgUserIcon.animate().scaleY(0).scaleX(0).setDuration(200).start();
         }
 
-        if (percentage <= PERCENTAGE_TO_ANIMATE_AVATAR && !mIsAvatarShown) {
-            mIsAvatarShown = true;
+        if (percentage <= PERCENTAGE_TO_ANIMATE_AVATAR && !isAvatarShown) {
+            isAvatarShown = true;
 
-            mProfileImage.animate()
+            imgUserIcon.animate()
                     .scaleY(1).scaleX(1)
                     .start();
         }

@@ -47,7 +47,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     public View.OnClickListener MoveToVoteDetailOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            startActivityToVoteDetail(v.getContext());
+            startActivityToVoteDetail(v.getContext(), data.getVoteCode());
         }
     };
     @BindView(R.id.imgAuthorIcon)
@@ -253,11 +253,11 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         setLayout(this.data);
     }
 
-    private void startActivityToVoteDetail(Context context) {
+    public static void startActivityToVoteDetail(Context context, String voteCode) {
         Intent intent = new Intent(context, VoteDetailContentActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         Bundle bundle = new Bundle();
-        bundle.putString(BUNDLE_KEY_VOTE_CODE, data.getVoteCode());
+        bundle.putString(BUNDLE_KEY_VOTE_CODE, voteCode);
         intent.putExtras(bundle);
         context.startActivity(intent);
     }
@@ -287,7 +287,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     @OnLongClick({R.id.btnFirstOption, R.id.btnSecondOption, R.id.btnThirdOption})
     public boolean onOptionClick(LinearLayout optionButton) {
         if (!(data.getMinOption() == 1 && data.getMaxOption() == 1)) {
-            startActivityToVoteDetail(optionButton.getContext());
+            startActivityToVoteDetail(optionButton.getContext(), data.getVoteCode());
             return true;
         }
         if (data.getIsNeedPassword()) {
@@ -338,12 +338,12 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                 }, 500);
                 new Thread(new SyncDBRunnable(data, 1)).start();
             } else if (optionId == R.id.btnThirdOption) {
-                startActivityToVoteDetail(itemView.getContext());
+                startActivityToVoteDetail(itemView.getContext(), data.getVoteCode());
             }
         } else if (OPTION_TYPE_POLLED_TOP_1 == optionType) {
-            startActivityToVoteDetail(itemView.getContext());
+            startActivityToVoteDetail(itemView.getContext(), data.getVoteCode());
         } else if (OPTION_TYPE_POLLED_TOP_2 == optionType) {
-            startActivityToVoteDetail(itemView.getContext());
+            startActivityToVoteDetail(itemView.getContext(), data.getVoteCode());
         }
     }
 
@@ -352,7 +352,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         final AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
         builder.setView(R.layout.password_dialog);
         builder.setPositiveButton(itemView.getContext().getResources().getString(R.string.vote_detail_dialog_password_input), null);
-        builder.setNegativeButton(itemView.getContext().getResources().getString(R.string.account_dialog_cancel),null);
+        builder.setNegativeButton(itemView.getContext().getResources().getString(R.string.account_dialog_cancel), null);
         builder.setTitle(itemView.getContext().getString(R.string.vote_detail_dialog_password_title));
         final AlertDialog dialog = builder.create();
 

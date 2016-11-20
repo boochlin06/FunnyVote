@@ -14,11 +14,19 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.ui.AccountFragment;
+import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
 import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.android.heaton.funnyvote.ui.main.MainPageFragment;
 import com.android.heaton.funnyvote.ui.personal.PersonalActivity;
+import com.bumptech.glide.Glide;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,16 +54,39 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open,
                 R.string.drawer_close);
         drawerToggle.syncState();
-        drawerLayout.setDrawerListener(drawerToggle);
+
 
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
         navigationView.getMenu().getItem(0).setChecked(true);
         mCurrentPage = R.id.navigation_item_main;
 
         setupDrawerContent(navigationView);
+        setupDrawerHeader();
     }
 
     private void setupDrawerContent(final NavigationView navigationView) {
+        drawerLayout.addDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                setupDrawerHeader();
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -67,12 +98,24 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     }
                 });
+
+    }
+    private void setupDrawerHeader() {
+        View header = navigationView.getHeaderView(0);
+        CircleImageView icon = (CircleImageView) header.findViewById(R.id.imgUserIcon);
+        TextView name = (TextView) header.findViewById(R.id.txtUserName);
+        User user = UserSharepreferenceController.getUser(this);
+        name.setText(user.getUserName());
+        Glide.with(this).load(user.getUserIcon()).dontAnimate()
+                .override(92,92).placeholder(R.drawable.ic_action_account_circle).into(icon);
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         navigationView.setCheckedItem(mCurrentPage);
+        setupDrawerHeader();
     }
 
     private void switchFragment(final MenuItem menuItem) {

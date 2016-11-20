@@ -169,21 +169,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         setUpSubmit();
         setUpOptionAdapter(new ArrayList<Option>());
 
-        ryOptionArea.addOnScrollListener(new HidingScrollListener() {
-            @Override
-            public void onHide() {
-                famOther.collapse();
-                famOther.animate().translationY(
-                        famOther.getHeight())
-                        .setInterpolator(new AccelerateInterpolator(2));
-            }
-
-            @Override
-            public void onShow() {
-                this.resetScrollDistance();
-                famOther.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
-            }
-        });
         new LoadVoteDataTask(voteCode).execute();
     }
 
@@ -216,6 +201,21 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         } else {
             fabPreResult.setVisibility(View.VISIBLE);
         }
+        ryOptionArea.addOnScrollListener(new HidingScrollListener() {
+            @Override
+            public void onHide() {
+                famOther.collapse();
+                famOther.animate().translationY(
+                        famOther.getHeight())
+                        .setInterpolator(new AccelerateInterpolator(2));
+            }
+
+            @Override
+            public void onShow() {
+                this.resetScrollDistance();
+                famOther.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
+            }
+        });
     }
 
     private void setUpSubmit() {
