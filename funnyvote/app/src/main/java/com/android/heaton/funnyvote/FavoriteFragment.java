@@ -70,6 +70,7 @@ public class FavoriteFragment extends android.support.v4.app.Fragment {
         voteDataList = DataLoader.getInstance(getContext()).queryFavoriteVotes(0, 50);
         adapter = new VoteWallItemAdapter(getActivity()
                 , voteDataList);
+        adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
         adapter.setMaxCount(DataLoader.getInstance(getContext()).queryFavoriteVotesCount());
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
         scaleInAnimationAdapter.setDuration(1000);

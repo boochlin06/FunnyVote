@@ -11,6 +11,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -86,9 +87,9 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     toolbar.setBackgroundColor(getResources().getColor(R.color.color_primary));
                 }
-                mCurrentPage = menuItem.getItemId();
                 switch (menuId) {
                     case R.id.navigation_item_main:
+                        mCurrentPage = menuItem.getItemId();
                         ft.replace(R.id.frame_content, new MainPageFragment()).commit();
                         toolbar.setTitle(getString(R.string.drawer_home));
                         break;
@@ -101,10 +102,12 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, PersonalActivity.class));
                         break;
                     case R.id.navigation_item_list_favorite:
+                        mCurrentPage = menuItem.getItemId();
                         ft.replace(R.id.frame_content, new FavoriteFragment()).commit();
                         toolbar.setTitle(R.string.drawer_favorite);
                         break;
                     case R.id.navigation_account:
+                        mCurrentPage = menuItem.getItemId();
                         ft.replace(R.id.frame_content, new AccountFragment()).commit();
                         toolbar.setBackgroundColor(getColor(R.color.md_light_blue_100));
                         toolbar.setTitle(R.string.drawer_account);

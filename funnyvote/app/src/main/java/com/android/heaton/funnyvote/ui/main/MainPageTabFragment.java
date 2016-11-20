@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
@@ -97,20 +98,24 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(0, 50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
+            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
         } else if (tab.equals(TAB_NEW)) {
             voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(0, 50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
+            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
         } else if (tab.equals(TAB_CREATE)) {
             voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
                     UserSharepreferenceController.getUser(getContext()).getUserCode(), 50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
+            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
         } else if (tab.equals(TAB_PARTICIPATE)) {
             voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
                     UserSharepreferenceController.getUser(getContext()).getUserCode(), 50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
+            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
         }
         adapter.setOnReloadClickListener(this);
         adapter.setMaxCount(DataLoader.getInstance(getContext()).queryHotVotesCount());
@@ -225,8 +230,12 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             moreData = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
                     UserSharepreferenceController.getUser(getContext()).getUserCode(), LIMIT);
         }
+        Log.d("test","onReloadClicked");
         if (moreData != null && moreData.size() > 0) {
             voteDataList.addAll(moreData);
+            adapter.notifyDataSetChanged();
+        } else {
+            Toast.makeText(getContext(),R.string.Wall_item_toast_no_vote_refresh,Toast.LENGTH_SHORT).show();
             adapter.notifyDataSetChanged();
         }
     }
