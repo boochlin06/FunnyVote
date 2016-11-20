@@ -62,13 +62,17 @@ public class PersonalActivity extends AppCompatActivity
 
         viewPager.setAdapter(new TabsAdapter(getSupportFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
-        Glide.with(this)
-                .load(user.getUserIcon())
-                .override(120, 120)
-                .dontAnimate()
-                .fitCenter()
-                .crossFade()
-                .into(imgUserIcon);
+        if (user.getUserIcon() == null || user.getUserIcon().isEmpty()) {
+            imgUserIcon.setImageResource(R.drawable.user_avatar);
+        } else {
+            Glide.with(this)
+                    .load(user.getUserIcon())
+                    .override(120, 120)
+                    .dontAnimate()
+                    .fitCenter()
+                    .crossFade()
+                    .into(imgUserIcon);
+        }
     }
 
 
