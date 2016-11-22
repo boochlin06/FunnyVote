@@ -11,7 +11,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,14 +30,14 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
+
 /**
  * Created by heaton on 16/4/1.
  */
 public class MainPageFragment extends android.support.v4.app.Fragment {
 
-    private static final int NUM_PAGES = 5;
-
-    private ViewPager vpHeader;
+    private AutoScrollViewPager vpHeader;
     private List<View> headerViewList;
     private AppBarLayout appBarMain;
 
@@ -48,7 +47,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         View view = inflater.inflate(R.layout.fragment_main_page_top, null);
         initialHeaderView();
 
-        vpHeader = (ViewPager) view.findViewById(R.id.vpHeader);
+        vpHeader = (AutoScrollViewPager) view.findViewById(R.id.vpHeader);
         vpHeader.setAdapter(new HeaderAdapter(headerViewList));
         vpHeader.setCurrentItem(0);
         appBarMain = (AppBarLayout) view.findViewById(R.id.appBarMain);
@@ -60,6 +59,19 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
         CirclePageIndicator titleIndicator = (CirclePageIndicator) view.findViewById(R.id.vpIndicator);
         titleIndicator.setViewPager(vpHeader);
+        vpHeader.setInterval(5000);
+        vpHeader.setScrollDurationFactor(5);
+        vpHeader.startAutoScroll();
+        appBarMain.addOnOffsetChangedListener(new AppBarStateChangeListener() {
+            @Override
+            public void onStateChanged(AppBarLayout appBarLayout, State state) {
+                if (state == State.EXPANDED) {
+                    vpHeader.startAutoScroll();
+                } else if (state == State.COLLAPSED) {
+                    vpHeader.stopAutoScroll();
+                }
+            }
+        });
 
         return view;
     }
@@ -67,20 +79,20 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        vpHeader.stopAutoScroll();
         EventBus.getDefault().unregister(this);
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        vpHeader.startAutoScroll();
         EventBus.getDefault().register(this);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUIChange(EventBusController.UIControlEvent event) {
-        Log.d("test", "message:" + event.message);
         if (event.message.equals(EventBusController.UIControlEvent.SCROLL_TO_TOP)) {
-            Log.d("test", "message:" + event.message);
             appBarMain.setExpanded(true);
         }
     }
@@ -97,7 +109,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         for (int i = 0; i < promotionList.size(); i++) {
             View headerItem = mInflater.inflate(R.layout.main_page_header_item, null);
             ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
-            // TODO: only for test , use long as image id.
             Glide.with(this)
                     .load(promotionList.get(i).getImageURL())
                     .override(320, 180)
@@ -179,5 +190,37 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             }
             return "";
         }
+    }
+    public abstract static class AppBarStateChangeListener implements AppBarLayout.OnOffsetChangedListener {
+
+        public enum State {
+            EXPANDED,
+            COLLAPSED,
+            IDLE
+        }
+
+        private State mCurrentState = State.IDLE;
+
+        @Override
+        public final void onOffsetChanged(AppBarLayout appBarLayout, int i) {
+            if (i == 0) {
+                if (mCurrentState != State.EXPANDED) {
+                    onStateChanged(appBarLayout, State.EXPANDED);
+                }
+                mCurrentState = State.EXPANDED;
+            } else if (Math.abs(i) >= appBarLayout.getTotalScrollRange()) {
+                if (mCurrentState != State.COLLAPSED) {
+                    onStateChanged(appBarLayout, State.COLLAPSED);
+                }
+                mCurrentState = State.COLLAPSED;
+            } else {
+                if (mCurrentState != State.IDLE) {
+                    onStateChanged(appBarLayout, State.IDLE);
+                }
+                mCurrentState = State.IDLE;
+            }
+        }
+
+        public abstract void onStateChanged(AppBarLayout appBarLayout, State state);
     }
 }
