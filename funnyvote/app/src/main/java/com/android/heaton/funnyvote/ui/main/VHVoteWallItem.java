@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.database.DataLoader;
@@ -35,6 +36,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
@@ -51,7 +53,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         }
     };
     @BindView(R.id.imgAuthorIcon)
-    ImageView imgAuthorIcon;
+    CircleImageView imgAuthorIcon;
     @BindView(R.id.txtAuthorName)
     TextView txtAuthorName;
     @BindView(R.id.txtPubTime)
@@ -117,11 +119,20 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                 : R.drawable.ic_star_border_24dp);
 
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
-            imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
+            if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
+                TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
+                        .buildRound(data.getAuthorName().substring(0,1),R.color.primary_light);
+                imgAuthorIcon.setImageDrawable(drawable);
+            } else {
+                imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
+            }
         } else {
             Glide.with(itemView.getContext())
                     .load(data.getAuthorIcon())
-                    .override(36, 36)
+                    .override((int)(Util.convertDpToPixel(itemView.getContext().getResources()
+                                    .getDimension(R.dimen.image_author_size),itemView.getContext()))
+                            , (int) (Util.convertDpToPixel(itemView.getContext().getResources()
+                                    .getDimension(R.dimen.image_author_size),itemView.getContext())))
                     .fitCenter()
                     .crossFade()
                     .into(imgAuthorIcon);
@@ -134,7 +145,9 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         } else {
             Glide.with(itemView.getContext())
                     .load(data.getVoteImage())
-                    .override(320, 150)
+                    .override((int)(Util.convertDpToPixel(320,itemView.getContext()))
+                            , (int) (Util.convertDpToPixel(itemView.getContext().getResources()
+                                    .getDimension(R.dimen.image_main_height),itemView.getContext())))
                     .fitCenter()
                     .crossFade()
                     .into(imgMain);
@@ -263,7 +276,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     }
 
     @OnClick(R.id.relBarFavorite)
-    public void onBarFavoiteClick() {
+    public void onBarFavoriteClick() {
         data.setIsFavorite(!data.getIsFavorite());
         imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
                 R.drawable.ic_star_border_24dp);

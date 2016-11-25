@@ -18,47 +18,8 @@
             android:id="@+id/main_toolbar"
             layout="@layout/include_toolbar" />
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="3dp"
-            android:layout_marginLeft="@dimen/vote_detail_margin"
-            android:layout_marginRight="@dimen/vote_detail_margin"
-            android:padding="2dp">
-
-            <ImageView
-                android:id="@+id/imgAuthorIcon"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentLeft="true"
-                android:layout_gravity="center_vertical"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_person_black_24dp" />
-
-            <TextView
-                android:id="@+id/txtAuthorName"
-                android:layout_width="wrap_content"
-                android:layout_height="24dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="3dp"
-                android:layout_toRightOf="@id/imgAuthorIcon"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:text="Heaton Lin" />
-
-            <TextView
-                android:id="@+id/txtPubTime"
-                android:layout_width="wrap_content"
-                android:layout_height="12dp"
-                android:layout_below="@id/txtAuthorName"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="3dp"
-                android:layout_toRightOf="@id/imgAuthorIcon"
-                android:textColor="@color/secondary_text"
-                android:textSize="8sp"
-                tools:text="2016/04/08" />
-        </RelativeLayout>
+        <include android:id="@+id/author_bar"
+            layout="@layout/include_author"/>
 
         <TextView
             android:id="@+id/txtTitle"
@@ -102,7 +63,10 @@
                     <ImageView
                         android:id="@+id/imgMain"
                         android:layout_width="match_parent"
-                        android:layout_height="150dp"
+                        android:layout_height="@dimen/image_main_height"
+                        android:paddingRight="12dp"
+                        android:background="#FFFFFF"
+                        android:paddingLeft="12dp"
                         android:scaleType="fitXY" />
 
                 </android.support.design.widget.CollapsingToolbarLayout>

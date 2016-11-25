@@ -12,11 +12,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -140,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.navigation_item_create_vote:
                         startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
                         break;
-                    case R.id.navigation_item_list_history:
+                    case R.id.navigation_item_list_my_box:
 //                        ft.replace(R.id.frame_content, new HistoryFragment()).commit();
 //                        toolbar.setTitle(R.string.drawer_history);
                         startActivity(new Intent(MainActivity.this, PersonalActivity.class));

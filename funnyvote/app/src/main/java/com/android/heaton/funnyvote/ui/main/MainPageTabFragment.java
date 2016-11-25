@@ -116,13 +116,12 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
             adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByAuthorCount(user.getUserCode()));
         } else if (tab.equals(TAB_PARTICIPATE)) {
-            User user = UserSharepreferenceController.getUser(getContext());
-            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
-                    user.getUserCode(), 0, 50);
+            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByParticipate(
+                     0, 50);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
-            adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByAuthorCount(user.getUserCode()));
+            adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByParticipateCount());
         }
         adapter.setOnReloadClickListener(this);
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
@@ -212,8 +211,8 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
                     UserSharepreferenceController.getUser(getContext()).getUserCode(), 0, LIMIT);
         } else if (tab.equals(TAB_PARTICIPATE)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
-                    UserSharepreferenceController.getUser(getContext()).getUserCode(), 0, LIMIT);
+            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByParticipate(
+                    0, LIMIT);
         }
         Log.d("test", "Refresh wall item :" + tab);
         adapter.setVoteList(voteDataList);
@@ -233,8 +232,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             moreData = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
                     UserSharepreferenceController.getUser(getContext()).getUserCode(), offset, LIMIT);
         } else if (tab.equals(TAB_PARTICIPATE)) {
-            moreData = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
-                    UserSharepreferenceController.getUser(getContext()).getUserCode(), offset, LIMIT);
+            moreData = DataLoader.getInstance(getContext()).queryVoteDataByParticipate( offset, LIMIT);
         }
         Log.d("test", "onReloadClicked");
         if (moreData != null && moreData.size() > 0) {

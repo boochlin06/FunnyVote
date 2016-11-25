@@ -2,7 +2,6 @@ package com.android.heaton.funnyvote.ui.votedetail;
 
 import android.animation.ObjectAnimator;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
@@ -59,8 +58,8 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
         txtOptionTitle.setText(option.getTitle());
         txtOptionNumber.setText(Integer.toString(getAdapterPosition() + 1));
         txtPollCount.setText(Integer.toString(option.getCount()));
-        double percent = (double)option.getCount()/totalPollCount * 100;
-        txtPollCountPercent.setText(String.format("%3.1f%%",percent));
+        double percent = totalPollCount == 0 ? 0 : (double) option.getCount() / totalPollCount * 100;
+        txtPollCountPercent.setText(String.format("%3.1f%%", percent));
         setUpImgChampion(isTop);
         setUpOptionExpandLayout();
         ObjectAnimator animator = ObjectAnimator.ofFloat(progressPollCount, "progress", 0, option.getCount());

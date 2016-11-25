@@ -23,7 +23,7 @@
 
     <!--Drawer Menu and toolbar title-->
     <string name="drawer_home">Home</string>
-    <string name="drawer_history">History</string>
+    <string name="drawer_my_box">My box</string>
     <string name="drawer_favorite">Favorite</string>
     <string name="drawer_create_new_vote">Create New Vote</string>
     <string name="drawer_settings">Settings</string>
@@ -75,6 +75,7 @@
 
     <string name="create_vote_toast_less_than_2_option">Option number cant less than 2.</string>
     <string name="create_vote_toast_endtime_more_than_current">Vote end time should over now.</string>
+    <string name="create_vote_toast_image_permission">"Cancelling, required permissions are not granted"</string>
 
     <string name="create_vote_dialog_error_title">Error</string>
     <string name="create_vote_dialog_error_done">DONE</string>
@@ -86,6 +87,8 @@
     <string name="create_vote_error_hint_title_empty">Vote title cant be empty.</string>
     <string name="create_vote_error_hint_password_empty">Vote password cant be empty.</string>
     <string name="create_vote_error_hint_endtime_more_than_now">Vote End time should over now.</string>
+
+    <string name="create_vote_error_crop_image_title">Vote picture.</string>
 
     <!--Vote detail activity-->
     <string name="vote_detail_toast_option_choice_hint" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
@@ -138,7 +141,7 @@
     <string name="account_google_log_in">Google Log In</string>
     <string name="account_log_out">Log out</string>
 
-    <string name="account_default_name">village people 9527</string>
+    <string name="account_default_name">Village people 9527</string>
 
     <string name="account_dialog_new_name_title">Enter new name</string>
     <string name="account_dialog_ok">OK</string>

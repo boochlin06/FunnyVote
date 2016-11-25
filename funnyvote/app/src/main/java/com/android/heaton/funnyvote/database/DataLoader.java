@@ -428,6 +428,9 @@ public class DataLoader {
     public long queryVoteDataByAuthorCount(String authorCode) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.AuthorCode.eq(authorCode)).buildCount().count();
     }
+    public long queryVoteDataByParticipateCount() {
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsPolled.eq(true)).buildCount().count();
+    }
     public List<VoteData> queryFavoriteVotes(int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).offset(offset).limit(limit).list();
     }
@@ -451,6 +454,10 @@ public class DataLoader {
 
     public List<VoteData> queryVoteDataByAuthor(String authorCode, int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.AuthorCode.eq(authorCode))
+                .limit(limit).offset(offset).orderDesc(VoteDataDao.Properties.StartTime).list();
+    }
+    public List<VoteData> queryVoteDataByParticipate(int offset, int limit) {
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsPolled.eq(true))
                 .limit(limit).offset(offset).orderDesc(VoteDataDao.Properties.StartTime).list();
     }
 

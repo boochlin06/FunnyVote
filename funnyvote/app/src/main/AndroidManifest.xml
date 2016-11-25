@@ -3,7 +3,8 @@
     package="com.android.heaton.funnyvote">
 
     <uses-permission android:name="android.permission.INTERNET"/>
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
         android:name=".FunnyVoteApplication"
         android:allowBackup="true"
@@ -64,6 +65,8 @@
             android:theme="@style/MDDialog">
         </activity>
         <activity android:name=".ui.personal.PersonalActivity"/>
+        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat"/>
     </application>
 
 </manifest>

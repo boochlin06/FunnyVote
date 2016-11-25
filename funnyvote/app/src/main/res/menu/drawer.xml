@@ -10,9 +10,9 @@
             android:icon="@android:drawable/ic_menu_agenda"
             android:title="@string/drawer_home" />
         <item
-            android:id="@+id/navigation_item_list_history"
+            android:id="@+id/navigation_item_list_my_box"
             android:icon="@android:drawable/ic_menu_recent_history"
-            android:title="@string/drawer_history" />
+            android:title="@string/drawer_my_box" />
         <item
             android:id="@+id/navigation_item_list_favorite"
             android:icon="@android:drawable/star_big_on"

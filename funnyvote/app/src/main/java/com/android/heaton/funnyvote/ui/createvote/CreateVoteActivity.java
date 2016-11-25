@@ -1,6 +1,12 @@
 package com.android.heaton.funnyvote.ui.createvote;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -11,21 +17,27 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
+import com.bumptech.glide.Glide;
+import com.theartofdev.edmodo.cropper.CropImage;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -36,6 +48,7 @@ import java.util.List;
 import at.grabner.circleprogress.CircleProgressView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by heaton on 16/1/10.
@@ -50,14 +63,17 @@ public class CreateVoteActivity extends AppCompatActivity {
     TabLayout tabLayoutCreateVote;
     @BindView(R.id.vpSubArea)
     ViewPager vpSubArea;
-    @BindView(R.id.imgMain)
-    ImageView imgMain;
     @BindView(R.id.circleLoad)
     CircleProgressView circleLoad;
     Toolbar mainToolbar;
+    @BindView(R.id.imgMain)
+    ImageView imgMain;
+    @BindView(R.id.imgPick)
+    ImageView imgPick;
     private CreateVoteTabSettingFragment settingFragment;
     private CreateVoteTabOptionFragment optionFragment;
     private long newOptionIdAuto = 2;
+    private Uri cropImageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +135,68 @@ public class CreateVoteActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @OnClick({R.id.imgMain, R.id.imgPick})
+    public void onSelectImageClick(View view) {
+        imgMain.setVisibility(View.VISIBLE);
+        imgPick.setVisibility(View.GONE);
+        RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        p.addRule(RelativeLayout.BELOW, imgMain.getId());
+        vpSubArea.setLayoutParams(p);
+        CropImage.startPickImageActivity(this);
+    }
+
+    @Override
+    @SuppressLint("NewApi")
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // handle result of pick image chooser
+        if (requestCode == CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Uri imageUri = CropImage.getPickImageResultUri(this, data);
+
+            // For API >= 23 we need to check specifically that we have permissions to read external storage.
+            if (CropImage.isReadExternalStoragePermissionsRequired(this, imageUri)) {
+                // request permissions and handle the result in onRequestPermissionsResult()
+                cropImageUri = imageUri;
+                Log.d("test", "onActivityResult:" + cropImageUri);
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
+            } else {
+                // no permissions required or already grunted, can start crop image activity
+                Log.d("test", "onActivityResult:" + imageUri);
+                startCropImageActivity(imageUri);
+
+            }
+        } else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                Uri resultUri = result.getUri();
+                Log.d("test", "CROP_IMAGE_ACTIVITY_REQUEST_CODE:" + resultUri);
+                cropImageUri = resultUri;
+                Glide.with(this).load(resultUri).into(imgMain);
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+            }
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE) {
+            if (cropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // required permissions granted, start crop image activity
+                startCropImageActivity(cropImageUri);
+            } else {
+                Toast.makeText(this, R.string.create_vote_toast_image_permission, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void startCropImageActivity(Uri imageUri) {
+        CropImage.activity(imageUri)
+                .setActivityTitle(getString(R.string.create_vote_error_crop_image_title))
+                .setMaxCropResultSize(imgMain.getWidth() * 2, (int) Util.convertDpToPixel(150 * 2, this))
+                .setMinCropResultSize(imgMain.getWidth(), (int) Util.convertDpToPixel(150, this))
+                .start(this);
+    }
+
     private void submitCreateVote() {
         VoteData voteSetting = settingFragment.getVoteSettings();
         List<Option> optionList = optionFragment.getOptionList();
@@ -165,7 +243,6 @@ public class CreateVoteActivity extends AppCompatActivity {
             errorNumber++;
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_password_empty) + "\n");
         }
-
         if (errorNumber == 0) {
             // SHOW SHARE VOTE DIALOG
             new UpdateVoteDataTask(voteSetting, optionList).execute();
@@ -296,8 +373,13 @@ public class CreateVoteActivity extends AppCompatActivity {
         protected Void doInBackground(Void... params) {
             voteSetting.setVoteCode(Long.toString(System.currentTimeMillis()));
             voteSetting.setOptionCount(optionList.size());
-            // For test.
-            voteSetting.setVoteImage("http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png");
+
+            if (cropImageUri != null) {
+                voteSetting.setVoteImage(cropImageUri.toString());
+            } else {
+                // For test.
+                voteSetting.setVoteImage("http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png");
+            }
             for (int i = 0; i < optionList.size(); i++) {
                 Option option = optionList.get(i);
                 option.setVoteCode(voteSetting.getVoteCode());

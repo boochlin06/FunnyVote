@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="3dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginTop="8dp"
+    android:padding="2dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imgAuthorIcon"
+        android:layout_width="@dimen/image_author_size"
+        android:layout_height="@dimen/image_author_size"
+        android:layout_alignParentLeft="true"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_person_black_24dp" />
+
+    <TextView
+        android:id="@+id/txtAuthorName"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="6dp"
+        android:layout_toRightOf="@id/imgAuthorIcon"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Heaton Lin" />
+
+    <TextView
+        android:id="@+id/txtPubTime"
+        android:layout_width="wrap_content"
+        android:layout_height="12dp"
+        android:layout_below="@id/txtAuthorName"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="6dp"
+        android:layout_toRightOf="@id/imgAuthorIcon"
+        android:textColor="@color/secondary_text"
+        android:textSize="8sp"
+        tools:text="2016/04/08" />
+</RelativeLayout>

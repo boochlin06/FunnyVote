@@ -32,6 +32,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.database.DataLoader;
@@ -178,6 +179,27 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
         txtTitle.setText(data.getTitle());
         txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
+
+        if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
+            if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
+                TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
+                        .buildRound(data.getAuthorName().substring(0,1),R.color.primary_light);
+                imgAuthorIcon.setImageDrawable(drawable);
+            } else {
+                imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
+            }
+        } else {
+            Glide.with(this)
+                    .load(data.getAuthorIcon())
+                    .override((int)(Util.convertDpToPixel(getResources().getDimension(R.dimen.image_author_size),this))
+                            , (int)(Util.convertDpToPixel(getResources().getDimension(R.dimen.image_author_size),this)))
+                    .fitCenter()
+                    .crossFade()
+                    .into(imgAuthorIcon);
+        }
+
+
+
         txtBarPollCount.setText(String.format(this
                 .getString(R.string.Wall_item_bar_vote_count), data.getPollCount()));
 
@@ -185,7 +207,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 R.drawable.ic_star_border_24dp);
         Glide.with(this)
                 .load(data.getVoteImage())
-                .override(320, 150)
+                .override((int)(Util.convertDpToPixel(320,this)), (int) (Util.convertDpToPixel(150,this)))
                 .fitCenter()
                 .crossFade()
                 .into(imgMain);
