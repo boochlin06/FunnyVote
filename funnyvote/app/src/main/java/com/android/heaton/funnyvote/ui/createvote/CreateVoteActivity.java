@@ -142,6 +142,7 @@ public class CreateVoteActivity extends AppCompatActivity {
         RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         p.addRule(RelativeLayout.BELOW, imgMain.getId());
+        p.addRule(RelativeLayout.ABOVE, tabLayoutCreateVote.getId());
         vpSubArea.setLayoutParams(p);
         CropImage.startPickImageActivity(this);
     }
