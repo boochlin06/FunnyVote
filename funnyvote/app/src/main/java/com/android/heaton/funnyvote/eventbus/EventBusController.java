@@ -2,6 +2,10 @@ package com.android.heaton.funnyvote.eventbus;
 
 import com.android.heaton.funnyvote.database.VoteData;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Response;
+
 /**
  * Created by heaton on 2016/10/2.
  */
@@ -61,5 +65,21 @@ public class EventBusController {
             this.data = data;
             this.message = message;
         }
+    }
+    public final static class NetworkEvent {
+        public static final String INIT_GUEST = "init_guest";
+        public static final String INIT_DB = "init_db";
+
+        public Response<ResponseBody> response = null;
+        public Call call;
+        public String message;
+        public boolean success = false;
+        public NetworkEvent(String message, boolean success, Call call, Response<ResponseBody> response) {
+            this.call=call;
+            this.success = success;
+            this.response = response;
+            this.message = message;
+        }
+
     }
 }

@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.android.heaton.funnyvote.database.DaoMaster;
 import com.android.heaton.funnyvote.database.DaoSession;
+import com.android.heaton.funnyvote.retrofit.Server;
 import com.facebook.FacebookSdk;
 import com.facebook.stetho.Stetho;
 

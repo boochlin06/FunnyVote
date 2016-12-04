@@ -182,7 +182,10 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
             if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
-                TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
+                // TODO: MAYBE TRY PALETTE
+                TextDrawable drawable = TextDrawable.builder().beginConfig()
+                        .width((int) getResources().getDimension(R.dimen.image_author_size))
+                        .height((int) getResources().getDimension(R.dimen.image_author_size)).endConfig()
                         .buildRound(data.getAuthorName().substring(0,1),R.color.primary_light);
                 imgAuthorIcon.setImageDrawable(drawable);
             } else {

@@ -150,4 +150,7 @@
     <!--Personal -->
     <string name="personal_tab_create">CREATE</string>
     <string name="personal_tab_participate">PARTICIPATE</string>
+
+    <!--Network-->
+    <string name="toast_network_connect_error">Network connect error.</string>
 </resources>

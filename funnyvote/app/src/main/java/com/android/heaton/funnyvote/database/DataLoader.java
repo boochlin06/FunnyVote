@@ -466,16 +466,6 @@ public class DataLoader {
         return userList.size() == 0 ? null : userList.get(0);
     }
 
-    public void initTempUser() {
-        User user = new User();
-        user.setUserCode(Long.toString(System.currentTimeMillis()));
-        user.setUserName(context.getString(R.string.account_default_name));
-        user.setUserIcon("");
-        user.setType(User.TYPE_TEMP);
-        user.setEmail("");
-        UserSharepreferenceController.updtaeUser(context, user);
-    }
-
     public void linkTempUserToLoginUser(String oldUserCode, User newUser) {
         List<VoteData> dataList = voteDataDao.queryBuilder()
                 .where(VoteDataDao.Properties.AuthorCode.eq(oldUserCode)).list();

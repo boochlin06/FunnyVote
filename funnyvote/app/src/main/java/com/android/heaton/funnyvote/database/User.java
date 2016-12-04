@@ -13,7 +13,7 @@ public class User {
     public static final String TYPE_FACEBOOK = "facebook";
     public static final String TYPE_GOOGLE = "google";
     public static final String TYPE_TWITTER = "twitter";
-    public static final String TYPE_TEMP = "temp";
+    public static final String TYPE_GUEST = "guest";
 
     @Id
     private Long id;

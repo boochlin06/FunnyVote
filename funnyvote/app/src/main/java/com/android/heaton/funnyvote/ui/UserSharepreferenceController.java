@@ -22,12 +22,15 @@ public class UserSharepreferenceController {
     public static SharedPreferences getUserSp(Context context) {
         return context.getSharedPreferences(SHARED_PREF_USER, Context.MODE_PRIVATE);
     }
+    public static boolean isGuest(Context context) {
+        return getUserSp(context).getString(KEY_TYPE, User.TYPE_GUEST).equals(User.TYPE_GUEST);
+    }
 
     public static User getUser(Context context) {
         String name = getUserSp(context).getString(KEY_NAME, context.getString(R.string.account_default_name));
         String code = getUserSp(context).getString(KEY_USER_ID, "");
         String email = getUserSp(context).getString(KEY_EMAIL, "");
-        String type = getUserSp(context).getString(KEY_TYPE, "");
+        String type = getUserSp(context).getString(KEY_TYPE, User.TYPE_GUEST);
         String icon = getUserSp(context).getString(KEY_ICON, "");
         User user = new User();
         user.setUserName(name);
@@ -53,7 +56,7 @@ public class UserSharepreferenceController {
         editor.putString(KEY_NAME, context.getString(R.string.account_default_name));
         editor.putString(KEY_USER_ID, Long.toString(System.currentTimeMillis()));
         editor.putString(KEY_EMAIL, "");
-        editor.putString(KEY_TYPE, User.TYPE_TEMP);
+        editor.putString(KEY_TYPE, User.TYPE_GUEST);
         editor.putString(KEY_ICON, "");
         editor.commit();
     }

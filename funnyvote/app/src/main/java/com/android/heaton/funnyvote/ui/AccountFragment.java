@@ -241,7 +241,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
     private void saveUserProfile(User user) {
         Log.d(TAG, "saveUserProfile");
         SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
-        if (userPref.getString(UserSharepreferenceController.KEY_TYPE, User.TYPE_TEMP).equals(User.TYPE_TEMP)) {
+        if (userPref.getString(UserSharepreferenceController.KEY_TYPE, User.TYPE_GUEST).equals(User.TYPE_GUEST)) {
             DataLoader.getInstance(getContext()).linkTempUserToLoginUser(
                     userPref.getString(UserSharepreferenceController.KEY_USER_ID, ""), user);
         }
@@ -299,8 +299,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     private void showUserProfile() {
         SharedPreferences userPref = getActivity().getSharedPreferences(UserSharepreferenceController.SHARED_PREF_USER, Context.MODE_PRIVATE);
-        String type = userPref.getString(UserSharepreferenceController.KEY_TYPE, User.TYPE_TEMP);
-        if (!type.equals(User.TYPE_TEMP)) {
+        String type = userPref.getString(UserSharepreferenceController.KEY_TYPE, User.TYPE_GUEST);
+        if (!type.equals(User.TYPE_GUEST)) {
             mPicImageView.setVisibility(View.VISIBLE);
             String name = userPref.getString(UserSharepreferenceController.KEY_NAME, getString(R.string.account_default_name));
             mNameTextView.setText(name);
