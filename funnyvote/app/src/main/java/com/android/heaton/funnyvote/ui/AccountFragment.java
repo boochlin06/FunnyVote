@@ -287,9 +287,37 @@ public class AccountFragment extends android.support.v4.app.Fragment
     }
 
     private void removeUserProfile() {
+        showLoadingProgressBar();
         UserSharepreferenceController.removeUser(getContext());
         getContext().deleteFile(UserSharepreferenceController.PROFILE_PICTURE_FILE);
-        updateUI();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL).build();
+        Server.UserService userService = retrofit.create(Server.UserService.class);
+        Call<ResponseBody> call = userService.getGuestCode();
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        User user = new User();
+                        user.setUserCode(response.body().string());
+                        user.setUserName(getString(R.string.account_default_name));
+                        user.setUserIcon("");
+                        user.setType(User.TYPE_GUEST);
+                        user.setEmail("");
+                        UserSharepreferenceController.updtaeUser(getActivity(), user);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                updateUI();
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                updateUI();
+            }
+        });
     }
 
     private void updateUI() {
