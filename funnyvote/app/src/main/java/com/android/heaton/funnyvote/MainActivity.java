@@ -151,7 +151,13 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.navigation_account:
                         mCurrentPage = menuItem.getItemId();
                         ft.replace(R.id.frame_content, new AccountFragment()).commit();
-                        toolbar.setBackgroundColor(getColor(R.color.md_light_blue_100));
+                        int bgColor;
+                        if (Build.VERSION.SDK_INT >= 23) {
+                            bgColor = getColor(R.color.md_light_blue_100);
+                        } else {
+                            bgColor = getResources().getColor(R.color.md_light_blue_100);
+                        }
+                        toolbar.setBackgroundColor(bgColor);
                         toolbar.setTitle(R.string.drawer_account);
                         break;
                 }

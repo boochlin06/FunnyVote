@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.User;
+import com.android.heaton.funnyvote.retrofit.Server;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -51,6 +52,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * Created by chiu_mac on 2016/10/28.
@@ -214,23 +221,46 @@ public class AccountFragment extends android.support.v4.app.Fragment
                             JSONObject profile = response.getJSONObject();
                             String name = profile.getString("name");
                             String facebookID = profile.getString("id");
-                            String email = null;
-                            if (profile.has("email")) {
-                                email = profile.getString("email");
-                            }
+                            String email = profile.has("email") ? profile.getString("email"):null;
+
                             //download user's profile picture
                             String link = null;
                             if (profile.has("picture")) {
                                 JSONObject picture = profile.getJSONObject("picture");
                                 link = picture.getJSONObject("data").getString("url");
-                                URL url = new URL(link);
-                                new GetProfilePictureTask().execute(url);
                             }
-                            User user = new User(null, name, email, facebookID, facebookID, link, User.TYPE_FACEBOOK);
-                            saveUserProfile(user);
+                            final User user = new User(null, name, email, facebookID,
+                                    null, link, User.TYPE_FACEBOOK);
+                            Retrofit retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL).build();
+                            Server.UserService userService = retrofit.create(Server.UserService.class);
+                            Call<ResponseBody> call = userService.addFBUser(getString(R.string.facebook_app_id),
+                                    facebookID, name, link, email, null);
+                            call.enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    Log.d(TAG, "onResponse:" + response.code());
+                                    if (response.isSuccessful()) {
+                                        try {
+                                            user.setUserCode(response.body().string());
+                                            URL url = new URL(user.getUserIcon());
+                                            new GetProfilePictureTask().execute(url);
+                                            saveUserProfile(user);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                            showLoginButton();
+                                        }
+                                    } else {
+                                        showLoginButton();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    t.printStackTrace();
+                                    showLoginButton();
+                                }
+                            });
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (MalformedURLException e) {
                             e.printStackTrace();
                         }
                     }
