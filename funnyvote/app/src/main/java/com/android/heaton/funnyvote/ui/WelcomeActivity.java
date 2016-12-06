@@ -115,7 +115,7 @@ public class WelcomeActivity extends AppCompatActivity {
                     user.setUserIcon("");
                     user.setType(User.TYPE_GUEST);
                     user.setEmail("");
-                    UserSharepreferenceController.updtaeUser(getApplicationContext(), user);
+                    UserSharepreferenceController.updateUser(getApplicationContext(), user);
                     Log.d("test", "guest code:" + user.getUserCode());
                     sp.edit().putBoolean(SP_FIRST_GUEST, false).apply();
                 } catch (Exception e) {
