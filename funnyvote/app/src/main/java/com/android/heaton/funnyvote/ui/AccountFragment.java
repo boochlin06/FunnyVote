@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +24,8 @@ import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.retrofit.Server;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.util.ExceptionCatchingInputStream;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -69,19 +69,45 @@ public class AccountFragment extends android.support.v4.app.Fragment
     private static final int RC_GOOGLE_SIGN_IN = 101;
 
     //Facebook API
-    private CallbackManager mCallbackManager;
-    private AccessTokenTracker mAccessTokenTracker;
+    private CallbackManager callbackManager;
+    private AccessTokenTracker accessTokenTracker;
+    private GraphRequest.Callback facebookProfileCallback = new GraphRequest.Callback() {
+        @Override
+        public void onCompleted(GraphResponse response) {
+            try {
+                JSONObject profile = response.getJSONObject();
+                String name = profile.getString("name");
+                String facebookID = profile.getString("id");
+                String email = profile.has("email") ? profile.getString("email") : null;
+
+                String link = null;
+                if (profile.has("picture")) {
+                    JSONObject picture = profile.getJSONObject("picture");
+                    link = picture.getJSONObject("data").getString("url");
+                }
+                User user = new User(null, name, email, facebookID,
+                        null, link, User.TYPE_FACEBOOK);
+                addNewFBUser(user);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
     //Google Sign in API
-    private GoogleApiClient mGoogleApiClient;
+    private GoogleApiClient googleApiClient;
+
+    //Retrofit
+    Retrofit retrofit;
+    Server.UserService userService;
 
     //Views
-    ImageView mPicImageView;
-    TextView mNameTextView;
-    View mGoogleSignInBtn;
-    Button mSignoutBtn;
-    Button mFBLoginBtn;
-    ProgressBar mLoadingProgressBar;
+    ImageView picImageView;
+    TextView nameTextView;
+    View googleSignInBtn;
+    Button signoutBtn;
+    Button facebookLoginBtn;
+    ProgressBar loadingProgressBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,10 +115,12 @@ public class AccountFragment extends android.support.v4.app.Fragment
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
-        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+        googleApiClient = new GoogleApiClient.Builder(getActivity())
                 .enableAutoManage(getActivity(), this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+        retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL).build();
+        userService = retrofit.create(Server.UserService.class);
     }
 
     @Nullable
@@ -101,14 +129,13 @@ public class AccountFragment extends android.support.v4.app.Fragment
         Log.d(TAG, "onCreateView");
         View view = inflater.inflate(R.layout.fragment_account, null);
 
-        mCallbackManager = CallbackManager.Factory.create();
+        callbackManager = CallbackManager.Factory.create();
 
-        LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d(TAG, "onSuccess");
-                showLoadingProgressBar();
-                getFacebookProfile();
+                handleFacebookLogIn();
             }
 
             @Override
@@ -122,7 +149,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
             }
         });
 
-        mAccessTokenTracker = new AccessTokenTracker() {
+        accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
                 Log.d(TAG, "onCurrentAccessTokenChanged");
@@ -133,16 +160,16 @@ public class AccountFragment extends android.support.v4.app.Fragment
         };
 
         //Views
-        mFBLoginBtn = (Button) view.findViewById(R.id.fb_login_button);
-        mFBLoginBtn.setOnClickListener(this);
-        mNameTextView = (TextView) view.findViewById(R.id.profile_name);
-        mNameTextView.setOnClickListener(this);
-        mPicImageView = (ImageView) view.findViewById(R.id.profile_picture);
-        mGoogleSignInBtn = view.findViewById(R.id.google_sign_in_button);
-        mGoogleSignInBtn.setOnClickListener(this);
-        mSignoutBtn = (Button) view.findViewById(R.id.sign_out_button);
-        mSignoutBtn.setOnClickListener(this);
-        mLoadingProgressBar = (ProgressBar) view.findViewById(R.id.loading_progress_bar);
+        facebookLoginBtn = (Button) view.findViewById(R.id.fb_login_button);
+        facebookLoginBtn.setOnClickListener(this);
+        nameTextView = (TextView) view.findViewById(R.id.profile_name);
+        nameTextView.setOnClickListener(this);
+        picImageView = (ImageView) view.findViewById(R.id.profile_picture);
+        googleSignInBtn = view.findViewById(R.id.google_sign_in_button);
+        googleSignInBtn.setOnClickListener(this);
+        signoutBtn = (Button) view.findViewById(R.id.sign_out_button);
+        signoutBtn.setOnClickListener(this);
+        loadingProgressBar = (ProgressBar) view.findViewById(R.id.loading_progress_bar);
 
         updateUI();
 
@@ -164,49 +191,24 @@ public class AccountFragment extends android.support.v4.app.Fragment
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        mAccessTokenTracker.stopTracking();
-        mGoogleApiClient.stopAutoManage(getActivity());
-        mGoogleApiClient.disconnect();
+        accessTokenTracker.stopTracking();
+        googleApiClient.stopAutoManage(getActivity());
+        googleApiClient.disconnect();
         super.onDestroy();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mCallbackManager.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_GOOGLE_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            handleGoogleSignInResult(result);
+            handleGoogleSignIn(result);
         }
     }
 
-    private void handleGoogleSignInResult(GoogleSignInResult result) {
-        Log.d(TAG, "handleSignInResult:" + result.isSuccess());
-        if (result.isSuccess()) {
-            showLoadingProgressBar();
-            try {
-                // Signed in successfully
-                GoogleSignInAccount googleAccount = result.getSignInAccount();
-                String name = googleAccount.getDisplayName();
-                String googleID = googleAccount.getId();
-                String email = googleAccount.getEmail();
-                Uri picLink = googleAccount.getPhotoUrl();
-                User user = new User(null, name, email, googleID, googleID, picLink.toString(), User.TYPE_GOOGLE);
-                saveUserProfile(user);
-                Log.d(TAG, "name:" + name);
-                Log.d(TAG, "google ID:" + googleID);
-                Log.d(TAG, "email:" + email);
-                Log.d(TAG, "pic link:" + picLink.toString());
-                URL url = new URL(picLink.toString());
-                new GetProfilePictureTask().execute(url);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void getFacebookProfile() {
+    private void handleFacebookLogIn() {
         Bundle params = new Bundle();
         params.putString("fields", "email,name,picture.type(large)");
         new GraphRequest(
@@ -214,58 +216,26 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 "/me",
                 params,
                 HttpMethod.GET,
-                new GraphRequest.Callback() {
-                    public void onCompleted(GraphResponse response) {
-                        try {
-                            //save user profile
-                            JSONObject profile = response.getJSONObject();
-                            String name = profile.getString("name");
-                            String facebookID = profile.getString("id");
-                            String email = profile.has("email") ? profile.getString("email"):null;
-
-                            //download user's profile picture
-                            String link = null;
-                            if (profile.has("picture")) {
-                                JSONObject picture = profile.getJSONObject("picture");
-                                link = picture.getJSONObject("data").getString("url");
-                            }
-                            final User user = new User(null, name, email, facebookID,
-                                    null, link, User.TYPE_FACEBOOK);
-                            Retrofit retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL).build();
-                            Server.UserService userService = retrofit.create(Server.UserService.class);
-                            Call<ResponseBody> call = userService.addFBUser(getString(R.string.facebook_app_id),
-                                    facebookID, name, link, email, null);
-                            call.enqueue(new Callback<ResponseBody>() {
-                                @Override
-                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                    Log.d(TAG, "onResponse:" + response.code());
-                                    if (response.isSuccessful()) {
-                                        try {
-                                            user.setUserCode(response.body().string());
-                                            URL url = new URL(user.getUserIcon());
-                                            new GetProfilePictureTask().execute(url);
-                                            saveUserProfile(user);
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                            showLoginButton();
-                                        }
-                                    } else {
-                                        showLoginButton();
-                                    }
-                                }
-
-                                @Override
-                                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                    t.printStackTrace();
-                                    showLoginButton();
-                                }
-                            });
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+                facebookProfileCallback
         ).executeAsync();
+    }
+
+    private void handleGoogleSignIn(GoogleSignInResult result) {
+        Log.d(TAG, "handleSignInResult:" + result.isSuccess());
+        if (result.isSuccess()) {
+            // Signed in successfully
+            GoogleSignInAccount googleAccount = result.getSignInAccount();
+            String name = googleAccount.getDisplayName();
+            String googleID = googleAccount.getId();
+            String email = googleAccount.getEmail();
+            Uri picLink = googleAccount.getPhotoUrl();
+            User user = new User(null, name, email, googleID, null, picLink.toString(), User.TYPE_GOOGLE);
+            Log.d(TAG, "name:" + name);
+            Log.d(TAG, "google ID:" + googleID);
+            Log.d(TAG, "email:" + email);
+            Log.d(TAG, "pic link:" + picLink.toString());
+            addNewGoogleUser(user);
+        }
     }
 
     private void saveUserProfile(User user) {
@@ -280,44 +250,15 @@ public class AccountFragment extends android.support.v4.app.Fragment
         spEditor.putString(UserSharepreferenceController.KEY_USER_ID, user.getUserID());
         spEditor.putString(UserSharepreferenceController.KEY_TYPE, user.getType());
         spEditor.putString(UserSharepreferenceController.KEY_ICON, user.getUserIcon());
-        if (user.getEmail() != null) {
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
             spEditor.putString(UserSharepreferenceController.KEY_EMAIL, user.getEmail());
         }
         spEditor.commit();
     }
 
     private void removeUserProfile() {
-        showLoadingProgressBar();
         UserSharepreferenceController.removeUser(getContext());
-        getContext().deleteFile(UserSharepreferenceController.PROFILE_PICTURE_FILE);
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL).build();
-        Server.UserService userService = retrofit.create(Server.UserService.class);
-        Call<ResponseBody> call = userService.getGuestCode();
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    try {
-                        User user = new User();
-                        user.setUserCode(response.body().string());
-                        user.setUserName(getString(R.string.account_default_name));
-                        user.setUserIcon("");
-                        user.setType(User.TYPE_GUEST);
-                        user.setEmail("");
-                        UserSharepreferenceController.updtaeUser(getActivity(), user);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-                updateUI();
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                updateUI();
-            }
-        });
+        addNewGuestUser();
     }
 
     private void updateUI() {
@@ -325,21 +266,24 @@ public class AccountFragment extends android.support.v4.app.Fragment
         if (userPref.contains(UserSharepreferenceController.KEY_NAME)) {
             String name = userPref.getString(UserSharepreferenceController.KEY_NAME
                     , getString(R.string.account_default_name));
-            mNameTextView.setText(name);
-            new LoadProfilePictureTask().execute(getContext()
-                    .getFileStreamPath(UserSharepreferenceController.PROFILE_PICTURE_FILE).getAbsolutePath());
+            String link = userPref.getString(UserSharepreferenceController.KEY_ICON,"");
+            nameTextView.setText(name);
+            if (!link.isEmpty()) {
+                loadProfileImage(link);
+            }
+            showUserProfile();
         } else {
-            showLoginButton();
+            showLoginView();
         }
     }
 
     private void googleSignIn() {
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
         startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
     }
 
     private void googleSignOut() {
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+        Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
@@ -351,6 +295,11 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 });
     }
 
+    private void facebookLogin() {
+        LoginManager.getInstance().logInWithReadPermissions(this,
+                Arrays.asList("public_profile", "email"));
+    }
+
     private void facebookLogout() {
         LoginManager.getInstance().logOut();
     }
@@ -359,21 +308,21 @@ public class AccountFragment extends android.support.v4.app.Fragment
         SharedPreferences userPref = getActivity().getSharedPreferences(UserSharepreferenceController.SHARED_PREF_USER, Context.MODE_PRIVATE);
         String type = userPref.getString(UserSharepreferenceController.KEY_TYPE, User.TYPE_GUEST);
         if (!type.equals(User.TYPE_GUEST)) {
-            mPicImageView.setVisibility(View.VISIBLE);
+            picImageView.setVisibility(View.VISIBLE);
             String name = userPref.getString(UserSharepreferenceController.KEY_NAME, getString(R.string.account_default_name));
-            mNameTextView.setText(name);
-            mNameTextView.setVisibility(View.VISIBLE);
-            mLoadingProgressBar.setVisibility(View.GONE);
-            mFBLoginBtn.setVisibility(View.GONE);
-            mGoogleSignInBtn.setVisibility(View.GONE);
-            mSignoutBtn.setVisibility(View.VISIBLE);
-            mLoadingProgressBar.setVisibility(View.GONE);
+            nameTextView.setText(name);
+            nameTextView.setVisibility(View.VISIBLE);
+            loadingProgressBar.setVisibility(View.GONE);
+            facebookLoginBtn.setVisibility(View.GONE);
+            googleSignInBtn.setVisibility(View.GONE);
+            signoutBtn.setVisibility(View.VISIBLE);
+            loadingProgressBar.setVisibility(View.GONE);
         } else {
-            showLoginButton();
+            showLoginView();
         }
     }
 
-    private void showLoginButton() {
+    private void showLoginView() {
         SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
         String name;
         if (userPref.contains(UserSharepreferenceController.KEY_NAME)) {
@@ -382,23 +331,23 @@ public class AccountFragment extends android.support.v4.app.Fragment
             name = getString(R.string.account_default_name);
             userPref.edit().putString(UserSharepreferenceController.KEY_NAME, name).commit();
         }
-        mNameTextView.setText(name);
-        mNameTextView.setVisibility(View.VISIBLE);
-        mPicImageView.setImageResource(R.drawable.ic_action_account_circle);
-        mPicImageView.setVisibility(View.VISIBLE);
-        mFBLoginBtn.setVisibility(View.VISIBLE);
-        mSignoutBtn.setVisibility(View.GONE);
-        mGoogleSignInBtn.setVisibility(View.VISIBLE);
-        mLoadingProgressBar.setVisibility(View.GONE);
+        nameTextView.setText(name);
+        nameTextView.setVisibility(View.VISIBLE);
+        picImageView.setImageResource(R.drawable.ic_action_account_circle);
+        picImageView.setVisibility(View.VISIBLE);
+        facebookLoginBtn.setVisibility(View.VISIBLE);
+        signoutBtn.setVisibility(View.GONE);
+        googleSignInBtn.setVisibility(View.VISIBLE);
+        loadingProgressBar.setVisibility(View.GONE);
     }
 
-    private void showLoadingProgressBar() {
-        mLoadingProgressBar.setVisibility(View.VISIBLE);
-        mFBLoginBtn.setVisibility(View.GONE);
-        mSignoutBtn.setVisibility(View.GONE);
-        mGoogleSignInBtn.setVisibility(View.GONE);
-        mPicImageView.setVisibility(View.GONE);
-        mNameTextView.setVisibility(View.GONE);
+    private void showLoading() {
+        loadingProgressBar.setVisibility(View.VISIBLE);
+        facebookLoginBtn.setVisibility(View.GONE);
+        signoutBtn.setVisibility(View.GONE);
+        googleSignInBtn.setVisibility(View.GONE);
+        picImageView.setVisibility(View.GONE);
+        nameTextView.setVisibility(View.GONE);
     }
 
     private void showNameEditDialog() {
@@ -406,7 +355,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         View input = LayoutInflater.from(getContext()).inflate(R.layout.dialog_account_name_edit
                 , null);
         final EditText editText = (EditText) input.findViewById(R.id.edtName);
-        editText.setText(mNameTextView.getText().toString());
+        editText.setText(nameTextView.getText().toString());
         builder.setView(input);
         builder.setTitle(getString(R.string.account_dialog_new_name_title));
         builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {
@@ -414,7 +363,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
             public void onClick(DialogInterface dialogInterface, int i) {
                 SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
                 userPref.edit().putString(UserSharepreferenceController.KEY_NAME, editText.getText().toString()).commit();
-                mNameTextView.setText(editText.getText().toString());
+                nameTextView.setText(editText.getText().toString());
                 new UpdateUserName().execute(userPref.getString(UserSharepreferenceController.KEY_USER_ID, "")
                         , editText.getText().toString());
             }
@@ -437,8 +386,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fb_login_button:
-                LoginManager.getInstance().logInWithReadPermissions(this,
-                        Arrays.asList("public_profile", "email"));
+                facebookLogin();
                 break;
             case R.id.google_sign_in_button:
                 googleSignIn();
@@ -463,6 +411,69 @@ public class AccountFragment extends android.support.v4.app.Fragment
         }
     }
 
+    private void loadProfileImage(String link) {
+        Glide.with(this).load(link).into(picImageView);
+    }
+
+    private void addNewFBUser(final User user) {
+        Call<ResponseBody> addNewFBUser = userService.addFBUser(getString(R.string.facebook_app_id),
+                user.getUserID(), user.getUserName(), user.getUserIcon(), user.getEmail(), null);
+        addNewFBUser.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        user.setUserCode(response.body().string());
+                        saveUserProfile(user);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                updateUI();
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                t.printStackTrace();
+                updateUI();
+            }
+        });
+    }
+
+    private void addNewGoogleUser(final User user) {
+        //TODO:Server API is not ready
+        saveUserProfile(user);
+        updateUI();
+    }
+
+    private void addNewGuestUser() {
+        showLoading();
+        Call<ResponseBody> getGuestCode = userService.getGuestCode();
+        getGuestCode.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        User user = new User();
+                        user.setUserCode(response.body().string());
+                        user.setUserName(getString(R.string.account_default_name));
+                        user.setType(User.TYPE_GUEST);
+                        saveUserProfile(user);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                updateUI();
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                t.printStackTrace();
+                updateUI();
+            }
+        });
+    }
+
     class UpdateUserName extends AsyncTask<String, Void, Void> {
 
         @Override
@@ -471,50 +482,6 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 DataLoader.getInstance(getContext()).updateUserName(strings[0], strings[1]);
             }
             return null;
-        }
-    }
-
-    class LoadProfilePictureTask extends AsyncTask<String, Void, Bitmap> {
-        @Override
-        protected void onPreExecute() {
-            showLoadingProgressBar();
-        }
-
-        @Override
-        protected Bitmap doInBackground(String... strings) {
-            Bitmap pic = BitmapFactory.decodeFile(strings[0]);
-            return pic;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-            mPicImageView.setImageBitmap(bitmap);
-            showUserProfile();
-        }
-    }
-
-    class GetProfilePictureTask extends AsyncTask<URL, Void, Bitmap> {
-
-        @Override
-        protected Bitmap doInBackground(URL... params) {
-            try {
-                Bitmap pic = BitmapFactory.decodeStream(params[0].openStream());
-                pic.compress(Bitmap.CompressFormat.PNG, 90,
-                        getContext().openFileOutput(UserSharepreferenceController.PROFILE_PICTURE_FILE,
-                                Context.MODE_PRIVATE));
-                pic.recycle();
-                return pic;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-            updateUI();
         }
     }
 }

@@ -2,6 +2,7 @@ package com.android.heaton.funnyvote.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.User;
@@ -41,7 +42,7 @@ public class UserSharepreferenceController {
         return user;
     }
 
-    public static void updtaeUser(Context context, User user) {
+    public static void updateUser(Context context, User user) {
         SharedPreferences.Editor editor = getUserSp(context).edit();
         editor.putString(KEY_NAME, user.getUserName());
         editor.putString(KEY_USER_ID, user.getUserCode());
