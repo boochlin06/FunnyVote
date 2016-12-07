@@ -15,6 +15,9 @@ public class User {
     public static final int TYPE_TWITTER = 102;
     public static final int TYPE_GUEST = 103;
 
+    public static final String GENDER_MALE = "male";
+    public static final String GENDER_FEMALE = "female";
+
     @Id
     private Long id;
 
