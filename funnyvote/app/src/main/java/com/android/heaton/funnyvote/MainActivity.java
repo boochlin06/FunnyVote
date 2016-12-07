@@ -18,9 +18,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
-import com.android.heaton.funnyvote.ui.AccountFragment;
-import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
+import com.android.heaton.funnyvote.ui.account.AccountFragment;
 import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.android.heaton.funnyvote.ui.main.MainPageFragment;
 import com.android.heaton.funnyvote.ui.personal.PersonalActivity;
@@ -101,14 +101,22 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void setupDrawerHeader() {
-        View header = navigationView.getHeaderView(0);
-        CircleImageView icon = (CircleImageView) header.findViewById(R.id.imgUserIcon);
-        TextView name = (TextView) header.findViewById(R.id.txtUserName);
-        User user = UserSharepreferenceController.getUser(this);
-        name.setText(user.getUserName());
-        Glide.with(this).load(user.getUserIcon()).dontAnimate()
-                .override(92,92).placeholder(R.drawable.ic_action_account_circle).into(icon);
+        UserManager.getInstance(getApplicationContext()).getUser(new UserManager.GetUserCallback() {
+            @Override
+            public void onResponse(User user) {
+                View header = navigationView.getHeaderView(0);
+                CircleImageView icon = (CircleImageView) header.findViewById(R.id.imgUserIcon);
+                TextView name = (TextView) header.findViewById(R.id.txtUserName);
+                name.setText(user.getUserName());
+                Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
+                        .override(92,92).placeholder(R.drawable.ic_action_account_circle).into(icon);
+            }
 
+            @Override
+            public void onFailure() {
+
+            }
+        });
     }
 
     @Override

@@ -28,7 +28,10 @@ public class UserDao extends AbstractDao<User, Long> {
         public final static Property UserID = new Property(3, String.class, "userID", false, "USER_ID");
         public final static Property UserCode = new Property(4, String.class, "userCode", false, "USER_CODE");
         public final static Property UserIcon = new Property(5, String.class, "userIcon", false, "USER_ICON");
-        public final static Property Type = new Property(6, String.class, "type", false, "TYPE");
+        public final static Property Type = new Property(6, int.class, "type", false, "TYPE");
+        public final static Property Gender = new Property(7, String.class, "gender", false, "GENDER");
+        public final static Property MinAge = new Property(8, int.class, "minAge", false, "MIN_AGE");
+        public final static Property MaxAge = new Property(9, int.class, "maxAge", false, "MAX_AGE");
     }
 
 
@@ -50,7 +53,10 @@ public class UserDao extends AbstractDao<User, Long> {
                 "\"USER_ID\" TEXT," + // 3: userID
                 "\"USER_CODE\" TEXT," + // 4: userCode
                 "\"USER_ICON\" TEXT," + // 5: userIcon
-                "\"TYPE\" TEXT);"); // 6: type
+                "\"TYPE\" INTEGER NOT NULL ," + // 6: type
+                "\"GENDER\" TEXT," + // 7: gender
+                "\"MIN_AGE\" INTEGER NOT NULL ," + // 8: minAge
+                "\"MAX_AGE\" INTEGER NOT NULL );"); // 9: maxAge
     }
 
     /** Drops the underlying database table. */
@@ -92,11 +98,14 @@ public class UserDao extends AbstractDao<User, Long> {
         if (userIcon != null) {
             stmt.bindString(6, userIcon);
         }
+        stmt.bindLong(7, entity.getType());
  
-        String type = entity.getType();
-        if (type != null) {
-            stmt.bindString(7, type);
+        String gender = entity.getGender();
+        if (gender != null) {
+            stmt.bindString(8, gender);
         }
+        stmt.bindLong(9, entity.getMinAge());
+        stmt.bindLong(10, entity.getMaxAge());
     }
 
     @Override
@@ -132,11 +141,14 @@ public class UserDao extends AbstractDao<User, Long> {
         if (userIcon != null) {
             stmt.bindString(6, userIcon);
         }
+        stmt.bindLong(7, entity.getType());
  
-        String type = entity.getType();
-        if (type != null) {
-            stmt.bindString(7, type);
+        String gender = entity.getGender();
+        if (gender != null) {
+            stmt.bindString(8, gender);
         }
+        stmt.bindLong(9, entity.getMinAge());
+        stmt.bindLong(10, entity.getMaxAge());
     }
 
     @Override
@@ -153,7 +165,10 @@ public class UserDao extends AbstractDao<User, Long> {
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // userID
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // userCode
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // userIcon
-            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6) // type
+            cursor.getInt(offset + 6), // type
+            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // gender
+            cursor.getInt(offset + 8), // minAge
+            cursor.getInt(offset + 9) // maxAge
         );
         return entity;
     }
@@ -166,7 +181,10 @@ public class UserDao extends AbstractDao<User, Long> {
         entity.setUserID(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setUserCode(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
         entity.setUserIcon(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
-        entity.setType(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
+        entity.setType(cursor.getInt(offset + 6));
+        entity.setGender(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
+        entity.setMinAge(cursor.getInt(offset + 8));
+        entity.setMaxAge(cursor.getInt(offset + 9));
      }
     
     @Override

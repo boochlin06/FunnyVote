@@ -10,10 +10,10 @@ import org.greenrobot.greendao.annotation.Generated;
 
 @Entity
 public class User {
-    public static final String TYPE_FACEBOOK = "facebook";
-    public static final String TYPE_GOOGLE = "google";
-    public static final String TYPE_TWITTER = "twitter";
-    public static final String TYPE_GUEST = "guest";
+    public static final int TYPE_FACEBOOK = 100;
+    public static final int TYPE_GOOGLE = 101;
+    public static final int TYPE_TWITTER = 102;
+    public static final int TYPE_GUEST = 103;
 
     @Id
     private Long id;
@@ -26,11 +26,21 @@ public class User {
     private String userCode;
     private String userIcon;
     
-    private String type;
+    private int type;
 
-    @Generated(hash = 1931231789)
+    private String gender;
+
+    private int minAge;
+    private int maxAge;
+
+    @Generated(hash = 586692638)
+    public User() {
+    }
+
+    @Generated(hash = 1947222936)
     public User(Long id, String userName, String email, String userID,
-            String userCode, String userIcon, String type) {
+            String userCode, String userIcon, int type, String gender, int minAge,
+            int maxAge) {
         this.id = id;
         this.userName = userName;
         this.email = email;
@@ -38,10 +48,9 @@ public class User {
         this.userCode = userCode;
         this.userIcon = userIcon;
         this.type = type;
-    }
-
-    @Generated(hash = 586692638)
-    public User() {
+        this.gender = gender;
+        this.minAge = minAge;
+        this.maxAge = maxAge;
     }
 
     public Long getId() {
@@ -76,11 +85,11 @@ public class User {
         this.userID = userID;
     }
 
-    public String getType() {
+    public int getType() {
         return this.type;
     }
 
-    public void setType(String type) {
+    public void setType(int type) {
         this.type = type;
     }
 
@@ -94,6 +103,30 @@ public class User {
 
     public String getUserIcon() {
         return this.userIcon;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public int getMinAge() {
+        return minAge;
+    }
+
+    public void setMinAge(int minAge) {
+        this.minAge = minAge;
+    }
+
+    public int getMaxAge() {
+        return maxAge;
+    }
+
+    public void setMaxAge(int maxAge) {
+        this.maxAge = maxAge;
     }
 
     public void setUserIcon(String userIcon) {

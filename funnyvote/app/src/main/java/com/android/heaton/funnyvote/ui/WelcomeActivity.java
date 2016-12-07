@@ -1,5 +1,6 @@
 package com.android.heaton.funnyvote.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -35,7 +36,6 @@ import static com.android.heaton.funnyvote.eventbus.EventBusController.NetworkEv
 public class WelcomeActivity extends AppCompatActivity {
     public static final String SP_FIRST_TIME = "first_time";
     public static final String SP_FIRST_MOCK_DATA = "first_mock_data";
-    public static final String SP_FIRST_GUEST = "first_guest";
     private SharedPreferences sp;
     private AsyncTask syncTask = new AsyncTask() {
         @Override
@@ -68,65 +68,16 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EventBus.getDefault().register(this);
         setContentView(R.layout.activity_welcome);
-        sp = getSharedPreferences(SP_FIRST_TIME, 0);
+        sp = getSharedPreferences(SP_FIRST_TIME, Context.MODE_PRIVATE);
 
-        if (sp.getBoolean(SP_FIRST_GUEST, true) || UserSharepreferenceController.getUser(getApplicationContext())
-                .getUserCode().equals("")) {
-
-            Retrofit retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL).build();
-            Server.UserService service = retrofit.create(Server.UserService.class);
-            Call<ResponseBody> call = service.getGuestCode();
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    Log.d("test","on response:"+response.headers().toString());
-                    EventBus.getDefault().post(new EventBusController.NetworkEvent(INIT_GUEST
-                            , true, call,response));
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    EventBus.getDefault().post(new EventBusController.NetworkEvent(INIT_GUEST
-                            , false , call, null));
-                }
-            });
-        } else {
-            syncData();
-        }
+        syncData();
 
     }
 
     @Override
     protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
         super.onDestroy();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNetworkEvent(EventBusController.NetworkEvent event) {
-        if (event.message.equals(INIT_GUEST)) {
-            if (event.success) {
-                try {
-                    User user = new User();
-                    user.setUserCode(event.response.body().string());
-                    user.setUserName(getApplicationContext().getString(R.string.account_default_name));
-                    user.setUserIcon("");
-                    user.setType(User.TYPE_GUEST);
-                    user.setEmail("");
-                    UserSharepreferenceController.updateUser(getApplicationContext(), user);
-                    Log.d("test", "guest code:" + user.getUserCode());
-                    sp.edit().putBoolean(SP_FIRST_GUEST, false).apply();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), R.string.toast_network_connect_error, Toast.LENGTH_LONG).show();
-                }
-            } else {
-                Toast.makeText(getApplicationContext(), R.string.toast_network_connect_error, Toast.LENGTH_LONG).show();
-            }
-            syncData();
-        }
     }
 
     private void syncData() {
