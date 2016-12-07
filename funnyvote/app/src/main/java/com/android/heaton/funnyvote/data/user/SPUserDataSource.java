@@ -18,6 +18,9 @@ public class SPUserDataSource implements UserDataSource {
     private static final String KEY_EMAIL = "email";
     private static final String KEY_TYPE = "account_type";
     private static final String KEY_ICON = "icon";
+    private static final String KEY_GENDER = "gender";
+    private static final String KEY_MIN_AGE = "min_age";
+    private static final String KEY_MAX_AGE = "max_age";
 
     private final String defaultGuestName;
     private SharedPreferences userSharedPref;
@@ -37,6 +40,9 @@ public class SPUserDataSource implements UserDataSource {
             String email = userSharedPref.getString(KEY_EMAIL, "");
             int type = userSharedPref.getInt(KEY_TYPE, User.TYPE_GUEST);
             String icon = userSharedPref.getString(KEY_ICON, "");
+            String gender = userSharedPref.getString(KEY_GENDER, "");
+            int minAge = userSharedPref.getInt(KEY_MIN_AGE, -1);
+            int maxAge = userSharedPref.getInt(KEY_MAX_AGE, -1);
             user = new User();
             user.setUserName(name);
             user.setUserID(id);
@@ -44,6 +50,9 @@ public class SPUserDataSource implements UserDataSource {
             user.setEmail(email);
             user.setType(type);
             user.setUserIcon(icon);
+            user.setGender(gender);
+            user.setMinAge(minAge);
+            user.setMaxAge(maxAge);
         }
         return user;
     }
@@ -57,6 +66,9 @@ public class SPUserDataSource implements UserDataSource {
         spEditor.putInt(KEY_TYPE, user.getType());
         spEditor.putString(KEY_ICON, user.getUserIcon());
         spEditor.putString(KEY_EMAIL, user.getEmail());
+        spEditor.putString(KEY_GENDER, user.getGender());
+        spEditor.putInt(KEY_MIN_AGE, user.getMinAge());
+        spEditor.putInt(KEY_MAX_AGE, user.getMaxAge());
         spEditor.commit();
         this.user = user;
     }

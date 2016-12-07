@@ -1,6 +1,7 @@
 package com.android.heaton.funnyvote.data.user;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.RemoteServiceApi;
@@ -75,6 +76,8 @@ public class UserManager {
             });
         } else if (user.getType() == User.TYPE_GOOGLE){
             //TODO:API is not ready
+            userDataSource.setUser(user);
+            callback.onSuccess();
         }
     }
 

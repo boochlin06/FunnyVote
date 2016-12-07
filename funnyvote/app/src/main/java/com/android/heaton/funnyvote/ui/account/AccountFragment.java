@@ -40,6 +40,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,6 +68,15 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 String name = profile.getString("name");
                 String facebookID = profile.getString("id");
                 String email = profile.has("email") ? profile.getString("email") : "";
+                String gender = profile.has("gender") ? profile.getString("gender") : "";
+                int min = -1;
+                int max = -1;
+
+                if (profile.has("age_range")) {
+                    JSONObject ageRange = profile.getJSONObject("age_range");
+                    min = ageRange.has("min") ? ageRange.getInt("min"):-1;
+                    max = ageRange.has("max") ? ageRange.getInt("max"):-1;
+                }
 
                 String link = "";
                 if (profile.has("picture")) {
@@ -78,6 +88,9 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 user.setUserID(facebookID);
                 user.setUserIcon(link);
                 user.setEmail(email);
+                user.setGender(gender);
+                user.setMinAge(min);
+                user.setMaxAge(max);
                 user.setType(User.TYPE_FACEBOOK);
                 userManager.registerUser(user, registerUserCallback);
             } catch (JSONException e) {
@@ -105,6 +118,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
     UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
         @Override
         public void onResponse(User user) {
+            Log.d(TAG, "user:" + user.getUserCode());
+            AccountFragment.this.user = user;
             if (user.getType() != User.TYPE_GUEST) {
                 showUser(user);
             } else {
@@ -228,7 +243,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     private void handleFacebookLogIn() {
         Bundle params = new Bundle();
-        params.putString("fields", "email,name,picture.type(large)");
+        params.putString("fields", "email,name,picture.type(large),gender,age_range");
         new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
                 "/me",
@@ -291,7 +306,6 @@ public class AccountFragment extends android.support.v4.app.Fragment
     }
 
     private void showUser(User user) {
-        this.user = user;
         nameTextView.setText(user.getUserName());
         loadProfileImage(user.getUserIcon());
         loadingProgressBar.setVisibility(View.GONE);
