@@ -16,8 +16,9 @@ import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
+import com.android.heaton.funnyvote.data.user.UserManager;
+import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
-import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.Calendar;
@@ -90,11 +91,30 @@ public class CreateVoteTabSettingFragment extends Fragment {
 
     private VoteData voteSettings;
 
+    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
+        @Override
+        public void onResponse(User user) {
+            CreateVoteTabSettingFragment.this.user = user;
+        }
+
+        @Override
+        public void onFailure() {
+
+        }
+    };
+
+    private User user;
+
     public CreateVoteTabSettingFragment() {
     }
 
     public static CreateVoteTabSettingFragment newTabFragment() {
         return new CreateVoteTabSettingFragment();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Nullable
@@ -144,16 +164,12 @@ public class CreateVoteTabSettingFragment extends Fragment {
                 voteSettings.setAuthorName(edtAuthorName.getText().toString());
             }
         } else {
-
-            SharedPreferences userPref = UserSharepreferenceController.getUserSp(getContext());
-            if (userPref.contains(UserSharepreferenceController.KEY_NAME)) {
-                String name = userPref.getString(UserSharepreferenceController.KEY_NAME, getString(R.string.account_default_name));
-                String code = userPref.getString(UserSharepreferenceController.KEY_USER_ID, "");
-                String icon = userPref.getString(UserSharepreferenceController.KEY_ICON, "");
-                voteSettings.setAuthorName(name);
-                voteSettings.setAuthorCode(code);
-                voteSettings.setAuthorIcon(icon);
-            }
+            String name = user.getUserName();
+            String code = user.getUserCode();
+            String icon = user.getUserIcon();
+            voteSettings.setAuthorName(name);
+            voteSettings.setAuthorCode(code);
+            voteSettings.setAuthorIcon(icon);
 //            List<User> users = DataLoader.getInstance(getContext()).getUserDao().loadAll();
 //            if (users.size() > 0) {
 //                User user = users.get(0);

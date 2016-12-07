@@ -16,8 +16,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
-import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
 import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.bumptech.glide.Glide;
 
@@ -34,6 +34,18 @@ public class PersonalActivity extends AppCompatActivity
     TextView txtSubTitle;
     private int maxScrollSize;
 
+    User user = null;
+    UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
+        @Override
+        public void onResponse(User user) {
+            PersonalActivity.this.user = user;
+        }
+
+        @Override
+        public void onFailure() {
+
+        }
+    };
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +57,6 @@ public class PersonalActivity extends AppCompatActivity
         ViewPager viewPager = (ViewPager) findViewById(R.id.vpMain);
         AppBarLayout appbarLayout = (AppBarLayout) findViewById(R.id.appBarMain);
         imgUserIcon = (CircleImageView) findViewById(R.id.imgUserIcon);
-        User user = UserSharepreferenceController.getUser(this);
         txtUserName.setText(user.getUserName());
         txtSubTitle.setText(user.getType() + ":" + user.getEmail());
 
@@ -60,6 +71,7 @@ public class PersonalActivity extends AppCompatActivity
         appbarLayout.addOnOffsetChangedListener(this);
         maxScrollSize = appbarLayout.getTotalScrollRange();
 
+        UserManager.getInstance(getApplicationContext()).getUser(getUserCallback);
         viewPager.setAdapter(new TabsAdapter(getSupportFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
         if (user.getUserIcon() == null || user.getUserIcon().isEmpty()) {

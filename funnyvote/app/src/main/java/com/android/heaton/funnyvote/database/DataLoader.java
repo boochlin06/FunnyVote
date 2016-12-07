@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.android.heaton.funnyvote.FunnyVoteApplication;
 import com.android.heaton.funnyvote.R;
-import com.android.heaton.funnyvote.ui.UserSharepreferenceController;
 
 import java.util.ArrayList;
 import java.util.List;
