@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
+import com.android.heaton.funnyvote.data.RemoteServiceApi;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
@@ -43,6 +44,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import at.grabner.circleprogress.CircleProgressView;
@@ -70,10 +72,13 @@ public class CreateVoteActivity extends AppCompatActivity {
     ImageView imgMain;
     @BindView(R.id.imgPick)
     ImageView imgPick;
+
+    public static String TAG = "CreateVoteActivity";
     private CreateVoteTabSettingFragment settingFragment;
     private CreateVoteTabOptionFragment optionFragment;
     private long newOptionIdAuto = 2;
     private Uri cropImageUri;
+    private VoteData localVoteSetting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +105,45 @@ public class CreateVoteActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+    }
+
+    private class TabsAdapter extends FragmentPagerAdapter {
+        public TabsAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Override
+        public Fragment getItem(int i) {
+            switch (i) {
+                case 0:
+                    if (optionFragment == null) {
+                        optionFragment = CreateVoteTabOptionFragment.newTabFragment();
+                    }
+                    return optionFragment;
+                case 1:
+                    if (settingFragment == null) {
+                        settingFragment = CreateVoteTabSettingFragment.newTabFragment();
+                    }
+                    return settingFragment;
+            }
+            return null;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return getString(R.string.create_vote_tab_options);
+                case 1:
+                    return getString(R.string.create_vote_tab_settings);
+            }
+            return "";
+        }
     }
 
     @Override
@@ -158,11 +202,11 @@ public class CreateVoteActivity extends AppCompatActivity {
             if (CropImage.isReadExternalStoragePermissionsRequired(this, imageUri)) {
                 // request permissions and handle the result in onRequestPermissionsResult()
                 cropImageUri = imageUri;
-                Log.d("test", "onActivityResult:" + cropImageUri);
+                Log.d(TAG, "onActivityResult:" + cropImageUri);
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
             } else {
                 // no permissions required or already grunted, can start crop image activity
-                Log.d("test", "onActivityResult:" + imageUri);
+                Log.d(TAG, "onActivityResult:" + imageUri);
                 startCropImageActivity(imageUri);
 
             }
@@ -170,7 +214,7 @@ public class CreateVoteActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 Uri resultUri = result.getUri();
-                Log.d("test", "CROP_IMAGE_ACTIVITY_REQUEST_CODE:" + resultUri);
+                Log.d(TAG, "CROP_IMAGE_ACTIVITY_REQUEST_CODE:" + resultUri);
                 cropImageUri = resultUri;
                 Glide.with(this).load(resultUri).into(imgMain);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
@@ -199,8 +243,10 @@ public class CreateVoteActivity extends AppCompatActivity {
     }
 
     private void submitCreateVote() {
-        VoteData voteSetting = settingFragment.getVoteSettings();
+        showLoadingCircle(getString(R.string.vote_detail_circle_updating));
+        localVoteSetting = settingFragment.getVoteSettings();
         List<Option> optionList = optionFragment.getOptionList();
+        List<String> titles = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         int errorNumber = 0;
         int optionCount = optionList.size();
@@ -210,45 +256,45 @@ public class CreateVoteActivity extends AppCompatActivity {
                 sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_fill_all) + "\n");
                 break;
             }
+            titles.add(optionList.get(i).getTitle());
         }
         if (edtTitle.getText().length() == 0) {
             errorNumber++;
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_title_empty) + "\n");
         } else {
-            voteSetting.setTitle(edtTitle.getText().toString());
+            localVoteSetting.setTitle(edtTitle.getText().toString());
         }
-        if (voteSetting.getAuthorName() == null || voteSetting.getAuthorName().isEmpty()) {
-            voteSetting.setAuthorName(getString(R.string.create_vote_tab_settings_anonymous));
+        if (localVoteSetting.getAuthorName() == null || localVoteSetting.getAuthorName().isEmpty()) {
+            localVoteSetting.setAuthorName(getString(R.string.create_vote_tab_settings_anonymous));
         }
-        if (voteSetting.getMaxOption() == 0) {
+        if (localVoteSetting.getMaxOption() == 0) {
             errorNumber++;
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_max_option_0) + "\n");
         }
-        if (voteSetting.getMinOption() == 0) {
+        if (localVoteSetting.getMinOption() == 0) {
             errorNumber++;
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_min_option_0) + "\n");
         }
-        if (voteSetting.getMaxOption() < voteSetting.getMinOption()) {
+        if (localVoteSetting.getMaxOption() < localVoteSetting.getMinOption()) {
             errorNumber++;
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_max_smaller_than_min) + "\n");
         }
-        if (voteSetting.getMaxOption() > optionCount) {
+        if (localVoteSetting.getMaxOption() > optionCount) {
             errorNumber++;
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_max_smaller_than_total) + "\n");
         }
-        if (voteSetting.getEndTime() < System.currentTimeMillis()) {
+        if (localVoteSetting.getEndTime() < System.currentTimeMillis()) {
             errorNumber++;
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_endtime_more_than_now) + "\n");
         }
-        if (voteSetting.getIsNeedPassword() && voteSetting.password.length() <= 0) {
+        if (localVoteSetting.getIsNeedPassword() && localVoteSetting.password.length() <= 0) {
             errorNumber++;
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_password_empty) + "\n");
         }
         if (errorNumber == 0) {
-            // SHOW SHARE VOTE DIALOG
-            new UpdateVoteDataTask(voteSetting, optionList).execute();
-            finish();
+            new RemoteServiceApi().createVote(localVoteSetting, titles, null);
         } else {
+            hideLoadingCircle();
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.create_vote_dialog_error_title);
             builder.setMessage(sb.toString());
@@ -256,47 +302,8 @@ public class CreateVoteActivity extends AppCompatActivity {
             builder.show();
         }
 
-
     }
 
-    private class TabsAdapter extends FragmentPagerAdapter {
-        public TabsAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public int getCount() {
-            return 2;
-        }
-
-        @Override
-        public Fragment getItem(int i) {
-            switch (i) {
-                case 0:
-                    if (optionFragment == null) {
-                        optionFragment = CreateVoteTabOptionFragment.newTabFragment();
-                    }
-                    return optionFragment;
-                case 1:
-                    if (settingFragment == null) {
-                        settingFragment = CreateVoteTabSettingFragment.newTabFragment();
-                    }
-                    return settingFragment;
-            }
-            return null;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getString(R.string.create_vote_tab_options);
-                case 1:
-                    return getString(R.string.create_vote_tab_settings);
-            }
-            return "";
-        }
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onOptionControl(EventBusController.OptionControlEvent event) {
@@ -339,6 +346,38 @@ public class CreateVoteActivity extends AppCompatActivity {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRemoteService(EventBusController.RemoteServiceEvent event) {
+        if (event.message.equals(EventBusController.RemoteServiceEvent.CREAT_VOTE)) {
+            if (event.success) {
+                VoteData data = event.response.body();
+                List<Option> optionList = data.getNetOptions();
+                // TODO: TEST FOR WEB API FIX GUSET WITHOUT start and end time, author icon , name , code.
+                data.setAuthorName(localVoteSetting.author.getUserName());
+                data.setAuthorIcon(localVoteSetting.author.getUserIcon());
+                data.setAuthorCode(localVoteSetting.author.getUserCode());
+                data.setStartTime(localVoteSetting.getStartTime());
+                data.setEndTime(localVoteSetting.getEndTime());
+                Log.d(TAG, "create vote success:"+data.getVoteCode());
+                new UpdateVoteDataTask(data, optionList).execute();
+            } else {
+                Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
+                Log.d(TAG, "create vote false:");
+            }
+        }
+    }
+
+    private void showLoadingCircle(String content) {
+        circleLoad.setVisibility(View.VISIBLE);
+        circleLoad.setText(content);
+        circleLoad.spin();
+    }
+
+    private void hideLoadingCircle() {
+        circleLoad.stopSpinning();
+        circleLoad.setVisibility(View.GONE);
+    }
+
     private class UpdateVoteDataTask extends AsyncTask<Void, Void, Void> {
 
         private VoteData voteSetting;
@@ -351,15 +390,11 @@ public class CreateVoteActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            circleLoad.setText(getString(R.string.vote_detail_circle_updating));
-            circleLoad.setVisibility(View.VISIBLE);
-            circleLoad.spin();
+
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            circleLoad.stopSpinning();
-            circleLoad.setVisibility(View.GONE);
             Toast.makeText(getApplicationContext(), R.string.create_vote_create_successful, Toast.LENGTH_LONG).show();
             VHVoteWallItem.startActivityToVoteDetail(getApplicationContext(), voteSetting.getVoteCode());
             circleLoad.postDelayed(new Runnable() {
@@ -368,27 +403,27 @@ public class CreateVoteActivity extends AppCompatActivity {
                     VoteDetailContentActivity.sendShareIntent(getApplicationContext(), voteSetting);
                 }
             }, 1000);
+            hideLoadingCircle();
+            finish();
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            voteSetting.setVoteCode(Long.toString(System.currentTimeMillis()));
-            voteSetting.setOptionCount(optionList.size());
-
+            // TODO: CLEAR IT , TRY FILE.
             if (cropImageUri != null) {
                 voteSetting.setVoteImage(cropImageUri.toString());
             } else {
                 // For test.
                 voteSetting.setVoteImage("http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png");
             }
+            voteSetting.setOptionCount(optionList.size());
             for (int i = 0; i < optionList.size(); i++) {
                 Option option = optionList.get(i);
+                option.setIsUserChoiced(false);
                 option.setVoteCode(voteSetting.getVoteCode());
                 option.setId(null);
                 option.setCount(0);
                 option.setIsUserChoiced(false);
-                option.setCode(voteSetting.getVoteCode() + "_" + i);
-                option.dumpDetail();
                 if (i == 0) {
                     voteSetting.setOption1Title(option.getTitle());
                     voteSetting.setOption1Code(option.getCode());
@@ -398,6 +433,7 @@ public class CreateVoteActivity extends AppCompatActivity {
                     voteSetting.setOption2Code(option.getCode());
                     voteSetting.setOption2Count(0);
                 }
+                option.dumpDetail();
             }
             DataLoader.getInstance(getApplicationContext()).getVoteDataDao().insert(voteSetting);
             DataLoader.getInstance(getApplicationContext()).getOptionDao().insertInTx(optionList);

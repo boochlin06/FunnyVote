@@ -1,5 +1,7 @@
 package com.android.heaton.funnyvote.database;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
@@ -23,15 +25,25 @@ public class VoteData {
     @ToMany(referencedJoinProperty = "voteCode")
     @OrderBy("id ASC")
     private List<Option> options;
+    @SerializedName("c")
     private String voteCode;
     private String voteLink;
+    @SerializedName("t")
     private String title;
+    @Transient
+    public User author;
+
+    @SerializedName("mn")
     private String authorName;
     private String authorCode;
+    @SerializedName("mi")
     private String authorIcon;
+    @SerializedName("i")
     private String voteImage;
     private int localImage;
+    @SerializedName("on")
     private long startTime;
+    @SerializedName("off")
     private long endTime;
     private String option1Title;
     private String option1Code;
@@ -46,21 +58,38 @@ public class VoteData {
     private String optionUserChoiceTitle;
     private String optionUserChoiceCode;
     private int optionUserChoiceCount;
+    @SerializedName("min")
     private int minOption;
+    @SerializedName("max")
     private int maxOption;
     private int optionCount;
+    @SerializedName("voted")
     private int pollCount;
     private boolean isPolled;
     private boolean isFavorite;
 
+    @SerializedName("res")
     private boolean isCanPreviewResult;
+    @SerializedName("add")
     private boolean isUserCanAddOption;
+    @SerializedName("p")
     private boolean isNeedPassword;
     @Transient
     public String password;
     private String security = SECURITY_PUBLIC;
 
     private String category;
+
+    @SerializedName("os")
+    @Transient
+    private List<Option> netOptions;
+
+    public void setNetOptions(List<Option> netOptions) {
+        this.netOptions = netOptions;
+    }
+    public List<Option> getNetOptions() {
+        return this.netOptions;
+    }
 
     // TODO: OPTION TYPE
     private String pollType;

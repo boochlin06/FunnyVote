@@ -76,6 +76,7 @@
     <string name="create_vote_toast_less_than_2_option">Option number cant less than 2.</string>
     <string name="create_vote_toast_endtime_more_than_current">Vote end time should over now.</string>
     <string name="create_vote_toast_image_permission">"Cancelling, required permissions are not granted"</string>
+    <string name="create_vote_toast_create_fail">"Network connect fail, Please check your network status"</string>
 
     <string name="create_vote_dialog_error_title">Error</string>
     <string name="create_vote_dialog_error_done">DONE</string>

@@ -2,6 +2,8 @@ package com.android.heaton.funnyvote.database;
 
 import android.util.Log;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
@@ -14,8 +16,12 @@ public class Option {
     @Id
     private Long id;
     private String voteCode;
+
+    @SerializedName("ot")
     private String title;
+    @SerializedName("v")
     private Integer count;
+    @SerializedName("oc")
     private String code;
     private boolean isUserChoiced = false;
 

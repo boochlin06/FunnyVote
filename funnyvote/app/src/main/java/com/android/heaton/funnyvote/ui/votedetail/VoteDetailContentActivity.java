@@ -201,8 +201,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     .into(imgAuthorIcon);
         }
 
-
-
         txtBarPollCount.setText(String.format(this
                 .getString(R.string.Wall_item_bar_vote_count), data.getPollCount()));
 

@@ -7,27 +7,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.android.heaton.funnyvote.MainActivity;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
-import com.android.heaton.funnyvote.database.User;
-import com.android.heaton.funnyvote.eventbus.EventBusController;
-import com.android.heaton.funnyvote.retrofit.Server;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
-import static com.android.heaton.funnyvote.eventbus.EventBusController.NetworkEvent.INIT_GUEST;
 
 /**
  * Created by heaton on 2016/10/26.

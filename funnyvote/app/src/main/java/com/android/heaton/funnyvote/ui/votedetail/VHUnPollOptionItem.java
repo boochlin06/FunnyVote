@@ -68,10 +68,14 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
 
     @Override
     public void onClick(View v) {
-        EventBus.getDefault().post(new EventBusController
-                .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND));
-        isExpand = !isExpand;
-        setUpOptionExpandLayout();
+        if (txtOptionTitle.getLineCount() > 1) {
+            EventBus.getDefault().post(new EventBusController
+                    .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND));
+            isExpand = !isExpand;
+            setUpOptionExpandLayout();
+        } else {
+            onOptionChoice();
+        }
     }
 
     private void setUpOptionExpandLayout() {

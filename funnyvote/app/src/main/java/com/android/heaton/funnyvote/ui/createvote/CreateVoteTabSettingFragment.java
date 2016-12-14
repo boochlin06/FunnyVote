@@ -1,11 +1,11 @@
 package com.android.heaton.funnyvote.ui.createvote;
 
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,11 +90,14 @@ public class CreateVoteTabSettingFragment extends Fragment {
     EditText edtPwd;
 
     private VoteData voteSettings;
+    private UserManager userManager;
 
     private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
         @Override
         public void onResponse(User user) {
             CreateVoteTabSettingFragment.this.user = user;
+            Log.d("test","get user callback:"+user.getUserCode() + " type:"+user.getType());
+            updateUserSetting();
         }
 
         @Override
@@ -132,6 +135,8 @@ public class CreateVoteTabSettingFragment extends Fragment {
     }
 
     private void initVoteSettings() {
+        userManager = UserManager.getInstance(getContext());
+        userManager.getUser(getUserCallback);
         voteSettings = new VoteData();
         voteSettings.setMaxOption(1);
         edtMaxOption.setText(Integer.toString(voteSettings.getMaxOption()));
@@ -150,6 +155,10 @@ public class CreateVoteTabSettingFragment extends Fragment {
 
         swtAnonymous.setChecked(false);
     }
+    private void updateUserSetting(){
+        edtAuthorName.setText(user.getUserName());
+    }
+
 
     public VoteData getVoteSettings() {
         voteSettings.setMaxOption(edtMaxOption.getText().length() == 0 ? 0 :
@@ -170,13 +179,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
             voteSettings.setAuthorName(name);
             voteSettings.setAuthorCode(code);
             voteSettings.setAuthorIcon(icon);
-//            List<User> users = DataLoader.getInstance(getContext()).getUserDao().loadAll();
-//            if (users.size() > 0) {
-//                User user = users.get(0);
-//                voteSettings.setAuthorIcon(user.getUserIcon());
-//                voteSettings.setAuthorCode(user.getEmail());
-//                voteSettings.setAuthorName(user.getUserName());
-//            }
+            voteSettings.author = user;
         }
         voteSettings.setIsCanPreviewResult(swtPreResult.isChecked());
         voteSettings.setStartTime(System.currentTimeMillis());

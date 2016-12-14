@@ -19,6 +19,7 @@ public class EventBusController {
             this.message = message;
         }
     }
+
     public static class UIControlEvent {
         public static final String SCROLL_TO_TOP = "SCROLL_TO_TOP";
         public final String message;
@@ -55,31 +56,39 @@ public class EventBusController {
             this.Id = id;
         }
     }
+
     public final static class VoteDataControlEvent {
         public static final String VOTE_SYNC_WALL_AND_CONTENT = "VOTE_SYNC_WALL_AND_CONTENT";
         public static final String VOTE_SYNC_WALL_FOR_FAVORITE = "VOTE_SYNC_WALL_FOR_FAVORITE";
         public final String message;
         public final VoteData data;
 
-        public VoteDataControlEvent(VoteData data , String message) {
+        public VoteDataControlEvent(VoteData data, String message) {
             this.data = data;
             this.message = message;
         }
     }
-    public final static class NetworkEvent {
+
+    public final static class RemoteServiceEvent {
         public static final String INIT_GUEST = "init_guest";
         public static final String INIT_DB = "init_db";
+        public static final String CREAT_VOTE = "create_vote";
 
-        public Response<ResponseBody> response = null;
+        public Response<VoteData> response = null;
         public Call call;
         public String message;
         public boolean success = false;
-        public NetworkEvent(String message, boolean success, Call call, Response<ResponseBody> response) {
-            this.call=call;
+        public VoteData voteData;
+
+        public RemoteServiceEvent(String message, boolean success, Call call, Response<VoteData> response
+                , VoteData voteData) {
+            this.call = call;
             this.success = success;
             this.response = response;
             this.message = message;
+            this.voteData = voteData;
         }
+
 
     }
 }

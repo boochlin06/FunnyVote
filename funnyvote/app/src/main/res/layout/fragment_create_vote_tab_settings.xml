@@ -149,11 +149,13 @@
 
         <EditText
             android:id="@+id/edtAuthorName"
-            android:layout_width="80dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/txtAuthorName"
             android:layout_alignBaseline="@id/txtAuthorName"
             android:layout_alignParentRight="true"
             android:layout_below="@id/txtOption"
+            android:layout_marginLeft="24dp"
             android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
             android:maxLines="1"
             android:textAlignment="textEnd"
