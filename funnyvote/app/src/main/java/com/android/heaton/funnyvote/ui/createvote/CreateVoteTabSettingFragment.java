@@ -96,7 +96,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
         @Override
         public void onResponse(User user) {
             CreateVoteTabSettingFragment.this.user = user;
-            Log.d("test","get user callback:"+user.getUserCode() + " type:"+user.getType());
+            Log.d("test", "get user callback:" + user.getUserCode() + " type:" + user.getType());
             updateUserSetting();
         }
 
@@ -155,7 +155,8 @@ public class CreateVoteTabSettingFragment extends Fragment {
 
         swtAnonymous.setChecked(false);
     }
-    private void updateUserSetting(){
+
+    private void updateUserSetting() {
         edtAuthorName.setText(user.getUserName());
     }
 
@@ -166,7 +167,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
         voteSettings.setMinOption(edtMinOption.getText().length() == 0 ? 0 :
                 Integer.parseInt(edtMinOption.getText().toString()));
         voteSettings.setIsUserCanAddOption(swtUserAdd.isChecked());
-        if (swtAnonymous.isChecked()) {
+        if (swtAnonymous.isChecked() || user == null) {
             if (edtAuthorName.getText().length() == 0) {
                 voteSettings.setAuthorName(getString(R.string.create_vote_tab_settings_anonymous));
             } else {

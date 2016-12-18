@@ -17,6 +17,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +29,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.heaton.funnyvote.FileUtils;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.data.RemoteServiceApi;
@@ -44,6 +46,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -202,11 +205,11 @@ public class CreateVoteActivity extends AppCompatActivity {
             if (CropImage.isReadExternalStoragePermissionsRequired(this, imageUri)) {
                 // request permissions and handle the result in onRequestPermissionsResult()
                 cropImageUri = imageUri;
-                Log.d(TAG, "onActivityResult:" + cropImageUri);
+                Log.d(TAG, "onActivityResult PICK_IMAGE_CHOOSER_REQUEST_CODE:" + cropImageUri);
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
             } else {
                 // no permissions required or already grunted, can start crop image activity
-                Log.d(TAG, "onActivityResult:" + imageUri);
+                Log.d(TAG, "onActivityResult PICK_IMAGE_CHOOSER_REQUEST_CODE no permission:" + imageUri);
                 startCropImageActivity(imageUri);
 
             }
@@ -214,7 +217,7 @@ public class CreateVoteActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 Uri resultUri = result.getUri();
-                Log.d(TAG, "CROP_IMAGE_ACTIVITY_REQUEST_CODE:" + resultUri);
+                Log.d(TAG, "CROP_IMAGE_ACTIVITY_REQUEST_CODE ok:" + resultUri);
                 cropImageUri = resultUri;
                 Glide.with(this).load(resultUri).into(imgMain);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
@@ -246,7 +249,7 @@ public class CreateVoteActivity extends AppCompatActivity {
         showLoadingCircle(getString(R.string.vote_detail_circle_updating));
         localVoteSetting = settingFragment.getVoteSettings();
         List<Option> optionList = optionFragment.getOptionList();
-        List<String> titles = new ArrayList<>();
+        List<String> optionTitles = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         int errorNumber = 0;
         int optionCount = optionList.size();
@@ -256,7 +259,7 @@ public class CreateVoteActivity extends AppCompatActivity {
                 sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_fill_all) + "\n");
                 break;
             }
-            titles.add(optionList.get(i).getTitle());
+            optionTitles.add(optionList.get(i).getTitle());
         }
         if (edtTitle.getText().length() == 0) {
             errorNumber++;
@@ -266,6 +269,10 @@ public class CreateVoteActivity extends AppCompatActivity {
         }
         if (localVoteSetting.getAuthorName() == null || localVoteSetting.getAuthorName().isEmpty()) {
             localVoteSetting.setAuthorName(getString(R.string.create_vote_tab_settings_anonymous));
+        }
+        if (localVoteSetting.getAuthorCode() == null || TextUtils.isEmpty(localVoteSetting.getAuthorCode())) {
+            errorNumber++;
+            sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_error_user_code) + "\n");
         }
         if (localVoteSetting.getMaxOption() == 0) {
             errorNumber++;
@@ -292,7 +299,8 @@ public class CreateVoteActivity extends AppCompatActivity {
             sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_password_empty) + "\n");
         }
         if (errorNumber == 0) {
-            new RemoteServiceApi().createVote(localVoteSetting, titles, null);
+            File file = cropImageUri == null ? null : FileUtils.getFile(this, cropImageUri);
+            new RemoteServiceApi().createVote(localVoteSetting, optionTitles, file);
         } else {
             hideLoadingCircle();
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -358,11 +366,12 @@ public class CreateVoteActivity extends AppCompatActivity {
                 data.setAuthorCode(localVoteSetting.author.getUserCode());
                 data.setStartTime(localVoteSetting.getStartTime());
                 data.setEndTime(localVoteSetting.getEndTime());
-                Log.d(TAG, "create vote success:"+data.getVoteCode());
+                Log.d(TAG, "create vote success:" + data.getVoteCode() + " image:" + data.getVoteImage());
                 new UpdateVoteDataTask(data, optionList).execute();
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
                 Log.d(TAG, "create vote false:");
+                hideLoadingCircle();
             }
         }
     }
@@ -410,12 +419,12 @@ public class CreateVoteActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
             // TODO: CLEAR IT , TRY FILE.
-            if (cropImageUri != null) {
-                voteSetting.setVoteImage(cropImageUri.toString());
-            } else {
-                // For test.
-                voteSetting.setVoteImage("http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png");
-            }
+//            if (cropImageUri != null) {
+//                voteSetting.setVoteImage(cropImageUri.toString());
+//            } else {
+//                // For test.
+//                voteSetting.setVoteImage("http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png");
+//            }
             voteSetting.setOptionCount(optionList.size());
             for (int i = 0; i < optionList.size(); i++) {
                 Option option = optionList.get(i);

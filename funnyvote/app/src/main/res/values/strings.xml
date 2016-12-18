@@ -81,6 +81,7 @@
     <string name="create_vote_dialog_error_title">Error</string>
     <string name="create_vote_dialog_error_done">DONE</string>
     <string name="create_vote_error_hint_fill_all">Please fill all option content.</string>
+    <string name="create_vote_error_hint_error_user_code">User register error, please check account page.</string>
     <string name="create_vote_error_hint_max_option_0">Max option cant be 0.</string>
     <string name="create_vote_error_hint_min_option_0">Min option cant be 0.</string>
     <string name="create_vote_error_hint_max_smaller_than_min">Max option number should more than min option number.</string>

@@ -11,8 +11,13 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -115,18 +120,59 @@ public class RemoteServiceApi {
     }
 
     public void createVote(VoteData voteSetting, List<String> options, File image) {
-        if (voteSetting.author.getType() == User.TYPE_GUEST) {
 
-            Log.d("test", "guest create vote: user code:" + voteSetting.getAuthorCode());
-            Call<VoteData> call = voteService.createVote(voteSetting.getTitle(), voteSetting.getMaxOption()
-                    , voteSetting.getMinOption(), options, voteSetting.getIsUserCanAddOption()
-                    , voteSetting.getIsCanPreviewResult(), true, image, voteSetting.getCategory(), null, voteSetting.getAuthorCode());
+
+        Map<String, RequestBody> parameter = new HashMap<>();
+
+        RequestBody title = RequestBody.create(MediaType.parse("text/plain"), voteSetting.getTitle());
+        RequestBody maxOption = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getMaxOption()));
+        RequestBody minOption = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getMinOption()));
+        RequestBody rbOption;
+        for (int i = 0; i < options.size(); i++) {
+            rbOption = RequestBody.create(MediaType.parse("text/plain"), options.get(i));
+            parameter.put("pt[" + i + "]", rbOption);
+        }
+        RequestBody userCanAddOption = RequestBody.create(MediaType.parse("text/plain")
+                , String.valueOf(voteSetting.getIsUserCanAddOption()));
+        RequestBody userPanPreviewResult = RequestBody.create(MediaType.parse("text/plain")
+                , String.valueOf(voteSetting.getIsCanPreviewResult()));
+        RequestBody security = RequestBody.create(MediaType.parse("text/plain")
+                , String.valueOf(voteSetting.getSecurity().equals(VoteData.SECURITY_PUBLIC)));
+        //String testcode = "otp08aff6877d1d373dc00a7383ff437e09a586a93a693d9c92d2d1e52e05ceb701";
+        RequestBody author = RequestBody.create(MediaType.parse("text/plain"), voteSetting.getAuthorCode());
+        RequestBody category = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getCategory()));
+
+
+        parameter.put("t", title);
+        parameter.put("max", maxOption);
+        parameter.put("min", minOption);
+        parameter.put("add", userCanAddOption);
+        parameter.put("res", userPanPreviewResult);
+        parameter.put("pub", security);
+        parameter.put("cat", category);
+
+        RequestBody requestFile = null;
+        MultipartBody.Part body = null;
+        String descriptionString = "vote_image";
+        RequestBody description = null;
+
+        if (image != null) {
+            requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), image);
+            body = MultipartBody.Part.createFormData("i", image.getName(), requestFile);
+            description = RequestBody.create(
+                    MediaType.parse("multipart/form-data"), descriptionString);
+        }
+        if (voteSetting.author.getType() == User.TYPE_GUEST) {
+            parameter.put("guest", author);
+            Log.d("test", "otp create vote: user code:" + voteSetting.getAuthorCode());
+            Call<VoteData> call = voteService.createVote(parameter, description, body);
             call.enqueue(new createVoteResponseCallback());
         } else {
+
+            RequestBody otp = RequestBody.create(MediaType.parse("text/plain"), voteSetting.getAuthorCode());
+            parameter.put("otp", author);
             Log.d("test", "otp create vote: user code:" + voteSetting.getAuthorCode());
-            Call<VoteData> call = voteService.createVote(voteSetting.getTitle(), voteSetting.getMaxOption()
-                    , voteSetting.getMinOption(), options, voteSetting.getIsUserCanAddOption()
-                    , voteSetting.getIsCanPreviewResult(), true, image, voteSetting.getCategory(), voteSetting.getAuthorCode(), null);
+            Call<VoteData> call = voteService.createVote(parameter, description, body);
             call.enqueue(new createVoteResponseCallback());
         }
     }
