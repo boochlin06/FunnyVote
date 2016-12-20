@@ -12,6 +12,7 @@ import com.android.heaton.funnyvote.database.User;
  */
 
 public class UserManager {
+    private static final String TAG = UserManager.class.getSimpleName();
     private static UserManager INSTANCE = null;
 
     private Context context;
@@ -38,6 +39,8 @@ public class UserManager {
     public void getUser(final GetUserCallback callback) {
         final User user = userDataSource.getUser();
         if (user.getType() == User.TYPE_GUEST && user.getUserCode().isEmpty()) {
+            Log.d(TAG, "Guest!" + user.getUserCode());
+            String guestName = context.getString(R.string.account_default_name);
             remoteServiceApi.getGuestUserCode(new RemoteServiceApi.GetUserCodeCallback() {
                 @Override
                 public void onSuccess(String userCode) {
@@ -50,7 +53,7 @@ public class UserManager {
                 public void onFalure() {
                     callback.onFailure();
                 }
-            });
+            }, guestName);
         } else {
             callback.onResponse(user);
         }

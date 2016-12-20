@@ -8,6 +8,7 @@ import com.android.heaton.funnyvote.eventbus.EventBusController.RemoteServiceEve
 import com.android.heaton.funnyvote.retrofit.Server;
 
 import org.greenrobot.eventbus.EventBus;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,31 +31,65 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class RemoteServiceApi {
+    private static final String TAG = RemoteServiceApi.class.getSimpleName();
     public interface GetUserCodeCallback {
         void onSuccess(String userCode);
 
         void onFalure();
     }
 
-    class UserCodeResponseCallback implements Callback<ResponseBody> {
+    class GuestUserCodeResponseCallback implements Callback<ResponseBody> {
         GetUserCodeCallback getUserCodeCallback;
 
-        public UserCodeResponseCallback(GetUserCodeCallback getUserCodeCallback) {
+        public GuestUserCodeResponseCallback(GetUserCodeCallback getUserCodeCallback) {
             this.getUserCodeCallback = getUserCodeCallback;
         }
 
         @Override
         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            Log.d(TAG, "Response Status:" + response.code());
             if (response.isSuccessful()) {
                 try {
-                    String userCode = response.body().string();
-                    getUserCodeCallback.onSuccess(userCode);
+                    String responseStr = response.body().string();
+                    JSONObject jsonObject = new JSONObject(responseStr);
+                    String guestCode = jsonObject.getString("guest");
+                    getUserCodeCallback.onSuccess(guestCode);
                 } catch (Exception e) {
                     e.printStackTrace();
                     getUserCodeCallback.onFalure();
                 }
             } else {
                 getUserCodeCallback.onFalure();
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ResponseBody> call, Throwable t) {
+            getUserCodeCallback.onFalure();
+        }
+    }
+    class LoginUserCodeResponseCallback implements Callback<ResponseBody> {
+        GetUserCodeCallback getUserCodeCallback;
+
+        public LoginUserCodeResponseCallback(GetUserCodeCallback getUserCodeCallback) {
+            this.getUserCodeCallback = getUserCodeCallback;
+        }
+
+        @Override
+        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            Log.d(TAG, "Response Status:" + response.code());
+            if (response.isSuccessful()) {
+                try {
+                    String responseStr = response.body().string();
+                    JSONObject jsonObject = new JSONObject(responseStr);
+                    String otpString = jsonObject.getString("otp");
+                    getUserCodeCallback.onSuccess(otpString);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    getUserCodeCallback.onFalure();
+                }
+            } else {
+                    getUserCodeCallback.onFalure();
             }
         }
 
@@ -77,16 +112,16 @@ public class RemoteServiceApi {
         voteService = retrofit.create(Server.VoteService.class);
     }
 
-    public void getGuestUserCode(GetUserCodeCallback callback) {
-        Call<ResponseBody> call = userService.getGuestCode();
-        call.enqueue(new UserCodeResponseCallback(callback));
+    public void getGuestUserCode(GetUserCodeCallback callback, String guestName) {
+        Call<ResponseBody> call = userService.getGuestCode(guestName);
+        call.enqueue(new GuestUserCodeResponseCallback(callback));
     }
 
     public void getFacebookUserCode(String appId, String fbId, String name,
                                     String email, String imgUrl, String gender,
                                     GetUserCodeCallback callback) {
         Call<ResponseBody> call = userService.addFBUser(appId, fbId, name, imgUrl, email, gender);
-        call.enqueue(new UserCodeResponseCallback(callback));
+        call.enqueue(new LoginUserCodeResponseCallback(callback));
 
     }
 
