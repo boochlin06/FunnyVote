@@ -17,6 +17,7 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.PartMap;
+import retrofit2.http.Path;
 
 /**
  * Created by heaton on 2016/12/4.
@@ -29,8 +30,8 @@ public class Server {
 
     public interface UserService {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @POST("/guest")
-        Call<ResponseBody> getGuestCode();
+        @POST("/guest/{name}")
+        Call<ResponseBody> getGuestCode(@Path("name") String guestName);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
