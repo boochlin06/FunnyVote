@@ -212,7 +212,8 @@ public class RemoteServiceApi {
         RequestBody category = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getCategory()));
         RequestBody startTime = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getStartTime()));
         RequestBody endTime = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getEndTime()));
-        RequestBody password = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.password));
+
+
         RequestBody token = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getAuthorCode()));
         RequestBody tokenType = RequestBody.create(MediaType.parse("text/plain")
                 , voteSetting.author.getType() == User.TYPE_GUEST ? "guest" : "member");
@@ -231,9 +232,13 @@ public class RemoteServiceApi {
         parameter.put("cat", category);
         parameter.put("on", startTime);
         parameter.put("off", endTime);
-        parameter.put("p", password);
         parameter.put("token", token);
         parameter.put("tokentype", tokenType);
+
+        if (voteSetting.getIsNeedPassword()) {
+            RequestBody password = RequestBody.create(MediaType.parse("text/plain"), voteSetting.password);
+            parameter.put("p", password);
+        }
 
         RequestBody requestFile = null;
         MultipartBody.Part body = null;

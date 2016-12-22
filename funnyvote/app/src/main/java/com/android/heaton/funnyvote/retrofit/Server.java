@@ -27,6 +27,7 @@ public class Server {
     public static final String BASE_URL = "http://138.68.23.5/";
     public static final String API_KEY = "Oj9pfxd4Z5LZx8Ha3Ond4xWy2LZU4HPk";
     public static final String APP_CODE = "com.funnyvote";
+    public static final String WEB_URL = "http://138.68.23.5:5487/link/";
 
     public interface UserService {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})

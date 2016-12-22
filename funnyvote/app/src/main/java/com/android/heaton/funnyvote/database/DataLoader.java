@@ -122,7 +122,6 @@ public class DataLoader {
             data.setAuthorName("Heaton" + i);
             data.setAuthorCode("AuthorMock_" + i);
             data.setAuthorIcon("");
-            data.setVoteLink("https://vinta.ws/booch/");
 
             data.setIsFavorite(false);
             data.setIsNeedPassword(false);

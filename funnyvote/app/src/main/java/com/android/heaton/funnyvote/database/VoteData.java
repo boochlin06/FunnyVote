@@ -1,5 +1,8 @@
 package com.android.heaton.funnyvote.database;
 
+import android.content.Context;
+
+import com.android.heaton.funnyvote.R;
 import com.google.gson.annotations.SerializedName;
 
 import org.greenrobot.greendao.DaoException;
@@ -27,7 +30,6 @@ public class VoteData {
     private List<Option> options;
     @SerializedName("c")
     private String voteCode;
-    private String voteLink;
     @SerializedName("t")
     private String title;
     @Transient
@@ -87,6 +89,7 @@ public class VoteData {
     public void setNetOptions(List<Option> netOptions) {
         this.netOptions = netOptions;
     }
+
     public List<Option> getNetOptions() {
         return this.netOptions;
     }
@@ -104,16 +107,22 @@ public class VoteData {
     @Generated(hash = 621134322)
     private transient VoteDataDao myDao;
 
-    @Generated(hash = 1774840857)
-    public VoteData(Long id, String voteCode, String voteLink, String title, String authorName, String authorCode, String authorIcon, String voteImage,
-            int localImage, long startTime, long endTime, String option1Title, String option1Code, int option1Count, String option2Title,
-            String option2Code, int option2Count, String optionTopTitle, String optionTopCode, int optionTopCount, String optionUserChoiceTitle,
-            String optionUserChoiceCode, int optionUserChoiceCount, int minOption, int maxOption, int optionCount, int pollCount, boolean isPolled,
-            boolean isFavorite, boolean isCanPreviewResult, boolean isUserCanAddOption, boolean isNeedPassword, String security, String category,
-            String pollType) {
+    public static String getSecurityString(Context context, String security) {
+        if (security.equals(SECURITY_PUBLIC)) {
+            return context.getString(R.string.create_vote_tab_settings_public);
+        } else {
+            return context.getString(R.string.create_vote_tab_settings_private);
+        }
+    }
+
+    @Generated(hash = 809127268)
+    public VoteData(Long id, String voteCode, String title, String authorName, String authorCode, String authorIcon, String voteImage, int localImage,
+            long startTime, long endTime, String option1Title, String option1Code, int option1Count, String option2Title, String option2Code, int option2Count,
+            String optionTopTitle, String optionTopCode, int optionTopCount, String optionUserChoiceTitle, String optionUserChoiceCode, int optionUserChoiceCount,
+            int minOption, int maxOption, int optionCount, int pollCount, boolean isPolled, boolean isFavorite, boolean isCanPreviewResult,
+            boolean isUserCanAddOption, boolean isNeedPassword, String security, String category, String pollType) {
         this.id = id;
         this.voteCode = voteCode;
-        this.voteLink = voteLink;
         this.title = title;
         this.authorName = authorName;
         this.authorCode = authorCode;
@@ -502,13 +511,5 @@ public class VoteData {
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getVoteDataDao() : null;
-    }
-
-    public String getVoteLink() {
-        return this.voteLink;
-    }
-
-    public void setVoteLink(String voteLink) {
-        this.voteLink = voteLink;
     }
 }

@@ -39,6 +39,7 @@ public class PersonalActivity extends AppCompatActivity
         @Override
         public void onResponse(User user) {
             PersonalActivity.this.user = user;
+            setUpUser(user);
         }
 
         @Override
@@ -57,8 +58,6 @@ public class PersonalActivity extends AppCompatActivity
         ViewPager viewPager = (ViewPager) findViewById(R.id.vpMain);
         AppBarLayout appbarLayout = (AppBarLayout) findViewById(R.id.appBarMain);
         imgUserIcon = (CircleImageView) findViewById(R.id.imgUserIcon);
-        txtUserName.setText(user.getUserName());
-        txtSubTitle.setText(user.getType() + ":" + user.getEmail());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarSub);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -74,6 +73,11 @@ public class PersonalActivity extends AppCompatActivity
         UserManager.getInstance(getApplicationContext()).getUser(getUserCallback);
         viewPager.setAdapter(new TabsAdapter(getSupportFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
+
+    }
+    private void setUpUser(User user) {
+        txtUserName.setText(user.getUserName());
+        txtSubTitle.setText(User.getUserTypeString(user.getType()) + ":" + user.getEmail());
         if (user.getUserIcon() == null || user.getUserIcon().isEmpty()) {
             imgUserIcon.setImageResource(R.drawable.user_avatar);
         } else {

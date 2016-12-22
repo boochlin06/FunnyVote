@@ -35,6 +35,18 @@ public class User {
 
     private int minAge;
     private int maxAge;
+    public static String getUserTypeString(int type){
+        switch (type) {
+            case TYPE_FACEBOOK:
+                return "FaceBook";
+            case TYPE_GOOGLE:
+                return "Google";
+            case TYPE_TWITTER:
+                return "Twitter";
+            default:
+                return "Guest";
+        }
+    }
 
     @Generated(hash = 586692638)
     public User() {

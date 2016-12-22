@@ -44,6 +44,7 @@ import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.database.VoteDataDao;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
+import com.android.heaton.funnyvote.retrofit.Server;
 import com.android.heaton.funnyvote.ui.HidingScrollListener;
 import com.android.heaton.funnyvote.ui.ShareDialogActivity;
 import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
@@ -154,7 +155,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         Intent shareDialog = new Intent(context, ShareDialogActivity.class);
         shareDialog.putExtra(ShareDialogActivity.EXTRA_TITLE, data.getTitle());
         shareDialog.putExtra(ShareDialogActivity.EXTRA_IMG_URL, data.getVoteImage());
-        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, data.getVoteLink());
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, Server.WEB_URL+data.getVoteCode());
         shareDialog.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(shareDialog);
     }
@@ -413,7 +414,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     }
 
     private void showPasswordDialog() {
-        data.password = "test";
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(R.layout.password_dialog);
         builder.setPositiveButton(getApplicationContext().getResources()
@@ -592,7 +592,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         }
         time.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
-        security.setText(data.getSecurity());
+        security.setText(VoteData.getSecurityString(getApplicationContext(), data.getSecurity()));
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(getString(R.string.vote_detail_dialog_title_info));
         dialog.setView(content);
@@ -688,7 +688,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             if (event.success) {
                 VoteData data = event.response.body();
                 List<Option> optionList = data.getNetOptions();
-                Log.d(TAG, "GET vote success:" + data.getVoteCode() + " image:" + data.getVoteImage());
+                Log.d(TAG, "GET vote success:" + data.getVoteCode() + " image:" + data.getVoteImage() + " pw:"+data.getIsNeedPassword());
                 new SaveVoteDataToDBTask(data, optionList).execute();
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
