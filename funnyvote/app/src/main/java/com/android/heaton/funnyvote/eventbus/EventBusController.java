@@ -73,6 +73,7 @@ public class EventBusController {
         public static final String INIT_GUEST = "init_guest";
         public static final String INIT_DB = "init_db";
         public static final String CREAT_VOTE = "create_vote";
+        public static final String GET_VOTE = "get_vote";
 
         public Response<VoteData> response = null;
         public Call call;

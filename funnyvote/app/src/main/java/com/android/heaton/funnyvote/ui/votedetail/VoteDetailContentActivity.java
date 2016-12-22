@@ -35,9 +35,12 @@ import android.widget.Toast;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
+import com.android.heaton.funnyvote.data.RemoteServiceApi;
+import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.OptionDao;
+import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.database.VoteDataDao;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
@@ -70,6 +73,7 @@ import butterknife.OnClick;
 public class VoteDetailContentActivity extends AppCompatActivity {
 
     private static final int TITLE_EXTEND_MAX_LINE = 3;
+    private static final String TAG = "VoteDetailContentActivity";
     @BindView(R.id.imgAuthorIcon)
     ImageView imgAuthorIcon;
     @BindView(R.id.txtAuthorName)
@@ -130,6 +134,21 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     // all new option id is negative auto increment.
     private long newOptionIdAuto = -1;
     private int sortType = 0;
+    private User user;
+
+    private UserManager userManager;
+    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
+        @Override
+        public void onResponse(User user) {
+            VoteDetailContentActivity.this.user = user;
+            new RemoteServiceApi().getVote(data.getVoteCode(), user);
+        }
+
+        @Override
+        public void onFailure() {
+            new LoadVoteDataFromDBTask(data.getVoteCode()).execute();
+        }
+    };
 
     public static void sendShareIntent(Context context, VoteData data) {
         Intent shareDialog = new Intent(context, ShareDialogActivity.class);
@@ -165,12 +184,14 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         circleLoad.setShowTextWhileSpinning(true);
         circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
 
+        showLoadingCircle(getString(R.string.vote_detail_circle_loading));
         checkCurrentOptionType();
         setUpViews();
         setUpSubmit();
         setUpOptionAdapter(new ArrayList<Option>());
+        userManager = UserManager.getInstance(getApplicationContext());
+        userManager.getUser(getUserCallback);
 
-        new LoadVoteDataTask(voteCode).execute();
     }
 
     private void setUpViews() {
@@ -186,7 +207,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 TextDrawable drawable = TextDrawable.builder().beginConfig()
                         .width((int) getResources().getDimension(R.dimen.image_author_size))
                         .height((int) getResources().getDimension(R.dimen.image_author_size)).endConfig()
-                        .buildRound(data.getAuthorName().substring(0,1),R.color.primary_light);
+                        .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
                 imgAuthorIcon.setImageDrawable(drawable);
             } else {
                 imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
@@ -194,8 +215,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         } else {
             Glide.with(this)
                     .load(data.getAuthorIcon())
-                    .override((int)(Util.convertDpToPixel(getResources().getDimension(R.dimen.image_author_size),this))
-                            , (int)(Util.convertDpToPixel(getResources().getDimension(R.dimen.image_author_size),this)))
+                    .override((int) (Util.convertDpToPixel(getResources().getDimension(R.dimen.image_author_size), this))
+                            , (int) (Util.convertDpToPixel(getResources().getDimension(R.dimen.image_author_size), this)))
                     .fitCenter()
                     .crossFade()
                     .into(imgAuthorIcon);
@@ -208,7 +229,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 R.drawable.ic_star_border_24dp);
         Glide.with(this)
                 .load(data.getVoteImage())
-                .override((int)(Util.convertDpToPixel(320,this)), (int) (Util.convertDpToPixel(150,this)))
+                .override((int) (Util.convertDpToPixel(320, this)), (int) (Util.convertDpToPixel(150, this)))
                 .fitCenter()
                 .crossFade()
                 .into(imgMain);
@@ -351,6 +372,17 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         // Todo: set animation to make transfer funny and smooth.
     }
 
+    private void showLoadingCircle(String content) {
+        circleLoad.setVisibility(View.VISIBLE);
+        circleLoad.setText(content);
+        circleLoad.spin();
+    }
+
+    private void hideLoadingCircle() {
+        circleLoad.stopSpinning();
+        circleLoad.setVisibility(View.GONE);
+    }
+
     private void showSortOptionDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String[] allType = null;
@@ -402,7 +434,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     public void onClick(View view) {
                         if (password.getText().toString().equals(data.password)) {
                             dialog.dismiss();
-                            new UpdateVoteDataTask().execute();
+                            new UpdateVoteDataToServerTask().execute();
                         } else {
                             Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
                             password.startAnimation(shake);
@@ -524,7 +556,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     if (data.getIsNeedPassword()) {
                         showPasswordDialog();
                     } else {
-                        new UpdateVoteDataTask().execute();
+                        new UpdateVoteDataToServerTask().execute();
                     }
                 }
             }
@@ -650,26 +682,37 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         }
     }
 
-    private class LoadVoteDataTask extends AsyncTask<Void, Void, Void> {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRemoteService(EventBusController.RemoteServiceEvent event) {
+        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE)) {
+            if (event.success) {
+                VoteData data = event.response.body();
+                List<Option> optionList = data.getNetOptions();
+                Log.d(TAG, "GET vote success:" + data.getVoteCode() + " image:" + data.getVoteImage());
+                new SaveVoteDataToDBTask(data, optionList).execute();
+            } else {
+                Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
+                Log.d(TAG, "GET vote false:");
+                hideLoadingCircle();
+            }
+        }
+    }
+
+    private class LoadVoteDataFromDBTask extends AsyncTask<Void, Void, Void> {
         private String voteCode;
 
-        public LoadVoteDataTask(String voteCode) {
+        public LoadVoteDataFromDBTask(String voteCode) {
             this.voteCode = voteCode;
         }
 
-        ;
-
         @Override
         protected void onPreExecute() {
-            circleLoad.setText(getString(R.string.vote_detail_circle_loading));
-            circleLoad.setVisibility(View.VISIBLE);
-            circleLoad.spin();
+            //showLoadingCircle(getString(R.string.vote_detail_circle_loading));
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            circleLoad.stopSpinning();
-            circleLoad.setVisibility(View.GONE);
+            hideLoadingCircle();
             checkCurrentOptionType();
             setUpViews();
             setUpOptionAdapter(optionList);
@@ -689,7 +732,64 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         }
     }
 
-    private class UpdateVoteDataTask extends AsyncTask<Void, Void, Void> {
+    private class SaveVoteDataToDBTask extends AsyncTask<Void, Void, Void> {
+
+        private VoteData voteSetting;
+        private List<Option> optionList;
+
+        public SaveVoteDataToDBTask(VoteData voteSetting, List<Option> optionList) {
+            this.voteSetting = voteSetting;
+            this.optionList = optionList;
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            hideLoadingCircle();
+            checkCurrentOptionType();
+            setUpViews();
+            setUpOptionAdapter(optionList);
+            setUpSubmit();
+            optionItemAdapter.notifyDataSetChanged();
+            if (isMultiChoice) {
+                Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
+                        , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            voteSetting.setOptionCount(optionList.size());
+            for (int i = 0; i < optionList.size(); i++) {
+                Option option = optionList.get(i);
+                option.setVoteCode(voteSetting.getVoteCode());
+                option.setId(null);
+                if (i == 0) {
+                    voteSetting.setOption1Title(option.getTitle());
+                    voteSetting.setOption1Code(option.getCode());
+                    voteSetting.setOption1Count(option.getCount());
+                } else if (i == 1) {
+                    voteSetting.setOption2Title(option.getTitle());
+                    voteSetting.setOption2Code(option.getCode());
+                    voteSetting.setOption2Count(option.getCount());
+                }
+                option.dumpDetail();
+            }
+            DataLoader.getInstance(getApplicationContext()).deleteVoteDataAndOption(voteSetting.getVoteCode());
+            DataLoader.getInstance(getApplicationContext()).getVoteDataDao().insertOrReplace(voteSetting);
+            DataLoader.getInstance(getApplicationContext()).getOptionDao().insertOrReplaceInTx(optionList);
+
+            data = DataLoader.getInstance(context).queryVoteDataById(voteSetting.getVoteCode());
+            optionList = data.getOptions();
+            return null;
+        }
+    }
+
+    private class UpdateVoteDataToServerTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected void onPreExecute() {

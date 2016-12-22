@@ -32,6 +32,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RemoteServiceApi {
     private static final String TAG = RemoteServiceApi.class.getSimpleName();
+
     public interface GetUserCodeCallback {
         void onSuccess(String userCode);
 
@@ -68,6 +69,7 @@ public class RemoteServiceApi {
             getUserCodeCallback.onFalure();
         }
     }
+
     class LoginUserCodeResponseCallback implements Callback<ResponseBody> {
         GetUserCodeCallback getUserCodeCallback;
 
@@ -78,6 +80,7 @@ public class RemoteServiceApi {
         @Override
         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
             Log.d(TAG, "Response Status:" + response.code());
+
             if (response.isSuccessful()) {
                 try {
                     String responseStr = response.body().string();
@@ -86,10 +89,16 @@ public class RemoteServiceApi {
                     getUserCodeCallback.onSuccess(otpString);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    //Log.d("test", "onResponse false:" + response.errorBody().string());
                     getUserCodeCallback.onFalure();
                 }
             } else {
-                    getUserCodeCallback.onFalure();
+                try {
+                    Log.d("test", "onResponse false:" + response.errorBody().string());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                getUserCodeCallback.onFalure();
             }
         }
 
@@ -154,6 +163,38 @@ public class RemoteServiceApi {
         }
     }
 
+    class getVoteResponseCallback implements Callback<VoteData> {
+
+        public getVoteResponseCallback() {
+        }
+
+        @Override
+        public void onResponse(Call<VoteData> call, Response<VoteData> response) {
+            if (response.isSuccessful()) {
+                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, true, call, response, null));
+            } else {
+                try {
+                    Log.d("test", "onResponse false:" + response.errorBody().string());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, false, call, response, null));
+            }
+        }
+
+        @Override
+        public void onFailure(Call<VoteData> call, Throwable t) {
+            Log.d("test", "onFailure:" + call.toString());
+            EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, false, call, null, null));
+        }
+    }
+
+    public void getVote(String voteCode, User user) {
+        Call<VoteData> call = voteService.getVote(voteCode, user.getUserCode()
+                , user.getType() == User.TYPE_GUEST ? "guest" : "member");
+        call.enqueue(new getVoteResponseCallback());
+    }
+
     public void createVote(VoteData voteSetting, List<String> options, File image) {
 
 
@@ -162,29 +203,37 @@ public class RemoteServiceApi {
         RequestBody title = RequestBody.create(MediaType.parse("text/plain"), voteSetting.getTitle());
         RequestBody maxOption = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getMaxOption()));
         RequestBody minOption = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getMinOption()));
-        RequestBody rbOption;
-        for (int i = 0; i < options.size(); i++) {
-            rbOption = RequestBody.create(MediaType.parse("text/plain"), options.get(i));
-            parameter.put("pt[" + i + "]", rbOption);
-        }
         RequestBody userCanAddOption = RequestBody.create(MediaType.parse("text/plain")
                 , String.valueOf(voteSetting.getIsUserCanAddOption()));
         RequestBody userPanPreviewResult = RequestBody.create(MediaType.parse("text/plain")
                 , String.valueOf(voteSetting.getIsCanPreviewResult()));
         RequestBody security = RequestBody.create(MediaType.parse("text/plain")
-                , String.valueOf(voteSetting.getSecurity().equals(VoteData.SECURITY_PUBLIC)));
-        //String testcode = "otp08aff6877d1d373dc00a7383ff437e09a586a93a693d9c92d2d1e52e05ceb701";
-        RequestBody author = RequestBody.create(MediaType.parse("text/plain"), voteSetting.getAuthorCode());
+                , VoteData.SECURITY_PUBLIC);
         RequestBody category = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getCategory()));
-
+        RequestBody startTime = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getStartTime()));
+        RequestBody endTime = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getEndTime()));
+        RequestBody password = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.password));
+        RequestBody token = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getAuthorCode()));
+        RequestBody tokenType = RequestBody.create(MediaType.parse("text/plain")
+                , voteSetting.author.getType() == User.TYPE_GUEST ? "guest" : "member");
+        RequestBody rbOption;
+        for (int i = 0; i < options.size(); i++) {
+            rbOption = RequestBody.create(MediaType.parse("text/plain"), options.get(i));
+            parameter.put("pt[" + i + "]", rbOption);
+        }
 
         parameter.put("t", title);
         parameter.put("max", maxOption);
         parameter.put("min", minOption);
         parameter.put("add", userCanAddOption);
         parameter.put("res", userPanPreviewResult);
-        parameter.put("pub", security);
+        parameter.put("sec", security);
         parameter.put("cat", category);
+        parameter.put("on", startTime);
+        parameter.put("off", endTime);
+        parameter.put("p", password);
+        parameter.put("token", token);
+        parameter.put("tokentype", tokenType);
 
         RequestBody requestFile = null;
         MultipartBody.Part body = null;
@@ -197,18 +246,8 @@ public class RemoteServiceApi {
             description = RequestBody.create(
                     MediaType.parse("multipart/form-data"), descriptionString);
         }
-        if (voteSetting.author.getType() == User.TYPE_GUEST) {
-            parameter.put("guest", author);
-            Log.d("test", "otp create vote: user code:" + voteSetting.getAuthorCode());
-            Call<VoteData> call = voteService.createVote(parameter, description, body);
-            call.enqueue(new createVoteResponseCallback());
-        } else {
 
-            RequestBody otp = RequestBody.create(MediaType.parse("text/plain"), voteSetting.getAuthorCode());
-            parameter.put("otp", author);
-            Log.d("test", "otp create vote: user code:" + voteSetting.getAuthorCode());
-            Call<VoteData> call = voteService.createVote(parameter, description, body);
-            call.enqueue(new createVoteResponseCallback());
-        }
+        Call<VoteData> call = voteService.createVote(parameter, description, body);
+        call.enqueue(new createVoteResponseCallback());
     }
 }

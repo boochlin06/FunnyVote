@@ -18,8 +18,8 @@ import java.util.List;
  */
 @Entity
 public class VoteData {
-    public static final String SECURITY_PRIVATE = "Private";
-    public static final String SECURITY_PUBLIC = "Public";
+    public static final String SECURITY_PRIVATE = "01";
+    public static final String SECURITY_PUBLIC = "00";
     @Id
     private Long id;
     @ToMany(referencedJoinProperty = "voteCode")
@@ -33,7 +33,7 @@ public class VoteData {
     @Transient
     public User author;
 
-    @SerializedName("mn")
+    @SerializedName("nn")
     private String authorName;
     private String authorCode;
     @SerializedName("mi")

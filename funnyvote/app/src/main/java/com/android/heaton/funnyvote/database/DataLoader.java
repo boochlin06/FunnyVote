@@ -484,6 +484,12 @@ public class DataLoader {
         }
         voteDataDao.updateInTx(dataList);
     }
+    public void deleteVoteDataAndOption(String voteCode) {
+        voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(voteCode)).buildDelete()
+                .executeDeleteWithoutDetachingEntities();
+        optionDao.queryBuilder().where(OptionDao.Properties.VoteCode.eq(voteCode)).buildDelete()
+                .executeDeleteWithoutDetachingEntities();
+    }
 
 
     public List<Promotion> queryAllPromotion() {

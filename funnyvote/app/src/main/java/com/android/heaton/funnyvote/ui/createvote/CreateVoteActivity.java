@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.grabner.circleprogress.CircleProgressView;
+import at.grabner.circleprogress.TextMode;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -93,6 +94,10 @@ public class CreateVoteActivity extends AppCompatActivity {
         mainToolbar.setTitle(getString(R.string.create_vote_toolbar_title));
         mainToolbar.setTitleTextColor(Color.WHITE);
         mainToolbar.setElevation(10);
+
+        circleLoad.setTextMode(TextMode.TEXT);
+        circleLoad.setShowTextWhileSpinning(true);
+        circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
 
         mainToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -360,7 +365,6 @@ public class CreateVoteActivity extends AppCompatActivity {
             if (event.success) {
                 VoteData data = event.response.body();
                 List<Option> optionList = data.getNetOptions();
-                // TODO: TEST FOR WEB API FIX GUSET WITHOUT start and end time, author icon , name , code.
                 data.setAuthorName(localVoteSetting.author.getUserName());
                 data.setAuthorIcon(localVoteSetting.author.getUserIcon());
                 data.setAuthorCode(localVoteSetting.author.getUserCode());
@@ -418,13 +422,6 @@ public class CreateVoteActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            // TODO: CLEAR IT , TRY FILE.
-//            if (cropImageUri != null) {
-//                voteSetting.setVoteImage(cropImageUri.toString());
-//            } else {
-//                // For test.
-//                voteSetting.setVoteImage("http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png");
-//            }
             voteSetting.setOptionCount(optionList.size());
             for (int i = 0; i < optionList.size(); i++) {
                 Option option = optionList.get(i);

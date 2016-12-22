@@ -23,7 +23,8 @@ public class Option {
     private Integer count;
     @SerializedName("oc")
     private String code;
-    private boolean isUserChoiced = false;
+    @SerializedName("voc")
+    private boolean isUserChoiced;
 
     @Generated(hash = 259294054)
     public Option(Long id, String voteCode, String title, Integer count,
