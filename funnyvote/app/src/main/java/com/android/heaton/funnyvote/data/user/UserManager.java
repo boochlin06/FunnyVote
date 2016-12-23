@@ -6,6 +6,7 @@ import android.util.Log;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.RemoteServiceApi;
 import com.android.heaton.funnyvote.database.User;
+import com.android.heaton.funnyvote.retrofit.Server;
 
 /**
  * Created by chiu_mac on 2016/12/6.
@@ -60,27 +61,35 @@ public class UserManager {
     }
 
     public void registerUser(final User user, final RegisterUserCallback callback) {
-        if (user.getType() == User.TYPE_FACEBOOK) {
+        String userType = "";
+        switch (user.getType()) {
+            case User.TYPE_FACEBOOK:
+                userType = RemoteServiceApi.USER_TYPE_FACEBOOK;
+                break;
+            case User.TYPE_GOOGLE:
+                userType = RemoteServiceApi.USER_TYPE_GOOGLE;
+                break;
+            default:
+        }
+        if (!userType.isEmpty()) {
             String appId = context.getString(R.string.facebook_app_id);
-            remoteServiceApi.getFacebookUserCode(appId, user.getUserID(),
+            remoteServiceApi.getUserCode(userType, appId, user.getUserID(),
                     user.getUserName(), user.getEmail(), user.getUserIcon(), user.getGender(),
                     new RemoteServiceApi.GetUserCodeCallback() {
-                @Override
-                public void onSuccess(String userCode) {
-                    user.setUserCode(userCode);
-                    userDataSource.setUser(user);
-                    callback.onSuccess();
-                }
+                        @Override
+                        public void onSuccess(String userCode) {
+                            user.setUserCode(userCode);
+                            userDataSource.setUser(user);
+                            callback.onSuccess();
+                        }
 
-                @Override
-                public void onFalure() {
-                    callback.onFailure();
-                }
-            });
-        } else if (user.getType() == User.TYPE_GOOGLE){
-            //TODO:API is not ready
-            userDataSource.setUser(user);
-            callback.onSuccess();
+                        @Override
+                        public void onFalure() {
+                            callback.onFailure();
+                        }
+                    });
+        } else {
+            callback.onFailure();
         }
     }
 

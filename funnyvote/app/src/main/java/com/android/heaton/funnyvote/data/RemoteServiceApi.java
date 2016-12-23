@@ -32,6 +32,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RemoteServiceApi {
     private static final String TAG = RemoteServiceApi.class.getSimpleName();
+    public static final String USER_TYPE_FACEBOOK = "fb";
+    public static final String USER_TYPE_GOOGLE = "google";
 
     public interface GetUserCodeCallback {
         void onSuccess(String userCode);
@@ -126,15 +128,12 @@ public class RemoteServiceApi {
         call.enqueue(new GuestUserCodeResponseCallback(callback));
     }
 
-    public void getFacebookUserCode(String appId, String fbId, String name,
-                                    String email, String imgUrl, String gender,
-                                    GetUserCodeCallback callback) {
-        Call<ResponseBody> call = userService.addFBUser(appId, fbId, name, imgUrl, email, gender);
+    public void getUserCode(String type, String appId, String fbId, String name,
+                            String email, String imgUrl, String gender,
+                            GetUserCodeCallback callback) {
+        Call<ResponseBody> call = userService.addUser(type, appId, fbId, name, imgUrl, email, gender);
         call.enqueue(new LoginUserCodeResponseCallback(callback));
 
-    }
-
-    public void getGoogleUserCode(GetUserCodeCallback callback) {
     }
 
     class createVoteResponseCallback implements Callback<VoteData> {
