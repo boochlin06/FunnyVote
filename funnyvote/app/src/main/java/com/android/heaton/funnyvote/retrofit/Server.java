@@ -36,8 +36,9 @@ public class Server {
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @POST("/fbmember")
-        Call<ResponseBody> addFBUser(@Field("appid") String appId,
+        @POST("/social/member")
+        Call<ResponseBody> addUser(@Field("type") String type,
+                                     @Field("appid") String appId,
                                      @Field("id") String id,
                                      @Field("name") String name,
                                      @Field("imgurl") String imgUrl,
