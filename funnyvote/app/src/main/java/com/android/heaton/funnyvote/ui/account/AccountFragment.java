@@ -123,13 +123,24 @@ public class AccountFragment extends android.support.v4.app.Fragment
             if (user.getType() != User.TYPE_GUEST) {
                 showUser(user);
             } else {
-                showLoginView();
+                showLoginView(user.getUserName());
             }
         }
 
         @Override
         public void onFailure() {
-            showLoginView();
+            showLoginView(getString(R.string.account_default_name));
+        }
+    };
+    UserManager.ChangeUserNameCallback changeUserNameCallback = new UserManager.ChangeUserNameCallback() {
+        @Override
+        public void onSuccess() {
+            updateUI();
+        }
+
+        @Override
+        public void onFailure() {
+            Log.d(TAG, "ChangeUserNameCallback onFailure");
         }
     };
     User user;
@@ -316,8 +327,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
         signoutBtn.setVisibility(View.VISIBLE);
     }
 
-    private void showLoginView() {
-        nameTextView.setText(R.string.account_default_name);
+    private void showLoginView(String guestName) {
+        nameTextView.setText(guestName);
         picImageView.setImageResource(R.drawable.ic_action_account_circle);
         loadingProgressBar.setVisibility(View.GONE);
         signoutBtn.setVisibility(View.GONE);
@@ -347,8 +358,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                user.setUserName(editText.getText().toString());
-                userManager.registerUser(user, registerUserCallback);
+                userManager.changeCurrentUserName(editText.getText().toString(), changeUserNameCallback);
             }
         });
         builder.setNegativeButton(R.string.account_dialog_cancel, new DialogInterface.OnClickListener() {

@@ -136,6 +136,16 @@ public class RemoteServiceApi {
 
     }
 
+    public void changeLoginUserName(Callback<ResponseBody> callback, String otp, String name) {
+        Call<ResponseBody> call = userService.changeUserName(otp, otp, name);
+        call.enqueue(callback);
+    }
+
+    public void changeGuestUserName(Callback<ResponseBody> callback, String guest, String name) {
+        Call<ResponseBody> call = userService.changeGuestUserName(guest, guest, name);
+        call.enqueue(callback);
+    }
+
     class createVoteResponseCallback implements Callback<VoteData> {
 
         public createVoteResponseCallback() {

@@ -8,6 +8,11 @@ import com.android.heaton.funnyvote.data.RemoteServiceApi;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.retrofit.Server;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 /**
  * Created by chiu_mac on 2016/12/6.
  */
@@ -62,17 +67,19 @@ public class UserManager {
 
     public void registerUser(final User user, final RegisterUserCallback callback) {
         String userType = "";
+        String appId = "";
         switch (user.getType()) {
             case User.TYPE_FACEBOOK:
                 userType = RemoteServiceApi.USER_TYPE_FACEBOOK;
+                appId = context.getString(R.string.facebook_app_id);
                 break;
             case User.TYPE_GOOGLE:
                 userType = RemoteServiceApi.USER_TYPE_GOOGLE;
+                appId = context.getString(R.string.google_app_id);
                 break;
             default:
         }
         if (!userType.isEmpty()) {
-            String appId = context.getString(R.string.facebook_app_id);
             remoteServiceApi.getUserCode(userType, appId, user.getUserID(),
                     user.getUserName(), user.getEmail(), user.getUserIcon(), user.getGender(),
                     new RemoteServiceApi.GetUserCodeCallback() {
@@ -93,6 +100,68 @@ public class UserManager {
         }
     }
 
+    public void changeCurrentUserName(final String name, final ChangeUserNameCallback callback) {
+        getUser(new GetUserCallback() {
+            @Override
+            public void onResponse(User user) {
+                if (user.getType() == User.TYPE_GUEST) {
+                    changeGuestUserName(user, name, callback);
+                } else {
+                    changeLoginUserName(user, name, callback);
+                }
+            }
+
+            @Override
+            public void onFailure() {
+                Log.w(TAG, "changeUserName Fail");
+            }
+        });
+    }
+
+    private void changeGuestUserName(final User user, final String newName, final ChangeUserNameCallback callback) {
+        remoteServiceApi.changeGuestUserName(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    user.setUserName(newName);
+                    userDataSource.setUser(user);
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure();
+                }
+                Log.d(TAG, "changeGuestUserName response status:" + response.code());
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                t.printStackTrace();
+                callback.onFailure();
+            }
+        }, user.getUserCode(), newName);
+    }
+
+    private void changeLoginUserName(final User user, final String newName, final ChangeUserNameCallback callback) {
+        remoteServiceApi.changeLoginUserName(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    user.setUserName(newName);
+                    userDataSource.setUser(user);
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure();
+                }
+                Log.d(TAG, "changeLoginUserName response status:" + response.code());
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                t.printStackTrace();
+                callback.onFailure();
+            }
+        }, user.getUserCode(), newName);
+    }
+
     public void unregisterUser() {
         userDataSource.removeUser();
     }
@@ -103,6 +172,11 @@ public class UserManager {
     }
 
     public interface RegisterUserCallback {
+        void onSuccess();
+        void onFailure();
+    }
+
+    public interface ChangeUserNameCallback {
         void onSuccess();
         void onFailure();
     }

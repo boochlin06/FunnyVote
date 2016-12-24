@@ -14,6 +14,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
@@ -44,7 +45,18 @@ public class Server {
                                      @Field("imgurl") String imgUrl,
                                      @Field("email") String email,
                                      @Field("gender") String gender);
-
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @PUT("/member/{otp}")
+        Call<ResponseBody> changeUserName(@Path("otp")  String otp,
+                                          @Field("otp") String fieldOtp,
+                                          @Field("nickname") String newName);
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @PUT("/guest/{guest}")
+        Call<ResponseBody> changeGuestUserName(@Path("guest")  String guest,
+                                          @Field("guest") String fieldGuest,
+                                          @Field("nickname") String newName);
     }
 
     public interface VoteService {
