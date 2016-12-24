@@ -65,7 +65,8 @@
             android:screenOrientation="portrait"
             android:theme="@style/MDDialog">
         </activity>
-        <activity android:name=".ui.personal.PersonalActivity"/>
+        <activity android:name=".ui.personal.PersonalActivity"
+            android:screenOrientation="portrait"/>
         <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"/>
     </application>

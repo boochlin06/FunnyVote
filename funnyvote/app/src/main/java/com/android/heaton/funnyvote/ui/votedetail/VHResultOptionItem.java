@@ -99,7 +99,7 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
     @Override
     public void onClick(View v) {
         EventBus.getDefault().post(new EventBusController
-                .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND));
+                .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
         isExpand = !isExpand;
         setUpOptionExpandLayout();
     }

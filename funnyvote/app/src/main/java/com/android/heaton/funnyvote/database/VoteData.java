@@ -14,6 +14,7 @@ import org.greenrobot.greendao.annotation.OrderBy;
 import org.greenrobot.greendao.annotation.ToMany;
 import org.greenrobot.greendao.annotation.Transient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -67,6 +68,7 @@ public class VoteData {
     private int optionCount;
     @SerializedName("voted")
     private int pollCount;
+    @SerializedName("isVoted")
     private boolean isPolled;
     private boolean isFavorite;
 
@@ -82,13 +84,9 @@ public class VoteData {
 
     private String category;
 
-    @SerializedName("os")
     @Transient
+    @SerializedName("os")
     private List<Option> netOptions;
-
-    public void setNetOptions(List<Option> netOptions) {
-        this.netOptions = netOptions;
-    }
 
     public List<Option> getNetOptions() {
         return this.netOptions;

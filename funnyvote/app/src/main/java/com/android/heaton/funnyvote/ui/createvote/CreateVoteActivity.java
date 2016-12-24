@@ -32,7 +32,7 @@ import android.widget.Toast;
 import com.android.heaton.funnyvote.FileUtils;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
-import com.android.heaton.funnyvote.data.RemoteServiceApi;
+import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
@@ -83,6 +83,7 @@ public class CreateVoteActivity extends AppCompatActivity {
     private long newOptionIdAuto = 2;
     private Uri cropImageUri;
     private VoteData localVoteSetting;
+    private VoteDataManager voteDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +113,7 @@ public class CreateVoteActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-
+        voteDataManager = VoteDataManager.getInstance(getApplicationContext());
     }
 
     private class TabsAdapter extends FragmentPagerAdapter {
@@ -305,7 +306,7 @@ public class CreateVoteActivity extends AppCompatActivity {
         }
         if (errorNumber == 0) {
             File file = cropImageUri == null ? null : FileUtils.getFile(this, cropImageUri);
-            new RemoteServiceApi().createVote(localVoteSetting, optionTitles, file);
+            voteDataManager.createVote(localVoteSetting, optionTitles, file);
         } else {
             hideLoadingCircle();
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -360,18 +361,21 @@ public class CreateVoteActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteService(EventBusController.RemoteServiceEvent event) {
+    public void onRemoteService(final EventBusController.RemoteServiceEvent event) {
         if (event.message.equals(EventBusController.RemoteServiceEvent.CREAT_VOTE)) {
             if (event.success) {
-                VoteData data = event.response.body();
-                List<Option> optionList = data.getNetOptions();
-                data.setAuthorName(localVoteSetting.author.getUserName());
-                data.setAuthorIcon(localVoteSetting.author.getUserIcon());
-                data.setAuthorCode(localVoteSetting.author.getUserCode());
-                data.setStartTime(localVoteSetting.getStartTime());
-                data.setEndTime(localVoteSetting.getEndTime());
-                Log.d(TAG, "create vote success:" + data.getVoteCode() + " image:" + data.getVoteImage());
-                new UpdateVoteDataTask(data, optionList).execute();
+                this.localVoteSetting = event.voteData;
+                Toast.makeText(getApplicationContext(), R.string.create_vote_create_successful, Toast.LENGTH_LONG).show();
+                VHVoteWallItem.startActivityToVoteDetail(getApplicationContext(), event.voteData.getVoteCode());
+                circleLoad.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        VoteDetailContentActivity.sendShareIntent(getApplicationContext(), event.voteData);
+                    }
+                }, 1000);
+                hideLoadingCircle();
+                finish();
+                Log.d(TAG, "create vote success:" + event.voteData.getVoteCode() + " image:" + localVoteSetting.getVoteImage());
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
                 Log.d(TAG, "create vote false:");
@@ -389,61 +393,5 @@ public class CreateVoteActivity extends AppCompatActivity {
     private void hideLoadingCircle() {
         circleLoad.stopSpinning();
         circleLoad.setVisibility(View.GONE);
-    }
-
-    private class UpdateVoteDataTask extends AsyncTask<Void, Void, Void> {
-
-        private VoteData voteSetting;
-        private List<Option> optionList;
-
-        public UpdateVoteDataTask(VoteData voteSetting, List<Option> optionList) {
-            this.voteSetting = voteSetting;
-            this.optionList = optionList;
-        }
-
-        @Override
-        protected void onPreExecute() {
-
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            Toast.makeText(getApplicationContext(), R.string.create_vote_create_successful, Toast.LENGTH_LONG).show();
-            VHVoteWallItem.startActivityToVoteDetail(getApplicationContext(), voteSetting.getVoteCode());
-            circleLoad.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    VoteDetailContentActivity.sendShareIntent(getApplicationContext(), voteSetting);
-                }
-            }, 1000);
-            hideLoadingCircle();
-            finish();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            voteSetting.setOptionCount(optionList.size());
-            for (int i = 0; i < optionList.size(); i++) {
-                Option option = optionList.get(i);
-                option.setIsUserChoiced(false);
-                option.setVoteCode(voteSetting.getVoteCode());
-                option.setId(null);
-                option.setCount(0);
-                option.setIsUserChoiced(false);
-                if (i == 0) {
-                    voteSetting.setOption1Title(option.getTitle());
-                    voteSetting.setOption1Code(option.getCode());
-                    voteSetting.setOption1Count(0);
-                } else if (i == 1) {
-                    voteSetting.setOption2Title(option.getTitle());
-                    voteSetting.setOption2Code(option.getCode());
-                    voteSetting.setOption2Count(0);
-                }
-                option.dumpDetail();
-            }
-            DataLoader.getInstance(getApplicationContext()).getVoteDataDao().insert(voteSetting);
-            DataLoader.getInstance(getApplicationContext()).getOptionDao().insertInTx(optionList);
-            return null;
-        }
     }
 }

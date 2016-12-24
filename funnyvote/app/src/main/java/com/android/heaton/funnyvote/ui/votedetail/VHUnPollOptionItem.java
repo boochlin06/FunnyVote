@@ -53,7 +53,7 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     @OnClick(R.id.imgChoice)
     public void onOptionChoice() {
         setUpImgChoiceLaout();
-        EventBus.getDefault().post(new EventBusController.OptionChoiceEvent(option.getId(), OPTION_CHOICED));
+        EventBus.getDefault().post(new EventBusController.OptionChoiceEvent(option.getId(), OPTION_CHOICED, option.getCode()));
     }
 
     private void setUpImgChoiceLaout() {
@@ -70,7 +70,7 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     public void onClick(View v) {
         if (txtOptionTitle.getLineCount() > 1) {
             EventBus.getDefault().post(new EventBusController
-                    .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND));
+                    .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
             isExpand = !isExpand;
             setUpOptionExpandLayout();
         } else {

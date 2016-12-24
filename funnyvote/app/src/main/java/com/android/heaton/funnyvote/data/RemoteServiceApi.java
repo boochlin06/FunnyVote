@@ -2,12 +2,11 @@ package com.android.heaton.funnyvote.data;
 
 import android.util.Log;
 
+import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
-import com.android.heaton.funnyvote.eventbus.EventBusController.RemoteServiceEvent;
 import com.android.heaton.funnyvote.retrofit.Server;
 
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -152,65 +151,100 @@ public class RemoteServiceApi {
         call.enqueue(callback);
     }
 
-    class createVoteResponseCallback implements Callback<VoteData> {
+//    class createVoteResponseCallback implements Callback<VoteData> {
+//
+//        public createVoteResponseCallback() {
+//        }
+//
+//        @Override
+//        public void onResponse(Call<VoteData> call, Response<VoteData> response) {
+//            if (response.isSuccessful()) {
+//                Log.d("test", "os:" + response.message() + response.raw().body());
+//                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.CREAT_VOTE, true, call , response, null));
+//            } else {
+//                try {
+//                    Log.d("test", "onResponse false:" + response.errorBody().string());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.CREAT_VOTE, false, call, response, null));
+//            }
+//        }
+//
+//        @Override
+//        public void onFailure(Call<VoteData> call, Throwable t) {
+//            Log.d("test", "onFailure:" + call.toString());
+//            EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.CREAT_VOTE, false, call, null, null));
+//        }
+//    }
 
-        public createVoteResponseCallback() {
-        }
+//    class getVoteResponseCallback implements Callback<VoteData> {
+//
+//        public getVoteResponseCallback() {
+//        }
+//
+//        @Override
+//        public void onResponse(Call<VoteData> call, Response<VoteData> response) {
+//            if (response.isSuccessful()) {
+//                Log.d("test",call.toString());
+//                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, true, call, response, null));
+//            } else {
+//                try {
+//                    Log.d("test", "onResponse false:" + response.errorBody().string());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, false, call, response, null));
+//            }
+//        }
+//
+//        @Override
+//        public void onFailure(Call<VoteData> call, Throwable t) {
+//            Log.d("test", "onFailure:" + call.toString());
+//            EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, false, call, null, null));
+//        }
+//    }
 
-        @Override
-        public void onResponse(Call<VoteData> call, Response<VoteData> response) {
-            if (response.isSuccessful()) {
-                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.CREAT_VOTE, true, call, response, null));
-            } else {
-                try {
-                    Log.d("test", "onResponse false:" + response.errorBody().string());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.CREAT_VOTE, false, call, response, null));
-            }
-        }
+//    class pollVoteResponseCallback implements Callback<VoteData> {
+//
+//        public pollVoteResponseCallback() {
+//        }
+//
+//        @Override
+//        public void onResponse(Call<VoteData> call, Response<VoteData> response) {
+//            if (response.isSuccessful()) {
+//                //EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.POLL_VOTE, true, call, response, null));
+//            } else {
+//                try {
+//                    Log.d("test", "onResponse false:" + response.errorBody().string());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                //EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.POLL_VOTE, false, call, response, null));
+//            }
+//        }
+//
+//        @Override
+//        public void onFailure(Call<VoteData> call, Throwable t) {
+//            Log.d("test", "onFailure:" + call.toString());
+//            //EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, false, call, null, null));
+//        }
+//    }
 
-        @Override
-        public void onFailure(Call<VoteData> call, Throwable t) {
-            Log.d("test", "onFailure:" + call.toString());
-            EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.CREAT_VOTE, false, call, null, null));
-        }
-    }
-
-    class getVoteResponseCallback implements Callback<VoteData> {
-
-        public getVoteResponseCallback() {
-        }
-
-        @Override
-        public void onResponse(Call<VoteData> call, Response<VoteData> response) {
-            if (response.isSuccessful()) {
-                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, true, call, response, null));
-            } else {
-                try {
-                    Log.d("test", "onResponse false:" + response.errorBody().string());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, false, call, response, null));
-            }
-        }
-
-        @Override
-        public void onFailure(Call<VoteData> call, Throwable t) {
-            Log.d("test", "onFailure:" + call.toString());
-            EventBus.getDefault().post(new RemoteServiceEvent(RemoteServiceEvent.GET_VOTE, false, call, null, null));
-        }
-    }
-
-    public void getVote(String voteCode, User user) {
+    public void getVote(String voteCode, User user, VoteDataManager.getVoteResponseCallback callback) {
         Call<VoteData> call = voteService.getVote(voteCode, user.getUserCode()
                 , user.getType() == User.TYPE_GUEST ? "guest" : "member");
-        call.enqueue(new getVoteResponseCallback());
+        call.enqueue(callback);
     }
 
-    public void createVote(VoteData voteSetting, List<String> options, File image) {
+    public void pollVote(String voteCode, List<String> optionList, User user, VoteDataManager.pollVoteResponseCallback callback) {
+        Call<VoteData> call = voteService.pollVote(voteCode, optionList, user.getUserCode()
+                , user.getType() == User.TYPE_GUEST ? "guest" : "member");
+        call.enqueue(callback);
+    }
+
+    public void createVote(VoteData voteSetting, List<String> options, File image
+            , VoteDataManager.createVoteResponseCallback callback) {
 
 
         Map<String, RequestBody> parameter = new HashMap<>();
@@ -268,6 +302,6 @@ public class RemoteServiceApi {
         }
 
         Call<VoteData> call = voteService.createVote(parameter, description, body);
-        call.enqueue(new createVoteResponseCallback());
+        call.enqueue(callback);
     }
 }

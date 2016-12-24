@@ -2,6 +2,7 @@ package com.android.heaton.funnyvote.retrofit;
 
 import com.android.heaton.funnyvote.database.VoteData;
 
+import java.util.List;
 import java.util.Map;
 
 import okhttp3.MultipartBody;
@@ -39,18 +40,20 @@ public class Server {
         @FormUrlEncoded
         @POST("/social/member")
         Call<ResponseBody> addUser(@Field("type") String type,
-                                     @Field("appid") String appId,
-                                     @Field("id") String id,
-                                     @Field("name") String name,
-                                     @Field("imgurl") String imgUrl,
-                                     @Field("email") String email,
-                                     @Field("gender") String gender);
+                                   @Field("appid") String appId,
+                                   @Field("id") String id,
+                                   @Field("name") String name,
+                                   @Field("imgurl") String imgUrl,
+                                   @Field("email") String email,
+                                   @Field("gender") String gender);
+
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
         @PUT("/member/{otp}")
-        Call<ResponseBody> changeUserName(@Path("otp")  String otp,
+        Call<ResponseBody> changeUserName(@Path("otp") String otp,
                                           @Field("otp") String fieldOtp,
                                           @Field("nickname") String newName);
+
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
         @PUT("/guest/{guest}")
@@ -78,5 +81,13 @@ public class Server {
         Call<VoteData> getVote(@Path("votecode") String voteCode,
                                @Query("token") String token,
                                @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @POST("/vote/{votecode}")
+        Call<VoteData> pollVote(@Path("votecode") String voteCode,
+                                @Field("oc") List<String> optionCode,
+                                @Field("token") String token,
+                                @Field("tokentype") String tokenType);
     }
 }

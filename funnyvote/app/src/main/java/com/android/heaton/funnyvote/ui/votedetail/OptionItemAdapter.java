@@ -27,6 +27,7 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
     private List<Option> optionList;
     private List<Option> searchList;
     private List<Long> choiceList;
+    private List<String> choiceCodeList;
     private List<Long> expandOptionlist;
     private int pollCount = 0;
     private int optionChoiceType = OPTION_UNPOLL;
@@ -39,6 +40,7 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         this.optionChoiceType = optionType;
         this.pollCount = data.getPollCount();
         this.choiceList = new ArrayList<>();
+        this.choiceCodeList = new ArrayList<>();
         this.expandOptionlist = new ArrayList<>();
         this.searchList = new ArrayList<>();
         this.data = data;
@@ -147,6 +149,9 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
 
     public List<Long> getChoiceList() {
         return choiceList;
+    }
+    public List<String> getChoiceCodeList() {
+        return choiceCodeList;
     }
 
     public List<Long> getExpandOptionlist() {

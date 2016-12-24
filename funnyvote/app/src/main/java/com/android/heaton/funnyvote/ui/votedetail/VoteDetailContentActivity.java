@@ -35,7 +35,7 @@ import android.widget.Toast;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
-import com.android.heaton.funnyvote.data.RemoteServiceApi;
+import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
@@ -137,17 +137,18 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private int sortType = 0;
     private User user;
 
+    private VoteDataManager voteDataManager;
     private UserManager userManager;
     private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
         @Override
         public void onResponse(User user) {
             VoteDetailContentActivity.this.user = user;
-            new RemoteServiceApi().getVote(data.getVoteCode(), user);
+            voteDataManager.getVote(data.getVoteCode(), user);
         }
 
         @Override
         public void onFailure() {
-            new LoadVoteDataFromDBTask(data.getVoteCode()).execute();
+            voteDataManager.getVote(data.getVoteCode(), user);
         }
     };
 
@@ -155,7 +156,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         Intent shareDialog = new Intent(context, ShareDialogActivity.class);
         shareDialog.putExtra(ShareDialogActivity.EXTRA_TITLE, data.getTitle());
         shareDialog.putExtra(ShareDialogActivity.EXTRA_IMG_URL, data.getVoteImage());
-        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, Server.WEB_URL+data.getVoteCode());
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, Server.WEB_URL + data.getVoteCode());
         shareDialog.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(shareDialog);
     }
@@ -190,9 +191,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         setUpViews();
         setUpSubmit();
         setUpOptionAdapter(new ArrayList<Option>());
+        voteDataManager = VoteDataManager.getInstance(getApplicationContext());
         userManager = UserManager.getInstance(getApplicationContext());
         userManager.getUser(getUserCallback);
-
     }
 
     private void setUpViews() {
@@ -434,7 +435,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     public void onClick(View view) {
                         if (password.getText().toString().equals(data.password)) {
                             dialog.dismiss();
-                            new UpdateVoteDataToServerTask().execute();
+                            //new UpdateVoteDataToServerTask().execute();
                         } else {
                             Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
                             password.startAnimation(shake);
@@ -542,6 +543,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_at_least_min)
                         , data.getMinOption()), Toast.LENGTH_LONG).show();
             } else {
+                // Check user input option is valid.
                 boolean isFailureOption = false;
                 for (int i = 0; i < optionList.size(); i++) {
                     String title = optionList.get(i).getTitle();
@@ -556,7 +558,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     if (data.getIsNeedPassword()) {
                         showPasswordDialog();
                     } else {
-                        new UpdateVoteDataToServerTask().execute();
+                        showLoadingCircle(getString(R.string.vote_detail_circle_updating));
+                        Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size());
+                        voteDataManager.pollVote(data.getVoteCode(), optionItemAdapter.getChoiceCodeList(), user);
                     }
                 }
             }
@@ -610,7 +614,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     public void onOptionChoice(EventBusController.OptionChoiceEvent event) {
         long id = event.Id;
         if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_CHOICED)) {
-            Log.d("test", "onOptionChoice message:" + event.message + " id:" + id);
+            Log.d("test", "onOptionChoice message:" + event.message + " id:" + id + " code:" + event.code);
 
             if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
                 return;
@@ -618,15 +622,19 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             if (!isMultiChoice) {
                 optionItemAdapter.getChoiceList().clear();
                 optionItemAdapter.getChoiceList().add(id);
+                optionItemAdapter.getChoiceCodeList().clear();
+                optionItemAdapter.getChoiceCodeList().add(event.code);
                 optionItemAdapter.notifyDataSetChanged();
             } else {
                 if (optionItemAdapter.getChoiceList().contains(id)) {
                     optionItemAdapter.getChoiceList().remove(optionItemAdapter.getChoiceList()
                             .indexOf(id));
+                    optionItemAdapter.getChoiceCodeList().remove(event.code);
                     optionItemAdapter.notifyDataSetChanged();
                 } else {
                     if (optionItemAdapter.getChoiceList().size() < data.getMaxOption()) {
                         optionItemAdapter.getChoiceList().add(id);
+                        optionItemAdapter.getChoiceCodeList().add(event.code);
                         optionItemAdapter.notifyDataSetChanged();
                     } else {
                         Toast.makeText(this
@@ -652,6 +660,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             Option option = new Option();
             option.setCount(0);
             option.setId(newOptionIdAuto--);
+            option.setCode("add" + newOptionIdAuto);
             optionList.add(option);
             optionItemAdapter.notifyDataSetChanged();
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_REMOVE)) {
@@ -667,6 +676,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 optionItemAdapter.getChoiceList().remove(optionItemAdapter.getChoiceList().indexOf(id));
                 optionItemAdapter.notifyDataSetChanged();
             }
+            optionItemAdapter.getChoiceCodeList().remove(event.code);
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_INPUT_TEXT)) {
             //appBarMain.setExpanded(false);
             int targetPosition = -1;
@@ -685,192 +695,43 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRemoteService(EventBusController.RemoteServiceEvent event) {
         if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE)) {
+            this.optionList = event.optionList;
+            this.data = event.voteData;
+            hideLoadingCircle();
+            checkCurrentOptionType();
+            setUpViews();
+            setUpOptionAdapter(optionList);
+            setUpSubmit();
+            optionItemAdapter.notifyDataSetChanged();
             if (event.success) {
-                VoteData data = event.response.body();
-                List<Option> optionList = data.getNetOptions();
-                Log.d(TAG, "GET vote success:" + data.getVoteCode() + " image:" + data.getVoteImage() + " pw:"+data.getIsNeedPassword());
-                new SaveVoteDataToDBTask(data, optionList).execute();
+                if (!data.getIsPolled() && isMultiChoice) {
+                    Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
+                            , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_LONG).show();
+                }
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
-                Log.d(TAG, "GET vote false:");
+            }
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE)) {
+            hideLoadingCircle();
+            if (event.success) {
+                this.data = event.voteData;
+                this.optionList = event.optionList;
+                Log.d(TAG, "Poll vote success:" + data.getVoteCode()
+                        + " image:" + data.getVoteImage() + " pw:" + data.getIsNeedPassword()
+                        + " option size:" + optionList.size());
                 hideLoadingCircle();
-            }
-        }
-    }
-
-    private class LoadVoteDataFromDBTask extends AsyncTask<Void, Void, Void> {
-        private String voteCode;
-
-        public LoadVoteDataFromDBTask(String voteCode) {
-            this.voteCode = voteCode;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            //showLoadingCircle(getString(R.string.vote_detail_circle_loading));
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            hideLoadingCircle();
-            checkCurrentOptionType();
-            setUpViews();
-            setUpOptionAdapter(optionList);
-            setUpSubmit();
-            optionItemAdapter.notifyDataSetChanged();
-            if (isMultiChoice) {
-                Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
-                        , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_LONG).show();
-            }
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            data = DataLoader.getInstance(context).queryVoteDataById(this.voteCode);
-            optionList = data.getOptions();
-            return null;
-        }
-    }
-
-    private class SaveVoteDataToDBTask extends AsyncTask<Void, Void, Void> {
-
-        private VoteData voteSetting;
-        private List<Option> optionList;
-
-        public SaveVoteDataToDBTask(VoteData voteSetting, List<Option> optionList) {
-            this.voteSetting = voteSetting;
-            this.optionList = optionList;
-        }
-
-        @Override
-        protected void onPreExecute() {
-
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            hideLoadingCircle();
-            checkCurrentOptionType();
-            setUpViews();
-            setUpOptionAdapter(optionList);
-            setUpSubmit();
-            optionItemAdapter.notifyDataSetChanged();
-            if (isMultiChoice) {
-                Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
-                        , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_LONG).show();
-            }
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            voteSetting.setOptionCount(optionList.size());
-            for (int i = 0; i < optionList.size(); i++) {
-                Option option = optionList.get(i);
-                option.setVoteCode(voteSetting.getVoteCode());
-                option.setId(null);
-                if (i == 0) {
-                    voteSetting.setOption1Title(option.getTitle());
-                    voteSetting.setOption1Code(option.getCode());
-                    voteSetting.setOption1Count(option.getCount());
-                } else if (i == 1) {
-                    voteSetting.setOption2Title(option.getTitle());
-                    voteSetting.setOption2Code(option.getCode());
-                    voteSetting.setOption2Count(option.getCount());
+                checkCurrentOptionType();
+                setUpViews();
+                setUpOptionAdapter(optionList);
+                setUpSubmit();
+                optionItemAdapter.notifyDataSetChanged();
+                if (!data.getIsPolled() && isMultiChoice) {
+                    Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
+                            , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_LONG).show();
                 }
-                option.dumpDetail();
+            } else {
+                Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
             }
-            DataLoader.getInstance(getApplicationContext()).deleteVoteDataAndOption(voteSetting.getVoteCode());
-            DataLoader.getInstance(getApplicationContext()).getVoteDataDao().insertOrReplace(voteSetting);
-            DataLoader.getInstance(getApplicationContext()).getOptionDao().insertOrReplaceInTx(optionList);
-
-            data = DataLoader.getInstance(context).queryVoteDataById(voteSetting.getVoteCode());
-            optionList = data.getOptions();
-            return null;
-        }
-    }
-
-    private class UpdateVoteDataToServerTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-            circleLoad.setText(getString(R.string.vote_detail_circle_updating));
-            circleLoad.setVisibility(View.VISIBLE);
-            circleLoad.spin();
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            circleLoad.stopSpinning();
-            circleLoad.setVisibility(View.GONE);
-            fabPreResult.setVisibility(View.GONE);
-
-            checkCurrentOptionType();
-            setUpViews();
-            showResultOption();
-            setUpSubmit();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            // todo:Update to db.
-            data.setIsPolled(true);
-            for (int i = 0; i < optionList.size(); i++) {
-                Option option = optionList.get(i);
-                for (int j = 0; j < optionItemAdapter.getChoiceList().size(); j++) {
-                    Log.d("test", "choice option:id:" + optionItemAdapter.getChoiceList().get(j)
-                            + " nor id:" + option.getId());
-                    if (optionItemAdapter.getChoiceList().get(j).longValue() == option.getId().longValue()) {
-                        Log.d("test", "1 choice option:id:" + optionItemAdapter.getChoiceList().get(j));
-                        option.setCount(option.getCount() + 1);
-                        option.setIsUserChoiced(true);
-                        data.setOptionUserChoiceTitle(option.getTitle());
-                        data.setOptionUserChoiceCount(option.getCount());
-                        data.setOptionUserChoiceCode(option.getId() > 0 ? option.getCode() :
-                                data.getVoteCode() + "_" + (optionList.size() + option.getId()));
-                        option.dumpDetail();
-                        break;
-                    }
-                }
-                if (option.getId() < 0) {
-                    // add new option api to sync db
-                    Log.d("test", "new option:id:" + option.getId());
-                    option.setCode(data.getVoteCode() + "_" + (optionList.size() + option.getId()));
-                    option.setVoteCode(data.getVoteCode());
-                    option.setId(null);
-                }
-                if (option.getCount() > data.getOptionTopCount()) {
-                    data.setOptionTopCode(option.getCode());
-                    data.setOptionTopCount(option.getCount());
-                    data.setOptionTopTitle(option.getTitle());
-                }
-                if (i == 0) {
-                    data.setOption1Title(option.getTitle());
-                    data.setOption1Code(option.getCode());
-                    data.setOption1Count(option.getCount());
-                } else if (i == 1) {
-                    data.setOption2Code(option.getCode());
-                    data.setOption2Count(option.getCount());
-                    data.setOption2Title(option.getTitle());
-                }
-                option.dumpDetail();
-            }
-            data.setPollCount(data.getPollCount() + optionItemAdapter.getChoiceList().size());
-            optionItemAdapter.setVoteData(data);
-
-            VoteDataDao voteDataDao = DataLoader.getInstance(context).getVoteDataDao();
-            voteDataDao.insertOrReplace(data);
-            OptionDao optionDao = DataLoader.getInstance(context).getOptionDao();
-            optionDao.insertOrReplaceInTx(optionList);
-            optionList = data.getOptions();
-            EventBus.getDefault().post(new EventBusController
-                    .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
-
-            try {
-                Thread.currentThread().sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return null;
         }
     }
 }

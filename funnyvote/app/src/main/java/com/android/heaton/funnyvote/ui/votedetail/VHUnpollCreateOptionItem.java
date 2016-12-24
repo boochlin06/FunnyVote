@@ -94,21 +94,21 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
     @OnClick(R.id.relAdd)
     public void addNewOption() {
         EventBus.getDefault().post(new EventBusController.OptionControlEvent(0
-                , null, EventBusController.OptionControlEvent.OPTION_ADD));
+                , null, EventBusController.OptionControlEvent.OPTION_ADD, option.getCode()));
     }
 
     @OnClick(R.id.imgDelete)
     public void removeOption() {
         EventBus.getDefault().post(new EventBusController
                 .OptionControlEvent(option.getId(), null
-                , EventBusController.OptionControlEvent.OPTION_REMOVE));
+                , EventBusController.OptionControlEvent.OPTION_REMOVE, option.getCode()));
     }
 
     @OnClick(R.id.imgChoice)
     public void onOptionChoice() {
         setUpImgChoiceLayout();
         EventBus.getDefault().post(new EventBusController
-                .OptionChoiceEvent(option.getId(), OPTION_CHOICED));
+                .OptionChoiceEvent(option.getId(), OPTION_CHOICED, option.getCode()));
     }
 
     private final class optionEditTextListener implements TextWatcher {
@@ -122,7 +122,7 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             EventBus.getDefault().post(new EventBusController
                     .OptionControlEvent(option.getId(), s.toString()
-                    , EventBusController.OptionControlEvent.OPTION_INPUT_TEXT));
+                    , EventBusController.OptionControlEvent.OPTION_INPUT_TEXT, option.getCode()));
 
         }
 

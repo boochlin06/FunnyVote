@@ -1,8 +1,10 @@
 package com.android.heaton.funnyvote.eventbus;
 
+import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
 
-import okhttp3.ResponseBody;
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -34,10 +36,12 @@ public class EventBusController {
         public static final String OPTION_EXPAND = "OPTION_EXPAND";
         public final String message;
         public final long Id;
+        public final String code;
 
-        public OptionChoiceEvent(Long Id, String message) {
+        public OptionChoiceEvent(Long Id, String message, String code) {
             this.message = message;
             this.Id = Id;
+            this.code = code;
         }
     }
 
@@ -49,11 +53,13 @@ public class EventBusController {
         public final String message;
         public final long Id;
         public final String inputText;
+        public final String code;
 
-        public OptionControlEvent(long id, String inputText, String message) {
+        public OptionControlEvent(long id, String inputText, String message, String code) {
             this.inputText = inputText;
             this.message = message;
             this.Id = id;
+            this.code = code;
         }
     }
 
@@ -70,24 +76,36 @@ public class EventBusController {
     }
 
     public final static class RemoteServiceEvent {
-        public static final String INIT_GUEST = "init_guest";
-        public static final String INIT_DB = "init_db";
         public static final String CREAT_VOTE = "create_vote";
         public static final String GET_VOTE = "get_vote";
+        public static final String POLL_VOTE = "poll_vote";
 
-        public Response<VoteData> response = null;
-        public Call call;
         public String message;
         public boolean success = false;
         public VoteData voteData;
+        public List<Option> optionList;
+        public String errorResponseMessage;
+
+
+        public RemoteServiceEvent(String message, boolean success, VoteData voteData
+                , List<Option> optionList) {
+            this.success = success;
+            this.message = message;
+            this.optionList = optionList;
+            this.voteData = voteData;
+        }
 
         public RemoteServiceEvent(String message, boolean success, Call call, Response<VoteData> response
-                , VoteData voteData) {
-            this.call = call;
+                , List<Option> optionList) {
             this.success = success;
-            this.response = response;
             this.message = message;
-            this.voteData = voteData;
+            this.optionList = optionList;
+        }
+
+        public RemoteServiceEvent(String message, boolean success, String errorResponseMessage) {
+            this.success = success;
+            this.message = message;
+            this.errorResponseMessage = errorResponseMessage;
         }
 
 
