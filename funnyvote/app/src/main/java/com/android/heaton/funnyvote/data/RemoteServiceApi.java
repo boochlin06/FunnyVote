@@ -136,6 +136,12 @@ public class RemoteServiceApi {
 
     }
 
+    public void linkGuestToLoginUser(String otp, String guest, Callback<ResponseBody> callback) {
+        Log.d(TAG, "linkGuestToLoginUser:" + otp + "/" + guest);
+        Call<ResponseBody> call = userService.linkGuestLoginUser(otp, guest);
+        call.enqueue(callback);
+    }
+
     public void changeLoginUserName(Callback<ResponseBody> callback, String otp, String name) {
         Call<ResponseBody> call = userService.changeUserName(otp, otp, name);
         call.enqueue(callback);

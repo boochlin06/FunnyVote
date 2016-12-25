@@ -56,6 +56,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
         implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private static final String TAG = AccountFragment.class.getSimpleName();
     private static final int RC_GOOGLE_SIGN_IN = 101;
+    private static final int LOGIN_FB = 111;
+    private static final int LOGIN_GOOGLE = 112;
 
     //Facebook API
     private CallbackManager callbackManager;
@@ -92,7 +94,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 user.setMinAge(min);
                 user.setMaxAge(max);
                 user.setType(User.TYPE_FACEBOOK);
-                userManager.registerUser(user, registerUserCallback);
+                userManager.registerUser(user, mergeGuest, registerUserCallback);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -144,9 +146,11 @@ public class AccountFragment extends android.support.v4.app.Fragment
         }
     };
     User user;
+    boolean mergeGuest = true;
 
     //Views
     ImageView picImageView;
+    ImageView editNameImageView;
     TextView nameTextView;
     Button googleSignInBtn;
     Button signoutBtn;
@@ -214,6 +218,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
         signoutBtn = (Button) view.findViewById(R.id.sign_out_button);
         signoutBtn.setOnClickListener(this);
         loadingProgressBar = (ProgressBar) view.findViewById(R.id.loading_progress_bar);
+        editNameImageView = (ImageView) view.findViewById(R.id.edit_name);
+        editNameImageView.setOnClickListener(this);
 
         updateUI();
 
@@ -279,7 +285,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
             user.setEmail(email);
             user.setUserIcon(picLink.toString());
             user.setType(User.TYPE_GOOGLE);
-            userManager.registerUser(user, registerUserCallback);
+            userManager.registerUser(user, mergeGuest, registerUserCallback);
         }
     }
 
@@ -370,6 +376,35 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     }
 
+    private void showMergeOptionDialog(final int loginType) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setMessage(R.string.merge_option_msg);
+        builder.setTitle(R.string.merge_option_title);
+        builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mergeGuest = true;
+                if (loginType == LOGIN_FB) {
+                    facebookLogin();
+                } else if (loginType == LOGIN_GOOGLE){
+                    googleSignIn();
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.account_dialog_no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mergeGuest = false;
+                if (loginType == LOGIN_FB) {
+                    facebookLogin();
+                } else if (loginType == LOGIN_GOOGLE){
+                    googleSignIn();
+                }
+            }
+        });
+        builder.show();
+    }
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
@@ -379,10 +414,10 @@ public class AccountFragment extends android.support.v4.app.Fragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fb_login_button:
-                facebookLogin();
+                showMergeOptionDialog(LOGIN_FB);
                 break;
             case R.id.google_sign_in_button:
-                googleSignIn();
+                showMergeOptionDialog(LOGIN_GOOGLE);
                 break;
             case R.id.sign_out_button:
                 switch (user.getType()) {
@@ -394,6 +429,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                         break;
                 }
                 break;
+            case R.id.edit_name:
             case R.id.profile_name:
                 showNameEditDialog();
                 break;

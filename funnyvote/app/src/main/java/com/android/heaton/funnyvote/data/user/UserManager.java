@@ -65,7 +65,7 @@ public class UserManager {
         }
     }
 
-    public void registerUser(final User user, final RegisterUserCallback callback) {
+    public void registerUser(final User user, final boolean mergeGuest, final RegisterUserCallback callback) {
         String userType = "";
         String appId = "";
         switch (user.getType()) {
@@ -80,14 +80,31 @@ public class UserManager {
             default:
         }
         if (!userType.isEmpty()) {
+            final String guestCode = userDataSource.getUser().getUserCode();
             remoteServiceApi.getUserCode(userType, appId, user.getUserID(),
                     user.getUserName(), user.getEmail(), user.getUserIcon(), user.getGender(),
                     new RemoteServiceApi.GetUserCodeCallback() {
                         @Override
-                        public void onSuccess(String userCode) {
-                            user.setUserCode(userCode);
-                            userDataSource.setUser(user);
-                            callback.onSuccess();
+                        public void onSuccess(final String userCode) {
+                            if (mergeGuest) {
+                                remoteServiceApi.linkGuestToLoginUser(userCode, guestCode, new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        user.setUserCode(userCode);
+                                        userDataSource.setUser(user);
+                                        callback.onSuccess();
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                        callback.onFailure();
+                                    }
+                                });
+                            } else {
+                                user.setUserCode(userCode);
+                                userDataSource.setUser(user);
+                                callback.onSuccess();
+                            }
                         }
 
                         @Override
