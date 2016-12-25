@@ -57,6 +57,10 @@ public class Server {
         Call<ResponseBody> changeGuestUserName(@Path("guest")  String guest,
                                           @Field("guest") String fieldGuest,
                                           @Field("nickname") String newName);
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @PUT("/link/{otp}/{guest}")
+        Call<ResponseBody> linkGuestLoginUser(@Path("otp") String otp,
+                                              @Path("guest") String guest);
     }
 
     public interface VoteService {

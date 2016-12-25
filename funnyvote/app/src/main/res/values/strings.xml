@@ -148,6 +148,9 @@
     <string name="account_dialog_new_name_title">Enter new name</string>
     <string name="account_dialog_ok">OK</string>
     <string name="account_dialog_cancel">Cancel</string>
+    <string name="account_dialog_no">No</string>
+    <string name="merge_option_title">Keep your data</string>
+    <string name="merge_option_msg">Would you like to merge your voting record to login user?(If you choose no, you will lose your record)</string>
 
     <!--Personal -->
     <string name="personal_tab_create">CREATE</string>
