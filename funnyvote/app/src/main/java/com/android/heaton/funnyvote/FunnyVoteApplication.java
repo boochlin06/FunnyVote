@@ -8,6 +8,9 @@ import com.android.heaton.funnyvote.retrofit.Server;
 import com.facebook.FacebookSdk;
 import com.facebook.stetho.Stetho;
 
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import io.fabric.sdk.android.Fabric;
 import org.greenrobot.greendao.database.Database;
 import org.greenrobot.greendao.identityscope.IdentityScopeType;
 
@@ -17,12 +20,19 @@ import org.greenrobot.greendao.identityscope.IdentityScopeType;
 
 public class FunnyVoteApplication extends Application {
 
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = "qZDYI6XXiwSeLTtiUN3XFwxXU";
+    private static final String TWITTER_SECRET = "jOcekyUIi60Z9ykpgOvx0z8FtjBWb5YKW7Zcw9q2HfjdGbawkx";
+
+
     public static final boolean ENCRYPTED = false;
     private DaoSession daoSession;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+        Fabric.with(this, new Twitter(authConfig));
         Stetho.initializeWithDefaults(this);
         FacebookSdk.sdkInitialize(getApplicationContext());
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "votes-db-encrypted" : "votes-db");

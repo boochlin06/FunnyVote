@@ -1,4 +1,19 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
+
 apply plugin: 'android-apt'
 apply plugin: 'org.greenrobot.greendao'
 
@@ -51,6 +66,9 @@ dependencies {
     compile group: 'com.squareup.retrofit2', name: 'converter-gson', version: '2.1.0'
     compile ('cn.trinea.android.view.autoscrollviewpager:android-auto-scroll-view-pager:1.1.2') {
         exclude module: 'support-v4'
+    }
+    compile('com.twitter.sdk.android:twitter:2.3.1@aar') {
+        transitive = true;
     }
 
 }

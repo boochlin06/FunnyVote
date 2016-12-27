@@ -81,6 +81,14 @@
             android:drawableLeft="@drawable/ic_action_gplus"
             android:theme="@style/MDButton"/>
         <Button
+            android:id="@+id/twitter_log_in_button"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="@string/account_twitter_log_in"
+            android:drawableLeft="@drawable/ic_action_twitter"
+            android:theme="@style/MDButton"/>
+        <Button
             android:id="@+id/sign_out_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

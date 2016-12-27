@@ -77,6 +77,9 @@ public class UserManager {
                 userType = RemoteServiceApi.USER_TYPE_GOOGLE;
                 appId = context.getString(R.string.google_app_id);
                 break;
+            case User.TYPE_TWITTER:
+                userType = RemoteServiceApi.USER_TYPE_TWITTER;
+                appId = context.getString(R.string.twitter_api_id);
             default:
         }
         if (!userType.isEmpty()) {
