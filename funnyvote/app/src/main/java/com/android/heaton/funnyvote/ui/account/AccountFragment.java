@@ -1,5 +1,6 @@
 package com.android.heaton.funnyvote.ui.account;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,10 +18,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
+import com.android.heaton.funnyvote.twitter.CustomTwitterApiClient;
 import com.bumptech.glide.Glide;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -41,11 +44,24 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.gson.JsonObject;
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.SessionManager;
+import com.twitter.sdk.android.core.TwitterApiClient;
+import com.twitter.sdk.android.core.TwitterCore;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterAuthClient;
+import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 
 /**
@@ -58,6 +74,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
     private static final int RC_GOOGLE_SIGN_IN = 101;
     private static final int LOGIN_FB = 111;
     private static final int LOGIN_GOOGLE = 112;
+    private static final int LOGIN_TWITTER = 113;
 
     //Facebook API
     private CallbackManager callbackManager;
@@ -149,13 +166,52 @@ public class AccountFragment extends android.support.v4.app.Fragment
     boolean mergeGuest = true;
 
     //Views
-    ImageView picImageView;
-    ImageView editNameImageView;
-    TextView nameTextView;
-    Button googleSignInBtn;
-    Button signoutBtn;
-    Button facebookLoginBtn;
-    ProgressBar loadingProgressBar;
+    private ImageView picImageView;
+    private ImageView editNameImageView;
+    private TextView nameTextView;
+    private Button googleSignInBtn;
+    private Button signoutBtn;
+    private Button facebookLoginBtn;
+    private Button twitterLoginBtn;
+    private ProgressBar loadingProgressBar;
+    private TwitterAuthClient authClient;
+    private Callback<TwitterSession> twitterLoginCallback = new Callback<TwitterSession>() {
+        @Override
+        public void success(Result<TwitterSession> result) {
+            Log.d(TAG, "Twitter login success");
+            TwitterSession twitterSession = result.data;
+            CustomTwitterApiClient twitterApiClient = new CustomTwitterApiClient(twitterSession);
+            CustomTwitterApiClient.UserService userService = twitterApiClient.getUserService();
+            Call<com.twitter.sdk.android.core.models.User> twitterUserProfileCall = userService.show(twitterSession.getUserId());
+            twitterUserProfileCall.enqueue(new retrofit2.Callback<com.twitter.sdk.android.core.models.User>() {
+                @Override
+                public void onResponse(Call<com.twitter.sdk.android.core.models.User> call,
+                                       Response<com.twitter.sdk.android.core.models.User> response) {
+                    Log.d(TAG, "Get twitter user profile:" + response.code());
+                    if (response.isSuccessful()) {
+                        com.twitter.sdk.android.core.models.User user = response.body();
+                        User newUser = new User();
+                        newUser.setUserName(user.name);
+                        newUser.setUserID(user.idStr);
+                        newUser.setEmail(user.email);
+                        newUser.setUserIcon(user.profileImageUrl.replace("normal", "bigger"));
+                        newUser.setType(User.TYPE_TWITTER);
+                        userManager.registerUser(newUser, mergeGuest, registerUserCallback);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<com.twitter.sdk.android.core.models.User> call, Throwable t) {
+                    t.printStackTrace();
+                }
+            });
+        }
+
+        @Override
+        public void failure(TwitterException exception) {
+            exception.printStackTrace();
+        }
+    };
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -220,6 +276,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
         loadingProgressBar = (ProgressBar) view.findViewById(R.id.loading_progress_bar);
         editNameImageView = (ImageView) view.findViewById(R.id.edit_name);
         editNameImageView.setOnClickListener(this);
+        twitterLoginBtn = (Button) view.findViewById(R.id.twitter_log_in_button);
+        twitterLoginBtn.setOnClickListener(this);
 
         updateUI();
 
@@ -250,11 +308,14 @@ public class AccountFragment extends android.support.v4.app.Fragment
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult:" + requestCode + "/" + resultCode);
         callbackManager.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_GOOGLE_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleGoogleSignIn(result);
+        } else if (requestCode == getTwitterAuthClient().getRequestCode()) {
+            getTwitterAuthClient().onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -328,6 +389,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         loadingProgressBar.setVisibility(View.GONE);
         facebookLoginBtn.setVisibility(View.GONE);
         googleSignInBtn.setVisibility(View.GONE);
+        twitterLoginBtn.setVisibility(View.GONE);
         nameTextView.setVisibility(View.VISIBLE);
         picImageView.setVisibility(View.VISIBLE);
         signoutBtn.setVisibility(View.VISIBLE);
@@ -340,6 +402,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         signoutBtn.setVisibility(View.GONE);
         facebookLoginBtn.setVisibility(View.VISIBLE);
         googleSignInBtn.setVisibility(View.VISIBLE);
+        twitterLoginBtn.setVisibility(View.VISIBLE);
         nameTextView.setVisibility(View.VISIBLE);
         picImageView.setVisibility(View.VISIBLE);
     }
@@ -384,25 +447,28 @@ public class AccountFragment extends android.support.v4.app.Fragment
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 mergeGuest = true;
-                if (loginType == LOGIN_FB) {
-                    facebookLogin();
-                } else if (loginType == LOGIN_GOOGLE){
-                    googleSignIn();
-                }
+                login(loginType);
             }
         });
         builder.setNegativeButton(R.string.account_dialog_no, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 mergeGuest = false;
-                if (loginType == LOGIN_FB) {
-                    facebookLogin();
-                } else if (loginType == LOGIN_GOOGLE){
-                    googleSignIn();
-                }
+                login(loginType);
             }
         });
         builder.show();
+    }
+
+    private void login(int loginType) {
+        switch (loginType) {
+            case LOGIN_FB:
+                facebookLogin();
+            case LOGIN_GOOGLE:
+                googleSignIn();
+            case LOGIN_TWITTER:
+                twitterLogin();
+        }
     }
 
     @Override
@@ -419,6 +485,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
             case R.id.google_sign_in_button:
                 showMergeOptionDialog(LOGIN_GOOGLE);
                 break;
+            case R.id.twitter_log_in_button:
+                showMergeOptionDialog(LOGIN_TWITTER);
             case R.id.sign_out_button:
                 switch (user.getType()) {
                     case User.TYPE_FACEBOOK:
@@ -426,6 +494,9 @@ public class AccountFragment extends android.support.v4.app.Fragment
                         break;
                     case User.TYPE_GOOGLE:
                         googleSignOut();
+                        break;
+                    case User.TYPE_TWITTER:
+                        twitterlogout();
                         break;
                 }
                 break;
@@ -438,5 +509,26 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     private void loadProfileImage(String link) {
         Glide.with(this).load(link).into(picImageView);
+    }
+
+    private void twitterLogin() {
+        getTwitterAuthClient().authorize(getActivity(), twitterLoginCallback);
+    }
+
+    private void twitterlogout() {
+        Twitter.getSessionManager().clearActiveSession();
+        userManager.unregisterUser();
+        updateUI();
+    }
+
+    private TwitterAuthClient getTwitterAuthClient() {
+        if (authClient == null) {
+            synchronized (TwitterLoginButton.class) {
+                if (authClient == null) {
+                    authClient = new TwitterAuthClient();
+                }
+            }
+        }
+        return authClient;
     }
 }

@@ -33,6 +33,7 @@ public class RemoteServiceApi {
     private static final String TAG = RemoteServiceApi.class.getSimpleName();
     public static final String USER_TYPE_FACEBOOK = "fb";
     public static final String USER_TYPE_GOOGLE = "google";
+    public static final String USER_TYPE_TWITTER = "twitter";
 
     public interface GetUserCodeCallback {
         void onSuccess(String userCode);

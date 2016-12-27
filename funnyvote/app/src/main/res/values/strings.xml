@@ -21,6 +21,10 @@
     <!--Facebook SDK-->
     <string name="facebook_app_id">862171800585725</string>
 
+    <!--Twitter API-->
+    <string name="twitter_api_key">313e33f6d00449186693b8843745eb37e24df53f</string>
+    <string name="twitter_api_id">13246251</string>
+
     <!--Drawer Menu and toolbar title-->
     <string name="drawer_home">Home</string>
     <string name="drawer_my_box">My box</string>
@@ -141,6 +145,7 @@
     <!-- Account-->
     <string name="account_fb_log_in">Facebook Log In</string>
     <string name="account_google_log_in">Google Log In</string>
+    <string name="account_twitter_log_in">Twitter Log In</string>
     <string name="account_log_out">Log out</string>
 
     <string name="account_default_name">Village people 9527</string>

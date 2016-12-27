@@ -69,6 +69,9 @@
             android:screenOrientation="portrait"/>
         <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"/>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="313e33f6d00449186693b8843745eb37e24df53f"/>
     </application>
 
 </manifest>
