@@ -412,12 +412,13 @@ public class DataLoader {
     }
 
     public List<VoteData> queryHotVotes(int offset, int limit) {
-        // TODO : SECURITY AND HOT CLASS
-        return voteDataDao.queryBuilder().offset(offset).limit(limit).list();
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.Category.eq("hot")
+                ,VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).offset(offset).limit(limit).list();
     }
 
     public long queryHotVotesCount() {
-        return voteDataDao.queryBuilder().buildCount().count();
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.Category.eq("hot")
+                ,VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).buildCount().count();
     }
 
     public long queryFavoriteVotesCount() {

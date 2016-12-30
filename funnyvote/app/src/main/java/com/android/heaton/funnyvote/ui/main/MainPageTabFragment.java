@@ -21,6 +21,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.User;
@@ -33,12 +34,13 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 
 public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter.OnReloadClickListener {
-    private static final int LIMIT = 50;
+    private static final int LIMIT = VoteDataManager.PAGE_COUNT;
     public static final String TAB_HOT = "HOT";
     public static final String TAB_NEW = "NEW";
 
@@ -52,6 +54,9 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     private VoteWallItemAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabTop;
+    private VoteDataManager voteDataManager;
+    private UserManager userManager;
+    private User user;
 
     public static MainPageTabFragment newInstance(String tab) {
         return new MainPageTabFragment(tab);
@@ -65,16 +70,29 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         this.tab = TAB_HOT;
     }
 
+    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
+        @Override
+        public void onResponse(User user) {
+            MainPageTabFragment.this.user = user;
+            initRecyclerView();
+        }
+
+        @Override
+        public void onFailure() {
+            initRecyclerView();
+        }
+    };
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        voteDataManager = VoteDataManager.getInstance(getContext().getApplicationContext());
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
         ryMain = (RecyclerView) RootView.findViewById(R.id.ryMainPage);
         fabTop = (FloatingActionButton) RootView.findViewById(R.id.fabTop);
         fabTop.setVisibility(View.GONE);
         swipeRefreshLayout = (SwipeRefreshLayout) RootView.findViewById(R.id.swipeLayout);
         swipeRefreshLayout.setOnRefreshListener(new WallItemOnRefreshListener());
-        initRecyclerView();
         return RootView;
     }
 
@@ -91,46 +109,41 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        initRecyclerView();
+        userManager = UserManager.getInstance(getContext().getApplicationContext());
+        userManager.getUser(getUserCallback);
     }
 
     private void initRecyclerView() {
         if (tab.equals(TAB_HOT)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(0, 50);
+            voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(0, LIMIT);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
             adapter.setMaxCount(DataLoader.getInstance(getContext()).queryHotVotesCount());
+            voteDataManager.getHotVoteList(0, user);
         } else if (tab.equals(TAB_NEW)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(0, 50);
+            voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(0, LIMIT);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
             adapter.setMaxCount(DataLoader.getInstance(getContext()).queryHotVotesCount());
+            voteDataManager.getNewVoteList(0, user);
         } else if (tab.equals(TAB_CREATE)) {
-            UserManager.getInstance(getContext().getApplicationContext()).getUser(new UserManager.GetUserCallback() {
-                @Override
-                public void onResponse(User user) {
-                    voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
-                            user.getUserCode(), 0, 50);
-                    adapter = new VoteWallItemAdapter(getActivity()
-                            , voteDataList);
-                    adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
-                    adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByAuthorCount(user.getUserCode()));
-                }
-
-                @Override
-                public void onFailure() {
-
-                }
-            });
+            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
+                    user.getUserCode(), 0, LIMIT);
+            adapter = new VoteWallItemAdapter(getActivity()
+                    , voteDataList);
+            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
+            adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByAuthorCount(user.getUserCode()));
+            voteDataManager.getUserCreateVoteList(0, user);
         } else if (tab.equals(TAB_PARTICIPATE)) {
             voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByParticipate(
-                     0, 50);
+                    0, LIMIT);
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
             adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByParticipateCount());
+            voteDataManager.getUserParticipateVoteList(0, user);
         }
         adapter.setOnReloadClickListener(this);
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
@@ -196,6 +209,36 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
+        boolean refreshFragment = false;
+        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HOT)
+                && tab.equals(TAB_HOT)) {
+            Log.d("test", "hot vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            refreshFragment = true;
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_NEW)
+                && tab.equals(TAB_NEW)) {
+            Log.d("test", "new vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            refreshFragment = true;
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)
+                && tab.equals(TAB_CREATE)) {
+            Log.d("test", "Create history vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            refreshFragment = true;
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)
+                && tab.equals(TAB_PARTICIPATE)) {
+            Log.d("test", "Participate history list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            refreshFragment = true;
+        }
+        if (refreshFragment) {
+            refreshData(event.voteDataList, event.offset);
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        }
+        if (!event.success) {
+            Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_error, Toast.LENGTH_LONG).show();
+        }
+    }
 
     @Override
     public void onDestroyView() {
@@ -206,80 +249,69 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
 
         @Override
         public void onRefresh() {
-            refreshData();
-            swipeRefreshLayout.setRefreshing(false);
+            if (tab.equals(TAB_HOT)) {
+                voteDataManager.getHotVoteList(0, user);
+            } else if (tab.equals(TAB_NEW)) {
+                voteDataManager.getNewVoteList(0, user);
+            } else if (tab.equals(TAB_CREATE)) {
+                voteDataManager.getUserCreateVoteList(0, user);
+            } else if (tab.equals(TAB_PARTICIPATE)) {
+                voteDataManager.getUserParticipateVoteList(0, user);
+            }
         }
     }
 
-    private void refreshData() {
-        if (tab.equals(TAB_HOT)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(0, LIMIT);
-        } else if (tab.equals(TAB_NEW)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(0, LIMIT);
-        } else if (tab.equals(TAB_CREATE)) {
-            UserManager.getInstance(getContext().getApplicationContext()).getUser(new UserManager.GetUserCallback() {
-                @Override
-                public void onResponse(User user) {
-                    voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
-                            user.getUserCode(), 0, LIMIT);
-                    adapter.setVoteList(voteDataList);
-                    adapter.setMaxCount(DataLoader.getInstance(getContext()).queryHotVotesCount());
-                    adapter.notifyDataSetChanged();
-                }
-
-                @Override
-                public void onFailure() {
-
-                }
-            });
-        } else if (tab.equals(TAB_PARTICIPATE)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByParticipate(
-                    0, LIMIT);
+    private void refreshData(List<VoteData> voteDataList, int offset) {
+        if (voteDataList == null) {
+            voteDataList = new ArrayList<>();
+            if (tab.equals(TAB_HOT)) {
+                voteDataList = DataLoader.getInstance(getContext()).queryHotVotes(offset, LIMIT);
+            } else if (tab.equals(TAB_NEW)) {
+                voteDataList = DataLoader.getInstance(getContext()).queryNewVotes(offset, LIMIT);
+            } else if (tab.equals(TAB_CREATE)) {
+                voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
+                        user.getUserCode(), offset, LIMIT);
+            } else if (tab.equals(TAB_PARTICIPATE)) {
+                voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByParticipate(
+                        offset, LIMIT);
+            }
         }
-        Log.d("test", "Refresh wall item :" + tab);
-        adapter.setVoteList(voteDataList);
-        adapter.setMaxCount(DataLoader.getInstance(getContext()).queryHotVotesCount());
+        Log.d("test", "Network Refresh wall item :" + tab);
+        int pageNumber = offset / LIMIT;
+
+        if (offset == 0) {
+            this.voteDataList = voteDataList;
+            adapter.setVoteList(this.voteDataList);
+        } else if (offset >= this.voteDataList.size()) {
+            this.voteDataList.addAll(voteDataList);
+        }
+
+        if (this.voteDataList.size() < LIMIT * (pageNumber + 1)) {
+            adapter.setMaxCount(this.voteDataList.size());
+            if (offset != 0) {
+                Toast.makeText(getContext(), R.string.Wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            adapter.setMaxCount(LIMIT * (pageNumber + 2));
+        }
         adapter.notifyDataSetChanged();
+    }
+
+    private void refreshData() {
+        refreshData(null, 0);
     }
 
     @Override
     public void onReloadClicked() {
         final int offset = voteDataList.size();
-        List<VoteData> moreData = null;
         if (tab.equals(TAB_HOT)) {
-            moreData = DataLoader.getInstance(getContext()).queryHotVotes(offset, LIMIT);
+            voteDataManager.getHotVoteList(offset, user);
         } else if (tab.equals(TAB_NEW)) {
-            moreData = DataLoader.getInstance(getContext()).queryNewVotes(offset, LIMIT);
+            voteDataManager.getNewVoteList(offset, user);
         } else if (tab.equals(TAB_CREATE)) {
-            UserManager.getInstance(getContext().getApplicationContext()).getUser(new UserManager.GetUserCallback() {
-                @Override
-                public void onResponse(User user) {
-                    List<VoteData> moreData = DataLoader.getInstance(getContext()).queryVoteDataByAuthor(
-                            user.getUserCode(), offset, LIMIT);
-                    if (moreData != null && moreData.size() > 0) {
-                        voteDataList.addAll(moreData);
-                        adapter.notifyDataSetChanged();
-                    } else {
-                        Toast.makeText(getContext(), R.string.Wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
-                        adapter.notifyDataSetChanged();
-                    }
-                }
-
-                @Override
-                public void onFailure() {
-
-                }
-            });
+            voteDataManager.getUserCreateVoteList(offset, user);
         } else if (tab.equals(TAB_PARTICIPATE)) {
-            moreData = DataLoader.getInstance(getContext()).queryVoteDataByParticipate( offset, LIMIT);
-        }
-        Log.d("test", "onReloadClicked");
-        if (moreData != null && moreData.size() > 0) {
-            voteDataList.addAll(moreData);
-            adapter.notifyDataSetChanged();
-        } else {
-            Toast.makeText(getContext(), R.string.Wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
-            adapter.notifyDataSetChanged();
+            voteDataManager.getUserParticipateVoteList(offset, user);
         }
     }
 }

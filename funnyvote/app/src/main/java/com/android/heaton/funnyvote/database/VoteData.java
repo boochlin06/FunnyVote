@@ -14,7 +14,6 @@ import org.greenrobot.greendao.annotation.OrderBy;
 import org.greenrobot.greendao.annotation.ToMany;
 import org.greenrobot.greendao.annotation.Transient;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +23,8 @@ import java.util.List;
 public class VoteData {
     public static final String SECURITY_PRIVATE = "01";
     public static final String SECURITY_PUBLIC = "00";
+
+    public static final String CATEGORY_HOT = "hot";
     @Id
     private Long id;
     @ToMany(referencedJoinProperty = "voteCode")
@@ -33,8 +34,6 @@ public class VoteData {
     private String voteCode;
     @SerializedName("t")
     private String title;
-    @Transient
-    public User author;
 
     @SerializedName("nn")
     private String authorName;
@@ -70,6 +69,7 @@ public class VoteData {
     private int pollCount;
     @SerializedName("isVoted")
     private boolean isPolled;
+    @SerializedName("fav")
     private boolean isFavorite;
 
     @SerializedName("res")
@@ -83,17 +83,75 @@ public class VoteData {
     private String security = SECURITY_PUBLIC;
 
     private String category;
+    //Only save hot order
+    private int displayOrder;
+    // TODO: OPTION TYPE
+    private String pollType;
 
+    /**
+     * gson used.
+     */
     @Transient
     @SerializedName("os")
     private List<Option> netOptions;
+
+    @Transient
+    @SerializedName("first")
+    private Option firstOption;
+
+    @Transient
+    @SerializedName("second")
+    private Option secondOption;
+
+    @Transient
+    @SerializedName("top")
+    private Option topOption;
+
+    @Transient
+    @SerializedName("user")
+    private Option userOption;
+
+    @Transient
+    @SerializedName("gc")
+    private String guestCode;
+
+    @Transient
+    @SerializedName("mc")
+    private String memberCode;
 
     public List<Option> getNetOptions() {
         return this.netOptions;
     }
 
-    // TODO: OPTION TYPE
-    private String pollType;
+    public Option getFirstOption() {
+        return this.firstOption;
+    }
+
+    public Option getSecondOption() {
+        return this.secondOption;
+    }
+
+    public Option getTopOption() {
+        return this.topOption;
+    }
+
+    public Option getUserOption() {
+        return this.userOption;
+    }
+
+    public String getGuestCode() {
+        return guestCode;
+    }
+
+    public String getMemberCode() {
+        return memberCode;
+    }
+
+    /**
+     * UI temp used
+     */
+    @Transient
+    public User author;
     /**
      * Used to resolve relations
      */
@@ -113,12 +171,12 @@ public class VoteData {
         }
     }
 
-    @Generated(hash = 809127268)
-    public VoteData(Long id, String voteCode, String title, String authorName, String authorCode, String authorIcon, String voteImage, int localImage,
-            long startTime, long endTime, String option1Title, String option1Code, int option1Count, String option2Title, String option2Code, int option2Count,
-            String optionTopTitle, String optionTopCode, int optionTopCount, String optionUserChoiceTitle, String optionUserChoiceCode, int optionUserChoiceCount,
-            int minOption, int maxOption, int optionCount, int pollCount, boolean isPolled, boolean isFavorite, boolean isCanPreviewResult,
-            boolean isUserCanAddOption, boolean isNeedPassword, String security, String category, String pollType) {
+    @Generated(hash = 1347483641)
+    public VoteData(Long id, String voteCode, String title, String authorName, String authorCode, String authorIcon, String voteImage, int localImage, long startTime,
+                    long endTime, String option1Title, String option1Code, int option1Count, String option2Title, String option2Code, int option2Count, String optionTopTitle,
+                    String optionTopCode, int optionTopCount, String optionUserChoiceTitle, String optionUserChoiceCode, int optionUserChoiceCount, int minOption, int maxOption,
+                    int optionCount, int pollCount, boolean isPolled, boolean isFavorite, boolean isCanPreviewResult, boolean isUserCanAddOption, boolean isNeedPassword,
+                    String security, String category, int displayOrder, String pollType) {
         this.id = id;
         this.voteCode = voteCode;
         this.title = title;
@@ -152,6 +210,7 @@ public class VoteData {
         this.isNeedPassword = isNeedPassword;
         this.security = security;
         this.category = category;
+        this.displayOrder = displayOrder;
         this.pollType = pollType;
     }
 
@@ -509,5 +568,17 @@ public class VoteData {
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getVoteDataDao() : null;
+    }
+
+    public int getDisplayOrder() {
+        return this.displayOrder;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
     }
 }

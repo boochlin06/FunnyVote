@@ -5,22 +5,11 @@ import com.android.heaton.funnyvote.database.VoteData;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Response;
-
 /**
  * Created by heaton on 2016/10/2.
  */
 
 public class EventBusController {
-    public static class SubmitMessageEvent {
-        public static final String EVENT_SUBMIT = "SUBMIT";
-        public final String message;
-
-        public SubmitMessageEvent(String message) {
-            this.message = message;
-        }
-    }
 
     public static class UIControlEvent {
         public static final String SCROLL_TO_TOP = "SCROLL_TO_TOP";
@@ -79,11 +68,18 @@ public class EventBusController {
         public static final String CREAT_VOTE = "create_vote";
         public static final String GET_VOTE = "get_vote";
         public static final String POLL_VOTE = "poll_vote";
+        public static final String GET_VOTE_LIST_HOT = "get_vote_list_hot";
+        public static final String GET_VOTE_LIST_NEW = "get_vote_list_new";
+        public static final String GET_VOTE_LIST_FAVORITE = "get_vote_list_favorite";
+        public static final String GET_VOTE_LIST_HISTORY_CREATE = "get_vote_list_history_create";
+        public static final String GET_VOTE_LIST_HISTORY_PARTICIPATE = "get_vote_list_history_participate";
 
         public String message;
         public boolean success = false;
         public VoteData voteData;
         public List<Option> optionList;
+        public List<VoteData> voteDataList;
+        public int offset;
         public String errorResponseMessage;
 
 
@@ -95,11 +91,12 @@ public class EventBusController {
             this.voteData = voteData;
         }
 
-        public RemoteServiceEvent(String message, boolean success, Call call, Response<VoteData> response
-                , List<Option> optionList) {
+        public RemoteServiceEvent(String message, boolean success, int offset
+                , List<VoteData> voteDataList) {
             this.success = success;
             this.message = message;
-            this.optionList = optionList;
+            this.offset = offset;
+            this.voteDataList = voteDataList;
         }
 
         public RemoteServiceEvent(String message, boolean success, String errorResponseMessage) {

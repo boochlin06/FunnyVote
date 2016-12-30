@@ -94,7 +94,7 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
     @OnClick(R.id.relAdd)
     public void addNewOption() {
         EventBus.getDefault().post(new EventBusController.OptionControlEvent(0
-                , null, EventBusController.OptionControlEvent.OPTION_ADD, option.getCode()));
+                , null, EventBusController.OptionControlEvent.OPTION_ADD, null));
     }
 
     @OnClick(R.id.imgDelete)

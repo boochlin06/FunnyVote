@@ -55,7 +55,8 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
         public final static Property IsNeedPassword = new Property(30, boolean.class, "isNeedPassword", false, "IS_NEED_PASSWORD");
         public final static Property Security = new Property(31, String.class, "security", false, "SECURITY");
         public final static Property Category = new Property(32, String.class, "category", false, "CATEGORY");
-        public final static Property PollType = new Property(33, String.class, "pollType", false, "POLL_TYPE");
+        public final static Property DisplayOrder = new Property(33, int.class, "displayOrder", false, "DISPLAY_ORDER");
+        public final static Property PollType = new Property(34, String.class, "pollType", false, "POLL_TYPE");
     }
 
     private DaoSession daoSession;
@@ -107,7 +108,8 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
                 "\"IS_NEED_PASSWORD\" INTEGER NOT NULL ," + // 30: isNeedPassword
                 "\"SECURITY\" TEXT," + // 31: security
                 "\"CATEGORY\" TEXT," + // 32: category
-                "\"POLL_TYPE\" TEXT);"); // 33: pollType
+                "\"DISPLAY_ORDER\" INTEGER NOT NULL ," + // 33: displayOrder
+                "\"POLL_TYPE\" TEXT);"); // 34: pollType
     }
 
     /** Drops the underlying database table. */
@@ -220,10 +222,11 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
         if (category != null) {
             stmt.bindString(33, category);
         }
+        stmt.bindLong(34, entity.getDisplayOrder());
  
         String pollType = entity.getPollType();
         if (pollType != null) {
-            stmt.bindString(34, pollType);
+            stmt.bindString(35, pollType);
         }
     }
 
@@ -331,10 +334,11 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
         if (category != null) {
             stmt.bindString(33, category);
         }
+        stmt.bindLong(34, entity.getDisplayOrder());
  
         String pollType = entity.getPollType();
         if (pollType != null) {
-            stmt.bindString(34, pollType);
+            stmt.bindString(35, pollType);
         }
     }
 
@@ -385,7 +389,8 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
             cursor.getShort(offset + 30) != 0, // isNeedPassword
             cursor.isNull(offset + 31) ? null : cursor.getString(offset + 31), // security
             cursor.isNull(offset + 32) ? null : cursor.getString(offset + 32), // category
-            cursor.isNull(offset + 33) ? null : cursor.getString(offset + 33) // pollType
+            cursor.getInt(offset + 33), // displayOrder
+            cursor.isNull(offset + 34) ? null : cursor.getString(offset + 34) // pollType
         );
         return entity;
     }
@@ -425,7 +430,8 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
         entity.setIsNeedPassword(cursor.getShort(offset + 30) != 0);
         entity.setSecurity(cursor.isNull(offset + 31) ? null : cursor.getString(offset + 31));
         entity.setCategory(cursor.isNull(offset + 32) ? null : cursor.getString(offset + 32));
-        entity.setPollType(cursor.isNull(offset + 33) ? null : cursor.getString(offset + 33));
+        entity.setDisplayOrder(cursor.getInt(offset + 33));
+        entity.setPollType(cursor.isNull(offset + 34) ? null : cursor.getString(offset + 34));
      }
     
     @Override

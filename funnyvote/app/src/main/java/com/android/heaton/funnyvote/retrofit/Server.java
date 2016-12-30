@@ -57,9 +57,10 @@ public class Server {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
         @PUT("/guest/{guest}")
-        Call<ResponseBody> changeGuestUserName(@Path("guest")  String guest,
-                                          @Field("guest") String fieldGuest,
-                                          @Field("nickname") String newName);
+        Call<ResponseBody> changeGuestUserName(@Path("guest") String guest,
+                                               @Field("guest") String fieldGuest,
+                                               @Field("nickname") String newName);
+
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @PUT("/link/{otp}/{guest}")
         Call<ResponseBody> linkGuestLoginUser(@Path("otp") String otp,
@@ -89,5 +90,42 @@ public class Server {
                                 @Field("oc") List<String> optionCode,
                                 @Field("token") String token,
                                 @Field("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/plist")
+        Call<List<VoteData>> getVoteList(@Query("p") int pageNumber,
+                                         @Query("ps") int pageCount,
+                                         @Query("o") String listType,
+                                         @Query("token") String token,
+                                         @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/fav")
+        Call<List<VoteData>> getFavoriteVoteList(@Query("p") int pageNumber,
+                                                 @Query("ps") int pageCount,
+                                                 @Query("token") String token,
+                                                 @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @POST("/fav")
+        Call<List<VoteData>> updateFavorite(@Field("c") String voteCode,
+                                            @Field("action") String isFavorite,
+                                            @Query("token") String token,
+                                            @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/poll/history/create")
+        Call<List<VoteData>> getUserCreateVoteList(@Query("p") int pageNumber,
+                                                   @Query("ps") int pageCount,
+                                                   @Query("token") String token,
+                                                   @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/poll/history/vote")
+        Call<List<VoteData>> getUserParticipateVoteList(@Query("p") int pageNumber,
+                                                        @Query("ps") int pageCount,
+                                                        @Query("token") String token,
+                                                        @Query("tokentype") String tokenType);
     }
 }
