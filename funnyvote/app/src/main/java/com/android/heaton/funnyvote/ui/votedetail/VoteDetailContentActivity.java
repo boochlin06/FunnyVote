@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -37,7 +36,6 @@ import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.android.heaton.funnyvote.data.user.UserManager;
-import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
@@ -311,18 +309,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.relBarFavorite)
-    public void onBarFavoiteClick() {
+    public void onBarFavoriteClick() {
         data.setIsFavorite(!data.getIsFavorite());
         imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
                 R.drawable.ic_star_border_24dp);
-        if (data.getIsFavorite()) {
-            Toast.makeText(this, R.string.vote_detail_toast_add_favorite, Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
-        }
-        DataLoader.getInstance(this).getVoteDataDao().insertOrReplace(data);
-        EventBus.getDefault().post(new EventBusController
-                .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE));
+        voteDataManager.favoriteVote(data.getVoteCode(), data.getIsFavorite(), user);
     }
 
     @OnClick(R.id.relBarShare)
@@ -711,7 +702,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             }
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE)) {
             hideLoadingCircle();
-            if (event.success) {
+            if (this.data.getVoteCode().equals(event.voteData.getVoteCode())
+                    && event.success) {
                 this.data = event.voteData;
                 this.optionList = event.optionList;
                 Log.d(TAG, "Poll vote success:" + data.getVoteCode()
@@ -729,6 +721,26 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 }
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
+            }
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.FAVORIT_VOTE)) {
+            if (event.voteData.getVoteCode().equals(data.getVoteCode())) {
+                if (event.success) {
+                    imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
+                            R.drawable.ic_star_border_24dp);
+                    if (data.getIsFavorite()) {
+                        Toast.makeText(this, R.string.vote_detail_toast_add_favorite, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
+                    }
+                    EventBus.getDefault().post(new EventBusController
+                            .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE));
+                } else {
+                    // fail, reverse to request status
+                    data.setIsFavorite(!event.voteData.getIsFavorite());
+                    imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
+                            R.drawable.ic_star_border_24dp);
+                    Toast.makeText(this, R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }

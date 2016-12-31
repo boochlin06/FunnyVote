@@ -1,6 +1,8 @@
 package com.android.heaton.funnyvote;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.DisplayMetrics;
 
 import com.android.heaton.funnyvote.retrofit.Server;
@@ -73,6 +75,13 @@ public class Util {
      * @param voteCode
      */
     public static String getVoteLink(String voteCode) {
-        return Server.BASE_URL.substring(0,Server.BASE_URL.length()-1) + ":5487/link/" + voteCode;
+        return Server.BASE_URL.substring(0, Server.BASE_URL.length() - 1) + ":5487/link/" + voteCode;
+    }
+
+    public static boolean isNetworkConnected(Context context) {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

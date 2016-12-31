@@ -186,6 +186,13 @@ public class RemoteServiceApi {
 
     }
 
+    public void favoriteVote(String voteCode, boolean isFavorite, User user, VoteDataManager.favoriteVoteResponseCallback callback) {
+        Call<ResponseBody> call = voteService.updateFavorite(voteCode, isFavorite ? "01" : "00", user.getUserCode()
+                , user.getType() == User.TYPE_GUEST ? "guest" : "member");
+        call.enqueue(callback);
+    }
+
+
     public void pollVote(String voteCode, List<String> optionList, User user, VoteDataManager.pollVoteResponseCallback callback) {
         Call<VoteData> call = voteService.pollVote(voteCode, optionList, user.getUserCode()
                 , user.getType() == User.TYPE_GUEST ? "guest" : "member");

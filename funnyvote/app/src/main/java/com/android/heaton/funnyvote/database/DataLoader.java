@@ -459,6 +459,17 @@ public class DataLoader {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsPolled.eq(true))
                 .limit(limit).offset(offset).orderDesc(VoteDataDao.Properties.StartTime).list();
     }
+    public void updateVoteByVoteCode(String voteCode, VoteData data) {
+
+//        List<VoteData> list = voteDataDao.queryBuilder()
+//                .where(VoteDataDao.Properties.VoteCode.eq(voteCode)).list();
+//
+//        if (list.size() > 0) {
+//            VoteData voteData = list.get(0);
+//            data.setId(voteData.getId());
+//            voteDataDao.update(data);
+//        }
+    }
 
     public User getUser() {
         List<User> userList = userDao.loadAll();

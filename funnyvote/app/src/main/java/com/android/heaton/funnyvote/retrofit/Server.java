@@ -109,10 +109,10 @@ public class Server {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
         @POST("/fav")
-        Call<List<VoteData>> updateFavorite(@Field("c") String voteCode,
-                                            @Field("action") String isFavorite,
-                                            @Query("token") String token,
-                                            @Query("tokentype") String tokenType);
+        Call<ResponseBody> updateFavorite(@Field("c") String voteCode,
+                                      @Field("action") String isFavorite,
+                                      @Field("token") String token,
+                                      @Field("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("/poll/history/create")
@@ -127,5 +127,14 @@ public class Server {
                                                         @Query("ps") int pageCount,
                                                         @Query("token") String token,
                                                         @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @POST("/fav")
+        Call<VoteData> updateOption(@Field("c") String voteCode,
+                                    @Field("ot") List<String> newOption,
+                                    @Field("token") String token,
+                                    @Field("tokentype") String tokenType);
+
     }
 }

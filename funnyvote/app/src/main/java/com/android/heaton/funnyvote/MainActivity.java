@@ -151,11 +151,11 @@ public class MainActivity extends AppCompatActivity {
 //                        toolbar.setTitle(R.string.drawer_history);
                         startActivity(new Intent(MainActivity.this, PersonalActivity.class));
                         break;
-                    case R.id.navigation_item_list_favorite:
-                        mCurrentPage = menuItem.getItemId();
-                        ft.replace(R.id.frame_content, new FavoriteFragment()).commit();
-                        toolbar.setTitle(R.string.drawer_favorite);
-                        break;
+//                    case R.id.navigation_item_list_favorite:
+//                        mCurrentPage = menuItem.getItemId();
+//                        ft.replace(R.id.frame_content, new FavoriteFragment()).commit();
+//                        toolbar.setTitle(R.string.drawer_favorite);
+//                        break;
                     case R.id.navigation_account:
                         mCurrentPage = menuItem.getItemId();
                         ft.replace(R.id.frame_content, new AccountFragment()).commit();

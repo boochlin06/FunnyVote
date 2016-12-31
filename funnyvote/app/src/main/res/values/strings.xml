@@ -160,7 +160,14 @@
     <!--Personal -->
     <string name="personal_tab_create">CREATE</string>
     <string name="personal_tab_participate">PARTICIPATE</string>
+    <string name="personal_tab_favorite">FAVORITE</string>
 
     <!--Network-->
     <string name="toast_network_connect_error">Network connect error.</string>
+    <string name="toast_network_connect_error_get_list">Get List connect error.</string>
+
+    <string name="toast_network_connect_success_poll">Poll vote successful.</string>
+
+    <string name="toast_network_connect_error_favorite">favorite operation fail , Network connect error.</string>
+    <string name="toast_network_connect_error_quick_poll">Poll the vote fail , Network connect error.</string>
 </resources>

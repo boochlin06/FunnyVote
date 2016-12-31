@@ -1,8 +1,11 @@
 package com.android.heaton.funnyvote.eventbus;
 
+import android.view.View;
+
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,12 +58,28 @@ public class EventBusController {
     public final static class VoteDataControlEvent {
         public static final String VOTE_SYNC_WALL_AND_CONTENT = "VOTE_SYNC_WALL_AND_CONTENT";
         public static final String VOTE_SYNC_WALL_FOR_FAVORITE = "VOTE_SYNC_WALL_FOR_FAVORITE";
+        public static final String VOTE_FAVORITE = "VOTE_FAVORITE";
+        public static final String VOTE_QUICK_POLL = "VOTE_QUICK_POLL";
+
         public final String message;
         public final VoteData data;
+        public final List<String> optionList;
 
         public VoteDataControlEvent(VoteData data, String message) {
             this.data = data;
             this.message = message;
+            this.optionList = null;
+        }
+        public VoteDataControlEvent(VoteData data, List<String> optionList , String message) {
+            this.data = data;
+            this.message = message;
+            this.optionList = optionList;
+        }
+        public VoteDataControlEvent(VoteData data, String optionCode , String message) {
+            this.data = data;
+            this.message = message;
+            optionList = new ArrayList<>();
+            optionList.add(optionCode);
         }
     }
 
@@ -68,6 +87,7 @@ public class EventBusController {
         public static final String CREAT_VOTE = "create_vote";
         public static final String GET_VOTE = "get_vote";
         public static final String POLL_VOTE = "poll_vote";
+        public static final String FAVORIT_VOTE = "favorite_vote";
         public static final String GET_VOTE_LIST_HOT = "get_vote_list_hot";
         public static final String GET_VOTE_LIST_NEW = "get_vote_list_new";
         public static final String GET_VOTE_LIST_FAVORITE = "get_vote_list_favorite";

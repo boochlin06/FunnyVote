@@ -12,7 +12,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.heaton.funnyvote.R;
@@ -30,8 +29,8 @@ public class PersonalActivity extends AppCompatActivity
     private boolean isAvatarShown = true;
 
     private CircleImageView imgUserIcon;
-    TextView txtUserName;
-    TextView txtSubTitle;
+    private TextView txtUserName;
+    private TextView txtSubTitle;
     private int maxScrollSize;
 
     User user = null;
@@ -47,6 +46,7 @@ public class PersonalActivity extends AppCompatActivity
 
         }
     };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +75,7 @@ public class PersonalActivity extends AppCompatActivity
         tabLayout.setupWithViewPager(viewPager);
 
     }
+
     private void setUpUser(User user) {
         txtUserName.setText(user.getUserName());
         txtSubTitle.setText(User.getUserTypeString(user.getType()) + ":" + user.getEmail());
@@ -90,7 +91,6 @@ public class PersonalActivity extends AppCompatActivity
                     .into(imgUserIcon);
         }
     }
-
 
     public static void start(Context c) {
         c.startActivity(new Intent(c, PersonalActivity.class));
@@ -124,7 +124,7 @@ public class PersonalActivity extends AppCompatActivity
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
@@ -134,6 +134,8 @@ public class PersonalActivity extends AppCompatActivity
                     return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE);
                 case 1:
                     return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_PARTICIPATE);
+                case 2:
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE);
             }
             return null;
         }
@@ -145,6 +147,8 @@ public class PersonalActivity extends AppCompatActivity
                     return getString(R.string.personal_tab_create);
                 case 1:
                     return getString(R.string.personal_tab_participate);
+                case 2:
+                    return getString(R.string.personal_tab_favorite);
             }
             return "";
         }
