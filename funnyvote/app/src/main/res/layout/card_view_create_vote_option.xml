@@ -58,7 +58,7 @@
             tools:text="1" />
 
         <ImageView
-            android:id="@+id/imgDelete"
+            android:id="@+id/imgDeleteOption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginLeft="3dp"
-            android:layout_toLeftOf="@id/imgDelete"
+            android:layout_toLeftOf="@id/imgDeleteOption"
             android:layout_toRightOf="@id/txtOptionNumber"
             android:gravity="center_vertical"
             android:textColor="@color/secondary_text"

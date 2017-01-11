@@ -91,6 +91,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
 
     private VoteData voteSettings;
     private UserManager userManager;
+    private int SecurityType = 0;
 
     private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
         @Override
@@ -224,7 +225,6 @@ public class CreateVoteTabSettingFragment extends Fragment {
         timeSetting.show(getActivity().getFragmentManager(), "End time");
     }
 
-    int SecurityType = 0;
 
     @OnClick({R.id.txtSecurityDetail, R.id.txtSecurity})
     public void onSecurityDetailClick() {

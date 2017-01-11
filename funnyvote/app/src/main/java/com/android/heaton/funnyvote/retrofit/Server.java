@@ -87,6 +87,7 @@ public class Server {
         @FormUrlEncoded
         @POST("/vote/{votecode}")
         Call<VoteData> pollVote(@Path("votecode") String voteCode,
+                                @Field("p") String password,
                                 @Field("oc") List<String> optionCode,
                                 @Field("token") String token,
                                 @Field("tokentype") String tokenType);
@@ -130,7 +131,7 @@ public class Server {
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @POST("/fav")
+        @POST("/option")
         Call<VoteData> updateOption(@Field("c") String voteCode,
                                     @Field("ot") List<String> newOption,
                                     @Field("token") String token,

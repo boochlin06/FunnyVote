@@ -303,13 +303,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
             startActivityToVoteDetail(optionButton.getContext(), data.getVoteCode());
             return true;
         }
-        if (data.getIsNeedPassword()) {
-            if (Util.isNetworkConnected(itemView.getContext())) {
-                showPasswordDialog(optionButton);
-            }
-        } else {
-            updateUI(optionButton);
-        }
+        updateUI(optionButton);
         return true;
     }
 
@@ -320,50 +314,56 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                 if (!Util.isNetworkConnected(itemView.getContext())) {
                     Toast.makeText(itemView.getContext(), R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_SHORT).show();
                     return;
-                }
-                data.setIsPolled(true);
-                data.setOptionUserChoiceTitle(data.getOption1Title());
-                data.setOptionUserChoiceCount(data.getOption1Count() + 1);
-                data.setOptionUserChoiceCode(data.getOption1Code());
-                data.setPollCount(data.getPollCount() + 1);
-                if (data.getOptionUserChoiceCount() > data.getOptionTopCount()) {
-                    data.setOptionTopCode(data.getOptionUserChoiceCode());
-                    data.setOptionTopTitle(data.getOptionUserChoiceTitle());
-                    data.setOptionTopCount(data.getOptionUserChoiceCount());
-                }
-                itemView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        setLayout();
+                } else if (data.getIsNeedPassword()) {
+                    EventBus.getDefault().post(new EventBusController
+                            .VoteDataControlEvent(data, data.getOption1Code(), EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
+                } else {
+                    EventBus.getDefault().post(new EventBusController
+                            .VoteDataControlEvent(data, data.getOption1Code(), EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
+                    data.setIsPolled(true);
+                    data.setOptionUserChoiceTitle(data.getOption1Title());
+                    data.setOptionUserChoiceCount(data.getOption1Count() + 1);
+                    data.setOptionUserChoiceCode(data.getOption1Code());
+                    data.setPollCount(data.getPollCount() + 1);
+                    if (data.getOptionUserChoiceCount() > data.getOptionTopCount()) {
+                        data.setOptionTopCode(data.getOptionUserChoiceCode());
+                        data.setOptionTopTitle(data.getOptionUserChoiceTitle());
+                        data.setOptionTopCount(data.getOptionUserChoiceCount());
                     }
-                }, 500);
-                EventBus.getDefault().post(new EventBusController
-                        .VoteDataControlEvent(data, data.getOption1Code(), EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
-                //new Thread(new SyncDBRunnable(data, 0)).start();
+                    itemView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            setLayout();
+                        }
+                    }, 500);
+                }
             } else if (optionId == R.id.btnSecondOption) {
                 if (!Util.isNetworkConnected(itemView.getContext())) {
                     Toast.makeText(itemView.getContext(), R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_SHORT).show();
                     return;
-                }
-                data.setIsPolled(true);
-                data.setOptionUserChoiceTitle(data.getOption2Title());
-                data.setOptionUserChoiceCount(data.getOption2Count() + 1);
-                data.setOptionUserChoiceCode(data.getOption2Code());
-                data.setPollCount(data.getPollCount() + 1);
-                if (data.getOptionUserChoiceCount() > data.getOptionTopCount()) {
-                    data.setOptionTopCode(data.getOptionUserChoiceCode());
-                    data.setOptionTopTitle(data.getOptionUserChoiceTitle());
-                    data.setOptionTopCount(data.getOptionUserChoiceCount());
-                }
-                EventBus.getDefault().post(new EventBusController
-                        .VoteDataControlEvent(data, data.getOption2Code(), EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
-                itemView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        setLayout();
+                } else if (data.getIsNeedPassword()) {
+                    EventBus.getDefault().post(new EventBusController
+                            .VoteDataControlEvent(data, data.getOption2Code(), EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
+                } else {
+                    EventBus.getDefault().post(new EventBusController
+                            .VoteDataControlEvent(data, data.getOption2Code(), EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
+                    data.setIsPolled(true);
+                    data.setOptionUserChoiceTitle(data.getOption2Title());
+                    data.setOptionUserChoiceCount(data.getOption2Count() + 1);
+                    data.setOptionUserChoiceCode(data.getOption2Code());
+                    data.setPollCount(data.getPollCount() + 1);
+                    if (data.getOptionUserChoiceCount() > data.getOptionTopCount()) {
+                        data.setOptionTopCode(data.getOptionUserChoiceCode());
+                        data.setOptionTopTitle(data.getOptionUserChoiceTitle());
+                        data.setOptionTopCount(data.getOptionUserChoiceCount());
                     }
-                }, 500);
-                //new Thread(new SyncDBRunnable(data, 1)).start();
+                    itemView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            setLayout();
+                        }
+                    }, 500);
+                }
             } else if (optionId == R.id.btnThirdOption) {
                 startActivityToVoteDetail(itemView.getContext(), data.getVoteCode());
             }
@@ -374,59 +374,4 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         }
     }
 
-    private void showPasswordDialog(final LinearLayout optionButton) {
-        data.password = "test";
-        final AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
-        builder.setView(R.layout.password_dialog);
-        builder.setPositiveButton(itemView.getContext().getResources().getString(R.string.vote_detail_dialog_password_input), null);
-        builder.setNegativeButton(itemView.getContext().getResources().getString(R.string.account_dialog_cancel), null);
-        builder.setTitle(itemView.getContext().getString(R.string.vote_detail_dialog_password_title));
-        final AlertDialog dialog = builder.create();
-
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialogInterface) {
-                final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
-                Button ok = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
-                ok.setOnClickListener(new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View view) {
-                        if (password.getText().toString().equals(data.password)) {
-                            dialog.dismiss();
-                            updateUI(optionButton);
-                        } else {
-                            Animation shake = AnimationUtils.loadAnimation(itemView.getContext(), R.anim.edittext_shake);
-                            password.startAnimation(shake);
-                            Toast.makeText(itemView.getContext(), itemView.getResources()
-                                    .getString(R.string.vote_detail_dialog_password_toast_retry), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-            }
-        });
-        dialog.show();
-    }
-
-//    private class SyncDBRunnable implements Runnable {
-//
-//        private VoteData data;
-//        private int clickPosition;
-//
-//        public SyncDBRunnable(VoteData data, int clickPosition) {
-//            this.data = data;
-//            this.clickPosition = clickPosition;
-//        }
-//
-//        @Override
-//        public void run() {
-//            DataLoader.getInstance(itemView.getContext()).getVoteDataDao().insertOrReplace(data);
-//            List<Option> optionList = DataLoader.getInstance(itemView.getContext())
-//                    .queryOptionsByVoteCode(data.getVoteCode(), 2);
-//            Option option = optionList.get(clickPosition);
-//            option.setCount(option.getCount() + 1);
-//            DataLoader.getInstance(itemView.getContext()).getOptionDao().insertOrReplace(option);
-//            Log.d("test", " Quick vote successful" + data.getTitle());
-//        }
-//    }
 }

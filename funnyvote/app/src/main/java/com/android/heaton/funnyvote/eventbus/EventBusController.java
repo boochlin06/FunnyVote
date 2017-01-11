@@ -41,6 +41,7 @@ public class EventBusController {
         public static final String OPTION_ADD = "OPTION_ADD";
         public static final String OPTION_REMOVE = "OPTION_REMOVE";
         public static final String OPTION_INPUT_TEXT = "OPTION_INPUT_TEXT";
+        public static final String OPTION_ADD_CHECK = "OPTION_ADD_CHECK";
 
         public final String message;
         public final long Id;
@@ -93,6 +94,7 @@ public class EventBusController {
         public static final String GET_VOTE_LIST_FAVORITE = "get_vote_list_favorite";
         public static final String GET_VOTE_LIST_HISTORY_CREATE = "get_vote_list_history_create";
         public static final String GET_VOTE_LIST_HISTORY_PARTICIPATE = "get_vote_list_history_participate";
+        public static final String ADD_NEW_OPTION = "add_new_option";
 
         public String message;
         public boolean success = false;

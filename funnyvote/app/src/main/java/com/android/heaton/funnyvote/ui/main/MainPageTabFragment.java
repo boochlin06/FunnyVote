@@ -5,10 +5,12 @@
  */
 package com.android.heaton.funnyvote.ui.main;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,7 +18,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -58,6 +64,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     private VoteDataManager voteDataManager;
     private UserManager userManager;
     private User user;
+    private AlertDialog passwordDialog;
 
     public static MainPageTabFragment newInstance(String tab) {
         return new MainPageTabFragment(tab);
@@ -218,28 +225,62 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onVoteControl(EventBusController.VoteDataControlEvent event) {
-        if (!getUserVisibleHint()) {
-            Log.d("test", tab + " ,On Vote Control: Stop :" + event.message);
-            return;
-        }
-        if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT)) {
-            VoteData data = event.data;
-            for (int i = 0; i < voteDataList.size(); i++) {
-                if (data.getVoteCode().equals(voteDataList.get(i).getVoteCode())) {
-                    voteDataList.set(i, data);
-                    adapter.notifyItemChanged(i);
-                    break;
+        if (getUserVisibleHint() && isResumed()) {
+            Log.d("test", tab + " ,On Vote Control :" + event.message);
+            if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT)) {
+                VoteData data = event.data;
+                for (int i = 0; i < voteDataList.size(); i++) {
+                    if (data.getVoteCode().equals(voteDataList.get(i).getVoteCode())) {
+                        voteDataList.set(i, data);
+                        adapter.notifyItemChanged(i);
+                        break;
+                    }
+                }
+            } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_FAVORITE)) {
+                voteDataManager.favoriteVote(event.data.getVoteCode()
+                        , event.data.getIsFavorite(), user);
+            } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)
+                    && tab.equals(TAB_FAVORITE)) {
+                adapter.notifyDataSetChanged();
+            } else if (getUserVisibleHint() && event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)) {
+
+                if (event.data.getIsNeedPassword()) {
+                    Log.d("test","vc:"+event.data.getVoteCode()+" pw:"+event.data.getIsNeedPassword());
+                    showPasswordDialog(event.data, event.optionList, user);
+                } else {
+                    voteDataManager.pollVote(event.data.getVoteCode(), null, event.optionList, user);
                 }
             }
-        } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_FAVORITE)) {
-            voteDataManager.favoriteVote(event.data.getVoteCode()
-                    , event.data.getIsFavorite(), user);
-        } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)
-                && tab.equals(TAB_FAVORITE)) {
-            adapter.notifyDataSetChanged();
-        } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)) {
-            voteDataManager.pollVote(event.data.getVoteCode(), event.optionList, user);
         }
+    }
+
+    private void showPasswordDialog(final VoteData data, final List<String> optionList, final User user) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(R.layout.password_dialog);
+        builder.setPositiveButton(getActivity().getResources()
+                .getString(R.string.vote_detail_dialog_password_input), null);
+        builder.setNegativeButton(getContext().getApplicationContext().getResources()
+                .getString(R.string.account_dialog_cancel), null);
+        builder.setTitle(getActivity().getString(R.string.vote_detail_dialog_password_title));
+        passwordDialog = builder.create();
+
+        passwordDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
+                Button ok = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                ok.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        Log.d("test", " vc:" + data.getVoteCode()
+                                + " pw input:" + password.getText().toString());
+                        voteDataManager.pollVote(data.getVoteCode(), password.getText().toString(), optionList, user);
+                    }
+                });
+            }
+        });
+        passwordDialog.show();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -271,13 +312,34 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             refreshFragment = true;
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE) && getUserVisibleHint()) {
             Log.d("test", "poll vote");
-            Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_success_poll
-                    , Toast.LENGTH_SHORT).show();
+            if (event.success) {
+                if (passwordDialog != null && passwordDialog.isShowing()) {
+                    passwordDialog.dismiss();
+                }
+                if (tab.equals(TAB_PARTICIPATE)) {
+                    refreshFragment = true;
+                }
+                Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_success_poll
+                        , Toast.LENGTH_SHORT).show();
+            } else {
+                if (event.errorResponseMessage.equals("error_invalid_password")) {
+                    if (passwordDialog != null && passwordDialog.isShowing()) {
+                        final EditText password = (EditText) passwordDialog.findViewById(R.id.edtEnterPassword);
+                        password.selectAll();
+                        Animation shake = AnimationUtils.loadAnimation(getContext().getApplicationContext(), R.anim.edittext_shake);
+                        password.startAnimation(shake);
+                        Toast.makeText(getContext().getApplicationContext(), getString(R.string.vote_detail_dialog_password_toast_retry)
+                                , Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    if (passwordDialog != null && passwordDialog.isShowing()) {
+                        passwordDialog.dismiss();
+                    }
+                    Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_LONG).show();
+                }
+            }
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.CREAT_VOTE) && getUserVisibleHint()
                 && tab.equals(TAB_CREATE) && event.success) {
-            refreshFragment = true;
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE) && getUserVisibleHint()
-                && tab.equals(TAB_PARTICIPATE) && event.success) {
             refreshFragment = true;
         }
         if (refreshFragment) {

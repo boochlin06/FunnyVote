@@ -31,7 +31,7 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
     RelativeLayout relAdd;
     @BindView(R.id.txtOptionNumber)
     TextView txtOptionNumber;
-    @BindView(R.id.imgDelete)
+    @BindView(R.id.imgDeleteOption)
     ImageView imgDelete;
     @BindView(R.id.edtOptionTitle)
     EditText edtOptionTitle;
@@ -76,7 +76,7 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
                 , null, EventBusController.OptionControlEvent.OPTION_ADD, null));
     }
 
-    @OnClick(R.id.imgDelete)
+    @OnClick(R.id.imgDeleteOption)
     public void removeOption() {
         EventBus.getDefault().post(new EventBusController
                 .OptionControlEvent(option.getId(), null

@@ -81,13 +81,20 @@ public class VoteDataManager {
         }
     }
 
-    public void pollVote(@NonNull String voteCode, @NonNull List<String> pollOptions, @NonNull User user) {
+    public void pollVote(@NonNull String voteCode,String password, @NonNull List<String> pollOptions, @NonNull User user) {
         if (TextUtils.isEmpty(voteCode) || pollOptions.size() == 0 || user == null) {
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.POLL_VOTE, false, new IllegalArgumentException().toString()));
         } else {
-            Log.d("test","Option choice:"+pollOptions.get(0));
-            remoteServiceApi.pollVote(voteCode, pollOptions, user, new pollVoteResponseCallback());
+            remoteServiceApi.pollVote(voteCode, password, pollOptions, user, new pollVoteResponseCallback());
+        }
+    }
+    public void addNewOption(@NonNull String voteCode, @NonNull List<String> newOptions, @NonNull User user) {
+        if (TextUtils.isEmpty(voteCode) || newOptions.size() == 0 || user == null) {
+            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
+                    EventBusController.RemoteServiceEvent.ADD_NEW_OPTION, false, new IllegalArgumentException().toString()));
+        } else {
+            remoteServiceApi.addNewOption(voteCode, newOptions, user, new addNewOptionResponseCallback());
         }
     }
 
@@ -232,7 +239,7 @@ public class VoteDataManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                executorService.execute(new LoadListDBRunnable(offset, message, false, userCode , errorMessage));
+                executorService.execute(new LoadListDBRunnable(offset, message, false, userCode, errorMessage));
             }
         }
 
@@ -271,6 +278,37 @@ public class VoteDataManager {
             Log.d("test", "pollVoteResponseCallback onFailure:" + call.toString());
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.POLL_VOTE, false, t.getMessage()));
+        }
+    }
+
+    public class addNewOptionResponseCallback implements Callback<VoteData> {
+
+        public addNewOptionResponseCallback() {
+        }
+
+        @Override
+        public void onResponse(Call<VoteData> call, Response<VoteData> response) {
+            if (response.isSuccessful()) {
+                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusController
+                        .RemoteServiceEvent.ADD_NEW_OPTION, true));
+            } else {
+                String errorMessage = "";
+                try {
+                    errorMessage = response.errorBody().string();
+                    Log.d("test", "addNewOptionResponseCallback onResponse false:" + errorMessage);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
+                        EventBusController.RemoteServiceEvent.ADD_NEW_OPTION, false, errorMessage));
+            }
+        }
+
+        @Override
+        public void onFailure(Call<VoteData> call, Throwable t) {
+            Log.d("test", "addNewOptionResponseCallback onFailure:" + call.toString());
+            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
+                    EventBusController.RemoteServiceEvent.ADD_NEW_OPTION, false, t.getMessage()));
         }
     }
 
@@ -331,6 +369,7 @@ public class VoteDataManager {
             } else {
                 voteSetting.setAuthorCode(voteSetting.getMemberCode());
             }
+            voteSetting.setOptionCount(optionList.size());
             int maxOption = 0;
             for (int i = 0; i < optionList.size(); i++) {
                 Option option = optionList.get(i);
@@ -349,6 +388,7 @@ public class VoteDataManager {
                     voteSetting.setOption2Count(option.getCount());
                 }
                 if (option.getCount() > maxOption && option.getCount() >= 1) {
+                    maxOption = option.getCount();
                     voteSetting.setOptionTopCount(option.getCount());
                     voteSetting.setOptionTopCode(option.getCode());
                     voteSetting.setOptionTopTitle(option.getTitle());

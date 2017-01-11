@@ -64,6 +64,7 @@ public class VoteData {
     private int minOption;
     @SerializedName("max")
     private int maxOption;
+    @SerializedName("osn")
     private int optionCount;
     @SerializedName("voted")
     private int pollCount;

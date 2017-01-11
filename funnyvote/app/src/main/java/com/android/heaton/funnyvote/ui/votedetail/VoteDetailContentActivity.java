@@ -15,6 +15,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -69,7 +70,7 @@ import butterknife.OnClick;
 
 public class VoteDetailContentActivity extends AppCompatActivity {
 
-    private static final int TITLE_EXTEND_MAX_LINE = 3;
+    private static final int TITLE_EXTEND_MAX_LINE = 5;
     private static final String TAG = "VoteDetailContentActivity";
     @BindView(R.id.imgAuthorIcon)
     ImageView imgAuthorIcon;
@@ -121,6 +122,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     ImageView imgTitleExtend;
     private Menu menu;
     private SearchView searchView;
+    private AlertDialog passwordDialog;
     private OptionItemAdapter optionItemAdapter;
     private VoteData data;
     private Activity context;
@@ -196,7 +198,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         txtAuthorName.setText(data.getAuthorName());
         txtPubTime.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
+        //txtTitle.setMovementMethod(new ScrollingMovementMethod());
         txtTitle.setText(data.getTitle());
+
         txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
 
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
@@ -231,6 +235,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 .fitCenter()
                 .crossFade()
                 .into(imgMain);
+        Log.d("test", "image main:" + data.getVoteImage());
 
         if (txtTitle.getLineCount() >= TITLE_EXTEND_MAX_LINE) {
             imgTitleExtend.setVisibility(View.VISIBLE);
@@ -300,9 +305,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     @OnClick(R.id.imgTitleExtend)
     public void onTitleExtendClick() {
         if (txtTitle.getMaxLines() == TITLE_EXTEND_MAX_LINE) {
-            txtTitle.setMaxLines(30);
+            txtTitle.setMaxLines(8);
             imgTitleExtend.setImageResource(R.drawable.ic_expand_less_24dp);
-        } else if (txtTitle.getMaxLines() == 30) {
+        } else if (txtTitle.getMaxLines() == 8) {
             txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
             imgTitleExtend.setImageResource(R.drawable.ic_expand_more_24dp);
         }
@@ -411,9 +416,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         builder.setNegativeButton(getApplicationContext().getResources()
                 .getString(R.string.account_dialog_cancel), null);
         builder.setTitle(getApplicationContext().getString(R.string.vote_detail_dialog_password_title));
-        final AlertDialog dialog = builder.create();
+        passwordDialog = builder.create();
 
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+        passwordDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialogInterface) {
                 final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
@@ -422,20 +427,14 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
                     @Override
                     public void onClick(View view) {
-                        if (password.getText().toString().equals(data.password)) {
-                            dialog.dismiss();
-                            //new UpdateVoteDataToServerTask().execute();
-                        } else {
-                            Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
-                            password.startAnimation(shake);
-                            Toast.makeText(getApplicationContext(), getString(R.string.vote_detail_dialog_password_toast_retry)
-                                    , Toast.LENGTH_LONG).show();
-                        }
+                        Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size() + " vc:" + data.getVoteCode()
+                                + " pw input:" + password.getText().toString());
+                        voteDataManager.pollVote(data.getVoteCode(), password.getText().toString(), optionItemAdapter.getChoiceCodeList(), user);
                     }
                 });
             }
         });
-        dialog.show();
+        passwordDialog.show();
     }
 
     private void sortOptions() {
@@ -531,26 +530,18 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             if (optionItemAdapter.getChoiceList().size() < data.getMinOption()) {
                 Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_at_least_min)
                         , data.getMinOption()), Toast.LENGTH_LONG).show();
+            } else if (optionItemAdapter.getChoiceCodeList().size() > data.getMaxOption()) {
+                Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_over_max)
+                        , data.getMaxOption()), Toast.LENGTH_LONG).show();
+            } else if (isUserOnAddNewOption) {
+                Toast.makeText(this, R.string.vote_detail_toast_fill_new_option, Toast.LENGTH_LONG).show();
             } else {
-                // Check user input option is valid.
-                boolean isFailureOption = false;
-                for (int i = 0; i < optionList.size(); i++) {
-                    String title = optionList.get(i).getTitle();
-                    if (title == null || title.isEmpty()) {
-                        isFailureOption = true;
-                    }
-                }
-                if (isFailureOption) {
-                    Toast.makeText(this, getString(R.string.vote_detail_toast_fill_all_new_option)
-                            , Toast.LENGTH_LONG).show();
+                if (data.getIsNeedPassword()) {
+                    showPasswordDialog();
                 } else {
-                    if (data.getIsNeedPassword()) {
-                        showPasswordDialog();
-                    } else {
-                        showLoadingCircle(getString(R.string.vote_detail_circle_updating));
-                        Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size());
-                        voteDataManager.pollVote(data.getVoteCode(), optionItemAdapter.getChoiceCodeList(), user);
-                    }
+                    showLoadingCircle(getString(R.string.vote_detail_circle_updating));
+                    Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size() + " vc:" + data.getVoteCode() + " user:" + user.getUserCode() + "  type:" + user.getType());
+                    voteDataManager.pollVote(data.getVoteCode(), null, optionItemAdapter.getChoiceCodeList(), user);
                 }
             }
             return true;
@@ -642,17 +633,25 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         }
     }
 
+    boolean isUserOnAddNewOption = false;
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onOptionControl(EventBusController.OptionControlEvent event) {
         long id = event.Id;
         if (event.message.equals(EventBusController.OptionControlEvent.OPTION_ADD)) {
-            Option option = new Option();
-            option.setCount(0);
-            option.setId(newOptionIdAuto--);
-            option.setCode("add" + newOptionIdAuto);
-            optionList.add(option);
-            optionItemAdapter.notifyDataSetChanged();
+            if (isUserOnAddNewOption) {
+                Toast.makeText(getApplicationContext(), R.string.vote_detail_toast_confirm_new_option, Toast.LENGTH_SHORT).show();
+            } else {
+                isUserOnAddNewOption = true;
+                Option option = new Option();
+                option.setCount(0);
+                option.setId(newOptionIdAuto--);
+                option.setCode("add" + newOptionIdAuto);
+                optionList.add(option);
+                optionItemAdapter.notifyDataSetChanged();
+            }
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_REMOVE)) {
+            isUserOnAddNewOption = false;
             int removePosition = -1;
             for (int i = 0; i < optionList.size(); i++) {
                 if (optionList.get(i).getId() == id) {
@@ -662,10 +661,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             }
             if (removePosition >= 0) {
                 optionList.remove(removePosition);
-                optionItemAdapter.getChoiceList().remove(optionItemAdapter.getChoiceList().indexOf(id));
                 optionItemAdapter.notifyDataSetChanged();
             }
-            optionItemAdapter.getChoiceCodeList().remove(event.code);
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_INPUT_TEXT)) {
             //appBarMain.setExpanded(false);
             int targetPosition = -1;
@@ -677,6 +674,15 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             }
             if (targetPosition >= 0) {
                 optionList.get(targetPosition).setTitle(event.inputText);
+            }
+        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_ADD_CHECK)) {
+            if (event.inputText != null && !TextUtils.isEmpty(event.inputText)) {
+                showLoadingCircle(getString(R.string.vote_detail_circle_updating));
+                List<String> newOptions = new ArrayList<>();
+                newOptions.add(event.inputText);
+                voteDataManager.addNewOption(data.getVoteCode(), newOptions, user);
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.vote_detail_toast_fill_new_option, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -702,25 +708,34 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             }
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE)) {
             hideLoadingCircle();
-            if (this.data.getVoteCode().equals(event.voteData.getVoteCode())
-                    && event.success) {
+            if (event.success && this.data.getVoteCode().equals(event.voteData.getVoteCode())) {
                 this.data = event.voteData;
                 this.optionList = event.optionList;
                 Log.d(TAG, "Poll vote success:" + data.getVoteCode()
                         + " image:" + data.getVoteImage() + " pw:" + data.getIsNeedPassword()
                         + " option size:" + optionList.size());
-                hideLoadingCircle();
+                if (passwordDialog != null && passwordDialog.isShowing()) {
+                    passwordDialog.dismiss();
+                }
                 checkCurrentOptionType();
                 setUpViews();
                 setUpOptionAdapter(optionList);
                 setUpSubmit();
                 optionItemAdapter.notifyDataSetChanged();
-                if (!data.getIsPolled() && isMultiChoice) {
-                    Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
-                            , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_LONG).show();
-                }
             } else {
-                Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
+                if (!event.success && event.errorResponseMessage.equals("error_invalid_password")) {
+                    if (passwordDialog != null && passwordDialog.isShowing()) {
+                        final EditText password = (EditText) passwordDialog.findViewById(R.id.edtEnterPassword);
+                        password.selectAll();
+                        Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
+                        password.startAnimation(shake);
+                        Toast.makeText(getApplicationContext(), getString(R.string.vote_detail_dialog_password_toast_retry)
+                                , Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    passwordDialog.dismiss();
+                    Toast.makeText(this, R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_LONG).show();
+                }
             }
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.FAVORIT_VOTE)) {
             if (event.voteData.getVoteCode().equals(data.getVoteCode())) {
@@ -741,6 +756,24 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                             R.drawable.ic_star_border_24dp);
                     Toast.makeText(this, R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
                 }
+            }
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.ADD_NEW_OPTION)) {
+            hideLoadingCircle();
+            if (event.success && this.data.getVoteCode().equals(event.voteData.getVoteCode())) {
+                this.data = event.voteData;
+                this.optionList = event.optionList;
+                isUserOnAddNewOption = false;
+                Log.d(TAG, "Add new Option vote success:" + data.getVoteCode()
+                        + " image:" + data.getVoteImage() + " pw:" + data.getIsNeedPassword()
+                        + " option size:" + optionList.size());
+                hideLoadingCircle();
+                checkCurrentOptionType();
+                setUpViews();
+                setUpOptionAdapter(optionList);
+                setUpSubmit();
+                optionItemAdapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
             }
         }
     }

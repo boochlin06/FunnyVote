@@ -27,6 +27,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/vote_detail_margin"
             android:layout_marginRight="@dimen/vote_detail_margin"
+            android:scrollbars="vertical"
+            android:fadeScrollbars="false"
             android:textColor="@color/secondary_text"
             android:textSize="@dimen/create_vote_settings_sub_topic_text_size"
             android:maxLines="3"

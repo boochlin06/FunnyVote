@@ -3,7 +3,6 @@ package com.android.heaton.funnyvote.ui.votedetail;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -20,8 +19,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.android.heaton.funnyvote.eventbus.EventBusController.OptionChoiceEvent.OPTION_CHOICED;
-
 /**
  * Created by heaton on 2016/9/2.
  */
@@ -34,11 +31,12 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
     RelativeLayout relAdd;
     @BindView(R.id.txtOptionNumber)
     TextView txtOptionNumber;
-    @BindView(R.id.imgChoice)
-    ImageView imgChoice;
+
+    @BindView(R.id.imgNewOption)
+    ImageView imgNewOption;
     @BindView(R.id.edtOptionTitle)
     EditText edtOptionTitle;
-    @BindView(R.id.imgDelete)
+    @BindView(R.id.imgDeleteOption)
     ImageView imgDelete;
     @BindView(R.id.relNormal)
     RelativeLayout relNormal;
@@ -60,14 +58,14 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
         if (getItemViewType() == OptionItemAdapter.OPTION_UNPOLL_VIEW_TYPE_ADD_NEW) {
             relNormal.setVisibility(View.INVISIBLE);
             relAdd.setVisibility(View.VISIBLE);
-            imgChoice.setVisibility(View.GONE);
             imgDelete.setVisibility(View.GONE);
+            imgNewOption.setVisibility(View.GONE);
             edtOptionTitle.setVisibility(View.GONE);
             edtOptionTitle.removeTextChangedListener(optionEditTextListener);
         } else if (getItemViewType() == OptionItemAdapter.OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT) {
             relNormal.setVisibility(View.VISIBLE);
             relAdd.setVisibility(View.INVISIBLE);
-            imgChoice.setVisibility(View.VISIBLE);
+            imgNewOption.setVisibility(View.VISIBLE);
             imgDelete.setVisibility(View.VISIBLE);
             edtOptionTitle.setVisibility(View.VISIBLE);
             edtOptionTitle.removeTextChangedListener(optionEditTextListener);
@@ -76,20 +74,9 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
                 optionEditTextListener = new optionEditTextListener();
             }
             edtOptionTitle.addTextChangedListener(optionEditTextListener);
-            setUpImgChoiceLayout();
         }
     }
 
-
-    private void setUpImgChoiceLayout() {
-        if (!isMulti) {
-            imgChoice.setImageResource(isChoice ? R.drawable.ic_radio_button_checked_40dp
-                    : R.drawable.ic_radio_button_unchecked_40dp);
-        } else {
-            imgChoice.setImageResource(isChoice ? R.drawable.ic_check_box_40dp
-                    : R.drawable.ic_check_box_outline_blank_40dp);
-        }
-    }
 
     @OnClick(R.id.relAdd)
     public void addNewOption() {
@@ -97,18 +84,18 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
                 , null, EventBusController.OptionControlEvent.OPTION_ADD, null));
     }
 
-    @OnClick(R.id.imgDelete)
+    @OnClick(R.id.imgDeleteOption)
     public void removeOption() {
         EventBus.getDefault().post(new EventBusController
                 .OptionControlEvent(option.getId(), null
                 , EventBusController.OptionControlEvent.OPTION_REMOVE, option.getCode()));
     }
 
-    @OnClick(R.id.imgChoice)
-    public void onOptionChoice() {
-        setUpImgChoiceLayout();
+    @OnClick(R.id.imgNewOption)
+    public void onOptionAddNewCheck() {
         EventBus.getDefault().post(new EventBusController
-                .OptionChoiceEvent(option.getId(), OPTION_CHOICED, option.getCode()));
+                .OptionControlEvent(option.getId(), edtOptionTitle.getText().toString()
+                , EventBusController.OptionControlEvent.OPTION_ADD_CHECK, null));
     }
 
     private final class optionEditTextListener implements TextWatcher {

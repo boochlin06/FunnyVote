@@ -102,7 +102,8 @@
     <string name="vote_detail_toast_option_at_least_min" formatted="false">"Please choice at least :%d votes."</string>
     <string name="vote_detail_toast_add_favorite">"Add to favorite"</string>
     <string name="vote_detail_toast_remove_favorite">"Remove favorite"</string>
-    <string name="vote_detail_toast_fill_all_new_option">"Please fill all new option's content"</string>
+    <string name="vote_detail_toast_fill_new_option">"Please fill and update all new option's content"</string>
+    <string name="vote_detail_toast_confirm_new_option">"Please confirm the no update option before"</string>
 
     <string name="vote_detail_circle_loading" formatted="false">"Loading..."</string>
     <string name="vote_detail_circle_updating" formatted="false">"Updating..."</string>

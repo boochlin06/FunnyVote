@@ -193,8 +193,14 @@ public class RemoteServiceApi {
     }
 
 
-    public void pollVote(String voteCode, List<String> optionList, User user, VoteDataManager.pollVoteResponseCallback callback) {
-        Call<VoteData> call = voteService.pollVote(voteCode, optionList, user.getUserCode()
+    public void pollVote(String voteCode, String password, List<String> optionList, User user, VoteDataManager.pollVoteResponseCallback callback) {
+        Call<VoteData> call = voteService.pollVote(voteCode, password, optionList, user.getUserCode()
+                , user.getType() == User.TYPE_GUEST ? "guest" : "member");
+        call.enqueue(callback);
+    }
+
+    public void addNewOption(String voteCode, List<String> optionList, User user, VoteDataManager.addNewOptionResponseCallback callback) {
+        Call<VoteData> call = voteService.updateOption(voteCode, optionList, user.getUserCode()
                 , user.getType() == User.TYPE_GUEST ? "guest" : "member");
         call.enqueue(callback);
     }
@@ -243,6 +249,7 @@ public class RemoteServiceApi {
         if (voteSetting.getIsNeedPassword()) {
             RequestBody password = RequestBody.create(MediaType.parse("text/plain"), voteSetting.password);
             parameter.put("p", password);
+            Log.d("test", "Need pw:" + voteSetting.getIsNeedPassword() + " pw:" + voteSetting.password);
         }
 
         RequestBody requestFile = null;
