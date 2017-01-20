@@ -464,10 +464,13 @@ public class AccountFragment extends android.support.v4.app.Fragment
         switch (loginType) {
             case LOGIN_FB:
                 facebookLogin();
+                break;
             case LOGIN_GOOGLE:
                 googleSignIn();
+                break;
             case LOGIN_TWITTER:
                 twitterLogin();
+                break;
         }
     }
 

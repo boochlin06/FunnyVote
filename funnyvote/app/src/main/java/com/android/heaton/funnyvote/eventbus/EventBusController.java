@@ -1,8 +1,7 @@
 package com.android.heaton.funnyvote.eventbus;
 
-import android.view.View;
-
 import com.android.heaton.funnyvote.database.Option;
+import com.android.heaton.funnyvote.database.Promotion;
 import com.android.heaton.funnyvote.database.VoteData;
 
 import java.util.ArrayList;
@@ -71,12 +70,14 @@ public class EventBusController {
             this.message = message;
             this.optionList = null;
         }
-        public VoteDataControlEvent(VoteData data, List<String> optionList , String message) {
+
+        public VoteDataControlEvent(VoteData data, List<String> optionList, String message) {
             this.data = data;
             this.message = message;
             this.optionList = optionList;
         }
-        public VoteDataControlEvent(VoteData data, String optionCode , String message) {
+
+        public VoteDataControlEvent(VoteData data, String optionCode, String message) {
             this.data = data;
             this.message = message;
             optionList = new ArrayList<>();
@@ -96,11 +97,14 @@ public class EventBusController {
         public static final String GET_VOTE_LIST_HISTORY_PARTICIPATE = "get_vote_list_history_participate";
         public static final String ADD_NEW_OPTION = "add_new_option";
 
+        public static final String GET_PROMOTION_LIST = "get_promotion_list";
+
         public String message;
         public boolean success = false;
         public VoteData voteData;
         public List<Option> optionList;
         public List<VoteData> voteDataList;
+        public List<Promotion> promotionList;
         public int offset;
         public String errorResponseMessage;
 
@@ -127,6 +131,11 @@ public class EventBusController {
             this.errorResponseMessage = errorResponseMessage;
         }
 
+        public RemoteServiceEvent(String message, boolean success, List<Promotion> promotionList) {
+            this.success = success;
+            this.message = message;
+            this.promotionList = promotionList;
+        }
 
     }
 }

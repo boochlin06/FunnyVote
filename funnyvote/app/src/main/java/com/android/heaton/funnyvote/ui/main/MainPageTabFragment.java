@@ -225,7 +225,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onVoteControl(EventBusController.VoteDataControlEvent event) {
-        if (getUserVisibleHint() && isResumed()) {
+        if (getUserVisibleHint()) {
             Log.d("test", tab + " ,On Vote Control :" + event.message);
             if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT)) {
                 VoteData data = event.data;
@@ -240,9 +240,10 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                 voteDataManager.favoriteVote(event.data.getVoteCode()
                         , event.data.getIsFavorite(), user);
             } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)
-                    && tab.equals(TAB_FAVORITE)) {
+                    && tab.equals(TAB_FAVORITE) && isResumed()) {
                 adapter.notifyDataSetChanged();
-            } else if (getUserVisibleHint() && event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)) {
+            } else if (getUserVisibleHint() && event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)
+                    && isResumed()) {
 
                 if (event.data.getIsNeedPassword()) {
                     Log.d("test","vc:"+event.data.getVoteCode()+" pw:"+event.data.getIsNeedPassword());

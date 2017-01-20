@@ -1,5 +1,7 @@
 package com.android.heaton.funnyvote.database;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Generated;
@@ -11,8 +13,11 @@ import org.greenrobot.greendao.annotation.Generated;
 public class Promotion {
     @Id
     private Long id;
+    @SerializedName("imgurl")
     private String imageURL;
+    @SerializedName("link")
     private String actionURL;
+    @SerializedName("title")
     private String title;
     @Generated(hash = 148763577)
     public Promotion(Long id, String imageURL, String actionURL, String title) {

@@ -3,6 +3,8 @@ package com.android.heaton.funnyvote.data;
 import android.util.Log;
 
 import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
+import com.android.heaton.funnyvote.data.promotion.PromotionManager;
+import com.android.heaton.funnyvote.database.Promotion;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
@@ -92,12 +94,11 @@ public class RemoteServiceApi {
                     getUserCodeCallback.onSuccess(otpString);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    //Log.d("test", "onResponse false:" + response.errorBody().string());
                     getUserCodeCallback.onFalure();
                 }
             } else {
                 try {
-                    Log.d("test", "onResponse false:" + response.errorBody().string());
+                    Log.d(TAG, "onResponse false:" + response.errorBody().string());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -115,6 +116,7 @@ public class RemoteServiceApi {
     Retrofit retrofit;
     Server.UserService userService;
     Server.VoteService voteService;
+    Server.PromotionService promotionService;
 
     public RemoteServiceApi() {
         retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL)
@@ -122,6 +124,7 @@ public class RemoteServiceApi {
                 .build();
         userService = retrofit.create(Server.UserService.class);
         voteService = retrofit.create(Server.VoteService.class);
+        promotionService = retrofit.create(Server.PromotionService.class);
     }
 
     public void getGuestUserCode(GetUserCodeCallback callback, String guestName) {
@@ -199,8 +202,8 @@ public class RemoteServiceApi {
         call.enqueue(callback);
     }
 
-    public void addNewOption(String voteCode, List<String> optionList, User user, VoteDataManager.addNewOptionResponseCallback callback) {
-        Call<VoteData> call = voteService.updateOption(voteCode, optionList, user.getUserCode()
+    public void addNewOption(String voteCode, String password, List<String> optionList, User user, VoteDataManager.addNewOptionResponseCallback callback) {
+        Call<VoteData> call = voteService.updateOption(voteCode,password, optionList, user.getUserCode()
                 , user.getType() == User.TYPE_GUEST ? "guest" : "member");
         call.enqueue(callback);
     }
@@ -265,6 +268,13 @@ public class RemoteServiceApi {
         }
 
         Call<VoteData> call = voteService.createVote(parameter, description, body);
+        call.enqueue(callback);
+    }
+
+    public void getPromotionList(int pageNumber, int pageCount, User user
+            , PromotionManager.getPromotionListResponseCallback callback) {
+        Call<List<Promotion>> call = promotionService.getPromotionList(pageNumber + 1, pageCount, user.getUserCode()
+                , user.getType() == User.TYPE_GUEST ? "guest" : "member");
         call.enqueue(callback);
     }
 }

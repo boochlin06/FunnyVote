@@ -81,7 +81,7 @@ public class VoteDataManager {
         }
     }
 
-    public void pollVote(@NonNull String voteCode,String password, @NonNull List<String> pollOptions, @NonNull User user) {
+    public void pollVote(@NonNull String voteCode, String password, @NonNull List<String> pollOptions, @NonNull User user) {
         if (TextUtils.isEmpty(voteCode) || pollOptions.size() == 0 || user == null) {
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.POLL_VOTE, false, new IllegalArgumentException().toString()));
@@ -89,12 +89,13 @@ public class VoteDataManager {
             remoteServiceApi.pollVote(voteCode, password, pollOptions, user, new pollVoteResponseCallback());
         }
     }
-    public void addNewOption(@NonNull String voteCode, @NonNull List<String> newOptions, @NonNull User user) {
+
+    public void addNewOption(@NonNull String voteCode, String password, @NonNull List<String> newOptions, @NonNull User user) {
         if (TextUtils.isEmpty(voteCode) || newOptions.size() == 0 || user == null) {
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.ADD_NEW_OPTION, false, new IllegalArgumentException().toString()));
         } else {
-            remoteServiceApi.addNewOption(voteCode, newOptions, user, new addNewOptionResponseCallback());
+            remoteServiceApi.addNewOption(voteCode, password, newOptions, user, new addNewOptionResponseCallback());
         }
     }
 
@@ -409,8 +410,6 @@ public class VoteDataManager {
             optionList = data.getOptions();
 
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(message, success, data, optionList));
-            EventBus.getDefault().post(new EventBusController
-                    .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
         }
     }
 

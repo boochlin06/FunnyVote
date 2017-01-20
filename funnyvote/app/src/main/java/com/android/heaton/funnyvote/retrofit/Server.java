@@ -1,5 +1,6 @@
 package com.android.heaton.funnyvote.retrofit;
 
+import com.android.heaton.funnyvote.database.Promotion;
 import com.android.heaton.funnyvote.database.VoteData;
 
 import java.util.List;
@@ -111,9 +112,9 @@ public class Server {
         @FormUrlEncoded
         @POST("/fav")
         Call<ResponseBody> updateFavorite(@Field("c") String voteCode,
-                                      @Field("action") String isFavorite,
-                                      @Field("token") String token,
-                                      @Field("tokentype") String tokenType);
+                                          @Field("action") String isFavorite,
+                                          @Field("token") String token,
+                                          @Field("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("/poll/history/create")
@@ -133,9 +134,18 @@ public class Server {
         @FormUrlEncoded
         @POST("/option")
         Call<VoteData> updateOption(@Field("c") String voteCode,
+                                    @Field("p") String password,
                                     @Field("ot") List<String> newOption,
                                     @Field("token") String token,
                                     @Field("tokentype") String tokenType);
+    }
 
+    public interface PromotionService {
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/promotion")
+        Call<List<Promotion>> getPromotionList(@Query("p") int pageNumber,
+                                               @Query("ps") int pageCount,
+                                               @Query("token") String token,
+                                               @Query("tokentype") String tokenType);
     }
 }

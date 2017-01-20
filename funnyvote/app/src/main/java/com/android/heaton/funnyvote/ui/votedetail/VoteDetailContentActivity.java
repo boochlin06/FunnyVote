@@ -122,7 +122,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     ImageView imgTitleExtend;
     private Menu menu;
     private SearchView searchView;
-    private AlertDialog passwordDialog;
+    private AlertDialog newOptionPasswordDialog;
+    private AlertDialog pollPasswordDialog;
     private OptionItemAdapter optionItemAdapter;
     private VoteData data;
     private Activity context;
@@ -408,7 +409,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void showPasswordDialog() {
+    private void showPollPasswordDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(R.layout.password_dialog);
         builder.setPositiveButton(getApplicationContext().getResources()
@@ -416,9 +417,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         builder.setNegativeButton(getApplicationContext().getResources()
                 .getString(R.string.account_dialog_cancel), null);
         builder.setTitle(getApplicationContext().getString(R.string.vote_detail_dialog_password_title));
-        passwordDialog = builder.create();
+        pollPasswordDialog = builder.create();
 
-        passwordDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+        pollPasswordDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialogInterface) {
                 final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
@@ -429,12 +430,44 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     public void onClick(View view) {
                         Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size() + " vc:" + data.getVoteCode()
                                 + " pw input:" + password.getText().toString());
-                        voteDataManager.pollVote(data.getVoteCode(), password.getText().toString(), optionItemAdapter.getChoiceCodeList(), user);
+                        voteDataManager.pollVote(data.getVoteCode(), password.getText().toString()
+                                , optionItemAdapter.getChoiceCodeList(), user);
                     }
                 });
             }
         });
-        passwordDialog.show();
+        pollPasswordDialog.show();
+    }
+
+    private void showAddNewOptionPasswordDialog(final String newOptionText) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(R.layout.password_dialog);
+        builder.setPositiveButton(getApplicationContext().getResources()
+                .getString(R.string.vote_detail_dialog_password_input), null);
+        builder.setNegativeButton(getApplicationContext().getResources()
+                .getString(R.string.account_dialog_cancel), null);
+        builder.setTitle(getApplicationContext().getString(R.string.vote_detail_dialog_password_title));
+        newOptionPasswordDialog = builder.create();
+
+        newOptionPasswordDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
+                Button ok = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                ok.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        Log.d("test", "New Option Text:" + newOptionText + " vc:" + data.getVoteCode()
+                                + " pw input:" + password.getText().toString());
+                        List<String> newOptions = new ArrayList<>();
+                        newOptions.add(newOptionText);
+                        voteDataManager.addNewOption(data.getVoteCode(), password.getText().toString(), newOptions, user);
+                    }
+                });
+            }
+        });
+        newOptionPasswordDialog.show();
     }
 
     private void sortOptions() {
@@ -537,10 +570,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 Toast.makeText(this, R.string.vote_detail_toast_fill_new_option, Toast.LENGTH_LONG).show();
             } else {
                 if (data.getIsNeedPassword()) {
-                    showPasswordDialog();
+                    showPollPasswordDialog();
                 } else {
                     showLoadingCircle(getString(R.string.vote_detail_circle_updating));
-                    Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size() + " vc:" + data.getVoteCode() + " user:" + user.getUserCode() + "  type:" + user.getType());
+                    Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size()
+                            + " vc:" + data.getVoteCode() + " user:" + user.getUserCode() + "  type:" + user.getType());
                     voteDataManager.pollVote(data.getVoteCode(), null, optionItemAdapter.getChoiceCodeList(), user);
                 }
             }
@@ -677,12 +711,17 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             }
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_ADD_CHECK)) {
             if (event.inputText != null && !TextUtils.isEmpty(event.inputText)) {
-                showLoadingCircle(getString(R.string.vote_detail_circle_updating));
-                List<String> newOptions = new ArrayList<>();
-                newOptions.add(event.inputText);
-                voteDataManager.addNewOption(data.getVoteCode(), newOptions, user);
+                if (data.getIsNeedPassword()) {
+                    showAddNewOptionPasswordDialog(event.inputText);
+                } else {
+                    showLoadingCircle(getString(R.string.vote_detail_circle_updating));
+                    List<String> newOptions = new ArrayList<>();
+                    newOptions.add(event.inputText);
+                    voteDataManager.addNewOption(data.getVoteCode(), null, newOptions, user);
+                }
             } else {
-                Toast.makeText(getApplicationContext(), R.string.vote_detail_toast_fill_new_option, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.vote_detail_toast_fill_new_option
+                        , Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -714,18 +753,20 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 Log.d(TAG, "Poll vote success:" + data.getVoteCode()
                         + " image:" + data.getVoteImage() + " pw:" + data.getIsNeedPassword()
                         + " option size:" + optionList.size());
-                if (passwordDialog != null && passwordDialog.isShowing()) {
-                    passwordDialog.dismiss();
+                if (pollPasswordDialog != null && pollPasswordDialog.isShowing()) {
+                    pollPasswordDialog.dismiss();
                 }
                 checkCurrentOptionType();
                 setUpViews();
                 setUpOptionAdapter(optionList);
                 setUpSubmit();
                 optionItemAdapter.notifyDataSetChanged();
+                EventBus.getDefault().post(new EventBusController
+                        .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
             } else {
                 if (!event.success && event.errorResponseMessage.equals("error_invalid_password")) {
-                    if (passwordDialog != null && passwordDialog.isShowing()) {
-                        final EditText password = (EditText) passwordDialog.findViewById(R.id.edtEnterPassword);
+                    if (pollPasswordDialog != null && pollPasswordDialog.isShowing()) {
+                        final EditText password = (EditText) pollPasswordDialog.findViewById(R.id.edtEnterPassword);
                         password.selectAll();
                         Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
                         password.startAnimation(shake);
@@ -733,7 +774,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                                 , Toast.LENGTH_LONG).show();
                     }
                 } else {
-                    passwordDialog.dismiss();
+                    pollPasswordDialog.dismiss();
                     Toast.makeText(this, R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_LONG).show();
                 }
             }
@@ -768,12 +809,29 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                         + " option size:" + optionList.size());
                 hideLoadingCircle();
                 checkCurrentOptionType();
-                setUpViews();
+                //setUpViews();
                 setUpOptionAdapter(optionList);
-                setUpSubmit();
+                //setUpSubmit();
+                if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {
+                    newOptionPasswordDialog.dismiss();
+                }
                 optionItemAdapter.notifyDataSetChanged();
+                EventBus.getDefault().post(new EventBusController
+                        .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
             } else {
-                Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
+                if (!event.success && event.errorResponseMessage.equals("error_invalid_password")) {
+                    if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {
+                        final EditText password = (EditText) newOptionPasswordDialog.findViewById(R.id.edtEnterPassword);
+                        password.selectAll();
+                        Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
+                        password.startAnimation(shake);
+                        Toast.makeText(getApplicationContext(), getString(R.string.vote_detail_dialog_password_toast_retry)
+                                , Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    newOptionPasswordDialog.dismiss();
+                    Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
+                }
             }
         }
     }

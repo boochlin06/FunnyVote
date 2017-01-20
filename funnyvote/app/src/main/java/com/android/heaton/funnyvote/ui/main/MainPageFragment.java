@@ -11,14 +11,19 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.data.promotion.PromotionManager;
+import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Promotion;
+import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.bumptech.glide.Glide;
 import com.viewpagerindicator.CirclePageIndicator;
@@ -38,17 +43,35 @@ import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
 public class MainPageFragment extends android.support.v4.app.Fragment {
 
     private AutoScrollViewPager vpHeader;
-    private List<View> headerViewList;
     private AppBarLayout appBarMain;
+    private List<Promotion> promotionList;
+    private PromotionManager promotionManager;
+    private UserManager userManager;
+    private User user;
+    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
+        @Override
+        public void onResponse(User user) {
+            MainPageFragment.this.user = user;
+            promotionManager.getPromotionList(user);
+        }
 
+        @Override
+        public void onFailure() {
+
+        }
+    };
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
+        userManager = UserManager.getInstance(getContext().getApplicationContext());
+        userManager.getUser(getUserCallback);
+
         View view = inflater.inflate(R.layout.fragment_main_page_top, null);
         initialHeaderView();
 
         vpHeader = (AutoScrollViewPager) view.findViewById(R.id.vpHeader);
-        vpHeader.setAdapter(new HeaderAdapter(headerViewList));
+        vpHeader.setAdapter(new HeaderAdapter());
         vpHeader.setCurrentItem(0);
         appBarMain = (AppBarLayout) view.findViewById(R.id.appBarMain);
         ViewPager vpMainPage = (ViewPager) view.findViewById(R.id.vpMainPage);
@@ -86,6 +109,9 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        if (user != null) {
+            promotionManager.getPromotionList(user);
+        }
         vpHeader.startAutoScroll();
         EventBus.getDefault().register(this);
     }
@@ -96,45 +122,28 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             appBarMain.setExpanded(true);
         }
     }
-
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
+        if(event.equals(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST)) {
+            if (event.success) {
+                promotionList = event.promotionList;
+                vpHeader.getAdapter().notifyDataSetChanged();
+            } else {
+                Toast.makeText(getContext(),R.string.toast_network_connect_error,Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();
     }
 
     private void initialHeaderView() {
-        final LayoutInflater mInflater = getActivity().getLayoutInflater().from(getActivity());
-        headerViewList = new ArrayList<>();
-        final List<Promotion> promotionList = DataLoader.getInstance(getContext()).queryAllPromotion();
-        for (int i = 0; i < promotionList.size(); i++) {
-            View headerItem = mInflater.inflate(R.layout.main_page_header_item, null);
-            ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
-            Glide.with(this)
-                    .load(promotionList.get(i).getImageURL())
-                    .override(320, 180)
-                    .fitCenter()
-                    .crossFade()
-                    .into(promotion);
-            final String actionURL = promotionList.get(i).getActionURL();
-            promotion.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW
-                            , Uri.parse(actionURL));
-                    startActivity(browserIntent);
-                }
-            });
-            headerViewList.add(headerItem);
-        }
+        promotionList = DataLoader.getInstance(getContext()).queryAllPromotion();
     }
 
 
     private class HeaderAdapter extends PagerAdapter {
-        private List<View> listView;
-
-        public HeaderAdapter(List<View> listView) {
-            this.listView = listView;
-        }
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
@@ -143,14 +152,31 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            View view = listView.get(position);
-            container.addView(view);
-            return view;
+            LayoutInflater mInflater = getActivity().getLayoutInflater().from(getActivity());
+            View headerItem = mInflater.inflate(R.layout.main_page_header_item, null);
+            ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
+            Glide.with(getContext())
+                    .load(promotionList.get(position).getImageURL())
+                    .override(320, 180)
+                    .fitCenter()
+                    .crossFade()
+                    .into(promotion);
+            final String actionURL = promotionList.get(position).getActionURL();
+            promotion.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW
+                            , Uri.parse(actionURL));
+                    startActivity(browserIntent);
+                }
+            });
+            container.addView(headerItem);
+            return headerItem;
         }
 
         @Override
         public int getCount() {
-            return listView.size();
+            return promotionList.size();
         }
 
         @Override
