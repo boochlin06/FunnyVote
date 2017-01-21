@@ -16,6 +16,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -199,7 +200,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         txtAuthorName.setText(data.getAuthorName());
         txtPubTime.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
-        //txtTitle.setMovementMethod(new ScrollingMovementMethod());
+        txtTitle.setMovementMethod(new ScrollingMovementMethod());
         txtTitle.setText(data.getTitle());
 
         txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
