@@ -26,7 +26,7 @@ import retrofit2.Response;
 
 public class PromotionManager {
     private static final String TAG = PromotionManager.class.getSimpleName();
-    public static final int PAGE_COUNT = 5;
+    public static final int PAGE_COUNT = 10;
     private static PromotionManager INSTANCE = null;
     private ExecutorService executorService;
 
@@ -68,7 +68,7 @@ public class PromotionManager {
                 String errorMessage = "";
                 try {
                     errorMessage = response.errorBody().string();
-                    Log.d("test", "getPromotionListResponseCallback onResponse false:" + errorMessage);
+                    Log.d(TAG, "getPromotionListResponseCallback onResponse false:" + errorMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -78,7 +78,7 @@ public class PromotionManager {
 
         @Override
         public void onFailure(Call<List<Promotion>> call, Throwable t) {
-            Log.d("test", "getPromotionListResponseCallback onFailure:" + t.getMessage() + " MESSAGE:" + this.message);
+            Log.d(TAG, "getPromotionListResponseCallback onFailure:" + t.getMessage() + " MESSAGE:" + this.message);
             executorService.execute(new LoadListDBRunnable(message, false, t.getMessage()));
         }
     }
@@ -101,7 +101,7 @@ public class PromotionManager {
 
         @Override
         public void run() {
-            Log.d("test","promotion count:"+promotionList.size());
+            Log.d(TAG, "promotion count:" + promotionList.size() + " message:" + message +" success:"+success);
             DataLoader.getInstance(context.getApplicationContext()).getPromotionDao().deleteAll();
             DataLoader.getInstance(context.getApplicationContext()).getPromotionDao().insertInTx(promotionList);
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(message, success, promotionList));

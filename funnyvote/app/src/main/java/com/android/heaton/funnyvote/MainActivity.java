@@ -1,5 +1,6 @@
 package com.android.heaton.funnyvote;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -8,10 +9,13 @@ import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,7 +29,9 @@ import com.android.heaton.funnyvote.ui.account.AccountFragment;
 import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.android.heaton.funnyvote.ui.main.MainPageFragment;
 import com.android.heaton.funnyvote.ui.personal.PersonalActivity;
+import com.android.heaton.funnyvote.ui.search.SearchFragment;
 import com.bumptech.glide.Glide;
+
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -38,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
 
     private int mCurrentPage;
+    boolean doubleBackToExitPressedOnce = false;
+    private SearchView searchView;
+    private SearchFragment searchFragment;
+    private String searchKeyword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
     }
+
     private void setupDrawerHeader() {
         UserManager.getInstance(getApplicationContext()).getUser(new UserManager.GetUserCallback() {
             @Override
@@ -110,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView name = (TextView) header.findViewById(R.id.txtUserName);
                 name.setText(user.getUserName());
                 Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
-                        .override(92,92).placeholder(R.drawable.ic_action_account_circle).into(icon);
+                        .override(92, 92).placeholder(R.drawable.ic_action_account_circle).into(icon);
             }
 
             @Override
@@ -147,15 +158,15 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
                         break;
                     case R.id.navigation_item_list_my_box:
-//                        ft.replace(R.id.frame_content, new HistoryFragment()).commit();
-//                        toolbar.setTitle(R.string.drawer_history);
                         startActivity(new Intent(MainActivity.this, PersonalActivity.class));
                         break;
-//                    case R.id.navigation_item_list_favorite:
-//                        mCurrentPage = menuItem.getItemId();
-//                        ft.replace(R.id.frame_content, new FavoriteFragment()).commit();
-//                        toolbar.setTitle(R.string.drawer_favorite);
-//                        break;
+                    case R.id.navigation_item_search:
+                        mCurrentPage = menuItem.getItemId();
+                        searchFragment = new SearchFragment();
+                        ft.replace(R.id.frame_content, searchFragment).commit();
+                        toolbar.setTitle(R.string.drawer_search);
+                        searchFragment.setQueryText(searchKeyword);
+                        break;
                     case R.id.navigation_account:
                         mCurrentPage = menuItem.getItemId();
                         ft.replace(R.id.frame_content, new AccountFragment()).commit();
@@ -172,7 +183,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 200);
     }
-    boolean doubleBackToExitPressedOnce = false;
+
+
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -195,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void run() {
-                    doubleBackToExitPressedOnce=false;
+                    doubleBackToExitPressedOnce = false;
                 }
             }, 2000);
         }
@@ -205,21 +217,50 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
+        searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(queryListener);
         return true;
     }
 
+    final private SearchView.OnQueryTextListener queryListener =
+            new SearchView.OnQueryTextListener() {
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    searchKeyword = newText;
+                    if (searchKeyword.length() == 0) {
+                        if (mCurrentPage == navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
+                            searchFragment.setQueryText(searchKeyword);
+                        }
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    searchKeyword = query;
+                    Log.d("test","onQueryTextSubmit:"+query + "  page:"+mCurrentPage
+                            +" search page:"+navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
+                    if (mCurrentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
+                        switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
+                        navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
+                    } else {
+                        searchFragment.setQueryText(searchKeyword);
+                    }
+                    return false;
+                }
+            };
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         if (id == R.id.menu_add) {
             startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
             return true;
-        } else if (id == R.id.menu_search) {
-
         }
 
         return super.onOptionsItemSelected(item);

@@ -47,6 +47,7 @@
     <string name="Wall_item_bar_Share">Share</string>
     <string name="Wall_item_no_vote_create_new">No vote in list.\nWould you create new vote?</string>
     <string name="Wall_item_no_vote">No vote in list.</string>
+    <string name="Wall_item_no_vote_search">No vote in list. \nPlease search on tool bar.</string>
     <string name="Wall_item_no_vote_refresh">No vote in list.\nPlease refresh list.</string>
     <string name="Wall_item_toast_no_vote_refresh">No vote after refresh</string>
     <string name="Wall_item_toast_double_click_to_exit">Please click BACK again to exit</string>
@@ -171,4 +172,8 @@
 
     <string name="toast_network_connect_error_favorite">favorite operation fail , Network connect error.</string>
     <string name="toast_network_connect_error_quick_poll">Poll the vote fail , Network connect error.</string>
+
+    <!--Search-->
+    <string name="search_item_time_end">End</string>
+    <string name="search_item_time_voting">Voting</string>
 </resources>

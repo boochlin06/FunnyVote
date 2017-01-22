@@ -145,6 +145,19 @@ public class VoteDataManager {
         getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE, user);
     }
 
+    public void getSearchVoteList(String keyword, int offset, @NonNull User user) {
+        if (TextUtils.isEmpty(keyword) || user == null) {
+            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
+                    EventBusController.RemoteServiceEvent.GET_VOTE_LIST_SEARCH
+                    , false, new IllegalArgumentException().toString()));
+        } else {
+            int pageNumber = (int) offset / PAGE_COUNT;
+            int pageCount = PAGE_COUNT;
+            remoteServiceApi.getSearchVoteList(keyword, pageNumber, pageCount, user
+                    , new getVoteListResponseCallback(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_SEARCH
+                            , user.getUserCode()));
+        }
+    }
 
     public class createVoteResponseCallback implements Callback<VoteData> {
 

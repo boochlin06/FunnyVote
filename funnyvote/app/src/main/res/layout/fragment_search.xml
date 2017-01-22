@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:CircleProgressView="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ryMainPage"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="8dp">
+
+    <ImageView
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="32dp"
+        android:alpha="0.4"
+        android:layout_marginBottom="32dp"
+        android:src="@drawable/fv_ful_png_300px"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rySearchResult"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/create_vote_settings_main_topic_sep_margin"
+        android:scrollbars="vertical"
+        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+        tools:listitem="@layout/card_view_item_search" />
+    <at.grabner.circleprogress.CircleProgressView
+        android:id="@+id/circleLoad"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        CircleProgressView:cpv_autoTextSize="true"
+        CircleProgressView:cpv_barColor="@color/primary"
+        CircleProgressView:cpv_barWidth="25dp"
+        CircleProgressView:cpv_innerContourSize="0dp"
+        CircleProgressView:cpv_outerContourSize="2dp"
+        CircleProgressView:cpv_rimColor="@color/primary_light"
+        CircleProgressView:cpv_rimWidth="25dp"
+        CircleProgressView:cpv_seekMode="false"
+        CircleProgressView:cpv_spinColor="@color/primary"
+        CircleProgressView:cpv_textColor="@color/primary_dark"
+        CircleProgressView:cpv_textScale="1"
+        CircleProgressView:cpv_unitColor="@color/primary_light"
+        CircleProgressView:cpv_unitPosition="right_top"
+        CircleProgressView:cpv_value="10" />
+</RelativeLayout>

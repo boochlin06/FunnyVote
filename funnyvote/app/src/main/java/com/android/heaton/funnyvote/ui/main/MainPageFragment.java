@@ -124,10 +124,11 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
-        if(event.equals(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST)) {
+        if(event.message.equals(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST)) {
             if (event.success) {
                 promotionList = event.promotionList;
                 vpHeader.getAdapter().notifyDataSetChanged();
+                Log.d("test","GET_PROMOTION_LIST:"+promotionList.size());
             } else {
                 Toast.makeText(getContext(),R.string.toast_network_connect_error,Toast.LENGTH_SHORT).show();
             }

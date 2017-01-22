@@ -1,6 +1,7 @@
 package com.android.heaton.funnyvote.database;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.android.heaton.funnyvote.FunnyVoteApplication;
 import com.android.heaton.funnyvote.R;
@@ -413,25 +414,37 @@ public class DataLoader {
 
     public List<VoteData> queryHotVotes(int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.Category.eq("hot")
-                ,VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).offset(offset).limit(limit).list();
+                , VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).offset(offset).limit(limit).list();
     }
 
     public long queryHotVotesCount() {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.Category.eq("hot")
-                ,VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).buildCount().count();
+                , VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).buildCount().count();
     }
 
     public long queryFavoriteVotesCount() {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).buildCount().count();
     }
+
     public long queryVoteDataByAuthorCount(String authorCode) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.AuthorCode.eq(authorCode)).buildCount().count();
     }
+
     public long queryVoteDataByParticipateCount() {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsPolled.eq(true)).buildCount().count();
     }
+
     public List<VoteData> queryFavoriteVotes(int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).offset(offset).limit(limit).list();
+    }
+
+    public List<VoteData> querySearchVotes(String keyword, int offset, int limit) {
+        if (TextUtils.isEmpty(keyword)) {
+            return new ArrayList<VoteData>();
+        }
+        return voteDataDao.queryBuilder().whereOr(VoteDataDao.Properties.Title.like(keyword)
+                , VoteDataDao.Properties.AuthorName.like(keyword)).orderDesc(VoteDataDao.Properties.StartTime)
+                .offset(offset).limit(limit).list();
     }
 
     public List<VoteData> queryNewVotes(int offset, int limit) {
@@ -455,10 +468,12 @@ public class DataLoader {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.AuthorCode.eq(authorCode))
                 .limit(limit).offset(offset).orderDesc(VoteDataDao.Properties.StartTime).list();
     }
+
     public List<VoteData> queryVoteDataByParticipate(int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsPolled.eq(true))
                 .limit(limit).offset(offset).orderDesc(VoteDataDao.Properties.StartTime).list();
     }
+
     public void updateVoteByVoteCode(String voteCode, VoteData data) {
 
 //        List<VoteData> list = voteDataDao.queryBuilder()
@@ -495,6 +510,7 @@ public class DataLoader {
         }
         voteDataDao.updateInTx(dataList);
     }
+
     public void deleteVoteDataAndOption(String voteCode) {
         voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(voteCode)).buildDelete()
                 .executeDeleteWithoutDetachingEntities();

@@ -137,7 +137,6 @@ public class RemoteServiceApi {
                             GetUserCodeCallback callback) {
         Call<ResponseBody> call = userService.addUser(type, appId, fbId, name, imgUrl, email, gender);
         call.enqueue(new LoginUserCodeResponseCallback(callback));
-
     }
 
     public void linkGuestToLoginUser(String otp, String guest, Callback<ResponseBody> callback) {
@@ -189,6 +188,15 @@ public class RemoteServiceApi {
 
     }
 
+    public void getSearchVoteList(String keyword, int pageNumber, int pageCount, User user
+            , VoteDataManager.getVoteListResponseCallback callback) {
+        pageNumber = pageNumber + 1;
+        Call<List<VoteData>> call = voteService.getSearchVoteList(keyword, pageNumber, pageCount, user.getUserCode()
+                , user.getType() == User.TYPE_GUEST ? "guest" : "member");
+        call.enqueue(callback);
+
+    }
+
     public void favoriteVote(String voteCode, boolean isFavorite, User user, VoteDataManager.favoriteVoteResponseCallback callback) {
         Call<ResponseBody> call = voteService.updateFavorite(voteCode, isFavorite ? "01" : "00", user.getUserCode()
                 , user.getType() == User.TYPE_GUEST ? "guest" : "member");
@@ -203,7 +211,7 @@ public class RemoteServiceApi {
     }
 
     public void addNewOption(String voteCode, String password, List<String> optionList, User user, VoteDataManager.addNewOptionResponseCallback callback) {
-        Call<VoteData> call = voteService.updateOption(voteCode,password, optionList, user.getUserCode()
+        Call<VoteData> call = voteService.updateOption(voteCode, password, optionList, user.getUserCode()
                 , user.getType() == User.TYPE_GUEST ? "guest" : "member");
         call.enqueue(callback);
     }

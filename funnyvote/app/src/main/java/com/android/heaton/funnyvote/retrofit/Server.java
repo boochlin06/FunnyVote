@@ -138,6 +138,14 @@ public class Server {
                                     @Field("ot") List<String> newOption,
                                     @Field("token") String token,
                                     @Field("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/search")
+        Call<List<VoteData>> getSearchVoteList(@Query("keyword") String keyword,
+                                               @Query("p") int pageNumber,
+                                               @Query("ps") int pageCount,
+                                               @Query("token") String token,
+                                               @Query("tokentype") String tokenType);
     }
 
     public interface PromotionService {

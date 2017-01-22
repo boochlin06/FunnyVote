@@ -93,6 +93,7 @@ public class EventBusController {
         public static final String GET_VOTE_LIST_HOT = "get_vote_list_hot";
         public static final String GET_VOTE_LIST_NEW = "get_vote_list_new";
         public static final String GET_VOTE_LIST_FAVORITE = "get_vote_list_favorite";
+        public static final String GET_VOTE_LIST_SEARCH = "get_vote_list_search";
         public static final String GET_VOTE_LIST_HISTORY_CREATE = "get_vote_list_history_create";
         public static final String GET_VOTE_LIST_HISTORY_PARTICIPATE = "get_vote_list_history_participate";
         public static final String ADD_NEW_OPTION = "add_new_option";
