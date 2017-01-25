@@ -111,10 +111,14 @@
     <string name="vote_detail_title">Detail</string>
 
     <string name="vote_detail_menu_share">Share</string>
-    <string name="vote_detail_menu_share_to">Share the vote to ...</string>
     <string name="vote_detail_menu_submit">Submit</string>
     <string name="vote_detail_menu_info">Information</string>
     <string name="vote_detail_menu_search_hint">Search Options</string>
+    <string name="vote_share_via">Share this vote via</string>
+    <string name="vote_share_msg">Please help to vote this\n\n%s</string>
+    <string name="vote_share_more">More</string>
+    <string name="vote_share_copy_url">Copy Link</string>
+    <string name="vote_share_copied_msg">Link Copied</string>
 
     <string name="vote_detail_fab_top">Top</string>
     <string name="vote_detail_fab_sort_option">Sort option</string>
