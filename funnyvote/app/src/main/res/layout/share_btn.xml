@@ -1,0 +1,18 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp">
+    <ImageView
+        android:id="@+id/app_share_icon"
+        android:layout_width="@dimen/share_btn_size"
+        android:layout_height="@dimen/share_btn_size"
+        android:layout_gravity="center"/>
+    <TextView
+        android:id="@+id/app_label"
+        android:textSize="12sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"/>
+</LinearLayout>

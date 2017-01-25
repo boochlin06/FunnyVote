@@ -30,4 +30,6 @@
     <dimen name="customEntry">18sp</dimen>
     <!--floating action menu offset-->
     <dimen name="vote_detail_fam_offset">100dp</dimen>
+    <!--Share Vote Dialog -->
+    <dimen name="share_btn_size">45dp</dimen>
 </resources>
