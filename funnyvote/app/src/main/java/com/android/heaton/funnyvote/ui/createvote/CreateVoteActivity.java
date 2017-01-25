@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -33,7 +32,6 @@ import com.android.heaton.funnyvote.FileUtils;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
-import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
@@ -362,7 +360,7 @@ public class CreateVoteActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRemoteService(final EventBusController.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusController.RemoteServiceEvent.CREAT_VOTE)) {
+        if (event.message.equals(EventBusController.RemoteServiceEvent.CREATE_VOTE)) {
             if (event.success) {
                 this.localVoteSetting = event.voteData;
                 Toast.makeText(getApplicationContext(), R.string.create_vote_create_successful, Toast.LENGTH_LONG).show();

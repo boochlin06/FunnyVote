@@ -1,7 +1,6 @@
 package com.android.heaton.funnyvote.ui.search;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,12 +8,10 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.VoteData;
-import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 
 import java.util.List;
 
@@ -28,14 +25,8 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public static final int ITEM_TYPE_RELOAD = 42;
     public static final int ITEM_TYPE_NO_VOTE = 43;
 
-    public static final String TAG_NO_VOTE_CREATE_NEW = "CREATE_NEW";
-    public static final String TAG_NO_VOTE_REFRESH = "REFRESH";
-    public static final String TAG_NO_VOTE_NOPE = "CREATE_NOPE";
-
-
     private OnReloadClickListener mOnReloadClickListener;
     private boolean showReload;
-    private String tagNoVote = TAG_NO_VOTE_NOPE;
 
     private List<VoteData> voteList;
     private Context context;
@@ -121,22 +112,6 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             }
         }
     };
-    private View.OnClickListener noVoteItemClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            if (tagNoVote.equals(TAG_NO_VOTE_CREATE_NEW)) {
-                context.startActivity(new Intent(context, CreateVoteActivity.class));
-            } else if (tagNoVote.equals(TAG_NO_VOTE_REFRESH)) {
-                Animation animation = AnimationUtils.loadAnimation(context, R.anim.reload_rotate);
-                view.findViewById(R.id.imgRefrshVote).startAnimation(animation);
-                if (mOnReloadClickListener != null) {
-                    mOnReloadClickListener.onReloadClicked();
-                }
-            } else if (tagNoVote.equals(TAG_NO_VOTE_NOPE)) {
-
-            }
-        }
-    };
 
     private class ReloadViewHolder extends RecyclerView.ViewHolder {
         public ImageView reloadImage;
@@ -148,9 +123,6 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
     }
 
-    public void setNoVoteTag(String tag) {
-        this.tagNoVote = tag;
-    }
 
     private class VHNoVote extends RecyclerView.ViewHolder {
 
@@ -161,22 +133,12 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         public VHNoVote(View itemView) {
             super(itemView);
             imgAddVote = (ImageView) itemView.findViewById(R.id.imgAddVote);
-            imgRefreshVote = (ImageView) itemView.findViewById(R.id.imgRefrshVote);
+            imgRefreshVote = (ImageView) itemView.findViewById(R.id.imgRefreshVote);
             txtNoVote = (TextView) itemView.findViewById(R.id.txtNoVote);
-            if (tagNoVote.equals(TAG_NO_VOTE_CREATE_NEW)) {
-                imgAddVote.setVisibility(View.VISIBLE);
-                imgRefreshVote.setVisibility(View.GONE);
-                txtNoVote.setText(R.string.Wall_item_no_vote_create_new);
-            } else if (tagNoVote.equals(TAG_NO_VOTE_NOPE)) {
-                imgAddVote.setVisibility(View.GONE);
-                txtNoVote.setText(R.string.Wall_item_no_vote);
-                imgRefreshVote.setVisibility(View.GONE);
-            } else if (tagNoVote.equals(TAG_NO_VOTE_REFRESH)) {
-                imgAddVote.setVisibility(View.GONE);
-                imgRefreshVote.setVisibility(View.VISIBLE);
-                txtNoVote.setText(R.string.Wall_item_no_vote_search);
-            }
-            itemView.setOnClickListener(noVoteItemClickListener);
+            imgAddVote.setVisibility(View.GONE);
+            imgRefreshVote.setImageResource(R.drawable.fv_ful_png_300px);
+            imgRefreshVote.setVisibility(View.VISIBLE);
+            txtNoVote.setText(R.string.Wall_item_no_vote_search);
         }
     }
 

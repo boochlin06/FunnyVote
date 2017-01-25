@@ -52,7 +52,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 context.startActivity(new Intent(context, CreateVoteActivity.class));
             } else if (tagNoVote.equals(TAG_NO_VOTE_REFRESH)) {
                 Animation animation = AnimationUtils.loadAnimation(context, R.anim.reload_rotate);
-                view.findViewById(R.id.imgRefrshVote).startAnimation(animation);
+                view.findViewById(R.id.imgRefreshVote).startAnimation(animation);
                 if (mOnReloadClickListener != null) {
                     mOnReloadClickListener.onReloadClicked();
                 }
@@ -154,7 +154,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         public VHNoVote(View itemView) {
             super(itemView);
             imgAddVote = (ImageView) itemView.findViewById(R.id.imgAddVote);
-            imgRefreshVote = (ImageView) itemView.findViewById(R.id.imgRefrshVote);
+            imgRefreshVote = (ImageView) itemView.findViewById(R.id.imgRefreshVote);
             txtNoVote = (TextView) itemView.findViewById(R.id.txtNoVote);
             if (tagNoVote.equals(TAG_NO_VOTE_CREATE_NEW)) {
                 imgAddVote.setVisibility(View.VISIBLE);

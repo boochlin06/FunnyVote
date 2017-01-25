@@ -28,7 +28,6 @@ import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
-import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
@@ -47,6 +46,7 @@ import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 
 public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter.OnReloadClickListener {
     private static final int LIMIT = VoteDataManager.PAGE_COUNT;
+    public static String TAG = MainPageTabFragment.class.getSimpleName();
     public static final String TAB_HOT = "HOT";
     public static final String TAB_NEW = "NEW";
 
@@ -62,7 +62,6 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabTop;
     private VoteDataManager voteDataManager;
-    private UserManager userManager;
     private User user;
     private AlertDialog passwordDialog;
 
@@ -72,22 +71,23 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         return mainPageTabFragment;
     }
 
+    public static MainPageTabFragment newInstance(String tab, User targetUser) {
+        return new MainPageTabFragment(tab, targetUser);
+    }
+
+
+    public MainPageTabFragment(String tab) {
+        this.tab = tab;
+    }
+
+    public MainPageTabFragment(String tab, User targetUser) {
+        this.tab = tab;
+        this.user = targetUser;
+    }
+
     public MainPageTabFragment() {
         this.tab = TAB_HOT;
     }
-
-    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
-        @Override
-        public void onResponse(User user) {
-            MainPageTabFragment.this.user = user;
-            initRecyclerView();
-        }
-
-        @Override
-        public void onFailure() {
-            initRecyclerView();
-        }
-    };
 
     @Nullable
     @Override
@@ -99,13 +99,10 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         fabTop.setVisibility(View.GONE);
         swipeRefreshLayout = (SwipeRefreshLayout) RootView.findViewById(R.id.swipeLayout);
         swipeRefreshLayout.setOnRefreshListener(new WallItemOnRefreshListener());
-        if (user == null) {
-            userManager = UserManager.getInstance(getContext().getApplicationContext());
-            userManager.getUser(getUserCallback);
-        } else {
+        if (user != null) {
             initRecyclerView();
         }
-        Log.d("test", "onCreateView tab:" + tab);
+        Log.d(TAG, "onCreateView tab:" + tab);
         return RootView;
     }
 
@@ -152,7 +149,8 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
-            adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByAuthorCount(user.getUserCode()));
+            adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByAuthorCount(
+                    user.getUserCode()));
             voteDataManager.getUserCreateVoteList(0, user);
         } else if (tab.equals(TAB_PARTICIPATE)) {
             voteDataList = DataLoader.getInstance(getContext()).queryVoteDataByParticipate(
@@ -163,13 +161,17 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByParticipateCount());
             voteDataManager.getUserParticipateVoteList(0, user);
         } else if (tab.equals(TAB_FAVORITE)) {
-            voteDataList = DataLoader.getInstance(getContext()).queryFavoriteVotes(
-                    0, LIMIT);
+            if (user.isLoginUser) {
+                voteDataList = DataLoader.getInstance(getContext()).queryFavoriteVotes(
+                        0, LIMIT);
+            } else {
+                voteDataList = new ArrayList<>();
+            }
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
             adapter.setMaxCount(DataLoader.getInstance(getContext()).queryVoteDataByParticipateCount());
-            voteDataManager.getFavoriteVoteList(0, user);
+            voteDataManager.getUserFavoriteVoteList(0, user);
         }
         adapter.setOnReloadClickListener(this);
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
@@ -224,7 +226,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onVoteControl(EventBusController.VoteDataControlEvent event) {
         if (getUserVisibleHint()) {
-            Log.d("test", tab + " ,On Vote Control :" + event.message);
+            Log.d(TAG, tab + " ,On Vote Control :" + event.message);
             if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT)) {
                 VoteData data = event.data;
                 for (int i = 0; i < voteDataList.size(); i++) {
@@ -239,12 +241,12 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                         , event.data.getIsFavorite(), user);
             } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)
                     && tab.equals(TAB_FAVORITE) && isResumed()) {
-                adapter.notifyDataSetChanged();
+                //adapter.notifyDataSetChanged();
             } else if (getUserVisibleHint() && event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)
                     && isResumed()) {
 
                 if (event.data.getIsNeedPassword()) {
-                    Log.d("test","vc:"+event.data.getVoteCode()+" pw:"+event.data.getIsNeedPassword());
+                    Log.d(TAG, "Vote code:" + event.data.getVoteCode() + " pw:" + event.data.getIsNeedPassword());
                     showPasswordDialog(event.data, event.optionList, user);
                 } else {
                     voteDataManager.pollVote(event.data.getVoteCode(), null, event.optionList, user);
@@ -272,7 +274,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
 
                     @Override
                     public void onClick(View view) {
-                        Log.d("test", " vc:" + data.getVoteCode()
+                        Log.d(TAG, " Vote code:" + data.getVoteCode()
                                 + " pw input:" + password.getText().toString());
                         voteDataManager.pollVote(data.getVoteCode(), password.getText().toString(), optionList, user);
                     }
@@ -288,29 +290,31 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         boolean refreshFragment = false;
         if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HOT)
                 && tab.equals(TAB_HOT)) {
-            Log.d("test", "hot vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            Log.d(TAG, "Hot vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_NEW)
                 && tab.equals(TAB_NEW)) {
-            Log.d("test", "new vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            Log.d(TAG, "New vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)
                 && tab.equals(TAB_CREATE)) {
-            Log.d("test", "Create history vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            Log.d(TAG, "Create history vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)
                 && tab.equals(TAB_PARTICIPATE)) {
-            Log.d("test", "Participate history list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            Log.d(TAG, "Participate history list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
         } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE)
                 && tab.equals(TAB_FAVORITE)) {
-            Log.d("test", "favorite list size:" + event.voteDataList.size() + " offset:" + event.offset);
+            Log.d(TAG, "favorite list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.FAVORIT_VOTE) && tab.equals(TAB_FAVORITE)) {
-            Log.d("test", "favorite vote");
-            refreshFragment = true;
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE) && getUserVisibleHint()) {
-            Log.d("test", "poll vote");
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.FAVORITE_VOTE)
+                && tab.equals(TAB_FAVORITE)) {
+            Log.d(TAG, "favorite vote");
+            //refreshFragment = true;
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE)
+                && getUserVisibleHint()) {
+            Log.d(TAG, "poll vote");
             if (event.success) {
                 if (passwordDialog != null && passwordDialog.isShowing()) {
                     passwordDialog.dismiss();
@@ -337,12 +341,12 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                     Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_LONG).show();
                 }
             }
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.CREAT_VOTE) && getUserVisibleHint()
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.CREATE_VOTE) && getUserVisibleHint()
                 && tab.equals(TAB_CREATE) && event.success) {
             refreshFragment = true;
         }
         if (refreshFragment) {
-            Log.d("test", tab + ": refreshFragment , is getvisible:" + this.getUserVisibleHint());
+            Log.d(TAG, tab + ": refreshFragment , is getvisible:" + this.getUserVisibleHint());
             refreshData(event.voteDataList, event.offset);
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
@@ -372,7 +376,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             } else if (tab.equals(TAB_PARTICIPATE)) {
                 voteDataManager.getUserParticipateVoteList(0, user);
             } else if (tab.equals(TAB_FAVORITE)) {
-                voteDataManager.getFavoriteVoteList(0, user);
+                voteDataManager.getUserFavoriteVoteList(0, user);
             }
         }
     }
@@ -395,7 +399,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                         offset, LIMIT);
             }
         }
-        Log.d("test", "Network Refresh wall item :" + tab);
+        Log.d(TAG, "Network Refresh wall item :" + tab);
         int pageNumber = offset / LIMIT;
 
         if (offset == 0) {
@@ -428,7 +432,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         } else if (tab.equals(TAB_PARTICIPATE)) {
             voteDataManager.getUserParticipateVoteList(offset, user);
         } else if (tab.equals(TAB_FAVORITE)) {
-            voteDataManager.getFavoriteVoteList(offset, user);
+            voteDataManager.getUserFavoriteVoteList(offset, user);
         }
     }
 

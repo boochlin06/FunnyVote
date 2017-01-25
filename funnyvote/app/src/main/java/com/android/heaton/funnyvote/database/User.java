@@ -1,8 +1,11 @@
 package com.android.heaton.funnyvote.database;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Transient;
 
 /**
  * Created by chiu_mac on 2016/10/28.
@@ -18,18 +21,28 @@ public class User {
     public static final String GENDER_MALE = "male";
     public static final String GENDER_FEMALE = "female";
 
+    public static final String TYPE_TOKEN_MEMBER = "member";
+    public static final String TYPE_TOKEN_GUEST = "guset";
+
     @Id
     private Long id;
 
+    @SerializedName("nickname")
     private String userName;
 
     private String email;
 
     private String userID;
+    @SerializedName("guest")
     private String userCode;
+    @SerializedName("img")
     private String userIcon;
     
     private int type;
+    @Transient
+    public String userTokenType;
+    @Transient
+    public boolean isLoginUser = true;
 
     private String gender;
 

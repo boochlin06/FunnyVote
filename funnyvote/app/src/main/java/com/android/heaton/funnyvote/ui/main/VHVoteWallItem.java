@@ -1,16 +1,10 @@
 package com.android.heaton.funnyvote.ui.main;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -295,6 +289,11 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     @OnClick(R.id.relBarShare)
     public void onBarShareClick() {
         VoteDetailContentActivity.sendShareIntent(itemView.getContext(), data);
+    }
+
+    @OnClick({R.id.imgAuthorIcon, R.id.txtAuthorName})
+    public void onAuthorClick() {
+        VoteDetailContentActivity.sendPersonalDetailIntent(itemView.getContext(), data);
     }
 
     @OnLongClick({R.id.btnFirstOption, R.id.btnSecondOption, R.id.btnThirdOption})

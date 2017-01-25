@@ -46,6 +46,7 @@ import com.android.heaton.funnyvote.retrofit.Server;
 import com.android.heaton.funnyvote.ui.HidingScrollListener;
 import com.android.heaton.funnyvote.ui.ShareDialogActivity;
 import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
+import com.android.heaton.funnyvote.ui.personal.PersonalActivity;
 import com.bumptech.glide.Glide;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
@@ -161,15 +162,24 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         context.startActivity(shareDialog);
     }
 
+    public static void sendPersonalDetailIntent(Context context, VoteData data) {
+        Intent personalActivity = new Intent(context, PersonalActivity.class);
+        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_CODE, data.getAuthorCode());
+        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_CODE_TYPE, data.getAuthorCodeType());
+        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_NAME, data.getAuthorName());
+        personalActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(personalActivity);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vote_detail);
         ButterKnife.bind(this);
+        context = this;
         data = new VoteData();
         optionList = new ArrayList<>();
 
-        context = this;
         mainToolbar.setTitle(getString(R.string.vote_detail_title));
         mainToolbar.setTitleTextColor(Color.WHITE);
         mainToolbar.setElevation(10);
@@ -198,16 +208,16 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
     private void setUpViews() {
         txtAuthorName.setText(data.getAuthorName());
+
         txtPubTime.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
+
         txtTitle.setMovementMethod(new ScrollingMovementMethod());
         txtTitle.setText(data.getTitle());
-
         txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
 
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
             if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
-                // TODO: MAYBE TRY PALETTE
                 TextDrawable drawable = TextDrawable.builder().beginConfig()
                         .width((int) getResources().getDimension(R.dimen.image_author_size))
                         .height((int) getResources().getDimension(R.dimen.image_author_size)).endConfig()
@@ -231,13 +241,13 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
         imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
                 R.drawable.ic_star_border_24dp);
+
         Glide.with(this)
                 .load(data.getVoteImage())
                 .override((int) (Util.convertDpToPixel(320, this)), (int) (Util.convertDpToPixel(150, this)))
                 .fitCenter()
                 .crossFade()
                 .into(imgMain);
-        Log.d("test", "image main:" + data.getVoteImage());
 
         if (txtTitle.getLineCount() >= TITLE_EXTEND_MAX_LINE) {
             imgTitleExtend.setVisibility(View.VISIBLE);
@@ -250,6 +260,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         } else {
             fabPreResult.setVisibility(View.VISIBLE);
         }
+
         ryOptionArea.addOnScrollListener(new HidingScrollListener() {
             @Override
             public void onHide() {
@@ -326,6 +337,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     @OnClick(R.id.relBarShare)
     public void onBarShareClick() {
         sendShareIntent(this, data);
+    }
+
+    @OnClick({R.id.imgAuthorIcon, R.id.txtAuthorName})
+    public void onAuthorClick() {
+        sendPersonalDetailIntent(this, data);
     }
 
     @OnClick({R.id.fabOptionSort, R.id.fabTop, R.id.fabPreResult})
@@ -779,7 +795,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     Toast.makeText(this, R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_LONG).show();
                 }
             }
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.FAVORIT_VOTE)) {
+        } else if (event.message.equals(EventBusController.RemoteServiceEvent.FAVORITE_VOTE)) {
             if (event.voteData.getVoteCode().equals(data.getVoteCode())) {
                 if (event.success) {
                     imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :

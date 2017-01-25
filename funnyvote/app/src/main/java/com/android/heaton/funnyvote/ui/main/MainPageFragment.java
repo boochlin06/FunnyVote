@@ -32,7 +32,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
@@ -42,6 +41,7 @@ import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
  */
 public class MainPageFragment extends android.support.v4.app.Fragment {
 
+    public static String TAG = MainPageFragment.class.getSimpleName();
     private AutoScrollViewPager vpHeader;
     private AppBarLayout appBarMain;
     private List<Promotion> promotionList;
@@ -60,6 +60,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
         }
     };
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -122,18 +123,20 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             appBarMain.setExpanded(true);
         }
     }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
-        if(event.message.equals(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST)) {
+        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST)) {
             if (event.success) {
                 promotionList = event.promotionList;
                 vpHeader.getAdapter().notifyDataSetChanged();
-                Log.d("test","GET_PROMOTION_LIST:"+promotionList.size());
+                Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size());
             } else {
-                Toast.makeText(getContext(),R.string.toast_network_connect_error,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
             }
         }
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -200,9 +203,9 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_HOT);
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_HOT, user);
                 case 1:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_NEW);
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_NEW, user);
             }
             return null;
         }
@@ -218,6 +221,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             return "";
         }
     }
+
     public abstract static class AppBarStateChangeListener implements AppBarLayout.OnOffsetChangedListener {
 
         public enum State {

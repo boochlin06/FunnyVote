@@ -1,6 +1,5 @@
 package com.android.heaton.funnyvote;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -15,7 +14,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,7 +26,7 @@ import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.ui.account.AccountFragment;
 import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.android.heaton.funnyvote.ui.main.MainPageFragment;
-import com.android.heaton.funnyvote.ui.personal.PersonalActivity;
+import com.android.heaton.funnyvote.ui.personal.UserActivity;
 import com.android.heaton.funnyvote.ui.search.SearchFragment;
 import com.bumptech.glide.Glide;
 
@@ -158,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
                         break;
                     case R.id.navigation_item_list_my_box:
-                        startActivity(new Intent(MainActivity.this, PersonalActivity.class));
+                        startActivity(new Intent(MainActivity.this, UserActivity.class));
                         break;
                     case R.id.navigation_item_search:
                         mCurrentPage = menuItem.getItemId();

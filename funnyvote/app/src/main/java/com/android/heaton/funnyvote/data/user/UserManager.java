@@ -1,12 +1,17 @@
 package com.android.heaton.funnyvote.data.user;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.RemoteServiceApi;
 import com.android.heaton.funnyvote.database.User;
-import com.android.heaton.funnyvote.retrofit.Server;
+import com.android.heaton.funnyvote.eventbus.EventBusController;
+
+import org.greenrobot.eventbus.EventBus;
+
+import java.io.IOException;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -62,6 +67,18 @@ public class UserManager {
             }, guestName);
         } else {
             callback.onResponse(user);
+        }
+    }
+
+    public void getPersonalInfo(@NonNull String userCode, String userCodeType) {
+        if (userCode == null) {
+            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
+                    EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO
+                    , false, "No user code"
+            ));
+        } else {
+            remoteServiceApi.getPersonalInfo(userCode, userCodeType
+                    , new UserManager.getPersonalInfoResponseCallback(userCode, userCodeType));
         }
     }
 
@@ -182,22 +199,70 @@ public class UserManager {
         }, user.getUserCode(), newName);
     }
 
+    public class getPersonalInfoResponseCallback implements Callback<User> {
+
+        private String userCode;
+        private String userCodeType;
+
+
+        public getPersonalInfoResponseCallback(String userCode, String userCodeType) {
+            this.userCode = userCode;
+            this.userCodeType = userCodeType;
+        }
+
+        @Override
+        public void onResponse(Call<User> call, Response<User> response) {
+            if (response.isSuccessful()) {
+                User personal = response.body();
+                personal.setUserCode(userCode);
+                personal.userTokenType = userCodeType;
+                EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
+                        EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO, true
+                        , personal));
+            } else {
+                String errorMessage = "";
+                try {
+                    errorMessage = response.errorBody().string();
+                    Log.d(TAG, "getPersonalInfoResponseCallback onResponse false, error message:"
+                            + errorMessage + " , user code:" + userCode);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
+                        EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO, false
+                        , errorMessage));
+            }
+        }
+
+        @Override
+        public void onFailure(Call<User> call, Throwable t) {
+            Log.d(TAG, "getPersonalInfoResponseCallback onResponse onFailure, error message:"
+                    + t.getMessage() + " user code:" + userCode);
+            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
+                    EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO, false
+                    , t.getMessage()));
+        }
+    }
+
     public void unregisterUser() {
         userDataSource.removeUser();
     }
 
     public interface GetUserCallback {
         void onResponse(User user);
+
         void onFailure();
     }
 
     public interface RegisterUserCallback {
         void onSuccess();
+
         void onFailure();
     }
 
     public interface ChangeUserNameCallback {
         void onSuccess();
+
         void onFailure();
     }
 }

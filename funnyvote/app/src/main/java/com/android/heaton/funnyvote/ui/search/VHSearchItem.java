@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.database.VoteData;
+import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.bumptech.glide.Glide;
 
 import butterknife.BindView;
@@ -31,20 +32,25 @@ public class VHSearchItem extends RecyclerView.ViewHolder implements View.OnClic
     RelativeLayout relBarPollCount;
     @BindView(R.id.txtHint)
     TextView txtHint;
+    @BindView(R.id.txtAuthorName)
+    TextView txtAuthorName;
     private VoteData data;
+
     public VHSearchItem(View itemView) {
         super(itemView);
         ButterKnife.bind(this, itemView);
+        itemView.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-
+        VHVoteWallItem.startActivityToVoteDetail(itemView.getContext().getApplicationContext(), data.getVoteCode());
     }
 
     public void setLayout(VoteData data) {
         this.data = data;
         txtTitle.setText(data.getTitle());
+        txtAuthorName.setText(data.getAuthorName());
         txtBarPollCount.setText(String.format(itemView.getContext()
                 .getString(R.string.Wall_item_bar_vote_count), data.getPollCount()));
         if (data.getVoteImage() == null || data.getVoteImage().isEmpty()) {

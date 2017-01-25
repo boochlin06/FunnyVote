@@ -1,6 +1,7 @@
 package com.android.heaton.funnyvote.retrofit;
 
 import com.android.heaton.funnyvote.database.Promotion;
+import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
 
 import java.util.List;
@@ -66,6 +67,14 @@ public class Server {
         @PUT("/link/{otp}/{guest}")
         Call<ResponseBody> linkGuestLoginUser(@Path("otp") String otp,
                                               @Path("guest") String guest);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/member/{membercode}")
+        Call<User> getMemberInfo(@Path("membercode") String memberCode);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/guest/{guestcode}")
+        Call<User> getGuestInfo(@Path("guestcode") String guestCode);
     }
 
     public interface VoteService {
@@ -146,6 +155,20 @@ public class Server {
                                                @Query("ps") int pageCount,
                                                @Query("token") String token,
                                                @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/public/create")
+        Call<List<VoteData>> getPersonalCreateVoteList(@Query("p") int pageNumber,
+                                                       @Query("ps") int pageCount,
+                                                       @Query("token") String token,
+                                                       @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("/public/fav")
+        Call<List<VoteData>> getPersonalFavoriteVoteList(@Query("p") int pageNumber,
+                                                         @Query("ps") int pageCount,
+                                                         @Query("token") String token,
+                                                         @Query("tokentype") String tokenType);
     }
 
     public interface PromotionService {

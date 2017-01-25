@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="88dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginBottom="6dp"
     android:layout_marginLeft="@dimen/card_margin"
     android:layout_marginRight="@dimen/card_margin"
@@ -13,6 +14,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:orientation="horizontal">
 
         <ImageView
@@ -23,26 +25,35 @@
             android:src="@android:drawable/ic_input_add" />
 
         <RelativeLayout
-            android:layout_marginRight="8dp"
-            android:layout_marginLeft="8dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp">
 
             <TextView
                 android:id="@+id/txtTitle"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:textStyle="bold"
+                android:layout_height="24dp"
                 android:ellipsize="end"
-                android:maxLines="2"
-                android:text="@string/Wall_item_no_vote_create_new"
-                android:textSize="18sp" />
+                android:maxLines="1"
+                tools:text="The funny vote is the best vote app."
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/txtAuthorName"
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:layout_below="@id/txtTitle"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="Heaton Lin"
+                android:textSize="14sp" />
 
             <RelativeLayout
                 android:id="@+id/relBarPollCount"
                 android:layout_width="wrap_content"
                 android:layout_height="24dp"
-                android:layout_below="@id/txtTitle"
+                android:layout_below="@id/txtAuthorName"
                 android:layout_marginTop="8dp"
                 android:gravity="center">
 
@@ -56,38 +67,31 @@
                 <TextView
                     android:id="@+id/txtBarPollCount"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="24dp"
+                    android:layout_alignBaseline="@id/imgPollCount"
                     android:layout_marginLeft="6dp"
                     android:layout_toRightOf="@id/imgPollCount"
-                    android:layout_alignBaseline="@id/imgPollCount"
-                    android:textSize="16sp"
                     android:gravity="center"
-                    android:text="10 votes" />
+                    android:text="10 votes"
+                    android:textSize="16sp" />
 
             </RelativeLayout>
 
 
-            <RelativeLayout
-                android:id="@+id/relHint"
+            <TextView
+                android:id="@+id/txtHint"
                 android:layout_width="wrap_content"
                 android:layout_height="24dp"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
+                android:layout_below="@id/txtAuthorName"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="8dp"
                 android:layout_marginTop="8dp"
-                android:layout_below="@id/txtTitle">
+                android:gravity="center"
+                android:text="END"
+                android:layout_alignParentRight="true"
+                android:textColor="@color/md_red_500"
+                android:textSize="16sp" />
 
-                <TextView
-                    android:id="@+id/txtHint"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="6dp"
-                    android:textSize="16sp"
-                    android:layout_marginRight="8dp"
-                    android:textColor="@color/md_red_500"
-                    android:gravity="center"
-                    android:text="END" />
-
-            </RelativeLayout>
 
         </RelativeLayout>
 

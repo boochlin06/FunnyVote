@@ -37,7 +37,10 @@ public class VoteData {
 
     @SerializedName("nn")
     private String authorName;
+    @SerializedName("token")
     private String authorCode;
+    @SerializedName("tokentype")
+    private String authorCodeType;
     @SerializedName("mi")
     private String authorIcon;
     @SerializedName("i")
@@ -112,14 +115,6 @@ public class VoteData {
     @SerializedName("user")
     private Option userOption;
 
-    @Transient
-    @SerializedName("gc")
-    private String guestCode;
-
-    @Transient
-    @SerializedName("mc")
-    private String memberCode;
-
     public List<Option> getNetOptions() {
         return this.netOptions;
     }
@@ -140,13 +135,6 @@ public class VoteData {
         return this.userOption;
     }
 
-    public String getGuestCode() {
-        return guestCode;
-    }
-
-    public String getMemberCode() {
-        return memberCode;
-    }
 
     /**
      * UI temp used
@@ -172,17 +160,18 @@ public class VoteData {
         }
     }
 
-    @Generated(hash = 1347483641)
-    public VoteData(Long id, String voteCode, String title, String authorName, String authorCode, String authorIcon, String voteImage, int localImage, long startTime,
-                    long endTime, String option1Title, String option1Code, int option1Count, String option2Title, String option2Code, int option2Count, String optionTopTitle,
-                    String optionTopCode, int optionTopCount, String optionUserChoiceTitle, String optionUserChoiceCode, int optionUserChoiceCount, int minOption, int maxOption,
-                    int optionCount, int pollCount, boolean isPolled, boolean isFavorite, boolean isCanPreviewResult, boolean isUserCanAddOption, boolean isNeedPassword,
-                    String security, String category, int displayOrder, String pollType) {
+    @Generated(hash = 1355821169)
+    public VoteData(Long id, String voteCode, String title, String authorName, String authorCode, String authorCodeType, String authorIcon, String voteImage, int localImage,
+            long startTime, long endTime, String option1Title, String option1Code, int option1Count, String option2Title, String option2Code, int option2Count, String optionTopTitle,
+            String optionTopCode, int optionTopCount, String optionUserChoiceTitle, String optionUserChoiceCode, int optionUserChoiceCount, int minOption, int maxOption,
+            int optionCount, int pollCount, boolean isPolled, boolean isFavorite, boolean isCanPreviewResult, boolean isUserCanAddOption, boolean isNeedPassword, String security,
+            String category, int displayOrder, String pollType) {
         this.id = id;
         this.voteCode = voteCode;
         this.title = title;
         this.authorName = authorName;
         this.authorCode = authorCode;
+        this.authorCodeType = authorCodeType;
         this.authorIcon = authorIcon;
         this.voteImage = voteImage;
         this.localImage = localImage;
@@ -581,5 +570,13 @@ public class VoteData {
 
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
+    }
+
+    public String getAuthorCodeType() {
+        return this.authorCodeType;
+    }
+
+    public void setAuthorCodeType(String authorCodeType) {
+        this.authorCodeType = authorCodeType;
     }
 }

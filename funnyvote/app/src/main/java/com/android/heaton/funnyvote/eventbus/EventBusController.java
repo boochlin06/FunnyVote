@@ -2,6 +2,7 @@ package com.android.heaton.funnyvote.eventbus;
 
 import com.android.heaton.funnyvote.database.Option;
 import com.android.heaton.funnyvote.database.Promotion;
+import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
 
 import java.util.ArrayList;
@@ -86,10 +87,10 @@ public class EventBusController {
     }
 
     public final static class RemoteServiceEvent {
-        public static final String CREAT_VOTE = "create_vote";
+        public static final String CREATE_VOTE = "create_vote";
         public static final String GET_VOTE = "get_vote";
         public static final String POLL_VOTE = "poll_vote";
-        public static final String FAVORIT_VOTE = "favorite_vote";
+        public static final String FAVORITE_VOTE = "favorite_vote";
         public static final String GET_VOTE_LIST_HOT = "get_vote_list_hot";
         public static final String GET_VOTE_LIST_NEW = "get_vote_list_new";
         public static final String GET_VOTE_LIST_FAVORITE = "get_vote_list_favorite";
@@ -97,6 +98,7 @@ public class EventBusController {
         public static final String GET_VOTE_LIST_HISTORY_CREATE = "get_vote_list_history_create";
         public static final String GET_VOTE_LIST_HISTORY_PARTICIPATE = "get_vote_list_history_participate";
         public static final String ADD_NEW_OPTION = "add_new_option";
+        public static final String GET_PERSONAL_INFO = "get_user_info";
 
         public static final String GET_PROMOTION_LIST = "get_promotion_list";
 
@@ -108,6 +110,7 @@ public class EventBusController {
         public List<Promotion> promotionList;
         public int offset;
         public String errorResponseMessage;
+        public User user;
 
 
         public RemoteServiceEvent(String message, boolean success, VoteData voteData
@@ -132,6 +135,11 @@ public class EventBusController {
             this.errorResponseMessage = errorResponseMessage;
         }
 
+        public RemoteServiceEvent(String message, boolean success, User user) {
+            this.success = success;
+            this.message = message;
+            this.user = user;
+        }
         public RemoteServiceEvent(String message, boolean success, List<Promotion> promotionList) {
             this.success = success;
             this.message = message;

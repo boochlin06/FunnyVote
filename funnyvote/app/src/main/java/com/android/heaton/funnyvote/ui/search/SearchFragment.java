@@ -69,6 +69,7 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_search, container, false);
         ryMain = (RecyclerView) RootView.findViewById(R.id.rySearchResult);
         circleLoad = (CircleProgressView) RootView.findViewById(R.id.circleLoad);
+        hideLoadingCircle();
         voteDataManager = VoteDataManager.getInstance(getContext().getApplicationContext());
 
         if (user == null) {
@@ -84,18 +85,17 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
         voteDataList = DataLoader.getInstance(getContext()).querySearchVotes(keyword, 0, LIMIT);
         adapter = new SearchItemAdapter(getContext(), voteDataList);
         adapter.setOnReloadClickListener(this);
-        adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
         ryMain.setAdapter(adapter);
         if (!TextUtils.isEmpty(keyword)) {
+            showLoadingCircle(this.getString(R.string.vote_detail_circle_loading));
             voteDataManager.getSearchVoteList(keyword, 0, user);
-            showLoadingCircle(getString(R.string.vote_detail_circle_loading));
         }
     }
 
     public void setQueryText(String queryText) {
         this.keyword = queryText;
         if (user != null) {
-            showLoadingCircle(getString(R.string.vote_detail_circle_loading));
+            this.showLoadingCircle(getString(R.string.vote_detail_circle_loading));
             voteDataManager.getSearchVoteList(keyword, 0, user);
         }
     }
@@ -108,7 +108,7 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
 
     private void hideLoadingCircle() {
         circleLoad.stopSpinning();
-        circleLoad.setVisibility(View.GONE);
+        circleLoad.setVisibility(View.INVISIBLE);
     }
 
     @Override

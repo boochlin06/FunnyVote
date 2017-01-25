@@ -17,30 +17,15 @@ import android.widget.TextView;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
-import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.bumptech.glide.Glide;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
-/**
- * Created by heaton on 2017/1/24.
- */
-
-public class PersonalActivity extends AppCompatActivity
+public class UserActivity extends AppCompatActivity
         implements AppBarLayout.OnOffsetChangedListener {
 
     private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 20;
-    public static final String EXTRA_PERSONAL_CODE = "personal_code";
-    public static final String EXTRA_PERSONAL_CODE_TYPE = "personal_code_type";
-    public static final String EXTRA_PERSONAL_NAME = "personal_name";
-    private String personalCode;
-    private String personalCodeType;
-    private String personalName;
     private boolean isAvatarShown = true;
 
     private CircleImageView imgUserIcon;
@@ -49,24 +34,27 @@ public class PersonalActivity extends AppCompatActivity
     private int maxScrollSize;
     private TabsAdapter tabsAdapter;
 
-    private User targetUser;
+    User user = null;
+    UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
+        @Override
+        public void onResponse(User user) {
+            UserActivity.this.user = user;
+            UserActivity.this.user.isLoginUser = true;
+            setUpUser(user);
+            tabsAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onFailure() {
+
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal);
-        if (getIntent() != null) {
-            personalCode = getIntent().getStringExtra(EXTRA_PERSONAL_CODE);
-            personalCodeType = getIntent().getStringExtra(EXTRA_PERSONAL_CODE_TYPE);
-            personalName = getIntent().getStringExtra(EXTRA_PERSONAL_NAME);
-            targetUser = new User();
-            targetUser.setUserCode(personalCode);
-            targetUser.userTokenType = personalCodeType;
-            targetUser.setUserName(personalName);
-            targetUser.isLoginUser = false;
-        } else {
-            finish();
-        }
+
         txtSubTitle = (TextView) findViewById(R.id.txtSubTitle);
         txtUserName = (TextView) findViewById(R.id.txtUserName);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayoutPersonal);
@@ -88,13 +76,13 @@ public class PersonalActivity extends AppCompatActivity
         tabsAdapter = new TabsAdapter(getSupportFragmentManager());
         viewPager.setAdapter(tabsAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        setUpUser(targetUser);
-        UserManager.getInstance(getApplicationContext()).getPersonalInfo(personalCode, personalCodeType);
+        UserManager.getInstance(getApplicationContext()).getUser(getUserCallback);
+
     }
 
     private void setUpUser(User user) {
         txtUserName.setText(user.getUserName());
-        txtSubTitle.setText(user.userTokenType);
+        txtSubTitle.setText(User.getUserTypeString(user.getType()) + ":" + user.getEmail());
         if (user.getUserIcon() == null || user.getUserIcon().isEmpty()) {
             imgUserIcon.setImageResource(R.drawable.user_avatar);
         } else {
@@ -108,35 +96,8 @@ public class PersonalActivity extends AppCompatActivity
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO)) {
-            if (event.success) {
-                this.targetUser = event.user;
-                this.targetUser.isLoginUser = false;
-                this.targetUser.setUserCode(personalCode);
-                this.targetUser.userTokenType = personalCodeType;
-                this.targetUser.setUserName(personalName);
-                setUpUser(targetUser);
-                tabsAdapter.notifyDataSetChanged();
-            }
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-    }
-
     public static void start(Context c) {
-        c.startActivity(new Intent(c, PersonalActivity.class));
+        c.startActivity(new Intent(c, UserActivity.class));
     }
 
     @Override
@@ -167,16 +128,18 @@ public class PersonalActivity extends AppCompatActivity
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, targetUser);
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, user);
                 case 1:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, targetUser);
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_PARTICIPATE, user);
+                case 2:
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, user);
             }
             return null;
         }
@@ -187,6 +150,8 @@ public class PersonalActivity extends AppCompatActivity
                 case 0:
                     return getString(R.string.personal_tab_create);
                 case 1:
+                    return getString(R.string.personal_tab_participate);
+                case 2:
                     return getString(R.string.personal_tab_favorite);
             }
             return "";
