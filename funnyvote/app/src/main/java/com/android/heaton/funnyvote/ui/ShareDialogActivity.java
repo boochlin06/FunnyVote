@@ -84,48 +84,48 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
 
     private void initShareOptions() {
         PackageManager pm = getPackageManager();
-        try {
-            for (int i = 0; i < APPS.length; i++) {
-                ComponentName componentName = new ComponentName(APPS[i][0], APPS[i][1]);
+        for (int i = 0; i < APPS.length; i++) {
+            ComponentName componentName = new ComponentName(APPS[i][0], APPS[i][1]);
+            try {
                 ActivityInfo info = pm.getActivityInfo(componentName, PackageManager.GET_META_DATA);
                 View view = getLayoutInflater().inflate(R.layout.share_btn, null);
-                ImageView imageView = (ImageView)view.findViewById(R.id.app_share_icon);
+                ImageView imageView = (ImageView) view.findViewById(R.id.app_share_icon);
                 imageView.setImageDrawable(info.loadIcon(pm));
-                TextView labelTextView = (TextView)view.findViewById(R.id.app_label);
+                TextView labelTextView = (TextView) view.findViewById(R.id.app_label);
                 labelTextView.setText(info.loadLabel(pm));
                 view.setTag(componentName);
                 view.setOnClickListener(this);
                 shareOptions.addView(view);
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
             }
-            //copy link to clipboard
-            View copy = getLayoutInflater().inflate(R.layout.share_btn, null);
-            ImageView copyImage = (ImageView)copy.findViewById(R.id.app_share_icon);
-            copyImage.setImageResource(R.drawable.ic_shortcut_content_copy);
-            TextView copyLabel = (TextView)copy.findViewById(R.id.app_label);
-            copyLabel.setText(R.string.vote_share_copy_url);
-            copy.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View view) {
-                    onCopyLinkClicked();
-                }
-            });
-            shareOptions.addView(copy);
-            //more
-            View more = getLayoutInflater().inflate(R.layout.share_btn, null);
-            ImageView moreImg = (ImageView)more.findViewById(R.id.app_share_icon);
-            moreImg.setImageResource(R.drawable.ic_navigation_more_horiz);
-            TextView moreLabel = (TextView)more.findViewById(R.id.app_label);
-            moreLabel.setText(R.string.vote_share_more);
-            more.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View view) {
-                    onOtherShareClicked();
-                }
-            });
-            shareOptions.addView(more);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
         }
+        //copy link to clipboard
+        View copy = getLayoutInflater().inflate(R.layout.share_btn, null);
+        ImageView copyImage = (ImageView)copy.findViewById(R.id.app_share_icon);
+        copyImage.setImageResource(R.drawable.ic_shortcut_content_copy);
+        TextView copyLabel = (TextView)copy.findViewById(R.id.app_label);
+        copyLabel.setText(R.string.vote_share_copy_url);
+        copy.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onCopyLinkClicked();
+            }
+        });
+        shareOptions.addView(copy);
+        //more
+        View more = getLayoutInflater().inflate(R.layout.share_btn, null);
+        ImageView moreImg = (ImageView)more.findViewById(R.id.app_share_icon);
+        moreImg.setImageResource(R.drawable.ic_navigation_more_horiz);
+        TextView moreLabel = (TextView)more.findViewById(R.id.app_label);
+        moreLabel.setText(R.string.vote_share_more);
+        more.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onOtherShareClicked();
+            }
+        });
+        shareOptions.addView(more);
     }
 
     public void onCopyLinkClicked() {
@@ -157,8 +157,7 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
             send.setType("text/plain");
             send.putExtra(Intent.EXTRA_TEXT, String.format(
                     getString(R.string.vote_share_msg), mVoteURL));
-            startActivity(Intent.createChooser(send
-                    , getResources().getText(R.string.vote_share_via)));
+            startActivity(send);
             finish();
         }
     }
