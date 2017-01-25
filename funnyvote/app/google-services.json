@@ -8,7 +8,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:447423429562:android:07df85b2982a6abd",
         "android_client_info": {
-          "package_name": "com.android.heaton.easyvote"
+          "package_name": "com.android.heaton.funnyvote"
         }
       },
       "oauth_client": [
@@ -16,7 +16,7 @@
           "client_id": "447423429562-46ts5c2lqekgp1hd2mud30pgpnol7ob5.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.android.heaton.easyvote",
+            "package_name": "com.android.heaton.funnyvote",
             "certificate_hash": "9F858FA091BACC979D808278719FA80004061665"
           }
         },
