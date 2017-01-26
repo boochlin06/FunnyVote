@@ -71,7 +71,7 @@
             android:theme="@style/Base.Theme.AppCompat"/>
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="313e33f6d00449186693b8843745eb37e24df53f"/>
+            android:value="daa9bcc114edbbb7c147bab2e1fb2e6ae0018305" />
     </application>
 
 </manifest>
