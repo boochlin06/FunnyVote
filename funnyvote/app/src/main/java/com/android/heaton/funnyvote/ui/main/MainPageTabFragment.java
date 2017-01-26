@@ -67,11 +67,9 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     private AlertDialog passwordDialog;
 
     public static MainPageTabFragment newInstance(String tab) {
-        return new MainPageTabFragment(tab);
-    }
-
-    public MainPageTabFragment(String tab) {
-        this.tab = tab;
+        MainPageTabFragment mainPageTabFragment = new MainPageTabFragment();
+        mainPageTabFragment.setTab(tab);
+        return mainPageTabFragment;
     }
 
     public MainPageTabFragment() {
@@ -432,5 +430,9 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         } else if (tab.equals(TAB_FAVORITE)) {
             voteDataManager.getFavoriteVoteList(offset, user);
         }
+    }
+
+    public void setTab(String tab) {
+        this.tab = tab;
     }
 }

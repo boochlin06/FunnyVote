@@ -6,6 +6,7 @@ import com.android.heaton.funnyvote.database.DaoMaster;
 import com.android.heaton.funnyvote.database.DaoSession;
 import com.android.heaton.funnyvote.retrofit.Server;
 import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 import com.facebook.stetho.Stetho;
 
 import com.twitter.sdk.android.Twitter;
@@ -35,6 +36,7 @@ public class FunnyVoteApplication extends Application {
         Fabric.with(this, new Twitter(authConfig));
         Stetho.initializeWithDefaults(this);
         FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "votes-db-encrypted" : "votes-db");
         Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
         daoSession = new DaoMaster(db).newSession(IdentityScopeType.Session);
