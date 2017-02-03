@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
     android:layout_marginLeft="@dimen/card_margin"
     android:layout_marginRight="@dimen/card_margin"
+    android:layout_marginTop="16dp"
     android:clickable="true"
     app:cardCornerRadius="3dp"
     app:cardElevation="5dp">
@@ -20,8 +21,9 @@
         android:animateLayoutChanges="true"
         android:orientation="vertical">
 
-        <include android:id="@+id/author_bar"
-            layout="@layout/include_author"/>
+        <include
+            android:id="@+id/author_bar"
+            layout="@layout/include_author" />
 
         <TextView
             android:id="@+id/txtTitle"
@@ -44,129 +46,238 @@
             android:id="@+id/function_bar"
             layout="@layout/include_function_bar" />
 
-        <LinearLayout
+        <android.support.v7.widget.CardView
             android:id="@+id/btnFirstOption"
-            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:layout_margin="0dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="0dp">
+            android:animateLayoutChanges="true"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="3dp"
+            card_view:cardBackgroundColor="@color/md_red_100">
 
-            <TextView
-                android:id="@+id/txtOptionNumber1"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:background="@drawable/bg_oval_with_gradient"
-                android:gravity="center"
-                android:text="1"
-                android:textColor="@color/md_red_50"
-                android:textSize="16sp"
-                android:visibility="gone" />
+                android:layout_gravity="start"
+                android:paddingBottom="4dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:paddingTop="8dp">
 
-            <ImageView
-                android:id="@+id/imgFirstOption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
-                android:scaleType="fitCenter" />
+                <TextView
+                    android:id="@+id/txtOptionNumber1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="3dp"
+                    android:background="@drawable/bg_oval_with_gradient"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textColor="@color/secondary_text"
+                    android:textSize="20sp" />
 
-            <TextView
-                android:id="@+id/txtFirstOption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:text="option 1" />
+                <TextView
+                    android:id="@+id/txtFirstOptionTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@id/txtOptionNumber1"
+                    android:layout_marginLeft="3dp"
+                    android:layout_toLeftOf="@id/imgPollChoice"
+                    android:layout_toRightOf="@id/txtOptionNumber1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/secondary_text"
+                    android:textSize="16sp"
+                    tools:text="Yes, i have tell my mother" />
 
-        </LinearLayout>
 
-        <LinearLayout
+                <ImageView
+                    android:id="@+id/imgChampion1"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@id/txtFirstOptionTitle"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_marginTop="10dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_cup"
+                    android:visibility="visible" />
+
+                <com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar
+                    android:id="@+id/progressFirstOption"
+                    android:layout_width="match_parent"
+                    android:layout_height="18dp"
+                    android:layout_alignBottom="@+id/txtFirstPollCountPercent"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_toRightOf="@id/imgChampion1"
+                    app:rcBackgroundColor="@color/md_amber_200"
+                    app:rcBackgroundPadding="3dp"
+                    app:rcProgressColor="@color/md_amber_600"
+                    app:rcRadius="10dp" />
+
+                <TextView
+                    android:id="@+id/txtFirstPollCountPercent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/txtOptionNumber1"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_toRightOf="@id/imgChampion1"
+                    android:maxLines="1"
+                    android:textSize="14sp"
+                    tools:text="15.0%" />
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
             android:id="@+id/btnSecondOption"
-            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:layout_margin="0dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="0dp">
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            android:animateLayoutChanges="true"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="3dp"
+            card_view:cardBackgroundColor="@color/md_blue_100">
 
-            <TextView
-                android:id="@+id/txtOptionNumber2"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:background="@drawable/bg_oval_with_gradient"
-                android:gravity="center"
-                android:text="2"
-                android:textColor="@color/md_red_50"
-                android:textSize="16sp"
-                android:visibility="gone" />
+                android:layout_gravity="start"
+                android:paddingBottom="4dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:paddingTop="8dp">
 
-            <ImageView
-                android:id="@+id/imgSecondOption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
-                android:scaleType="fitCenter"
-                android:visibility="gone" />
+                <TextView
+                    android:id="@+id/txtOptionNumber2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="3dp"
+                    android:background="@drawable/bg_oval_with_gradient"
+                    android:gravity="center"
+                    android:text="2"
+                    android:textColor="@color/secondary_text"
+                    android:textSize="20sp" />
 
-            <TextView
-                android:id="@+id/txtSecondOption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:text="option 2" />
+                <TextView
+                    android:id="@+id/txtSecondOptionTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@id/txtOptionNumber2"
+                    android:layout_marginLeft="3dp"
+                    android:layout_toLeftOf="@id/imgPollChoice"
+                    android:layout_toRightOf="@id/txtOptionNumber2"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/secondary_text"
+                    android:textSize="16sp"
+                    tools:text="Yes, i have tell my mother" />
 
-        </LinearLayout>
 
-        <LinearLayout
+                <ImageView
+                    android:id="@+id/imgChampion2"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@id/txtSecondOptionTitle"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_marginTop="10dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_cup"
+                    android:visibility="visible" />
+
+                <com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar
+                    android:id="@+id/progressSecondOption"
+                    android:layout_width="match_parent"
+                    android:layout_height="18dp"
+                    android:layout_alignBottom="@+id/txtSecondPollCountPercent"
+                    android:layout_marginRight="16dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_toRightOf="@id/imgChampion2"
+                    app:rcBackgroundColor="@color/md_amber_200"
+                    app:rcBackgroundPadding="3dp"
+                    app:rcProgressColor="@color/md_amber_600"
+                    app:rcRadius="10dp" />
+
+                <TextView
+                    android:id="@+id/txtSecondPollCountPercent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/txtOptionNumber2"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_toRightOf="@id/imgChampion2"
+                    android:maxLines="1"
+                    android:textSize="14sp"
+                    tools:text="75.0%" />
+
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
             android:id="@+id/btnThirdOption"
-            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="0dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="0dp">
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:animateLayoutChanges="true"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="3dp"
+            card_view:cardBackgroundColor="@color/md_blue_100">
 
-            <TextView
-                android:id="@+id/txtOptionNumber3"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:background="@drawable/bg_oval_with_gradient"
-                android:gravity="center"
-                android:text=">"
-                android:textColor="@color/md_red_50"
-                android:textSize="16sp"
-                android:visibility="gone" />
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/imgThirdOption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
-                android:scaleType="fitCenter"
-                android:visibility="gone" />
+                <TextView
+                    android:id="@+id/txtOptionNumber3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:background="@drawable/bg_oval_with_gradient"
+                    android:gravity="center"
+                    android:text=">"
+                    android:textColor="@color/md_red_50"
+                    android:textSize="16sp"
+                    android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/txtThirdOption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:text="more ..." />
+                <ImageView
+                    android:id="@+id/imgThirdOption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="8dp"
+                    android:scaleType="fitCenter"
+                    android:visibility="gone" />
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/txtThirdOption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:ellipsize="end"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:text="More" />
+
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
 
     </LinearLayout>
 

@@ -264,6 +264,7 @@ public class CreateVoteActivity extends AppCompatActivity {
                 break;
             }
             optionTitles.add(optionList.get(i).getTitle());
+            Log.d("test","option "+ i + " title:"+optionTitles.get(i));
         }
         if (edtTitle.getText().length() == 0) {
             errorNumber++;

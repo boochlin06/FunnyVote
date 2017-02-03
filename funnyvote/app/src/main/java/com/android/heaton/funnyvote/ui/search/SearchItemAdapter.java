@@ -40,7 +40,7 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == ITEM_TYPE_VOTE) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_search, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_search, parent, false);
             return new VHSearchItem(v);
         } else if (viewType == ITEM_TYPE_RELOAD) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_reload, parent, false);
@@ -138,7 +138,7 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             imgAddVote.setVisibility(View.GONE);
             imgRefreshVote.setImageResource(R.drawable.fv_ful_png_300px);
             imgRefreshVote.setVisibility(View.VISIBLE);
-            txtNoVote.setText(R.string.Wall_item_no_vote_search);
+            txtNoVote.setText(R.string.wall_item_no_vote_search);
         }
     }
 

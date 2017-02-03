@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             this.doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, R.string.Wall_item_toast_double_click_to_exit, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.wall_item_toast_double_click_to_exit, Toast.LENGTH_SHORT).show();
 
             new Handler().postDelayed(new Runnable() {
 

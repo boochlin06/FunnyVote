@@ -8,7 +8,7 @@
     <string name="create_vote_remove_option">Remove option</string>
     <string name="create_vote_max_choice_per_people">Max choice per people</string>
     <string name="create_vote_min_choice_per_people">Min choice per people</string>
-    <string name="cteate_vote_set_password">Set password</string>
+    <string name="create_vote_set_password">Set password</string>
     <string name="create_vote_member_only">Member only</string>
     <string name="create_vote_create_btn">Create</string>
     <string name="create_vote_default_choice_value">1</string>
@@ -39,18 +39,19 @@
     <string name="main_page_tab_hot">Hot</string>
     <string name="main_page_tab_new">New</string>
 
-    <!--Hot Wall item-->
-    <string name="Wall_item_vote_end">Vote END</string>
-    <string name="Wall_item_more">More...</string>
-    <string name="Wall_item_no_one_poll">No one poll</string>
-    <string name="Wall_item_bar_vote_count" formatted="false">Vote:%d </string>
-    <string name="Wall_item_bar_Share">Share</string>
-    <string name="Wall_item_no_vote_create_new">No vote in list.\nWould you create new vote?</string>
-    <string name="Wall_item_no_vote">No vote in list.</string>
-    <string name="Wall_item_no_vote_search">No vote in list. \nPlease search on tool bar.</string>
-    <string name="Wall_item_no_vote_refresh">No vote in list.\nPlease refresh list.</string>
-    <string name="Wall_item_toast_no_vote_refresh">No vote after refresh</string>
-    <string name="Wall_item_toast_double_click_to_exit">Please click BACK again to exit</string>
+    <!--Vote Wall item-->
+    <string name="wall_item_vote_end">Vote END</string>
+    <string name="wall_item_more">More...</string>
+    <string name="wall_item_no_one_poll">No one poll</string>
+    <string name="wall_item_bar_vote_count" formatted="false">Vote:%d </string>
+    <string name="wall_item_bar_Share">Share</string>
+    <string name="wall_item_no_vote_create_new">No vote in list.\nWould you create new vote?</string>
+    <string name="wall_item_no_vote">No vote in list.</string>
+    <string name="wall_item_no_vote_search">No vote in list. \nPlease search on tool bar.</string>
+    <string name="wall_item_no_vote_refresh">No vote in list.\nPlease refresh list.</string>
+    <string name="wall_item_toast_no_vote_refresh">No vote after refresh</string>
+    <string name="wall_item_toast_double_click_to_exit">Please click BACK again to exit</string>
+    <string name="wall_item_other_option" formatted="false">"Other %d options..."</string>
 
     <!--Create vote page tab classification-->
     <string name="create_vote_tab_options">Options</string>

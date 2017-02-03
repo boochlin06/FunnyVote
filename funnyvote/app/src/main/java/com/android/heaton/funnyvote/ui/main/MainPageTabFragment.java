@@ -102,7 +102,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         if (user != null) {
             initRecyclerView();
         }
-        Log.d(TAG, "onCreateView tab:" + tab);
+        Log.d(TAG, "onCreateView tab:" + tab + " user:" + user);
         return RootView;
     }
 
@@ -244,7 +244,6 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                 //adapter.notifyDataSetChanged();
             } else if (getUserVisibleHint() && event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)
                     && isResumed()) {
-
                 if (event.data.getIsNeedPassword()) {
                     Log.d(TAG, "Vote code:" + event.data.getVoteCode() + " pw:" + event.data.getIsNeedPassword());
                     showPasswordDialog(event.data, event.optionList, user);
@@ -412,7 +411,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         if (this.voteDataList.size() < LIMIT * (pageNumber + 1)) {
             adapter.setMaxCount(this.voteDataList.size());
             if (offset != 0) {
-                Toast.makeText(getContext(), R.string.Wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
             }
         } else {
             adapter.setMaxCount(LIMIT * (pageNumber + 2));

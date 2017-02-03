@@ -53,13 +53,16 @@ public class VoteData {
     private String option1Title;
     private String option1Code;
     private int option1Count;
+    private boolean option1Polled;
 
     private String option2Title;
     private String option2Code;
     private int option2Count;
+    private boolean option2Polled;
     private String optionTopTitle;
     private String optionTopCode;
     private int optionTopCount;
+    private boolean optionTopPolled;
     private String optionUserChoiceTitle;
     private String optionUserChoiceCode;
     private int optionUserChoiceCount;
@@ -160,12 +163,12 @@ public class VoteData {
         }
     }
 
-    @Generated(hash = 1355821169)
+    @Generated(hash = 1572690698)
     public VoteData(Long id, String voteCode, String title, String authorName, String authorCode, String authorCodeType, String authorIcon, String voteImage, int localImage,
-            long startTime, long endTime, String option1Title, String option1Code, int option1Count, String option2Title, String option2Code, int option2Count, String optionTopTitle,
-            String optionTopCode, int optionTopCount, String optionUserChoiceTitle, String optionUserChoiceCode, int optionUserChoiceCount, int minOption, int maxOption,
-            int optionCount, int pollCount, boolean isPolled, boolean isFavorite, boolean isCanPreviewResult, boolean isUserCanAddOption, boolean isNeedPassword, String security,
-            String category, int displayOrder, String pollType) {
+            long startTime, long endTime, String option1Title, String option1Code, int option1Count, boolean option1Polled, String option2Title, String option2Code, int option2Count,
+            boolean option2Polled, String optionTopTitle, String optionTopCode, int optionTopCount, boolean optionTopPolled, String optionUserChoiceTitle, String optionUserChoiceCode,
+            int optionUserChoiceCount, int minOption, int maxOption, int optionCount, int pollCount, boolean isPolled, boolean isFavorite, boolean isCanPreviewResult,
+            boolean isUserCanAddOption, boolean isNeedPassword, String security, String category, int displayOrder, String pollType) {
         this.id = id;
         this.voteCode = voteCode;
         this.title = title;
@@ -180,12 +183,15 @@ public class VoteData {
         this.option1Title = option1Title;
         this.option1Code = option1Code;
         this.option1Count = option1Count;
+        this.option1Polled = option1Polled;
         this.option2Title = option2Title;
         this.option2Code = option2Code;
         this.option2Count = option2Count;
+        this.option2Polled = option2Polled;
         this.optionTopTitle = optionTopTitle;
         this.optionTopCode = optionTopCode;
         this.optionTopCount = optionTopCount;
+        this.optionTopPolled = optionTopPolled;
         this.optionUserChoiceTitle = optionUserChoiceTitle;
         this.optionUserChoiceCode = optionUserChoiceCode;
         this.optionUserChoiceCount = optionUserChoiceCount;
@@ -578,5 +584,29 @@ public class VoteData {
 
     public void setAuthorCodeType(String authorCodeType) {
         this.authorCodeType = authorCodeType;
+    }
+
+    public boolean getOption1Polled() {
+        return this.option1Polled;
+    }
+
+    public void setOption1Polled(boolean option1Polled) {
+        this.option1Polled = option1Polled;
+    }
+
+    public boolean getOption2Polled() {
+        return this.option2Polled;
+    }
+
+    public void setOption2Polled(boolean option2Polled) {
+        this.option2Polled = option2Polled;
+    }
+
+    public boolean getOptionTopPolled() {
+        return this.optionTopPolled;
+    }
+
+    public void setOptionTopPolled(boolean optionTopPolled) {
+        this.optionTopPolled = optionTopPolled;
     }
 }

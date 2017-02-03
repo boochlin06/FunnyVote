@@ -40,19 +40,15 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
     ImageView imgDelete;
     @BindView(R.id.relNormal)
     RelativeLayout relNormal;
-    private boolean isMulti;
-    private boolean isChoice;
     private Option option;
     private optionEditTextListener optionEditTextListener;
 
-    public VHUnpollCreateOptionItem(View itemView, boolean isMulti) {
+    public VHUnpollCreateOptionItem(View itemView) {
         super(itemView);
-        this.isMulti = isMulti;
         ButterKnife.bind(this, itemView);
     }
 
-    public void setLayout(boolean isChoice, Option option) {
-        this.isChoice = isChoice;
+    public void setLayout(Option option) {
         this.option = option;
         txtOptionNumber.setText(Integer.toString(getAdapterPosition() + 1));
         if (getItemViewType() == OptionItemAdapter.OPTION_UNPOLL_VIEW_TYPE_ADD_NEW) {

@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.user.UserManager;
@@ -38,9 +39,12 @@ public class PersonalActivity extends AppCompatActivity
     public static final String EXTRA_PERSONAL_CODE = "personal_code";
     public static final String EXTRA_PERSONAL_CODE_TYPE = "personal_code_type";
     public static final String EXTRA_PERSONAL_NAME = "personal_name";
+    public static final String EXTRA_PERSONAL_ICON = "personal_icon";
+
     private String personalCode;
     private String personalCodeType;
     private String personalName;
+    private String personalIcon;
     private boolean isAvatarShown = true;
 
     private CircleImageView imgUserIcon;
@@ -48,6 +52,7 @@ public class PersonalActivity extends AppCompatActivity
     private TextView txtSubTitle;
     private int maxScrollSize;
     private TabsAdapter tabsAdapter;
+    private ViewPager viewPager;
 
     private User targetUser;
 
@@ -59,10 +64,12 @@ public class PersonalActivity extends AppCompatActivity
             personalCode = getIntent().getStringExtra(EXTRA_PERSONAL_CODE);
             personalCodeType = getIntent().getStringExtra(EXTRA_PERSONAL_CODE_TYPE);
             personalName = getIntent().getStringExtra(EXTRA_PERSONAL_NAME);
+            personalIcon = getIntent().getStringExtra(EXTRA_PERSONAL_ICON);
             targetUser = new User();
             targetUser.setUserCode(personalCode);
             targetUser.userTokenType = personalCodeType;
             targetUser.setUserName(personalName);
+            targetUser.setUserIcon(personalIcon);
             targetUser.isLoginUser = false;
         } else {
             finish();
@@ -70,7 +77,7 @@ public class PersonalActivity extends AppCompatActivity
         txtSubTitle = (TextView) findViewById(R.id.txtSubTitle);
         txtUserName = (TextView) findViewById(R.id.txtUserName);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayoutPersonal);
-        ViewPager viewPager = (ViewPager) findViewById(R.id.vpMain);
+        viewPager = (ViewPager) findViewById(R.id.vpMain);
         AppBarLayout appbarLayout = (AppBarLayout) findViewById(R.id.appBarMain);
         imgUserIcon = (CircleImageView) findViewById(R.id.imgUserIcon);
 
@@ -85,8 +92,6 @@ public class PersonalActivity extends AppCompatActivity
         appbarLayout.addOnOffsetChangedListener(this);
         maxScrollSize = appbarLayout.getTotalScrollRange();
 
-        tabsAdapter = new TabsAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(tabsAdapter);
         tabLayout.setupWithViewPager(viewPager);
         setUpUser(targetUser);
         UserManager.getInstance(getApplicationContext()).getPersonalInfo(personalCode, personalCodeType);
@@ -117,9 +122,14 @@ public class PersonalActivity extends AppCompatActivity
                 this.targetUser.setUserCode(personalCode);
                 this.targetUser.userTokenType = personalCodeType;
                 this.targetUser.setUserName(personalName);
+                this.targetUser.setUserIcon(personalIcon);
                 setUpUser(targetUser);
-                tabsAdapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(getApplicationContext()
+                        , R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
             }
+            tabsAdapter = new TabsAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(tabsAdapter);
         }
     }
 

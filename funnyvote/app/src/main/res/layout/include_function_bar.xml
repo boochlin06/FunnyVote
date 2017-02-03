@@ -58,7 +58,6 @@
             android:layout_toRightOf="@id/imgBarFavorite"
             android:gravity="center"
             android:text="Favorite" />
-
     </RelativeLayout>
 
     <RelativeLayout

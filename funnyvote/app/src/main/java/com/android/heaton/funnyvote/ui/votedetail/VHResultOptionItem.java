@@ -1,6 +1,7 @@
 package com.android.heaton.funnyvote.ui.votedetail;
 
 import android.animation.ObjectAnimator;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -37,15 +38,15 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
     TextView txtPollCountPercent;
     @BindView(R.id.progressPollCount)
     RoundCornerProgressBar progressPollCount;
+    @BindView(R.id.cardOption)
+    CardView cardOption;
     private boolean isChoice = false;
-    private boolean isMultiChoice = false;
     private boolean isExpand = false;
     private int totalPollCount;
     private Option option;
 
-    public VHResultOptionItem(View itemView, boolean isMultiChoice, int totalPollCount) {
+    public VHResultOptionItem(View itemView, int totalPollCount) {
         super(itemView);
-        this.isMultiChoice = isMultiChoice;
         this.totalPollCount = totalPollCount;
         ButterKnife.bind(this, itemView);
         progressPollCount.setMax(totalPollCount);
@@ -62,6 +63,7 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
         txtPollCountPercent.setText(String.format("%3.1f%%", percent));
         setUpImgChampion(isTop);
         setUpOptionExpandLayout();
+        setUpOptionChoiceLayout();
         ObjectAnimator animator = ObjectAnimator.ofFloat(progressPollCount, "progress", 0, option.getCount());
         animator.setInterpolator(new DecelerateInterpolator());
         animator.setDuration(1000);
@@ -77,14 +79,20 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
         }
     }
 
-    private void setUpImgChoiceLaout() {
-        if (!isMultiChoice) {
-            imgPollChoice.setImageResource(isChoice ? R.drawable.ic_radio_button_checked_40dp
-                    : R.drawable.ic_radio_button_unchecked_40dp);
+    private void setUpOptionChoiceLayout() {
+        if (option.getIsUserChoiced() || isChoice) {
+            cardOption.setCardBackgroundColor(itemView.getContext().getResources().getColor(R.color.md_red_100));
+            progressPollCount.setProgressColor(itemView.getContext()
+                    .getResources().getColor(R.color.md_red_600));
+            progressPollCount.setProgressBackgroundColor(itemView.getContext()
+                    .getResources().getColor(R.color.md_red_200));
         } else {
-            // multi choice.
-            imgPollChoice.setImageResource(isChoice ? R.drawable.ic_check_box_40dp
-                    : R.drawable.ic_check_box_outline_blank_40dp);
+            cardOption.setCardBackgroundColor(itemView.getContext().getResources().getColor(R.color.md_blue_100));
+            progressPollCount.setProgressColor(itemView.getContext()
+                    .getResources().getColor(R.color.md_blue_600));
+            progressPollCount.setProgressBackgroundColor(itemView.getContext()
+                    .getResources().getColor(R.color.md_blue_200));
+
         }
     }
 

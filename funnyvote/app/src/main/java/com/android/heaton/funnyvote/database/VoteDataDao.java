@@ -36,28 +36,31 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
         public final static Property Option1Title = new Property(11, String.class, "option1Title", false, "OPTION1_TITLE");
         public final static Property Option1Code = new Property(12, String.class, "option1Code", false, "OPTION1_CODE");
         public final static Property Option1Count = new Property(13, int.class, "option1Count", false, "OPTION1_COUNT");
-        public final static Property Option2Title = new Property(14, String.class, "option2Title", false, "OPTION2_TITLE");
-        public final static Property Option2Code = new Property(15, String.class, "option2Code", false, "OPTION2_CODE");
-        public final static Property Option2Count = new Property(16, int.class, "option2Count", false, "OPTION2_COUNT");
-        public final static Property OptionTopTitle = new Property(17, String.class, "optionTopTitle", false, "OPTION_TOP_TITLE");
-        public final static Property OptionTopCode = new Property(18, String.class, "optionTopCode", false, "OPTION_TOP_CODE");
-        public final static Property OptionTopCount = new Property(19, int.class, "optionTopCount", false, "OPTION_TOP_COUNT");
-        public final static Property OptionUserChoiceTitle = new Property(20, String.class, "optionUserChoiceTitle", false, "OPTION_USER_CHOICE_TITLE");
-        public final static Property OptionUserChoiceCode = new Property(21, String.class, "optionUserChoiceCode", false, "OPTION_USER_CHOICE_CODE");
-        public final static Property OptionUserChoiceCount = new Property(22, int.class, "optionUserChoiceCount", false, "OPTION_USER_CHOICE_COUNT");
-        public final static Property MinOption = new Property(23, int.class, "minOption", false, "MIN_OPTION");
-        public final static Property MaxOption = new Property(24, int.class, "maxOption", false, "MAX_OPTION");
-        public final static Property OptionCount = new Property(25, int.class, "optionCount", false, "OPTION_COUNT");
-        public final static Property PollCount = new Property(26, int.class, "pollCount", false, "POLL_COUNT");
-        public final static Property IsPolled = new Property(27, boolean.class, "isPolled", false, "IS_POLLED");
-        public final static Property IsFavorite = new Property(28, boolean.class, "isFavorite", false, "IS_FAVORITE");
-        public final static Property IsCanPreviewResult = new Property(29, boolean.class, "isCanPreviewResult", false, "IS_CAN_PREVIEW_RESULT");
-        public final static Property IsUserCanAddOption = new Property(30, boolean.class, "isUserCanAddOption", false, "IS_USER_CAN_ADD_OPTION");
-        public final static Property IsNeedPassword = new Property(31, boolean.class, "isNeedPassword", false, "IS_NEED_PASSWORD");
-        public final static Property Security = new Property(32, String.class, "security", false, "SECURITY");
-        public final static Property Category = new Property(33, String.class, "category", false, "CATEGORY");
-        public final static Property DisplayOrder = new Property(34, int.class, "displayOrder", false, "DISPLAY_ORDER");
-        public final static Property PollType = new Property(35, String.class, "pollType", false, "POLL_TYPE");
+        public final static Property Option1Polled = new Property(14, boolean.class, "option1Polled", false, "OPTION1_POLLED");
+        public final static Property Option2Title = new Property(15, String.class, "option2Title", false, "OPTION2_TITLE");
+        public final static Property Option2Code = new Property(16, String.class, "option2Code", false, "OPTION2_CODE");
+        public final static Property Option2Count = new Property(17, int.class, "option2Count", false, "OPTION2_COUNT");
+        public final static Property Option2Polled = new Property(18, boolean.class, "option2Polled", false, "OPTION2_POLLED");
+        public final static Property OptionTopTitle = new Property(19, String.class, "optionTopTitle", false, "OPTION_TOP_TITLE");
+        public final static Property OptionTopCode = new Property(20, String.class, "optionTopCode", false, "OPTION_TOP_CODE");
+        public final static Property OptionTopCount = new Property(21, int.class, "optionTopCount", false, "OPTION_TOP_COUNT");
+        public final static Property OptionTopPolled = new Property(22, boolean.class, "optionTopPolled", false, "OPTION_TOP_POLLED");
+        public final static Property OptionUserChoiceTitle = new Property(23, String.class, "optionUserChoiceTitle", false, "OPTION_USER_CHOICE_TITLE");
+        public final static Property OptionUserChoiceCode = new Property(24, String.class, "optionUserChoiceCode", false, "OPTION_USER_CHOICE_CODE");
+        public final static Property OptionUserChoiceCount = new Property(25, int.class, "optionUserChoiceCount", false, "OPTION_USER_CHOICE_COUNT");
+        public final static Property MinOption = new Property(26, int.class, "minOption", false, "MIN_OPTION");
+        public final static Property MaxOption = new Property(27, int.class, "maxOption", false, "MAX_OPTION");
+        public final static Property OptionCount = new Property(28, int.class, "optionCount", false, "OPTION_COUNT");
+        public final static Property PollCount = new Property(29, int.class, "pollCount", false, "POLL_COUNT");
+        public final static Property IsPolled = new Property(30, boolean.class, "isPolled", false, "IS_POLLED");
+        public final static Property IsFavorite = new Property(31, boolean.class, "isFavorite", false, "IS_FAVORITE");
+        public final static Property IsCanPreviewResult = new Property(32, boolean.class, "isCanPreviewResult", false, "IS_CAN_PREVIEW_RESULT");
+        public final static Property IsUserCanAddOption = new Property(33, boolean.class, "isUserCanAddOption", false, "IS_USER_CAN_ADD_OPTION");
+        public final static Property IsNeedPassword = new Property(34, boolean.class, "isNeedPassword", false, "IS_NEED_PASSWORD");
+        public final static Property Security = new Property(35, String.class, "security", false, "SECURITY");
+        public final static Property Category = new Property(36, String.class, "category", false, "CATEGORY");
+        public final static Property DisplayOrder = new Property(37, int.class, "displayOrder", false, "DISPLAY_ORDER");
+        public final static Property PollType = new Property(38, String.class, "pollType", false, "POLL_TYPE");
     }
 
     private DaoSession daoSession;
@@ -90,28 +93,31 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
                 "\"OPTION1_TITLE\" TEXT," + // 11: option1Title
                 "\"OPTION1_CODE\" TEXT," + // 12: option1Code
                 "\"OPTION1_COUNT\" INTEGER NOT NULL ," + // 13: option1Count
-                "\"OPTION2_TITLE\" TEXT," + // 14: option2Title
-                "\"OPTION2_CODE\" TEXT," + // 15: option2Code
-                "\"OPTION2_COUNT\" INTEGER NOT NULL ," + // 16: option2Count
-                "\"OPTION_TOP_TITLE\" TEXT," + // 17: optionTopTitle
-                "\"OPTION_TOP_CODE\" TEXT," + // 18: optionTopCode
-                "\"OPTION_TOP_COUNT\" INTEGER NOT NULL ," + // 19: optionTopCount
-                "\"OPTION_USER_CHOICE_TITLE\" TEXT," + // 20: optionUserChoiceTitle
-                "\"OPTION_USER_CHOICE_CODE\" TEXT," + // 21: optionUserChoiceCode
-                "\"OPTION_USER_CHOICE_COUNT\" INTEGER NOT NULL ," + // 22: optionUserChoiceCount
-                "\"MIN_OPTION\" INTEGER NOT NULL ," + // 23: minOption
-                "\"MAX_OPTION\" INTEGER NOT NULL ," + // 24: maxOption
-                "\"OPTION_COUNT\" INTEGER NOT NULL ," + // 25: optionCount
-                "\"POLL_COUNT\" INTEGER NOT NULL ," + // 26: pollCount
-                "\"IS_POLLED\" INTEGER NOT NULL ," + // 27: isPolled
-                "\"IS_FAVORITE\" INTEGER NOT NULL ," + // 28: isFavorite
-                "\"IS_CAN_PREVIEW_RESULT\" INTEGER NOT NULL ," + // 29: isCanPreviewResult
-                "\"IS_USER_CAN_ADD_OPTION\" INTEGER NOT NULL ," + // 30: isUserCanAddOption
-                "\"IS_NEED_PASSWORD\" INTEGER NOT NULL ," + // 31: isNeedPassword
-                "\"SECURITY\" TEXT," + // 32: security
-                "\"CATEGORY\" TEXT," + // 33: category
-                "\"DISPLAY_ORDER\" INTEGER NOT NULL ," + // 34: displayOrder
-                "\"POLL_TYPE\" TEXT);"); // 35: pollType
+                "\"OPTION1_POLLED\" INTEGER NOT NULL ," + // 14: option1Polled
+                "\"OPTION2_TITLE\" TEXT," + // 15: option2Title
+                "\"OPTION2_CODE\" TEXT," + // 16: option2Code
+                "\"OPTION2_COUNT\" INTEGER NOT NULL ," + // 17: option2Count
+                "\"OPTION2_POLLED\" INTEGER NOT NULL ," + // 18: option2Polled
+                "\"OPTION_TOP_TITLE\" TEXT," + // 19: optionTopTitle
+                "\"OPTION_TOP_CODE\" TEXT," + // 20: optionTopCode
+                "\"OPTION_TOP_COUNT\" INTEGER NOT NULL ," + // 21: optionTopCount
+                "\"OPTION_TOP_POLLED\" INTEGER NOT NULL ," + // 22: optionTopPolled
+                "\"OPTION_USER_CHOICE_TITLE\" TEXT," + // 23: optionUserChoiceTitle
+                "\"OPTION_USER_CHOICE_CODE\" TEXT," + // 24: optionUserChoiceCode
+                "\"OPTION_USER_CHOICE_COUNT\" INTEGER NOT NULL ," + // 25: optionUserChoiceCount
+                "\"MIN_OPTION\" INTEGER NOT NULL ," + // 26: minOption
+                "\"MAX_OPTION\" INTEGER NOT NULL ," + // 27: maxOption
+                "\"OPTION_COUNT\" INTEGER NOT NULL ," + // 28: optionCount
+                "\"POLL_COUNT\" INTEGER NOT NULL ," + // 29: pollCount
+                "\"IS_POLLED\" INTEGER NOT NULL ," + // 30: isPolled
+                "\"IS_FAVORITE\" INTEGER NOT NULL ," + // 31: isFavorite
+                "\"IS_CAN_PREVIEW_RESULT\" INTEGER NOT NULL ," + // 32: isCanPreviewResult
+                "\"IS_USER_CAN_ADD_OPTION\" INTEGER NOT NULL ," + // 33: isUserCanAddOption
+                "\"IS_NEED_PASSWORD\" INTEGER NOT NULL ," + // 34: isNeedPassword
+                "\"SECURITY\" TEXT," + // 35: security
+                "\"CATEGORY\" TEXT," + // 36: category
+                "\"DISPLAY_ORDER\" INTEGER NOT NULL ," + // 37: displayOrder
+                "\"POLL_TYPE\" TEXT);"); // 38: pollType
     }
 
     /** Drops the underlying database table. */
@@ -177,63 +183,66 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
             stmt.bindString(13, option1Code);
         }
         stmt.bindLong(14, entity.getOption1Count());
+        stmt.bindLong(15, entity.getOption1Polled() ? 1L: 0L);
  
         String option2Title = entity.getOption2Title();
         if (option2Title != null) {
-            stmt.bindString(15, option2Title);
+            stmt.bindString(16, option2Title);
         }
  
         String option2Code = entity.getOption2Code();
         if (option2Code != null) {
-            stmt.bindString(16, option2Code);
+            stmt.bindString(17, option2Code);
         }
-        stmt.bindLong(17, entity.getOption2Count());
+        stmt.bindLong(18, entity.getOption2Count());
+        stmt.bindLong(19, entity.getOption2Polled() ? 1L: 0L);
  
         String optionTopTitle = entity.getOptionTopTitle();
         if (optionTopTitle != null) {
-            stmt.bindString(18, optionTopTitle);
+            stmt.bindString(20, optionTopTitle);
         }
  
         String optionTopCode = entity.getOptionTopCode();
         if (optionTopCode != null) {
-            stmt.bindString(19, optionTopCode);
+            stmt.bindString(21, optionTopCode);
         }
-        stmt.bindLong(20, entity.getOptionTopCount());
+        stmt.bindLong(22, entity.getOptionTopCount());
+        stmt.bindLong(23, entity.getOptionTopPolled() ? 1L: 0L);
  
         String optionUserChoiceTitle = entity.getOptionUserChoiceTitle();
         if (optionUserChoiceTitle != null) {
-            stmt.bindString(21, optionUserChoiceTitle);
+            stmt.bindString(24, optionUserChoiceTitle);
         }
  
         String optionUserChoiceCode = entity.getOptionUserChoiceCode();
         if (optionUserChoiceCode != null) {
-            stmt.bindString(22, optionUserChoiceCode);
+            stmt.bindString(25, optionUserChoiceCode);
         }
-        stmt.bindLong(23, entity.getOptionUserChoiceCount());
-        stmt.bindLong(24, entity.getMinOption());
-        stmt.bindLong(25, entity.getMaxOption());
-        stmt.bindLong(26, entity.getOptionCount());
-        stmt.bindLong(27, entity.getPollCount());
-        stmt.bindLong(28, entity.getIsPolled() ? 1L: 0L);
-        stmt.bindLong(29, entity.getIsFavorite() ? 1L: 0L);
-        stmt.bindLong(30, entity.getIsCanPreviewResult() ? 1L: 0L);
-        stmt.bindLong(31, entity.getIsUserCanAddOption() ? 1L: 0L);
-        stmt.bindLong(32, entity.getIsNeedPassword() ? 1L: 0L);
+        stmt.bindLong(26, entity.getOptionUserChoiceCount());
+        stmt.bindLong(27, entity.getMinOption());
+        stmt.bindLong(28, entity.getMaxOption());
+        stmt.bindLong(29, entity.getOptionCount());
+        stmt.bindLong(30, entity.getPollCount());
+        stmt.bindLong(31, entity.getIsPolled() ? 1L: 0L);
+        stmt.bindLong(32, entity.getIsFavorite() ? 1L: 0L);
+        stmt.bindLong(33, entity.getIsCanPreviewResult() ? 1L: 0L);
+        stmt.bindLong(34, entity.getIsUserCanAddOption() ? 1L: 0L);
+        stmt.bindLong(35, entity.getIsNeedPassword() ? 1L: 0L);
  
         String security = entity.getSecurity();
         if (security != null) {
-            stmt.bindString(33, security);
+            stmt.bindString(36, security);
         }
  
         String category = entity.getCategory();
         if (category != null) {
-            stmt.bindString(34, category);
+            stmt.bindString(37, category);
         }
-        stmt.bindLong(35, entity.getDisplayOrder());
+        stmt.bindLong(38, entity.getDisplayOrder());
  
         String pollType = entity.getPollType();
         if (pollType != null) {
-            stmt.bindString(36, pollType);
+            stmt.bindString(39, pollType);
         }
     }
 
@@ -294,63 +303,66 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
             stmt.bindString(13, option1Code);
         }
         stmt.bindLong(14, entity.getOption1Count());
+        stmt.bindLong(15, entity.getOption1Polled() ? 1L: 0L);
  
         String option2Title = entity.getOption2Title();
         if (option2Title != null) {
-            stmt.bindString(15, option2Title);
+            stmt.bindString(16, option2Title);
         }
  
         String option2Code = entity.getOption2Code();
         if (option2Code != null) {
-            stmt.bindString(16, option2Code);
+            stmt.bindString(17, option2Code);
         }
-        stmt.bindLong(17, entity.getOption2Count());
+        stmt.bindLong(18, entity.getOption2Count());
+        stmt.bindLong(19, entity.getOption2Polled() ? 1L: 0L);
  
         String optionTopTitle = entity.getOptionTopTitle();
         if (optionTopTitle != null) {
-            stmt.bindString(18, optionTopTitle);
+            stmt.bindString(20, optionTopTitle);
         }
  
         String optionTopCode = entity.getOptionTopCode();
         if (optionTopCode != null) {
-            stmt.bindString(19, optionTopCode);
+            stmt.bindString(21, optionTopCode);
         }
-        stmt.bindLong(20, entity.getOptionTopCount());
+        stmt.bindLong(22, entity.getOptionTopCount());
+        stmt.bindLong(23, entity.getOptionTopPolled() ? 1L: 0L);
  
         String optionUserChoiceTitle = entity.getOptionUserChoiceTitle();
         if (optionUserChoiceTitle != null) {
-            stmt.bindString(21, optionUserChoiceTitle);
+            stmt.bindString(24, optionUserChoiceTitle);
         }
  
         String optionUserChoiceCode = entity.getOptionUserChoiceCode();
         if (optionUserChoiceCode != null) {
-            stmt.bindString(22, optionUserChoiceCode);
+            stmt.bindString(25, optionUserChoiceCode);
         }
-        stmt.bindLong(23, entity.getOptionUserChoiceCount());
-        stmt.bindLong(24, entity.getMinOption());
-        stmt.bindLong(25, entity.getMaxOption());
-        stmt.bindLong(26, entity.getOptionCount());
-        stmt.bindLong(27, entity.getPollCount());
-        stmt.bindLong(28, entity.getIsPolled() ? 1L: 0L);
-        stmt.bindLong(29, entity.getIsFavorite() ? 1L: 0L);
-        stmt.bindLong(30, entity.getIsCanPreviewResult() ? 1L: 0L);
-        stmt.bindLong(31, entity.getIsUserCanAddOption() ? 1L: 0L);
-        stmt.bindLong(32, entity.getIsNeedPassword() ? 1L: 0L);
+        stmt.bindLong(26, entity.getOptionUserChoiceCount());
+        stmt.bindLong(27, entity.getMinOption());
+        stmt.bindLong(28, entity.getMaxOption());
+        stmt.bindLong(29, entity.getOptionCount());
+        stmt.bindLong(30, entity.getPollCount());
+        stmt.bindLong(31, entity.getIsPolled() ? 1L: 0L);
+        stmt.bindLong(32, entity.getIsFavorite() ? 1L: 0L);
+        stmt.bindLong(33, entity.getIsCanPreviewResult() ? 1L: 0L);
+        stmt.bindLong(34, entity.getIsUserCanAddOption() ? 1L: 0L);
+        stmt.bindLong(35, entity.getIsNeedPassword() ? 1L: 0L);
  
         String security = entity.getSecurity();
         if (security != null) {
-            stmt.bindString(33, security);
+            stmt.bindString(36, security);
         }
  
         String category = entity.getCategory();
         if (category != null) {
-            stmt.bindString(34, category);
+            stmt.bindString(37, category);
         }
-        stmt.bindLong(35, entity.getDisplayOrder());
+        stmt.bindLong(38, entity.getDisplayOrder());
  
         String pollType = entity.getPollType();
         if (pollType != null) {
-            stmt.bindString(36, pollType);
+            stmt.bindString(39, pollType);
         }
     }
 
@@ -382,28 +394,31 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
             cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11), // option1Title
             cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12), // option1Code
             cursor.getInt(offset + 13), // option1Count
-            cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14), // option2Title
-            cursor.isNull(offset + 15) ? null : cursor.getString(offset + 15), // option2Code
-            cursor.getInt(offset + 16), // option2Count
-            cursor.isNull(offset + 17) ? null : cursor.getString(offset + 17), // optionTopTitle
-            cursor.isNull(offset + 18) ? null : cursor.getString(offset + 18), // optionTopCode
-            cursor.getInt(offset + 19), // optionTopCount
-            cursor.isNull(offset + 20) ? null : cursor.getString(offset + 20), // optionUserChoiceTitle
-            cursor.isNull(offset + 21) ? null : cursor.getString(offset + 21), // optionUserChoiceCode
-            cursor.getInt(offset + 22), // optionUserChoiceCount
-            cursor.getInt(offset + 23), // minOption
-            cursor.getInt(offset + 24), // maxOption
-            cursor.getInt(offset + 25), // optionCount
-            cursor.getInt(offset + 26), // pollCount
-            cursor.getShort(offset + 27) != 0, // isPolled
-            cursor.getShort(offset + 28) != 0, // isFavorite
-            cursor.getShort(offset + 29) != 0, // isCanPreviewResult
-            cursor.getShort(offset + 30) != 0, // isUserCanAddOption
-            cursor.getShort(offset + 31) != 0, // isNeedPassword
-            cursor.isNull(offset + 32) ? null : cursor.getString(offset + 32), // security
-            cursor.isNull(offset + 33) ? null : cursor.getString(offset + 33), // category
-            cursor.getInt(offset + 34), // displayOrder
-            cursor.isNull(offset + 35) ? null : cursor.getString(offset + 35) // pollType
+            cursor.getShort(offset + 14) != 0, // option1Polled
+            cursor.isNull(offset + 15) ? null : cursor.getString(offset + 15), // option2Title
+            cursor.isNull(offset + 16) ? null : cursor.getString(offset + 16), // option2Code
+            cursor.getInt(offset + 17), // option2Count
+            cursor.getShort(offset + 18) != 0, // option2Polled
+            cursor.isNull(offset + 19) ? null : cursor.getString(offset + 19), // optionTopTitle
+            cursor.isNull(offset + 20) ? null : cursor.getString(offset + 20), // optionTopCode
+            cursor.getInt(offset + 21), // optionTopCount
+            cursor.getShort(offset + 22) != 0, // optionTopPolled
+            cursor.isNull(offset + 23) ? null : cursor.getString(offset + 23), // optionUserChoiceTitle
+            cursor.isNull(offset + 24) ? null : cursor.getString(offset + 24), // optionUserChoiceCode
+            cursor.getInt(offset + 25), // optionUserChoiceCount
+            cursor.getInt(offset + 26), // minOption
+            cursor.getInt(offset + 27), // maxOption
+            cursor.getInt(offset + 28), // optionCount
+            cursor.getInt(offset + 29), // pollCount
+            cursor.getShort(offset + 30) != 0, // isPolled
+            cursor.getShort(offset + 31) != 0, // isFavorite
+            cursor.getShort(offset + 32) != 0, // isCanPreviewResult
+            cursor.getShort(offset + 33) != 0, // isUserCanAddOption
+            cursor.getShort(offset + 34) != 0, // isNeedPassword
+            cursor.isNull(offset + 35) ? null : cursor.getString(offset + 35), // security
+            cursor.isNull(offset + 36) ? null : cursor.getString(offset + 36), // category
+            cursor.getInt(offset + 37), // displayOrder
+            cursor.isNull(offset + 38) ? null : cursor.getString(offset + 38) // pollType
         );
         return entity;
     }
@@ -424,28 +439,31 @@ public class VoteDataDao extends AbstractDao<VoteData, Long> {
         entity.setOption1Title(cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11));
         entity.setOption1Code(cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12));
         entity.setOption1Count(cursor.getInt(offset + 13));
-        entity.setOption2Title(cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14));
-        entity.setOption2Code(cursor.isNull(offset + 15) ? null : cursor.getString(offset + 15));
-        entity.setOption2Count(cursor.getInt(offset + 16));
-        entity.setOptionTopTitle(cursor.isNull(offset + 17) ? null : cursor.getString(offset + 17));
-        entity.setOptionTopCode(cursor.isNull(offset + 18) ? null : cursor.getString(offset + 18));
-        entity.setOptionTopCount(cursor.getInt(offset + 19));
-        entity.setOptionUserChoiceTitle(cursor.isNull(offset + 20) ? null : cursor.getString(offset + 20));
-        entity.setOptionUserChoiceCode(cursor.isNull(offset + 21) ? null : cursor.getString(offset + 21));
-        entity.setOptionUserChoiceCount(cursor.getInt(offset + 22));
-        entity.setMinOption(cursor.getInt(offset + 23));
-        entity.setMaxOption(cursor.getInt(offset + 24));
-        entity.setOptionCount(cursor.getInt(offset + 25));
-        entity.setPollCount(cursor.getInt(offset + 26));
-        entity.setIsPolled(cursor.getShort(offset + 27) != 0);
-        entity.setIsFavorite(cursor.getShort(offset + 28) != 0);
-        entity.setIsCanPreviewResult(cursor.getShort(offset + 29) != 0);
-        entity.setIsUserCanAddOption(cursor.getShort(offset + 30) != 0);
-        entity.setIsNeedPassword(cursor.getShort(offset + 31) != 0);
-        entity.setSecurity(cursor.isNull(offset + 32) ? null : cursor.getString(offset + 32));
-        entity.setCategory(cursor.isNull(offset + 33) ? null : cursor.getString(offset + 33));
-        entity.setDisplayOrder(cursor.getInt(offset + 34));
-        entity.setPollType(cursor.isNull(offset + 35) ? null : cursor.getString(offset + 35));
+        entity.setOption1Polled(cursor.getShort(offset + 14) != 0);
+        entity.setOption2Title(cursor.isNull(offset + 15) ? null : cursor.getString(offset + 15));
+        entity.setOption2Code(cursor.isNull(offset + 16) ? null : cursor.getString(offset + 16));
+        entity.setOption2Count(cursor.getInt(offset + 17));
+        entity.setOption2Polled(cursor.getShort(offset + 18) != 0);
+        entity.setOptionTopTitle(cursor.isNull(offset + 19) ? null : cursor.getString(offset + 19));
+        entity.setOptionTopCode(cursor.isNull(offset + 20) ? null : cursor.getString(offset + 20));
+        entity.setOptionTopCount(cursor.getInt(offset + 21));
+        entity.setOptionTopPolled(cursor.getShort(offset + 22) != 0);
+        entity.setOptionUserChoiceTitle(cursor.isNull(offset + 23) ? null : cursor.getString(offset + 23));
+        entity.setOptionUserChoiceCode(cursor.isNull(offset + 24) ? null : cursor.getString(offset + 24));
+        entity.setOptionUserChoiceCount(cursor.getInt(offset + 25));
+        entity.setMinOption(cursor.getInt(offset + 26));
+        entity.setMaxOption(cursor.getInt(offset + 27));
+        entity.setOptionCount(cursor.getInt(offset + 28));
+        entity.setPollCount(cursor.getInt(offset + 29));
+        entity.setIsPolled(cursor.getShort(offset + 30) != 0);
+        entity.setIsFavorite(cursor.getShort(offset + 31) != 0);
+        entity.setIsCanPreviewResult(cursor.getShort(offset + 32) != 0);
+        entity.setIsUserCanAddOption(cursor.getShort(offset + 33) != 0);
+        entity.setIsNeedPassword(cursor.getShort(offset + 34) != 0);
+        entity.setSecurity(cursor.isNull(offset + 35) ? null : cursor.getString(offset + 35));
+        entity.setCategory(cursor.isNull(offset + 36) ? null : cursor.getString(offset + 36));
+        entity.setDisplayOrder(cursor.getInt(offset + 37));
+        entity.setPollType(cursor.isNull(offset + 38) ? null : cursor.getString(offset + 38));
      }
     
     @Override

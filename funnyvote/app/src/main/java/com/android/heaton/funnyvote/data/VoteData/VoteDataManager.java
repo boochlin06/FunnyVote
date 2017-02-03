@@ -441,16 +441,19 @@ public class VoteDataManager {
                     voteSetting.setOption1Title(option.getTitle());
                     voteSetting.setOption1Code(option.getCode());
                     voteSetting.setOption1Count(option.getCount());
+                    voteSetting.setOption1Polled(option.getIsUserChoiced());
                 } else if (i == 1) {
                     voteSetting.setOption2Title(option.getTitle());
                     voteSetting.setOption2Code(option.getCode());
                     voteSetting.setOption2Count(option.getCount());
+                    voteSetting.setOption2Polled(option.getIsUserChoiced());
                 }
                 if (option.getCount() > maxOption && option.getCount() >= 1) {
                     maxOption = option.getCount();
                     voteSetting.setOptionTopCount(option.getCount());
                     voteSetting.setOptionTopCode(option.getCode());
                     voteSetting.setOptionTopTitle(option.getTitle());
+                    voteSetting.setOptionTopPolled(option.getIsUserChoiced());
                 }
                 if (option.getIsUserChoiced()) {
                     voteSetting.setOptionUserChoiceCode(option.getCode());
@@ -505,16 +508,19 @@ public class VoteDataManager {
                     voteData.setOption1Code(voteData.getFirstOption().getCode());
                     voteData.setOption1Title(voteData.getFirstOption().getTitle());
                     voteData.setOption1Count(voteData.getFirstOption().getCount());
+                    voteData.setOption1Polled(voteData.getFirstOption().getIsUserChoiced());
                 }
                 if (voteData.getSecondOption() != null) {
                     voteData.setOption2Code(voteData.getSecondOption().getCode());
                     voteData.setOption2Title(voteData.getSecondOption().getTitle());
                     voteData.setOption2Count(voteData.getSecondOption().getCount());
+                    voteData.setOption2Polled(voteData.getSecondOption().getIsUserChoiced());
                 }
                 if (voteData.getTopOption() != null) {
                     voteData.setOptionTopCode(voteData.getTopOption().getCode());
                     voteData.setOptionTopTitle(voteData.getTopOption().getTitle());
                     voteData.setOptionTopCount(voteData.getTopOption().getCount());
+                    voteData.setOptionTopPolled(voteData.getTopOption().getIsUserChoiced());
                 }
                 if (voteData.getUserOption() != null) {
                     voteData.setOptionUserChoiceCode(voteData.getUserOption().getCode());

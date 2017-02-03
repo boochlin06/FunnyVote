@@ -52,7 +52,7 @@ public class VHSearchItem extends RecyclerView.ViewHolder implements View.OnClic
         txtTitle.setText(data.getTitle());
         txtAuthorName.setText(data.getAuthorName());
         txtBarPollCount.setText(String.format(itemView.getContext()
-                .getString(R.string.Wall_item_bar_vote_count), data.getPollCount()));
+                .getString(R.string.wall_item_bar_vote_count), data.getPollCount()));
         if (data.getVoteImage() == null || data.getVoteImage().isEmpty()) {
             imgMain.setImageResource(data.getLocalImage());
         } else {

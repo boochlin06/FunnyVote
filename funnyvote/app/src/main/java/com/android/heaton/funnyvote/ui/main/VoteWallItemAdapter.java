@@ -79,6 +79,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void setMaxCount(long count) {
         maxCount = count;
     }
+
     public void setNoVoteTag(String tag) {
         this.tagNoVote = tag;
     }
@@ -151,6 +152,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         public ImageView imgAddVote;
         public ImageView imgRefreshVote;
         public TextView txtNoVote;
+
         public VHNoVote(View itemView) {
             super(itemView);
             imgAddVote = (ImageView) itemView.findViewById(R.id.imgAddVote);
@@ -159,15 +161,15 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             if (tagNoVote.equals(TAG_NO_VOTE_CREATE_NEW)) {
                 imgAddVote.setVisibility(View.VISIBLE);
                 imgRefreshVote.setVisibility(View.GONE);
-                txtNoVote.setText(R.string.Wall_item_no_vote_create_new);
-            } else if (tagNoVote.equals(TAG_NO_VOTE_NOPE)){
+                txtNoVote.setText(R.string.wall_item_no_vote_create_new);
+            } else if (tagNoVote.equals(TAG_NO_VOTE_NOPE)) {
                 imgAddVote.setVisibility(View.GONE);
-                txtNoVote.setText(R.string.Wall_item_no_vote);
+                txtNoVote.setText(R.string.wall_item_no_vote);
                 imgRefreshVote.setVisibility(View.GONE);
             } else if (tagNoVote.equals(TAG_NO_VOTE_REFRESH)) {
                 imgAddVote.setVisibility(View.GONE);
                 imgRefreshVote.setVisibility(View.VISIBLE);
-                txtNoVote.setText(R.string.Wall_item_no_vote_refresh);
+                txtNoVote.setText(R.string.wall_item_no_vote_refresh);
             }
             itemView.setOnClickListener(noVoteItemClickListener);
         }
@@ -176,4 +178,5 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public interface OnReloadClickListener {
         void onReloadClicked();
     }
+
 }

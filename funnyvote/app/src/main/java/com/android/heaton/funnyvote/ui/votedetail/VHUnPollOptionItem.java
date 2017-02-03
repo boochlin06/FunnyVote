@@ -1,5 +1,6 @@
 package com.android.heaton.funnyvote.ui.votedetail;
 
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
@@ -28,6 +29,8 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     ImageView imgChoice;
     @BindView(R.id.txtOptionTitle)
     TextView txtOptionTitle;
+    @BindView(R.id.cardOption)
+    CardView cardOption;
     private Option option;
     private boolean isChoice = false;
     private boolean isMultiChoice = false;
@@ -64,6 +67,8 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
             imgChoice.setImageResource(isChoice ? R.drawable.ic_check_box_40dp
                     : R.drawable.ic_check_box_outline_blank_40dp);
         }
+        cardOption.setCardBackgroundColor(itemView.getResources()
+                .getColor(isChoice? R.color.md_red_100 : R.color.md_blue_100));
     }
 
     @Override

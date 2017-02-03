@@ -79,8 +79,7 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
             if (viewType == OPTION_UNPOLL_VIEW_TYPE_ADD_NEW
                     || viewType == OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT) {
                 return new VHUnpollCreateOptionItem(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.card_view_unpoll_create_new_option, parent, false)
-                        , data.isMultiChoice());
+                        .inflate(R.layout.card_view_unpoll_create_new_option, parent, false));
             } else {
                 return new VHUnPollOptionItem(LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.card_view_item_unpoll_options, parent, false)
@@ -89,7 +88,7 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         } else if (optionChoiceType == OPTION_SHOW_RESULT) {
             return new VHResultOptionItem(LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.card_view_item_result_option, parent, false)
-                    , data.isMultiChoice(), pollCount);
+                    , pollCount);
         }
         return null;
     }
@@ -115,11 +114,9 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         } else if (holder instanceof VHUnpollCreateOptionItem) {
             if (holder.getItemViewType() == OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT) {
                 isChoice = choiceList.contains(getCurrentList().get(position).getId());
-                ((VHUnpollCreateOptionItem) holder).setLayout(isChoice
-                        , getCurrentList().get(position));
+                ((VHUnpollCreateOptionItem) holder).setLayout(getCurrentList().get(position));
             } else {
-                ((VHUnpollCreateOptionItem) holder).setLayout(isChoice
-                        , null);
+                ((VHUnpollCreateOptionItem) holder).setLayout(null);
             }
         }
     }
@@ -150,6 +147,7 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
     public List<Long> getChoiceList() {
         return choiceList;
     }
+
     public List<String> getChoiceCodeList() {
         return choiceCodeList;
     }

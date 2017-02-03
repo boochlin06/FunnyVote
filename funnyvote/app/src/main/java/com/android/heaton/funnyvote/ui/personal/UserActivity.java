@@ -11,12 +11,15 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
+import com.android.heaton.funnyvote.ui.main.MainPageFragment;
 import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.bumptech.glide.Glide;
 
@@ -33,6 +36,7 @@ public class UserActivity extends AppCompatActivity
     private TextView txtSubTitle;
     private int maxScrollSize;
     private TabsAdapter tabsAdapter;
+    private ViewPager viewPager;
 
     User user = null;
     UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
@@ -41,12 +45,16 @@ public class UserActivity extends AppCompatActivity
             UserActivity.this.user = user;
             UserActivity.this.user.isLoginUser = true;
             setUpUser(user);
-            tabsAdapter.notifyDataSetChanged();
+            tabsAdapter = new TabsAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(tabsAdapter);
         }
 
         @Override
         public void onFailure() {
-
+            tabsAdapter = new TabsAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(tabsAdapter);
+            Toast.makeText(getApplicationContext()
+                    , R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -58,7 +66,7 @@ public class UserActivity extends AppCompatActivity
         txtSubTitle = (TextView) findViewById(R.id.txtSubTitle);
         txtUserName = (TextView) findViewById(R.id.txtUserName);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayoutPersonal);
-        ViewPager viewPager = (ViewPager) findViewById(R.id.vpMain);
+        viewPager = (ViewPager) findViewById(R.id.vpMain);
         AppBarLayout appbarLayout = (AppBarLayout) findViewById(R.id.appBarMain);
         imgUserIcon = (CircleImageView) findViewById(R.id.imgUserIcon);
 

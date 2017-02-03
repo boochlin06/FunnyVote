@@ -46,6 +46,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     private AppBarLayout appBarMain;
     private List<Promotion> promotionList;
     private PromotionManager promotionManager;
+    private TabsAdapter tabsAdapter;
+    private ViewPager vpMainPage;
     private UserManager userManager;
     private User user;
     private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
@@ -53,21 +55,26 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         public void onResponse(User user) {
             MainPageFragment.this.user = user;
             promotionManager.getPromotionList(user);
+            tabsAdapter = new TabsAdapter(getChildFragmentManager());
+            vpMainPage.setAdapter(tabsAdapter);
+            Log.d(TAG, "getUserCallback user:" + user);
         }
 
         @Override
         public void onFailure() {
+            promotionManager.getPromotionList(user);
+            tabsAdapter = new TabsAdapter(getChildFragmentManager());
+            vpMainPage.setAdapter(tabsAdapter);
 
+            Toast.makeText(getContext().getApplicationContext()
+                    , R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "getUserCallback user failure:" + user);
         }
     };
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
-        userManager = UserManager.getInstance(getContext().getApplicationContext());
-        userManager.getUser(getUserCallback);
-
         View view = inflater.inflate(R.layout.fragment_main_page_top, null);
         initialHeaderView();
 
@@ -75,8 +82,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         vpHeader.setAdapter(new HeaderAdapter());
         vpHeader.setCurrentItem(0);
         appBarMain = (AppBarLayout) view.findViewById(R.id.appBarMain);
-        ViewPager vpMainPage = (ViewPager) view.findViewById(R.id.vpMainPage);
-        vpMainPage.setAdapter(new TabsAdapter(getChildFragmentManager()));
+        vpMainPage = (ViewPager) view.findViewById(R.id.vpMainPage);
 
         TabLayout tabMainPage = (TabLayout) view.findViewById(R.id.tabLayoutMainPage);
         tabMainPage.setupWithViewPager(vpMainPage);
@@ -96,6 +102,10 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                 }
             }
         });
+
+        promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
+        userManager = UserManager.getInstance(getContext().getApplicationContext());
+        userManager.getUser(getUserCallback);
 
         return view;
     }

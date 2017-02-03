@@ -3,6 +3,7 @@ package com.android.heaton.funnyvote.ui.search;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,7 +20,6 @@ import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
-import com.android.heaton.funnyvote.ui.main.VoteWallItemAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -68,6 +68,9 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_search, container, false);
         ryMain = (RecyclerView) RootView.findViewById(R.id.rySearchResult);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(ryMain.getContext(),
+                DividerItemDecoration.VERTICAL);
+        ryMain.addItemDecoration(dividerItemDecoration);
         circleLoad = (CircleProgressView) RootView.findViewById(R.id.circleLoad);
         hideLoadingCircle();
         voteDataManager = VoteDataManager.getInstance(getContext().getApplicationContext());
@@ -157,7 +160,7 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
         if (this.voteDataList.size() < LIMIT * (pageNumber + 1)) {
             adapter.setMaxCount(this.voteDataList.size());
             if (offset != 0) {
-                Toast.makeText(getContext(), R.string.Wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
             }
         } else {
             adapter.setMaxCount(LIMIT * (pageNumber + 2));

@@ -167,6 +167,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_CODE, data.getAuthorCode());
         personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_CODE_TYPE, data.getAuthorCodeType());
         personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_NAME, data.getAuthorName());
+        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_ICON, data.getAuthorIcon());
         personalActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(personalActivity);
     }
@@ -237,7 +238,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         }
 
         txtBarPollCount.setText(String.format(this
-                .getString(R.string.Wall_item_bar_vote_count), data.getPollCount()));
+                .getString(R.string.wall_item_bar_vote_count), data.getPollCount()));
 
         imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
                 R.drawable.ic_star_border_24dp);
