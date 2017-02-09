@@ -169,7 +169,7 @@ public class RemoteServiceApi {
 
     public void getVote(String voteCode, User user, VoteDataManager.getVoteResponseCallback callback) {
         Call<VoteData> call = voteService.getVote(voteCode, user.getUserCode()
-                , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                , user.getTokenType());
         call.enqueue(callback);
     }
 
@@ -178,23 +178,23 @@ public class RemoteServiceApi {
         pageNumber = pageNumber + 1;
         if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HOT)) {
             Call<List<VoteData>> call = voteService.getVoteList(pageNumber, pageCount, "hot", user.getUserCode()
-                    , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                    , user.getTokenType());
             call.enqueue(callback);
         } else if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_NEW)) {
             Call<List<VoteData>> call = voteService.getVoteList(pageNumber, pageCount, "new", user.getUserCode()
-                    , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                    , user.getTokenType());
             call.enqueue(callback);
         } else if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE)) {
             Call<List<VoteData>> call = voteService.getFavoriteVoteList(pageNumber, pageCount, user.getUserCode()
-                    , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                    , user.getTokenType());
             call.enqueue(callback);
         } else if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)) {
             Call<List<VoteData>> call = voteService.getUserCreateVoteList(pageNumber, pageCount, user.getUserCode()
-                    , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                    , user.getTokenType());
             call.enqueue(callback);
         } else if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)) {
             Call<List<VoteData>> call = voteService.getUserParticipateVoteList(pageNumber, pageCount, user.getUserCode()
-                    , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                    , user.getTokenType());
             call.enqueue(callback);
         }
 
@@ -204,43 +204,48 @@ public class RemoteServiceApi {
             , VoteDataManager.getVoteListResponseCallback callback) {
         pageNumber = pageNumber + 1;
         Call<List<VoteData>> call = voteService.getSearchVoteList(keyword, pageNumber, pageCount, user.getUserCode()
-                , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                , user.getTokenType());
         call.enqueue(callback);
     }
 
-    public void getPersonalCreateVoteList(int pageNumber, int pageCount, User user
+    public void getPersonalCreateVoteList(int pageNumber, int pageCount, User loginUser, User targetUser
             , VoteDataManager.getVoteListResponseCallback callback) {
         pageNumber = pageNumber + 1;
-        Call<List<VoteData>> call = voteService.getPersonalCreateVoteList(pageNumber, pageCount, user.getUserCode()
-                , user.userTokenType);
-        Log.d("test","getPersonalCreateVoteList:"+user.getUserCode()+","+user.userTokenType);
+        Call<List<VoteData>> call = voteService.getPersonalCreateVoteList(pageNumber, pageCount, loginUser.getUserCode()
+                , loginUser.getTokenType()
+                , targetUser.getUserCode(), targetUser.personalTokenType);
+        Log.d("test", "getPersonalCreateVoteList:" + targetUser.getUserCode() + "," + targetUser.personalTokenType
+                + "login user code:" + loginUser.getUserCode() + "," + loginUser.personalTokenType);
         call.enqueue(callback);
     }
-    public void getPersonalFavoriteVoteList(int pageNumber, int pageCount, User user
+
+    public void getPersonalFavoriteVoteList(int pageNumber, int pageCount, User loginUser, User targetUser
             , VoteDataManager.getVoteListResponseCallback callback) {
         pageNumber = pageNumber + 1;
-        Call<List<VoteData>> call = voteService.getPersonalFavoriteVoteList(pageNumber, pageCount, user.getUserCode()
-                , user.userTokenType);
-        Log.d("test","getPersonalFavoriteVoteList:"+user.getUserCode()+","+user.userTokenType);
+        Call<List<VoteData>> call = voteService.getPersonalFavoriteVoteList(pageNumber, pageCount, loginUser.getUserCode()
+                , loginUser.getTokenType()
+                , targetUser.getUserCode(), targetUser.personalTokenType);
+        Log.d("test", "getPersonalFavoriteVoteList:" + targetUser.getUserCode() + "," + targetUser.personalTokenType
+                + "login user code:" + loginUser.getUserCode() + "," + loginUser.personalTokenType);
         call.enqueue(callback);
     }
 
     public void favoriteVote(String voteCode, boolean isFavorite, User user, VoteDataManager.favoriteVoteResponseCallback callback) {
         Call<ResponseBody> call = voteService.updateFavorite(voteCode, isFavorite ? "01" : "00", user.getUserCode()
-                , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                , user.getTokenType());
         call.enqueue(callback);
     }
 
 
     public void pollVote(String voteCode, String password, List<String> optionList, User user, VoteDataManager.pollVoteResponseCallback callback) {
         Call<VoteData> call = voteService.pollVote(voteCode, password, optionList, user.getUserCode()
-                , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                , user.getTokenType());
         call.enqueue(callback);
     }
 
     public void addNewOption(String voteCode, String password, List<String> optionList, User user, VoteDataManager.addNewOptionResponseCallback callback) {
         Call<VoteData> call = voteService.updateOption(voteCode, password, optionList, user.getUserCode()
-                , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                , user.getTokenType());
         call.enqueue(callback);
     }
 
@@ -266,11 +271,12 @@ public class RemoteServiceApi {
 
         RequestBody token = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getAuthorCode()));
         RequestBody tokenType = RequestBody.create(MediaType.parse("text/plain")
-                , voteSetting.author.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                , voteSetting.author.getTokenType());
         RequestBody rbOption;
-        for (int i = 0; i < options.size(); i++) {
+        for (int i = options.size() - 1; i >= 0; i--) {
             rbOption = RequestBody.create(MediaType.parse("text/plain"), options.get(i));
             parameter.put("pt[" + i + "]", rbOption);
+            Log.d("test", "pt[" + i + "] " + options.get(i));
         }
 
         parameter.put("t", title);
@@ -288,8 +294,9 @@ public class RemoteServiceApi {
         if (voteSetting.getIsNeedPassword()) {
             RequestBody password = RequestBody.create(MediaType.parse("text/plain"), voteSetting.password);
             parameter.put("p", password);
-            Log.d("test", "Need pw:" + voteSetting.getIsNeedPassword() + " pw:" + voteSetting.password);
         }
+        Log.d("test", "Need pw:" + voteSetting.getIsNeedPassword() + " pw:" + voteSetting.password
+                + "start time:" + voteSetting.getStartTime() + " ,end:" + voteSetting.getEndTime());
 
         RequestBody requestFile = null;
         MultipartBody.Part body = null;
@@ -310,7 +317,7 @@ public class RemoteServiceApi {
     public void getPromotionList(int pageNumber, int pageCount, User user
             , PromotionManager.getPromotionListResponseCallback callback) {
         Call<List<Promotion>> call = promotionService.getPromotionList(pageNumber + 1, pageCount, user.getUserCode()
-                , user.getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER);
+                , user.getTokenType());
         call.enqueue(callback);
     }
 }

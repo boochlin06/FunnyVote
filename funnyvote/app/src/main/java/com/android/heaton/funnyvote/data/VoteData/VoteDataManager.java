@@ -135,19 +135,19 @@ public class VoteDataManager {
         getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_NEW, user);
     }
 
-    public void getUserFavoriteVoteList(int offset, @NonNull User user) {
-        if (user.isLoginUser) {
-            getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE, user);
+    public void getUserFavoriteVoteList(int offset, @NonNull User loginUser, User targetUser) {
+        if (targetUser == null) {
+            getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE, loginUser);
         } else {
-            getPersonalFavoriteVoteList(offset, user);
+            getPersonalFavoriteVoteList(offset, loginUser, targetUser);
         }
     }
 
-    public void getUserCreateVoteList(int offset, @NonNull User user) {
-        if (user.isLoginUser) {
-            getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE, user);
+    public void getUserCreateVoteList(int offset, @NonNull User loginUser, User targetUser) {
+        if (targetUser == null) {
+            getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE, loginUser);
         } else {
-            getPersonalCreateVoteList(offset, user);
+            getPersonalCreateVoteList(offset, loginUser, targetUser);
         }
     }
 
@@ -169,31 +169,31 @@ public class VoteDataManager {
         }
     }
 
-    public void getPersonalCreateVoteList(int offset, @NonNull User user) {
-        if (user == null) {
+    public void getPersonalCreateVoteList(int offset, @NonNull User loginUser, User targetUser) {
+        if (loginUser == null) {
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE
                     , false, new IllegalArgumentException().toString()));
         } else {
             int pageNumber = (int) offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
-            remoteServiceApi.getPersonalCreateVoteList(pageNumber, pageCount, user
+            remoteServiceApi.getPersonalCreateVoteList(pageNumber, pageCount, loginUser, targetUser
                     , new getVoteListResponseCallback(offset, GET_VOTE_LIST_HISTORY_CREATE
-                            , user.getUserCode(), false));
+                            , targetUser.getUserCode(), false));
         }
     }
 
-    public void getPersonalFavoriteVoteList(int offset, @NonNull User user) {
-        if (user == null) {
+    public void getPersonalFavoriteVoteList(int offset, @NonNull User loginUser, User targetUser) {
+        if (loginUser == null) {
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE
                     , false, new IllegalArgumentException().toString()));
         } else {
             int pageNumber = (int) offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
-            remoteServiceApi.getPersonalFavoriteVoteList(pageNumber, pageCount, user
+            remoteServiceApi.getPersonalFavoriteVoteList(pageNumber, pageCount, loginUser, targetUser
                     , new getVoteListResponseCallback(offset, GET_VOTE_LIST_FAVORITE
-                            , user.getUserCode(), false));
+                            , targetUser.getUserCode(), false));
         }
     }
 

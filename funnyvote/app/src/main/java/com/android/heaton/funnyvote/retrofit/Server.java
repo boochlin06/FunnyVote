@@ -81,7 +81,7 @@ public class Server {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @Multipart
         @POST("/poll")
-        Call<VoteData> createVote(@PartMap Map<String, RequestBody> parametor,
+        Call<VoteData> createVote(@PartMap Map<String, RequestBody> parameter,
                                   @Part("description") RequestBody description,
                                   @Part MultipartBody.Part file
 
@@ -161,14 +161,18 @@ public class Server {
         Call<List<VoteData>> getPersonalCreateVoteList(@Query("p") int pageNumber,
                                                        @Query("ps") int pageCount,
                                                        @Query("token") String token,
-                                                       @Query("tokentype") String tokenType);
+                                                       @Query("tokentype") String tokenType,
+                                                       @Query("cretoken") String targettoken,
+                                                       @Query("cretokentype") String targettokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("/public/fav")
         Call<List<VoteData>> getPersonalFavoriteVoteList(@Query("p") int pageNumber,
                                                          @Query("ps") int pageCount,
                                                          @Query("token") String token,
-                                                         @Query("tokentype") String tokenType);
+                                                         @Query("tokentype") String tokenType,
+                                                         @Query("favtoken") String targettoken,
+                                                         @Query("favtokentype") String targettokenType);
     }
 
     public interface PromotionService {

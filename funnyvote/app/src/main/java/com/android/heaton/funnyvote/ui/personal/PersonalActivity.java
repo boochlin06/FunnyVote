@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,13 +19,8 @@ import android.widget.Toast;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
-import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.bumptech.glide.Glide;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -55,6 +51,23 @@ public class PersonalActivity extends AppCompatActivity
     private ViewPager viewPager;
 
     private User targetUser;
+    private User loginUser;
+    UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
+        @Override
+        public void onResponse(User user) {
+            PersonalActivity.this.loginUser = user;
+            tabsAdapter = new TabsAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(tabsAdapter);
+        }
+
+        @Override
+        public void onFailure() {
+            tabsAdapter = new TabsAdapter(getSupportFragmentManager());
+            viewPager.setAdapter(tabsAdapter);
+            Toast.makeText(getApplicationContext()
+                    , R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,10 +80,9 @@ public class PersonalActivity extends AppCompatActivity
             personalIcon = getIntent().getStringExtra(EXTRA_PERSONAL_ICON);
             targetUser = new User();
             targetUser.setUserCode(personalCode);
-            targetUser.userTokenType = personalCodeType;
+            targetUser.personalTokenType = personalCodeType;
             targetUser.setUserName(personalName);
             targetUser.setUserIcon(personalIcon);
-            targetUser.isLoginUser = false;
         } else {
             finish();
         }
@@ -94,55 +106,24 @@ public class PersonalActivity extends AppCompatActivity
 
         tabLayout.setupWithViewPager(viewPager);
         setUpUser(targetUser);
-        UserManager.getInstance(getApplicationContext()).getPersonalInfo(personalCode, personalCodeType);
+        UserManager.getInstance(getApplicationContext()).getUser(getUserCallback);
     }
 
     private void setUpUser(User user) {
         txtUserName.setText(user.getUserName());
-        txtSubTitle.setText(user.userTokenType);
+        Log.d("test","setUpUser:"+user.personalTokenType);
+        txtSubTitle.setText(user.personalTokenType);
         if (user.getUserIcon() == null || user.getUserIcon().isEmpty()) {
             imgUserIcon.setImageResource(R.drawable.user_avatar);
         } else {
             Glide.with(this)
                     .load(user.getUserIcon())
-                    .override(120, 120)
+                    .override(160, 160)
                     .dontAnimate()
                     .fitCenter()
                     .crossFade()
                     .into(imgUserIcon);
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO)) {
-            if (event.success) {
-                this.targetUser = event.user;
-                this.targetUser.isLoginUser = false;
-                this.targetUser.setUserCode(personalCode);
-                this.targetUser.userTokenType = personalCodeType;
-                this.targetUser.setUserName(personalName);
-                this.targetUser.setUserIcon(personalIcon);
-                setUpUser(targetUser);
-            } else {
-                Toast.makeText(getApplicationContext()
-                        , R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
-            }
-            tabsAdapter = new TabsAdapter(getSupportFragmentManager());
-            viewPager.setAdapter(tabsAdapter);
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
     }
 
     public static void start(Context c) {
@@ -184,9 +165,9 @@ public class PersonalActivity extends AppCompatActivity
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, targetUser);
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, targetUser, loginUser);
                 case 1:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, targetUser);
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, targetUser, loginUser);
             }
             return null;
         }

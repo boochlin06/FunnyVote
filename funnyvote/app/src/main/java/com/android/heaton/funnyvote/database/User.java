@@ -3,8 +3,8 @@ package com.android.heaton.funnyvote.database;
 import com.google.gson.annotations.SerializedName;
 
 import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Transient;
 
 /**
@@ -23,6 +23,7 @@ public class User {
 
     public static final String TYPE_TOKEN_MEMBER = "member";
     public static final String TYPE_TOKEN_GUEST = "guset";
+    public static final String TYPE_TOKEN_OTP = "otp";
 
     @Id
     private Long id;
@@ -37,18 +38,18 @@ public class User {
     private String userCode;
     @SerializedName("img")
     private String userIcon;
-    
+
     private int type;
+    // For query the other person.
     @Transient
-    public String userTokenType;
-    @Transient
-    public boolean isLoginUser = true;
+    public String personalTokenType;
 
     private String gender;
 
     private int minAge;
     private int maxAge;
-    public static String getUserTypeString(int type){
+
+    public static String getUserTypeString(int type) {
         switch (type) {
             case TYPE_FACEBOOK:
                 return "FaceBook";
@@ -67,8 +68,8 @@ public class User {
 
     @Generated(hash = 1947222936)
     public User(Long id, String userName, String email, String userID,
-            String userCode, String userIcon, int type, String gender, int minAge,
-            int maxAge) {
+                String userCode, String userIcon, int type, String gender, int minAge,
+                int maxAge) {
         this.id = id;
         this.userName = userName;
         this.email = email;
@@ -79,6 +80,10 @@ public class User {
         this.gender = gender;
         this.minAge = minAge;
         this.maxAge = maxAge;
+    }
+
+    public String getTokenType() {
+        return getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER;
     }
 
     public Long getId() {

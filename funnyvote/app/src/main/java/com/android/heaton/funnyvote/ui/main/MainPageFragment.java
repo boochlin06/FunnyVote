@@ -57,7 +57,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             promotionManager.getPromotionList(user);
             tabsAdapter = new TabsAdapter(getChildFragmentManager());
             vpMainPage.setAdapter(tabsAdapter);
-            Log.d(TAG, "getUserCallback user:" + user);
+            Log.d(TAG, "getUserCallback user:" + user.getType());
         }
 
         @Override

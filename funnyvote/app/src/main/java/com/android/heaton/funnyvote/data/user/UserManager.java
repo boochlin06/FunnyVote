@@ -215,7 +215,7 @@ public class UserManager {
             if (response.isSuccessful()) {
                 User personal = response.body();
                 personal.setUserCode(userCode);
-                personal.userTokenType = userCodeType;
+                personal.personalTokenType = userCodeType;
                 EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                         EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO, true
                         , personal));

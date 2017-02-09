@@ -43,7 +43,6 @@ public class UserActivity extends AppCompatActivity
         @Override
         public void onResponse(User user) {
             UserActivity.this.user = user;
-            UserActivity.this.user.isLoginUser = true;
             setUpUser(user);
             tabsAdapter = new TabsAdapter(getSupportFragmentManager());
             viewPager.setAdapter(tabsAdapter);
@@ -96,7 +95,7 @@ public class UserActivity extends AppCompatActivity
         } else {
             Glide.with(this)
                     .load(user.getUserIcon())
-                    .override(120, 120)
+                    .override(160, 160)
                     .dontAnimate()
                     .fitCenter()
                     .crossFade()
