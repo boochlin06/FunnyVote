@@ -29,7 +29,7 @@ import com.android.heaton.funnyvote.ui.main.MainPageFragment;
 import com.android.heaton.funnyvote.ui.personal.UserActivity;
 import com.android.heaton.funnyvote.ui.search.SearchFragment;
 import com.bumptech.glide.Glide;
-
+import com.google.android.gms.ads.MobileAds;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         setupDrawerContent(navigationView);
         setupDrawerHeader();
+
     }
 
     private void setupDrawerContent(final NavigationView navigationView) {
@@ -240,8 +241,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
                     searchKeyword = query;
-                    Log.d("test","onQueryTextSubmit:"+query + "  page:"+mCurrentPage
-                            +" search page:"+navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
+                    Log.d("test", "onQueryTextSubmit:" + query + "  page:" + mCurrentPage
+                            + " search page:" + navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
                     if (mCurrentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
                         switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
                         navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);

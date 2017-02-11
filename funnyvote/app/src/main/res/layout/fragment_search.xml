@@ -13,7 +13,7 @@
         android:layout_height="match_parent"
         android:scrollbars="vertical"
         app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_search" />
+        tools:listitem="@layout/item_list_search" />
 
     <at.grabner.circleprogress.CircleProgressView
         android:id="@+id/circleLoad"

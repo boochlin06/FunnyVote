@@ -50,6 +50,8 @@ import com.android.heaton.funnyvote.ui.personal.PersonalActivity;
 import com.bumptech.glide.Glide;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -74,6 +76,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
     private static final int TITLE_EXTEND_MAX_LINE = 5;
     private static final String TAG = "VoteDetailContentActivity";
+    public static boolean ENABLE_ADMOB = true;
     @BindView(R.id.imgAuthorIcon)
     ImageView imgAuthorIcon;
     @BindView(R.id.txtAuthorName)
@@ -122,6 +125,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     AppBarLayout appBarMain;
     @BindView(R.id.imgTitleExtend)
     ImageView imgTitleExtend;
+    @BindView(R.id.adView)
+    AdView adView;
     private Menu menu;
     private SearchView searchView;
     private AlertDialog newOptionPasswordDialog;
@@ -198,6 +203,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
 
         showLoadingCircle(getString(R.string.vote_detail_circle_loading));
+
+        ENABLE_ADMOB = getResources().getBoolean(R.bool.enable_detail_admob);
+
         checkCurrentOptionType();
         setUpViews();
         setUpSubmit();
@@ -277,6 +285,15 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 famOther.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
             }
         });
+        if (ENABLE_ADMOB) {
+            AdRequest adRequest = new AdRequest.Builder()
+                    .setGender(user != null && user.getGender().equals(User.GENDER_MALE)?
+                            AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
+                    .build();
+            adView.loadAd(adRequest);
+        } else {
+            adView.setVisibility(View.GONE);
+        }
     }
 
     private void setUpSubmit() {

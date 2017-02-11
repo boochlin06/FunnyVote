@@ -452,6 +452,11 @@ public class DataLoader {
         return voteDataDao.queryBuilder().orderDesc(VoteDataDao.Properties.StartTime).orderDesc().offset(offset).limit(limit).list();
     }
 
+    public long queryNewVotesCount() {
+        return voteDataDao.queryBuilder().where(
+                VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).buildCount().count();
+    }
+
     public List<Option> queryOptionsByVoteCode(String voteCode) {
         return optionDao.queryBuilder().where(OptionDao.Properties.VoteCode.eq(voteCode)).list();
     }

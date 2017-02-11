@@ -95,6 +95,7 @@
     <string name="create_vote_error_hint_title_empty">Vote title cant be empty.</string>
     <string name="create_vote_error_hint_password_empty">Vote password cant be empty.</string>
     <string name="create_vote_error_hint_endtime_more_than_now">Vote End time should over now.</string>
+    <string name="create_vote_error_hint_endtime_more_than_max">Vote End max time is 90 day.</string>
 
     <string name="create_vote_error_crop_image_title">Vote picture.</string>
 
@@ -181,4 +182,10 @@
     <!--Search-->
     <string name="search_item_time_end">End</string>
     <string name="search_item_time_voting">Voting</string>
+    <!--admob-->
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <bool name="enable_list_admob">true</bool>
+    <integer name="list_admob_frequence">10</integer>
+    <bool name="enable_detail_admob">true</bool>>
+    <bool name="enable_promotion_admob">true</bool>
 </resources>

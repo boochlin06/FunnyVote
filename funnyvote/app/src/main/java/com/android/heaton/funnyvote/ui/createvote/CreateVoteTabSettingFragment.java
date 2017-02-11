@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +33,7 @@ import butterknife.OnClick;
 
 public class CreateVoteTabSettingFragment extends Fragment {
 
-    private static final long DEFAULT_END_TIME_INTERNAL = 7 * 86400 * 1000;
+    private static final int DEFAULT_END_TIME_INTERNAL = 30;
 
     @BindView(R.id.lineOption)
     View lineOption;
@@ -97,7 +96,6 @@ public class CreateVoteTabSettingFragment extends Fragment {
         @Override
         public void onResponse(User user) {
             CreateVoteTabSettingFragment.this.user = user;
-            Log.d("test", "get user callback:" + user.getUserCode() + " type:" + user.getType());
             updateUserSetting();
         }
 
@@ -151,7 +149,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
         swtNeedPwd.setChecked(voteSettings.getIsNeedPassword());
         voteSettings.setSecurity(VoteData.SECURITY_PUBLIC);
         txtSecurityDetail.setText(getString(R.string.create_vote_tab_settings_public));
-        voteSettings.setEndTime(System.currentTimeMillis() + DEFAULT_END_TIME_INTERNAL);
+        voteSettings.setEndTime(System.currentTimeMillis() + DEFAULT_END_TIME_INTERNAL * 86400 * 1000);
         txtEndTimeDetail.setText(Util.getDate(voteSettings.getEndTime(), "yyyy/MM/dd"));
 
         swtAnonymous.setChecked(false);
@@ -201,7 +199,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
     @OnClick({R.id.txtEndTimeDetail, R.id.txtEndTime})
     public void onTimeDetailClick() {
         Calendar now = Calendar.getInstance();
-        now.add(Calendar.DAY_OF_MONTH, 7);
+        now.add(Calendar.DAY_OF_MONTH, DEFAULT_END_TIME_INTERNAL);
         DatePickerDialog timeSetting = DatePickerDialog.newInstance(
                 new DatePickerDialog.OnDateSetListener() {
                     @Override
@@ -211,6 +209,10 @@ public class CreateVoteTabSettingFragment extends Fragment {
                         endTime.set(year, monthOfYear, dayOfMonth);
                         if (endTime.getTimeInMillis() < System.currentTimeMillis()) {
                             Toast.makeText(getContext(), getString(R.string.create_vote_toast_endtime_more_than_current)
+                                    , Toast.LENGTH_LONG).show();
+                            return;
+                        } else if (endTime.getTimeInMillis() - System.currentTimeMillis() > 90 * 86400 * 1000) {
+                            Toast.makeText(getContext(), getString(R.string.create_vote_error_hint_endtime_more_than_max)
                                     , Toast.LENGTH_LONG).show();
                             return;
                         } else {

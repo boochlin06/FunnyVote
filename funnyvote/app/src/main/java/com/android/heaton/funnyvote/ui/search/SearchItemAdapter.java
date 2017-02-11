@@ -40,7 +40,7 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == ITEM_TYPE_VOTE) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_search, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_search, parent, false);
             return new VHSearchItem(v);
         } else if (viewType == ITEM_TYPE_RELOAD) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_reload, parent, false);

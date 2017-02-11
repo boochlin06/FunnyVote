@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
@@ -18,8 +19,9 @@
             android:id="@+id/main_toolbar"
             layout="@layout/include_toolbar" />
 
-        <include android:id="@+id/author_bar"
-            layout="@layout/include_author"/>
+        <include
+            android:id="@+id/author_bar"
+            layout="@layout/include_author" />
 
         <TextView
             android:id="@+id/txtTitle"
@@ -27,20 +29,21 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/vote_detail_margin"
             android:layout_marginRight="@dimen/vote_detail_margin"
-            android:scrollbars="vertical"
+            android:ellipsize="end"
             android:fadeScrollbars="false"
+            android:maxLines="3"
+            android:scrollbars="vertical"
             android:textColor="@color/secondary_text"
             android:textSize="@dimen/create_vote_settings_sub_topic_text_size"
-            android:maxLines="3"
-            android:ellipsize="end"
-            tools:text="Do your mother know what you do in front of computer? "/>
+            tools:text="Do your mother know what you do in front of computer? " />
+
         <ImageView
             android:id="@+id/imgTitleExtend"
             android:layout_width="match_parent"
             android:layout_height="24dp"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_expand_more_24dp"
-            />
+            android:src="@drawable/ic_expand_more_24dp" />
+
         <android.support.design.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -48,6 +51,7 @@
 
             <android.support.design.widget.AppBarLayout
                 android:id="@+id/appBarMain"
+                android:background="@android:color/background_light"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -61,15 +65,31 @@
                     app:expandedTitleMarginStart="8dp"
                     app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
 
-                    <ImageView
-                        android:id="@+id/imgMain"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/image_main_height"
-                        android:paddingRight="12dp"
-                        android:background="#FFFFFF"
-                        android:paddingLeft="12dp"
-                        android:scaleType="fitXY" />
+                        <ImageView
+                            android:id="@+id/imgMain"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/image_main_height"
+                            android:background="#FFFFFF"
+                            android:paddingLeft="12dp"
+                            android:paddingRight="12dp"
+                            android:scaleType="fitXY" />
+
+                        <com.google.android.gms.ads.AdView
+                            android:id="@+id/adView"
+                            android:background="@color/md_amber_50"
+                            android:layout_below="@id/imgMain"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginBottom="8dp"
+                            ads:adSize="BANNER"
+                            ads:adUnitId="@string/banner_ad_unit_id"/>
+                    </RelativeLayout>
 
                 </android.support.design.widget.CollapsingToolbarLayout>
 

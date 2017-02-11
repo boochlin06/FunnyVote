@@ -26,12 +26,15 @@ import com.android.heaton.funnyvote.database.Promotion;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.NativeExpressAdView;
 import com.viewpagerindicator.CirclePageIndicator;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
@@ -42,14 +45,38 @@ import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
 public class MainPageFragment extends android.support.v4.app.Fragment {
 
     public static String TAG = MainPageFragment.class.getSimpleName();
+    public static boolean ENABLE_PROMOTION_ADMOB = true;
     private AutoScrollViewPager vpHeader;
     private AppBarLayout appBarMain;
     private List<Promotion> promotionList;
+    private List<PromotionType> promotionTypeList;
+    private View promotionADMOB;
     private PromotionManager promotionManager;
     private TabsAdapter tabsAdapter;
     private ViewPager vpMainPage;
     private UserManager userManager;
     private User user;
+
+    private class PromotionType {
+        public static final int PROM0TION_TYPE_ADMOB = 0;
+        public static final int PROMOTION_TYPE_FUNNY_VOTE = 1;
+        private int promotionType;
+        private Promotion promotion;
+
+        public PromotionType(int promotionType, Promotion promotion) {
+            this.promotion = promotion;
+            this.promotionType = promotionType;
+        }
+
+        public int getPromotionType() {
+            return this.promotionType;
+        }
+
+        public Promotion getPromotion() {
+            return this.promotion;
+        }
+    }
+
     private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
         @Override
         public void onResponse(User user) {
@@ -89,7 +116,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
         CirclePageIndicator titleIndicator = (CirclePageIndicator) view.findViewById(R.id.vpIndicator);
         titleIndicator.setViewPager(vpHeader);
-        vpHeader.setInterval(5000);
+        vpHeader.setInterval(100000);
         vpHeader.setScrollDurationFactor(5);
         vpHeader.startAutoScroll();
         appBarMain.addOnOffsetChangedListener(new AppBarStateChangeListener() {
@@ -103,6 +130,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             }
         });
 
+        ENABLE_PROMOTION_ADMOB = getResources().getBoolean(R.bool.enable_promotion_admob);
         promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
         userManager = UserManager.getInstance(getContext().getApplicationContext());
         userManager.getUser(getUserCallback);
@@ -139,8 +167,9 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         if (event.message.equals(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST)) {
             if (event.success) {
                 promotionList = event.promotionList;
+                setupPromotionAdmob();
                 vpHeader.getAdapter().notifyDataSetChanged();
-                Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size());
+                Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size() + ",type list size:" + promotionTypeList.size());
             } else {
                 Toast.makeText(getContext(), R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
             }
@@ -154,6 +183,19 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
     private void initialHeaderView() {
         promotionList = DataLoader.getInstance(getContext()).queryAllPromotion();
+        setupPromotionAdmob();
+    }
+
+    private void setupPromotionAdmob() {
+        promotionTypeList = new ArrayList<>();
+        for (int i = 0; i < promotionList.size(); i++) {
+            if (i % 3 == 1 && ENABLE_PROMOTION_ADMOB) {
+                promotionTypeList.add(new PromotionType(PromotionType.PROM0TION_TYPE_ADMOB, null));
+
+            }
+            promotionTypeList.add(new PromotionType(PromotionType.PROMOTION_TYPE_FUNNY_VOTE
+                    , promotionList.get(i)));
+        }
     }
 
 
@@ -166,31 +208,48 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            LayoutInflater mInflater = getActivity().getLayoutInflater().from(getActivity());
-            View headerItem = mInflater.inflate(R.layout.main_page_header_item, null);
-            ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
-            Glide.with(getContext())
-                    .load(promotionList.get(position).getImageURL())
-                    .override(320, 180)
-                    .fitCenter()
-                    .crossFade()
-                    .into(promotion);
-            final String actionURL = promotionList.get(position).getActionURL();
-            promotion.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW
-                            , Uri.parse(actionURL));
-                    startActivity(browserIntent);
+            LayoutInflater inflater = getActivity().getLayoutInflater().from(getActivity());
+            if (promotionTypeList.get(position).getPromotionType() == PromotionType.PROMOTION_TYPE_FUNNY_VOTE) {
+                View headerItem = inflater.inflate(R.layout.item_promotion_funny_vote, null);
+                ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
+                Glide.with(getContext())
+                        .load(promotionTypeList.get(position).getPromotion().getImageURL())
+                        .override(320, 180)
+                        .fitCenter()
+                        .crossFade()
+                        .into(promotion);
+                final String actionURL = promotionTypeList.get(position).getPromotion().getActionURL();
+                promotion.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW
+                                , Uri.parse(actionURL));
+                        startActivity(browserIntent);
+                    }
+                });
+                container.addView(headerItem);
+                return headerItem;
+            } else if (promotionTypeList.get(position).getPromotionType() == PromotionType.PROM0TION_TYPE_ADMOB) {
+                if (promotionADMOB == null) {
+                    promotionADMOB = inflater.inflate(R.layout.item_promotion_admob, null);
+                    NativeExpressAdView adview = (NativeExpressAdView) promotionADMOB.findViewById(R.id.adViewPromotion);
+                    AdRequest adRequest = new AdRequest.Builder()
+                            .setGender(user.getGender().equals(User.GENDER_MALE)?
+                            AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
+                            .build();
+                    adview.loadAd(adRequest);
                 }
-            });
-            container.addView(headerItem);
-            return headerItem;
+                container.addView(promotionADMOB);
+                return promotionADMOB;
+            } else {
+                return null;
+            }
+
         }
 
         @Override
         public int getCount() {
-            return promotionList.size();
+            return promotionTypeList.size();
         }
 
         @Override

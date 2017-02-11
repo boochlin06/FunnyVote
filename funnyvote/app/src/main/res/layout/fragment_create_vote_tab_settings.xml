@@ -105,6 +105,7 @@
             android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
             android:layout_marginRight="@dimen/create_vote_settings_main_margin"
             android:layout_marginTop="12dp"
+            android:visibility="gone"
             android:background="@color/md_blue_200" />
 
         <TextView
@@ -114,6 +115,7 @@
             android:layout_below="@id/lineAuthor"
             android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
             android:layout_marginTop="@dimen/create_vote_settings_main_topic_sep_margin"
+            android:visibility="gone"
             android:text="@string/create_vote_tab_settings_author"
             android:textSize="@dimen/create_vote_settings_main_topic_text_size" />
 
@@ -144,6 +146,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/txtAuthor"
+            android:visibility="gone"
             android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
             android:text="@string/create_vote_tab_settings_name"
@@ -157,6 +160,7 @@
             android:layout_alignBaseline="@id/txtAuthorName"
             android:layout_alignParentRight="true"
             android:layout_below="@id/txtOption"
+            android:visibility="gone"
             android:layout_marginLeft="24dp"
             android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
             android:maxLines="1"
@@ -259,7 +263,7 @@
             android:id="@+id/swtNeedPwd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/txtNeedPwd"
+            android:layout_alignBaseline="@id/txtNeedPwd"
             android:layout_alignParentRight="true"
             android:layout_below="@id/txtSecurity"
             android:layout_marginRight="@dimen/create_vote_settings_sub_margin"

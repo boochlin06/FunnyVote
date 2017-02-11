@@ -150,7 +150,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             adapter = new VoteWallItemAdapter(getActivity()
                     , voteDataList);
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
-            adapter.setMaxCount(DataLoader.getInstance(getContext()).queryHotVotesCount());
+            adapter.setMaxCount(DataLoader.getInstance(getContext()).queryNewVotesCount());
             voteDataManager.getNewVoteList(0, loginUser);
         } else if (tab.equals(TAB_CREATE)) {
             if (targetUser == null) {
@@ -414,14 +414,13 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         }
         Log.d(TAG, "Network Refresh wall item :" + tab);
         int pageNumber = offset / LIMIT;
-
         if (offset == 0) {
             this.voteDataList = voteDataList;
             adapter.setVoteList(this.voteDataList);
         } else if (offset >= this.voteDataList.size()) {
             this.voteDataList.addAll(voteDataList);
+            adapter.setVoteList(this.voteDataList);
         }
-
         if (this.voteDataList.size() < LIMIT * (pageNumber + 1)) {
             adapter.setMaxCount(this.voteDataList.size());
             if (offset != 0) {
