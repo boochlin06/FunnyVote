@@ -28,19 +28,19 @@ import retrofit2.http.Query;
  */
 
 public class Server {
-    public static final String BASE_URL = "http://138.68.23.5/";
+    public static final String BASE_URL = "https://funny-vote.com/";
     public static final String API_KEY = "Oj9pfxd4Z5LZx8Ha3Ond4xWy2LZU4HPk";
     public static final String APP_CODE = "com.funnyvote";
-    public static final String WEB_URL = "http://138.68.23.5:5487/link/";
+    public static final String WEB_URL = "https://funny-vote.com/link/";
 
     public interface UserService {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @POST("/guest/{name}")
+        @POST("api/guest/{name}")
         Call<ResponseBody> getGuestCode(@Path("name") String guestName);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @POST("/social/member")
+        @POST("api/social/member")
         Call<ResponseBody> addUser(@Field("type") String type,
                                    @Field("appid") String appId,
                                    @Field("id") String id,
@@ -51,36 +51,36 @@ public class Server {
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @PUT("/member/{otp}")
+        @PUT("api/member/{otp}")
         Call<ResponseBody> changeUserName(@Path("otp") String otp,
                                           @Field("otp") String fieldOtp,
                                           @Field("nickname") String newName);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @PUT("/guest/{guest}")
+        @PUT("api/guest/{guest}")
         Call<ResponseBody> changeGuestUserName(@Path("guest") String guest,
                                                @Field("guest") String fieldGuest,
                                                @Field("nickname") String newName);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @PUT("/link/{otp}/{guest}")
+        @PUT("api/link/{otp}/{guest}")
         Call<ResponseBody> linkGuestLoginUser(@Path("otp") String otp,
                                               @Path("guest") String guest);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/member/{membercode}")
+        @GET("api/member/{membercode}")
         Call<User> getMemberInfo(@Path("membercode") String memberCode);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/guest/{guestcode}")
+        @GET("api/guest/{guestcode}")
         Call<User> getGuestInfo(@Path("guestcode") String guestCode);
     }
 
     public interface VoteService {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @Multipart
-        @POST("/poll")
+        @POST("api/poll")
         Call<VoteData> createVote(@PartMap Map<String, RequestBody> parameter,
                                   @Part("description") RequestBody description,
                                   @Part MultipartBody.Part file
@@ -88,14 +88,14 @@ public class Server {
         );
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/poll/{votecode}")
+        @GET("api/poll/{votecode}")
         Call<VoteData> getVote(@Path("votecode") String voteCode,
                                @Query("token") String token,
                                @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @POST("/vote/{votecode}")
+        @POST("api/vote/{votecode}")
         Call<VoteData> pollVote(@Path("votecode") String voteCode,
                                 @Field("p") String password,
                                 @Field("oc") List<String> optionCode,
@@ -103,7 +103,7 @@ public class Server {
                                 @Field("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/plist")
+        @GET("api/plist")
         Call<List<VoteData>> getVoteList(@Query("p") int pageNumber,
                                          @Query("ps") int pageCount,
                                          @Query("o") String listType,
@@ -111,7 +111,7 @@ public class Server {
                                          @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/fav")
+        @GET("api/fav")
         Call<List<VoteData>> getFavoriteVoteList(@Query("p") int pageNumber,
                                                  @Query("ps") int pageCount,
                                                  @Query("token") String token,
@@ -119,21 +119,21 @@ public class Server {
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @POST("/fav")
+        @POST("api/fav")
         Call<ResponseBody> updateFavorite(@Field("c") String voteCode,
                                           @Field("action") String isFavorite,
                                           @Field("token") String token,
                                           @Field("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/poll/history/create")
+        @GET("api/poll/history/create")
         Call<List<VoteData>> getUserCreateVoteList(@Query("p") int pageNumber,
                                                    @Query("ps") int pageCount,
                                                    @Query("token") String token,
                                                    @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/poll/history/vote")
+        @GET("api/poll/history/vote")
         Call<List<VoteData>> getUserParticipateVoteList(@Query("p") int pageNumber,
                                                         @Query("ps") int pageCount,
                                                         @Query("token") String token,
@@ -141,7 +141,7 @@ public class Server {
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @POST("/option")
+        @POST("api/option")
         Call<VoteData> updateOption(@Field("c") String voteCode,
                                     @Field("p") String password,
                                     @Field("ot") List<String> newOption,
@@ -149,7 +149,7 @@ public class Server {
                                     @Field("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/search")
+        @GET("api/search")
         Call<List<VoteData>> getSearchVoteList(@Query("keyword") String keyword,
                                                @Query("p") int pageNumber,
                                                @Query("ps") int pageCount,
@@ -157,7 +157,7 @@ public class Server {
                                                @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/public/create")
+        @GET("api/public/create")
         Call<List<VoteData>> getPersonalCreateVoteList(@Query("p") int pageNumber,
                                                        @Query("ps") int pageCount,
                                                        @Query("token") String token,
@@ -166,7 +166,7 @@ public class Server {
                                                        @Query("cretokentype") String targettokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/public/fav")
+        @GET("api/public/fav")
         Call<List<VoteData>> getPersonalFavoriteVoteList(@Query("p") int pageNumber,
                                                          @Query("ps") int pageCount,
                                                          @Query("token") String token,
@@ -177,7 +177,7 @@ public class Server {
 
     public interface PromotionService {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("/promotion")
+        @GET("api/promotion")
         Call<List<Promotion>> getPromotionList(@Query("p") int pageNumber,
                                                @Query("ps") int pageCount,
                                                @Query("token") String token,

@@ -69,15 +69,6 @@ public class Util {
         return metrics.density;
     }
 
-    /**
-     * Get vote link by vote code
-     *
-     * @param voteCode
-     */
-    public static String getVoteLink(String voteCode) {
-        return Server.BASE_URL.substring(0, Server.BASE_URL.length() - 1) + ":5487/link/" + voteCode;
-    }
-
     public static boolean isNetworkConnected(Context context) {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
