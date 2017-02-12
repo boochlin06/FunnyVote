@@ -135,7 +135,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
         userManager = UserManager.getInstance(getContext().getApplicationContext());
         if (user == null) {
-            userManager.getUser(getUserCallback);
+            userManager.getUser(getUserCallback, true);
         } else {
             tabsAdapter = new TabsAdapter(getChildFragmentManager());
             vpMainPage.setAdapter(tabsAdapter);

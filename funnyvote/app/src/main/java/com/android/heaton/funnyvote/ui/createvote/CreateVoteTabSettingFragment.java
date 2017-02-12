@@ -136,7 +136,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
 
     private void initVoteSettings() {
         userManager = UserManager.getInstance(getContext());
-        userManager.getUser(getUserCallback);
+        userManager.getUser(getUserCallback, true);
         voteSettings = new VoteData();
         voteSettings.setMaxOption(1);
         edtMaxOption.setText(Integer.toString(voteSettings.getMaxOption()));

@@ -141,29 +141,17 @@ public class RemoteServiceApi {
     }
 
     public void linkGuestToLoginUser(String otp, String guest, Callback<ResponseBody> callback) {
-        Log.d(TAG, "linkGuestToLoginUser:" + otp + "/" + guest);
         Call<ResponseBody> call = userService.linkGuestLoginUser(otp, guest);
         call.enqueue(callback);
     }
 
-    public void changeLoginUserName(Callback<ResponseBody> callback, String otp, String name) {
-        Call<ResponseBody> call = userService.changeUserName(otp, otp, name);
+    public void changeUserName(Callback<ResponseBody> callback, String tokenType, String token, String name) {
+        Call<ResponseBody> call = userService.changeUserName(tokenType, token, name);
         call.enqueue(callback);
     }
 
-    public void changeGuestUserName(Callback<ResponseBody> callback, String guest, String name) {
-        Call<ResponseBody> call = userService.changeGuestUserName(guest, guest, name);
-        call.enqueue(callback);
-    }
-
-    public void getPersonalInfo(String userCode, String userType,
-                                UserManager.getPersonalInfoResponseCallback callback) {
-        Call<User> call;
-        if (userType.equals(User.TYPE_TOKEN_GUEST)) {
-            call = userService.getGuestInfo(userCode);
-        } else {
-            call = userService.getMemberInfo(userCode);
-        }
+    public void getUserInfo(Callback<Server.UserDataQuery> callback, String tokenType, String token) {
+        Call<Server.UserDataQuery> call = userService.getUserInfo(tokenType, token);
         call.enqueue(callback);
     }
 

@@ -24,8 +24,7 @@ public class User implements Parcelable {
     public static final String GENDER_MALE = "male";
     public static final String GENDER_FEMALE = "female";
 
-    public static final String TYPE_TOKEN_MEMBER = "member";
-    public static final String TYPE_TOKEN_GUEST = "guset";
+    public static final String TYPE_TOKEN_GUEST = "guest";
     public static final String TYPE_TOKEN_OTP = "otp";
 
     @Id
@@ -86,7 +85,7 @@ public class User implements Parcelable {
     }
 
     public String getTokenType() {
-        return getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_MEMBER;
+        return getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_OTP;
     }
 
     public Long getId() {

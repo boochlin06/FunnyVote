@@ -352,7 +352,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
 
     private void updateUI() {
-        userManager.getUser(getUserCallback);
+        userManager.getUser(getUserCallback, false);
     }
 
     private void googleSignIn() {
