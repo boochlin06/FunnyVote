@@ -95,7 +95,7 @@
     <string name="create_vote_error_hint_title_empty">Vote title cant be empty.</string>
     <string name="create_vote_error_hint_password_empty">Vote password cant be empty.</string>
     <string name="create_vote_error_hint_endtime_more_than_now">Vote End time should over now.</string>
-    <string name="create_vote_error_hint_endtime_more_than_max">Vote End max time is 90 day.</string>
+    <string name="create_vote_error_hint_endtime_more_than_max" formatted="false">Vote End max time is %d day.</string>
 
     <string name="create_vote_error_crop_image_title">Vote picture.</string>
 

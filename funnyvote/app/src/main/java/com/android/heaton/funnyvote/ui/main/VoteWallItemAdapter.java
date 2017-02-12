@@ -117,10 +117,9 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public void setMaxCount(long count) {
         maxCount = count;
-        resetItemTypeList();
     }
 
-    private void resetItemTypeList() {
+    public void resetItemTypeList() {
         itemTypeList.clear();
         for (int i = 0; i < voteList.size(); i++) {
             if (i % ADMOB_FREQUENCE == ADMOB_FREQUENCE - 1 && ENABLE_ADMOB) {

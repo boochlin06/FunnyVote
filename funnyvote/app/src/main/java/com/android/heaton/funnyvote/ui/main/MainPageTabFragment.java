@@ -227,6 +227,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                 for (int i = 0; i < voteDataList.size(); i++) {
                     if (data.getVoteCode().equals(voteDataList.get(i).getVoteCode())) {
                         voteDataList.set(i, data);
+                        adapter.resetItemTypeList();
                         adapter.notifyItemChanged(i);
                         break;
                     }
@@ -234,9 +235,9 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_FAVORITE)) {
                 voteDataManager.favoriteVote(event.data.getVoteCode()
                         , event.data.getIsFavorite(), loginUser);
-            } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)
-                    && tab.equals(TAB_FAVORITE) && isResumed()) {
-                //adapter.notifyDataSetChanged();
+                //updateVoteDataList(event.data);
+            } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)) {
+                updateVoteDataList(event.data);
             } else if (getUserVisibleHint() && event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)
                     && isResumed()) {
                 if (event.data.getIsNeedPassword()) {
@@ -245,6 +246,16 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                 } else {
                     voteDataManager.pollVote(event.data.getVoteCode(), null, event.optionList, loginUser);
                 }
+            }
+        }
+    }
+    private void updateVoteDataList(VoteData data) {
+        for (int i = 0; i < voteDataList.size(); i++) {
+            if (data.getVoteCode().equals(voteDataList.get(i).getVoteCode())) {
+                voteDataList.set(i, data);
+                adapter.resetItemTypeList();
+                adapter.notifyItemChanged(i);
+                break;
             }
         }
     }
@@ -268,8 +279,6 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
 
                     @Override
                     public void onClick(View view) {
-                        Log.d(TAG, " Vote code:" + data.getVoteCode()
-                                + " pw input:" + password.getText().toString());
                         voteDataManager.pollVote(data.getVoteCode(), password.getText().toString(), optionList, user);
                     }
                 });
@@ -340,7 +349,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             refreshFragment = true;
         }
         if (refreshFragment) {
-            Log.d(TAG, tab + ": refreshFragment , is getvisible:" + this.getUserVisibleHint());
+            Log.d(TAG, tab + ": refreshFragment , is visible:" + this.getUserVisibleHint());
             refreshData(event.voteDataList, event.offset);
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
@@ -410,6 +419,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         } else {
             adapter.setMaxCount(LIMIT * (pageNumber + 2));
         }
+        adapter.resetItemTypeList();
         adapter.notifyDataSetChanged();
     }
 

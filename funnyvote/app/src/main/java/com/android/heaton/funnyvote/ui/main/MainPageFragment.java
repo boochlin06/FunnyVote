@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.data.promotion.PromotionManager;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.DataLoader;
@@ -133,7 +134,12 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         ENABLE_PROMOTION_ADMOB = getResources().getBoolean(R.bool.enable_promotion_admob);
         promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
         userManager = UserManager.getInstance(getContext().getApplicationContext());
-        userManager.getUser(getUserCallback);
+        if (user == null) {
+            userManager.getUser(getUserCallback);
+        } else {
+            tabsAdapter = new TabsAdapter(getChildFragmentManager());
+            vpMainPage.setAdapter(tabsAdapter);
+        }
 
         return view;
     }
@@ -214,7 +220,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                 ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
                 Glide.with(getContext())
                         .load(promotionTypeList.get(position).getPromotion().getImageURL())
-                        .override(320, 180)
+                        .override((int) Util.convertDpToPixel(320, getContext())
+                                , (int) Util.convertDpToPixel(180, getContext()))
                         .fitCenter()
                         .crossFade()
                         .into(promotion);
@@ -234,7 +241,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                     promotionADMOB = inflater.inflate(R.layout.item_promotion_admob, null);
                     NativeExpressAdView adview = (NativeExpressAdView) promotionADMOB.findViewById(R.id.adViewPromotion);
                     AdRequest adRequest = new AdRequest.Builder()
-                            .setGender(user.getGender().equals(User.GENDER_MALE) ?
+                            .setGender(user != null && user.getGender().equals(User.GENDER_MALE) ?
                                     AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
                             .build();
                     adview.loadAd(adRequest);

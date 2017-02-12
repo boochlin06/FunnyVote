@@ -211,7 +211,7 @@ public class VoteDataManager {
                 String errorMessage = "";
                 try {
                     errorMessage = response.errorBody().string();
-                    Log.d(TAG, "createVoteResponseCallback onResponse false, error message:" + errorMessage);
+                    Log.e(TAG, "createVoteResponseCallback onResponse false, error message:" + errorMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -222,7 +222,7 @@ public class VoteDataManager {
 
         @Override
         public void onFailure(Call<VoteData> call, Throwable t) {
-            Log.d(TAG, "createVoteResponseCallback onResponse onFailure, error message:" + t.getMessage());
+            Log.e(TAG, "createVoteResponseCallback onResponse onFailure, error message:" + t.getMessage());
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.CREATE_VOTE, false, t.getMessage()));
         }
@@ -245,7 +245,7 @@ public class VoteDataManager {
                 String errorMessage = "";
                 try {
                     errorMessage = response.errorBody().string();
-                    Log.d(TAG, "getVoteResponseCallback onResponse false, vote code:" + voteCode
+                    Log.e(TAG, "getVoteResponseCallback onResponse false, vote code:" + voteCode
                             + ", error message:" + errorMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -257,7 +257,7 @@ public class VoteDataManager {
 
         @Override
         public void onFailure(Call<VoteData> call, Throwable t) {
-            Log.d(TAG, "getVoteResponseCallback onResponse onFailure, vote code:" + voteCode
+            Log.e(TAG, "getVoteResponseCallback onResponse onFailure, vote code:" + voteCode
                     + ", error message:" + t.getMessage());
             executorService.execute(new LoadDBRunnable(voteCode, EventBusController
                     .RemoteServiceEvent.GET_VOTE, false));
@@ -298,7 +298,7 @@ public class VoteDataManager {
                 String errorMessage = "";
                 try {
                     errorMessage = response.errorBody().string();
-                    Log.d(TAG, "getVoteListResponseCallback onResponse false, message" + message + "," + errorMessage);
+                    Log.e(TAG, "getVoteListResponseCallback onResponse false, message" + message + "," + errorMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -309,7 +309,7 @@ public class VoteDataManager {
 
         @Override
         public void onFailure(Call<List<VoteData>> call, Throwable t) {
-            Log.d(TAG, "getVoteListResponseCallback onFailure:" + t.getMessage() + " message:" + this.message);
+            Log.e(TAG, "getVoteListResponseCallback onFailure:" + t.getMessage() + " message:" + this.message);
             executorService.execute(new LoadListDBRunnable(offset, message, false, userCode
                     , t.getMessage(), isLoginUser));
         }
@@ -329,7 +329,7 @@ public class VoteDataManager {
                 String errorMessage = "";
                 try {
                     errorMessage = response.errorBody().string();
-                    Log.d(TAG, "pollVoteResponseCallback onResponse false , error message:" + errorMessage);
+                    Log.e(TAG, "pollVoteResponseCallback onResponse false , error message:" + errorMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -340,7 +340,7 @@ public class VoteDataManager {
 
         @Override
         public void onFailure(Call<VoteData> call, Throwable t) {
-            Log.d(TAG, "pollVoteResponseCallback onFailure , error message:" + t.getMessage());
+            Log.e(TAG, "pollVoteResponseCallback onFailure , error message:" + t.getMessage());
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.POLL_VOTE, false, t.getMessage()));
         }
@@ -360,7 +360,7 @@ public class VoteDataManager {
                 String errorMessage = "";
                 try {
                     errorMessage = response.errorBody().string();
-                    Log.d(TAG, "addNewOptionResponseCallback onResponse false , error message:" + errorMessage);
+                    Log.e(TAG, "addNewOptionResponseCallback onResponse false , error message:" + errorMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -371,7 +371,7 @@ public class VoteDataManager {
 
         @Override
         public void onFailure(Call<VoteData> call, Throwable t) {
-            Log.d(TAG, "addNewOptionResponseCallback onFailure , error message:" + t.getMessage());
+            Log.e(TAG, "addNewOptionResponseCallback onFailure , error message:" + t.getMessage());
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
                     EventBusController.RemoteServiceEvent.ADD_NEW_OPTION, false, t.getMessage()));
         }
@@ -397,7 +397,7 @@ public class VoteDataManager {
                 String errorMessage = "";
                 try {
                     errorMessage = response.errorBody().string();
-                    Log.d(TAG, "favoriteVoteResponseCallback onResponse false, error message:" + errorMessage);
+                    Log.e(TAG, "favoriteVoteResponseCallback onResponse false, error message:" + errorMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -408,7 +408,7 @@ public class VoteDataManager {
 
         @Override
         public void onFailure(Call<ResponseBody> call, Throwable t) {
-            Log.d(TAG, "favoriteVoteResponseCallback onFailure , error message:" + t.getMessage());
+            Log.e(TAG, "favoriteVoteResponseCallback onFailure , error message:" + t.getMessage());
             EventBus.getDefault().post(new EventBusController
                     .RemoteServiceEvent(FAVORITE_VOTE, false, voteData, null));
         }

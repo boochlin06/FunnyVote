@@ -33,7 +33,8 @@ import butterknife.OnClick;
 
 public class CreateVoteTabSettingFragment extends Fragment {
 
-    private static final int DEFAULT_END_TIME_INTERNAL = 30;
+    private static final long DEFAULT_END_TIME = 30;
+    private static final long DEFAULT_END_TIME_MAX = 90;
 
     @BindView(R.id.lineOption)
     View lineOption;
@@ -149,7 +150,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
         swtNeedPwd.setChecked(voteSettings.getIsNeedPassword());
         voteSettings.setSecurity(VoteData.SECURITY_PUBLIC);
         txtSecurityDetail.setText(getString(R.string.create_vote_tab_settings_public));
-        voteSettings.setEndTime(System.currentTimeMillis() + DEFAULT_END_TIME_INTERNAL * 86400 * 1000);
+        voteSettings.setEndTime(System.currentTimeMillis() + DEFAULT_END_TIME * 86400 * 1000);
         txtEndTimeDetail.setText(Util.getDate(voteSettings.getEndTime(), "yyyy/MM/dd"));
 
         swtAnonymous.setChecked(false);
@@ -199,7 +200,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
     @OnClick({R.id.txtEndTimeDetail, R.id.txtEndTime})
     public void onTimeDetailClick() {
         Calendar now = Calendar.getInstance();
-        now.add(Calendar.DAY_OF_MONTH, DEFAULT_END_TIME_INTERNAL);
+        now.add(Calendar.DAY_OF_MONTH, (int) DEFAULT_END_TIME);
         DatePickerDialog timeSetting = DatePickerDialog.newInstance(
                 new DatePickerDialog.OnDateSetListener() {
                     @Override
@@ -211,8 +212,10 @@ public class CreateVoteTabSettingFragment extends Fragment {
                             Toast.makeText(getContext(), getString(R.string.create_vote_toast_endtime_more_than_current)
                                     , Toast.LENGTH_LONG).show();
                             return;
-                        } else if (endTime.getTimeInMillis() - System.currentTimeMillis() > 90 * 86400 * 1000) {
-                            Toast.makeText(getContext(), getString(R.string.create_vote_error_hint_endtime_more_than_max)
+                        } else if (endTime.getTimeInMillis() - System.currentTimeMillis()
+                                > DEFAULT_END_TIME_MAX * 86400 * 1000) {
+                            Toast.makeText(getContext(), String.format(getString(
+                                    R.string.create_vote_error_hint_endtime_more_than_max),DEFAULT_END_TIME_MAX)
                                     , Toast.LENGTH_LONG).show();
                             return;
                         } else {

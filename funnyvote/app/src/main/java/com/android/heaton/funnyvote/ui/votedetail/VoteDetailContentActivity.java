@@ -149,6 +149,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         @Override
         public void onResponse(User user) {
             VoteDetailContentActivity.this.user = user;
+            setUpAdmob();
             voteDataManager.getVote(data.getVoteCode(), user);
         }
 
@@ -218,8 +219,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private void setUpViews() {
         txtAuthorName.setText(data.getAuthorName());
 
-        txtPubTime.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
-                + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
+        txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
+                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
 
         txtTitle.setMovementMethod(new ScrollingMovementMethod());
         txtTitle.setText(data.getTitle());
@@ -285,15 +286,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 famOther.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
             }
         });
-        if (ENABLE_ADMOB) {
-            AdRequest adRequest = new AdRequest.Builder()
-                    .setGender(user != null && user.getGender().equals(User.GENDER_MALE)?
-                            AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
-                    .build();
-            adView.loadAd(adRequest);
-        } else {
-            adView.setVisibility(View.GONE);
-        }
     }
 
     private void setUpSubmit() {
@@ -310,6 +302,18 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private void setUpOptionAdapter(List<Option> optionList) {
         optionItemAdapter = new OptionItemAdapter(optionType, optionList, data);
         ryOptionArea.setAdapter(optionItemAdapter);
+    }
+
+    private void setUpAdmob() {
+        if (ENABLE_ADMOB) {
+            AdRequest adRequest = new AdRequest.Builder()
+                    .setGender(user != null && user.getGender().equals(User.GENDER_MALE) ?
+                            AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
+                    .build();
+            adView.loadAd(adRequest);
+        } else {
+            adView.setVisibility(View.GONE);
+        }
     }
 
     private void checkCurrentOptionType() {
@@ -643,8 +647,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     , data.getMinOption(), data.getMaxOption());
             option.setText(multi);
         }
-        time.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
-                + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
+        time.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
+                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
         security.setText(VoteData.getSecurityString(getApplicationContext(), data.getSecurity()));
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(getString(R.string.vote_detail_dialog_title_info));
@@ -844,9 +848,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                         + " option size:" + optionList.size());
                 hideLoadingCircle();
                 checkCurrentOptionType();
-                //setUpViews();
                 setUpOptionAdapter(optionList);
-                //setUpSubmit();
                 if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {
                     newOptionPasswordDialog.dismiss();
                 }

@@ -150,8 +150,8 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         if (data.getEndTime() < System.currentTimeMillis()) {
             txtPubTime.setText(itemView.getContext().getString(R.string.wall_item_vote_end));
         } else {
-            txtPubTime.setText(Util.getDate(data.getStartTime(), "dd/MM hh:mm")
-                    + " ~ " + Util.getDate(data.getEndTime(), "dd/MM hh:mm"));
+            txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
+                    + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
         }
 
         txtBarPollCount.setText(String.format(itemView.getContext()

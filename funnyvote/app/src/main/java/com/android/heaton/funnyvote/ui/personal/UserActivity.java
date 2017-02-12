@@ -11,15 +11,14 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
-import com.android.heaton.funnyvote.ui.main.MainPageFragment;
 import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.bumptech.glide.Glide;
 
@@ -95,7 +94,8 @@ public class UserActivity extends AppCompatActivity
         } else {
             Glide.with(this)
                     .load(user.getUserIcon())
-                    .override(160, 160)
+                    .override((int) Util.convertDpToPixel(160, getApplicationContext())
+                            , (int) Util.convertDpToPixel(160, getApplicationContext()))
                     .dontAnimate()
                     .fitCenter()
                     .crossFade()
@@ -155,7 +155,7 @@ public class UserActivity extends AppCompatActivity
                     return participateFragment;
                 case 2:
                     MainPageTabFragment favoriteFragment = MainPageTabFragment.newInstance();
-                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_PARTICIPATE);
+                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_FAVORITE);
                     favoriteFragment.setArguments(argument);
                     return favoriteFragment;
             }

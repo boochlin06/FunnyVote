@@ -26,15 +26,16 @@ import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.ui.account.AccountFragment;
 import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.android.heaton.funnyvote.ui.main.MainPageFragment;
+import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.android.heaton.funnyvote.ui.personal.UserActivity;
 import com.android.heaton.funnyvote.ui.search.SearchFragment;
 import com.bumptech.glide.Glide;
-import com.google.android.gms.ads.MobileAds;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static String TAG = MainPageTabFragment.class.getSimpleName();
     private static final int ANIM_DURATION_TOOLBAR = 300;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
@@ -120,7 +121,9 @@ public class MainActivity extends AppCompatActivity {
                 TextView name = (TextView) header.findViewById(R.id.txtUserName);
                 name.setText(user.getUserName());
                 Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
-                        .override(92, 92).placeholder(R.drawable.ic_action_account_circle).into(icon);
+                        .override((int) Util.convertDpToPixel(92, getApplicationContext())
+                                , (int) Util.convertDpToPixel(92, getApplicationContext()))
+                        .placeholder(R.drawable.ic_action_account_circle).into(icon);
             }
 
             @Override
@@ -180,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
             }
-        }, 200);
+        }, 500);
     }
 
 
@@ -218,9 +221,11 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
-        searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
-        searchView.setSubmitButtonEnabled(true);
-        searchView.setOnQueryTextListener(queryListener);
+        if (searchView != null) {
+            searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
+            searchView.setSubmitButtonEnabled(true);
+            searchView.setOnQueryTextListener(queryListener);
+        }
         return true;
     }
 
@@ -241,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
                     searchKeyword = query;
-                    Log.d("test", "onQueryTextSubmit:" + query + "  page:" + mCurrentPage
+                    Log.d(TAG, "onQueryTextSubmit:" + query + "  page:" + mCurrentPage
                             + " search page:" + navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
                     if (mCurrentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
                         switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
