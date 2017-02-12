@@ -234,8 +234,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                     promotionADMOB = inflater.inflate(R.layout.item_promotion_admob, null);
                     NativeExpressAdView adview = (NativeExpressAdView) promotionADMOB.findViewById(R.id.adViewPromotion);
                     AdRequest adRequest = new AdRequest.Builder()
-                            .setGender(user.getGender().equals(User.GENDER_MALE)?
-                            AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
+                            .setGender(user.getGender().equals(User.GENDER_MALE) ?
+                                    AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
                             .build();
                     adview.loadAd(adRequest);
                 }
@@ -270,11 +270,19 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
         @Override
         public Fragment getItem(int i) {
+            Bundle argument = new Bundle();
+            argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, user);
             switch (i) {
                 case 0:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_HOT, user);
+                    MainPageTabFragment hotFragment = MainPageTabFragment.newInstance();
+                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_HOT);
+                    hotFragment.setArguments(argument);
+                    return hotFragment;
                 case 1:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_NEW, user);
+                    MainPageTabFragment newFragment = MainPageTabFragment.newInstance();
+                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_NEW);
+                    newFragment.setArguments(argument);
+                    return newFragment;
             }
             return null;
         }

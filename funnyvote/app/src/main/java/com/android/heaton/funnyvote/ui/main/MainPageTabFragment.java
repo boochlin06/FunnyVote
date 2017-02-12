@@ -47,6 +47,11 @@ import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter.OnReloadClickListener {
     private static final int LIMIT = VoteDataManager.PAGE_COUNT;
     public static String TAG = MainPageTabFragment.class.getSimpleName();
+
+    public static final String KEY_TAB = "tab";
+    public static final String KEY_LOGIN_USER = "key_login_user";
+    public static final String KEY_TARGET_USER = "key_target_user";
+
     public static final String TAB_HOT = "HOT";
     public static final String TAB_NEW = "NEW";
 
@@ -66,41 +71,17 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     private User targetUser;
     private AlertDialog passwordDialog;
 
-    public static MainPageTabFragment newInstance(String tab) {
-        MainPageTabFragment mainPageTabFragment = new MainPageTabFragment();
-        mainPageTabFragment.setTab(tab);
-        return mainPageTabFragment;
-    }
-
-    public static MainPageTabFragment newInstance(String tab, User targetUser, User loginUser) {
-        return new MainPageTabFragment(tab, targetUser, loginUser);
-    }
-
-    public static MainPageTabFragment newInstance(String tab, User loginUser) {
-        return new MainPageTabFragment(tab, loginUser);
-    }
-
-    public MainPageTabFragment(String tab) {
-        this.tab = tab;
-    }
-
-    public MainPageTabFragment(String tab, User targetUser, User loginUser) {
-        this.tab = tab;
-        this.loginUser = loginUser;
-        this.targetUser = targetUser;
-    }
-
-    public MainPageTabFragment(String tab, User loginUser) {
-        this(tab, null, loginUser);
-    }
-
-    public MainPageTabFragment() {
-        this.tab = TAB_HOT;
+    public static MainPageTabFragment newInstance() {
+        return new MainPageTabFragment();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Bundle argument = getArguments();
+        this.tab = argument.getString(KEY_TAB);
+        this.loginUser = (User) argument.getParcelable(KEY_LOGIN_USER);
+        this.targetUser = (User) argument.getParcelable(KEY_TARGET_USER);
         voteDataManager = VoteDataManager.getInstance(getContext().getApplicationContext());
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
         ryMain = (RecyclerView) RootView.findViewById(R.id.ryMainPage);

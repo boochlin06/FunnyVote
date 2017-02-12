@@ -1,5 +1,8 @@
 package com.android.heaton.funnyvote.database;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
 import org.greenrobot.greendao.annotation.Entity;
@@ -12,7 +15,7 @@ import org.greenrobot.greendao.annotation.Transient;
  */
 
 @Entity
-public class User {
+public class User implements Parcelable {
     public static final int TYPE_FACEBOOK = 100;
     public static final int TYPE_GOOGLE = 101;
     public static final int TYPE_TWITTER = 102;
@@ -165,4 +168,50 @@ public class User {
     public void setUserIcon(String userIcon) {
         this.userIcon = userIcon;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(this.id);
+        dest.writeString(this.userName);
+        dest.writeString(this.email);
+        dest.writeString(this.userID);
+        dest.writeString(this.userCode);
+        dest.writeString(this.userIcon);
+        dest.writeInt(this.type);
+        dest.writeString(this.personalTokenType);
+        dest.writeString(this.gender);
+        dest.writeInt(this.minAge);
+        dest.writeInt(this.maxAge);
+    }
+
+    protected User(Parcel in) {
+        this.id = (Long) in.readValue(Long.class.getClassLoader());
+        this.userName = in.readString();
+        this.email = in.readString();
+        this.userID = in.readString();
+        this.userCode = in.readString();
+        this.userIcon = in.readString();
+        this.type = in.readInt();
+        this.personalTokenType = in.readString();
+        this.gender = in.readString();
+        this.minAge = in.readInt();
+        this.maxAge = in.readInt();
+    }
+
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel source) {
+            return new User(source);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 }

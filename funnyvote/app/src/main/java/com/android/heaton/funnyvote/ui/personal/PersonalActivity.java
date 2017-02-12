@@ -163,11 +163,20 @@ public class PersonalActivity extends AppCompatActivity
 
         @Override
         public Fragment getItem(int i) {
+            Bundle argument = new Bundle();
+            argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, loginUser);
+            argument.putParcelable(MainPageTabFragment.KEY_TARGET_USER, targetUser);
             switch (i) {
                 case 0:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, targetUser, loginUser);
+                    MainPageTabFragment createFragment = MainPageTabFragment.newInstance();
+                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_CREATE);
+                    createFragment.setArguments(argument);
+                    return createFragment;
                 case 1:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, targetUser, loginUser);
+                    MainPageTabFragment favoriteFragment = MainPageTabFragment.newInstance();
+                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_FAVORITE);
+                    favoriteFragment.setArguments(argument);
+                    return favoriteFragment;
             }
             return null;
         }

@@ -20,13 +20,16 @@ apply plugin: 'org.greenrobot.greendao'
 android {
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
-
+    dexOptions {
+        jumboMode true
+    }
     defaultConfig {
         applicationId "com.android.heaton.funnyvote"
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
