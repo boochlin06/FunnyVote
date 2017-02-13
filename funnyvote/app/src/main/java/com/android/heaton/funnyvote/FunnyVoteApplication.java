@@ -23,9 +23,8 @@ import org.greenrobot.greendao.identityscope.IdentityScopeType;
 public class FunnyVoteApplication extends Application {
 
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    private static final String TWITTER_KEY = "qZDYI6XXiwSeLTtiUN3XFwxXU";
-    private static final String TWITTER_SECRET = "jOcekyUIi60Z9ykpgOvx0z8FtjBWb5YKW7Zcw9q2HfjdGbawkx";
-
+    private static final String TWITTER_KEY = "x3l5s5Xo0Ns7B0woDW9Jg9fuD";
+    private static final String TWITTER_SECRET = "F7MccZvZXRr9LFexSd2yKpqNiN6JckS697svkAHxWP9UbEqDRd";
 
     public static final boolean ENCRYPTED = false;
     private DaoSession daoSession;

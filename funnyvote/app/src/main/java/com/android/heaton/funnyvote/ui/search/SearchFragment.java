@@ -77,7 +77,7 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
 
         if (user == null) {
             userManager = UserManager.getInstance(getContext().getApplicationContext());
-            userManager.getUser(getUserCallback);
+            userManager.getUser(getUserCallback, false);
         } else {
             initRecyclerView();
         }

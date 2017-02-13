@@ -82,7 +82,7 @@ public class UserActivity extends AppCompatActivity
         tabsAdapter = new TabsAdapter(getSupportFragmentManager());
         viewPager.setAdapter(tabsAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        UserManager.getInstance(getApplicationContext()).getUser(getUserCallback);
+        UserManager.getInstance(getApplicationContext()).getUser(getUserCallback, false);
 
     }
 

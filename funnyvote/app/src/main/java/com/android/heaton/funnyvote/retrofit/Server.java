@@ -3,6 +3,7 @@ package com.android.heaton.funnyvote.retrofit;
 import com.android.heaton.funnyvote.database.Promotion;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 import java.util.Map;
@@ -51,17 +52,10 @@ public class Server {
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
-        @PUT("api/member/{otp}")
-        Call<ResponseBody> changeUserName(@Path("otp") String otp,
-                                          @Field("otp") String fieldOtp,
+        @PUT("api/member")
+        Call<ResponseBody> changeUserName(@Field("tokentype") String tokenType,
+                                          @Field("token") String token,
                                           @Field("nickname") String newName);
-
-        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @FormUrlEncoded
-        @PUT("api/guest/{guest}")
-        Call<ResponseBody> changeGuestUserName(@Path("guest") String guest,
-                                               @Field("guest") String fieldGuest,
-                                               @Field("nickname") String newName);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @PUT("api/link/{otp}/{guest}")
@@ -69,12 +63,9 @@ public class Server {
                                               @Path("guest") String guest);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("api/member/{membercode}")
-        Call<User> getMemberInfo(@Path("membercode") String memberCode);
-
-        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
-        @GET("api/guest/{guestcode}")
-        Call<User> getGuestInfo(@Path("guestcode") String guestCode);
+        @GET("api/member")
+        Call<UserDataQuery> getUserInfo(@Query("tokentype") String tokenType,
+                                 @Query("token") String token);
     }
 
     public interface VoteService {
@@ -182,5 +173,20 @@ public class Server {
                                                @Query("ps") int pageCount,
                                                @Query("token") String token,
                                                @Query("tokentype") String tokenType);
+    }
+
+    public static class UserDataQuery {
+        @SerializedName("img")
+        public String memberImage;
+        @SerializedName("nn")
+        public String memberName;
+        @SerializedName("snt")
+        public String memberSource;
+        @SerializedName("mc")
+        public String memberCode;
+        @SerializedName("otp")
+        public String otp;
+        @SerializedName("guest")
+        public String guestCode;
     }
 }

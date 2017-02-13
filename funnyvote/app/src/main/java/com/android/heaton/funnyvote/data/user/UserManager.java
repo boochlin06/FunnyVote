@@ -8,6 +8,7 @@ import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.RemoteServiceApi;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
+import com.android.heaton.funnyvote.retrofit.Server;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -47,7 +48,7 @@ public class UserManager {
         this.remoteServiceApi = remoteServiceApi;
     }
 
-    public void getUser(final GetUserCallback callback) {
+    public void getUser(final GetUserCallback callback, boolean forceUpdateUserCode) {
         final User user = userDataSource.getUser();
         if (user.getType() == User.TYPE_GUEST && user.getUserCode().isEmpty()) {
             Log.d(TAG, "Guest!" + user.getUserCode());
@@ -66,20 +67,36 @@ public class UserManager {
                 }
             }, guestName);
         } else {
-            callback.onResponse(user);
+            if (forceUpdateUserCode) {
+                getUserInfo(new Callback<Server.UserDataQuery>() {
+                    @Override
+                    public void onResponse(Call<Server.UserDataQuery> call, Response<Server.UserDataQuery> response) {
+                        String userCode = null;
+                        if (user.getType() == User.TYPE_GUEST) {
+                            userCode = response.body().guestCode;
+                        } else {
+                            userCode = response.body().otp;
+                        }
+                        if (userCode != null) {
+                            user.setUserCode(userCode);
+                            userDataSource.setUser(user);
+                            callback.onResponse(userDataSource.getUser());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Server.UserDataQuery> call, Throwable t) {
+                        callback.onFailure();
+                    }
+                }, user);
+            } else {
+                callback.onResponse(user);
+            }
         }
     }
 
-    public void getPersonalInfo(@NonNull String userCode, String userCodeType) {
-        if (userCode == null) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO
-                    , false, "No user code"
-            ));
-        } else {
-            remoteServiceApi.getPersonalInfo(userCode, userCodeType
-                    , new UserManager.getPersonalInfoResponseCallback(userCode, userCodeType));
-        }
+    public void getUserInfo(final Callback<Server.UserDataQuery> callback, User user) {
+        remoteServiceApi.getUserInfo(callback, user.getTokenType(), user.getUserCode());
     }
 
     public void registerUser(final User user, final boolean mergeGuest, final RegisterUserCallback callback) {
@@ -141,22 +158,18 @@ public class UserManager {
         getUser(new GetUserCallback() {
             @Override
             public void onResponse(User user) {
-                if (user.getType() == User.TYPE_GUEST) {
-                    changeGuestUserName(user, name, callback);
-                } else {
-                    changeLoginUserName(user, name, callback);
-                }
+                changeUserName(user, name, callback);
             }
 
             @Override
             public void onFailure() {
                 Log.w(TAG, "changeUserName Fail");
             }
-        });
+        }, true);
     }
 
-    private void changeGuestUserName(final User user, final String newName, final ChangeUserNameCallback callback) {
-        remoteServiceApi.changeGuestUserName(new Callback<ResponseBody>() {
+    private void changeUserName(final User user, final String newName, final ChangeUserNameCallback callback) {
+        remoteServiceApi.changeUserName(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
@@ -166,7 +179,7 @@ public class UserManager {
                 } else {
                     callback.onFailure();
                 }
-                Log.d(TAG, "changeGuestUserName response status:" + response.code());
+                Log.d(TAG, "changeUserName response status:" + response.code());
             }
 
             @Override
@@ -174,29 +187,7 @@ public class UserManager {
                 t.printStackTrace();
                 callback.onFailure();
             }
-        }, user.getUserCode(), newName);
-    }
-
-    private void changeLoginUserName(final User user, final String newName, final ChangeUserNameCallback callback) {
-        remoteServiceApi.changeLoginUserName(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    user.setUserName(newName);
-                    userDataSource.setUser(user);
-                    callback.onSuccess();
-                } else {
-                    callback.onFailure();
-                }
-                Log.d(TAG, "changeLoginUserName response status:" + response.code());
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                t.printStackTrace();
-                callback.onFailure();
-            }
-        }, user.getUserCode(), newName);
+        }, user.getTokenType(), user.getUserCode(), newName);
     }
 
     public class getPersonalInfoResponseCallback implements Callback<User> {
@@ -251,6 +242,11 @@ public class UserManager {
     public interface GetUserCallback {
         void onResponse(User user);
 
+        void onFailure();
+    }
+
+    public interface GetUserInfoCallback {
+        void onResponse(Server.UserDataQuery userData);
         void onFailure();
     }
 

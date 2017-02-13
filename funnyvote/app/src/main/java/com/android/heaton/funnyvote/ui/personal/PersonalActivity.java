@@ -106,7 +106,7 @@ public class PersonalActivity extends AppCompatActivity
 
         tabLayout.setupWithViewPager(viewPager);
         setUpUser(targetUser);
-        UserManager.getInstance(getApplicationContext()).getUser(getUserCallback);
+        UserManager.getInstance(getApplicationContext()).getUser(getUserCallback, false);
     }
 
     private void setUpUser(User user) {

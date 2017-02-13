@@ -213,7 +213,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         setUpOptionAdapter(new ArrayList<Option>());
         voteDataManager = VoteDataManager.getInstance(getApplicationContext());
         userManager = UserManager.getInstance(getApplicationContext());
-        userManager.getUser(getUserCallback);
+        userManager.getUser(getUserCallback, false);
     }
 
     private void setUpViews() {
