@@ -56,7 +56,6 @@
             android:layout_toRightOf="@id/txtOptionNumber"
             android:ellipsize="end"
             android:gravity="center_vertical"
-            android:maxLines="1"
             android:textColor="@color/secondary_text"
             android:textSize="15sp"
             tools:text="Yes, i have tell my mother" />

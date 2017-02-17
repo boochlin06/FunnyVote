@@ -27,7 +27,6 @@
         android:gravity="center"
         android:padding="2dp">
 
-
         <ImageView
             android:id="@+id/imgAdd"
             android:layout_width="wrap_content"
@@ -72,12 +71,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
+            android:maxLines="3"
+            android:maxLength="100"
+            android:scrollbars="vertical"
             android:layout_marginLeft="3dp"
             android:layout_toLeftOf="@id/imgDeleteOption"
             android:layout_toRightOf="@id/txtOptionNumber"
             android:gravity="center_vertical"
             android:textColor="@color/secondary_text"
-            android:textSize="15sp"
+            android:textSize="14sp"
             tools:text="Yes, i have tell my mother" />
 
 

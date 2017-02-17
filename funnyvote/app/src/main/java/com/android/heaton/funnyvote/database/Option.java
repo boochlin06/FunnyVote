@@ -13,6 +13,8 @@ import org.greenrobot.greendao.annotation.Id;
  */
 @Entity
 public class Option {
+    private static final String TAG = Option.class.getSimpleName();
+
     @Id
     private Long id;
     private String voteCode;
@@ -38,7 +40,7 @@ public class Option {
     }
 
     public void dumpDetail() {
-        Log.d("test", "Id:" + id + " voteCode:" + voteCode + " title:" + title + " count:"
+        Log.d(TAG, "Id:" + id + " voteCode:" + voteCode + " title:" + title + " count:"
                 + count + " code:" + code + " userchoice:" + isUserChoiced);
     }
 

@@ -115,7 +115,6 @@
             android:layout_marginTop="13dp"
             android:layout_marginRight="12dp"
             android:layout_alignRight="@id/progressPollCount"
-            android:maxLines="1"
             android:textColor="@color/md_red_100"
             android:textSize="16sp"
             tools:text="5/5" />

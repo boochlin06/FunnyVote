@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.android.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.android.heaton.funnyvote.data.promotion.PromotionManager;
-import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.Promotion;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.database.VoteData;
@@ -202,8 +201,6 @@ public class RemoteServiceApi {
         Call<List<VoteData>> call = voteService.getPersonalCreateVoteList(pageNumber, pageCount, loginUser.getUserCode()
                 , loginUser.getTokenType()
                 , targetUser.getUserCode(), targetUser.personalTokenType);
-        Log.d("test", "getPersonalCreateVoteList:" + targetUser.getUserCode() + "," + targetUser.personalTokenType
-                + "login user code:" + loginUser.getUserCode() + "," + loginUser.personalTokenType);
         call.enqueue(callback);
     }
 
@@ -213,8 +210,6 @@ public class RemoteServiceApi {
         Call<List<VoteData>> call = voteService.getPersonalFavoriteVoteList(pageNumber, pageCount, loginUser.getUserCode()
                 , loginUser.getTokenType()
                 , targetUser.getUserCode(), targetUser.personalTokenType);
-        Log.d("test", "getPersonalFavoriteVoteList:" + targetUser.getUserCode() + "," + targetUser.personalTokenType
-                + "login user code:" + loginUser.getUserCode() + "," + loginUser.personalTokenType);
         call.enqueue(callback);
     }
 
@@ -251,20 +246,18 @@ public class RemoteServiceApi {
         RequestBody userPanPreviewResult = RequestBody.create(MediaType.parse("text/plain")
                 , String.valueOf(voteSetting.getIsCanPreviewResult()));
         RequestBody security = RequestBody.create(MediaType.parse("text/plain")
-                , VoteData.SECURITY_PUBLIC);
+                , voteSetting.getSecurity());
         RequestBody category = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getCategory()));
         RequestBody startTime = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getStartTime()));
         RequestBody endTime = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getEndTime()));
-
 
         RequestBody token = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(voteSetting.getAuthorCode()));
         RequestBody tokenType = RequestBody.create(MediaType.parse("text/plain")
                 , voteSetting.author.getTokenType());
         RequestBody rbOption;
-        for (int i = options.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < options.size(); i++) {
             rbOption = RequestBody.create(MediaType.parse("text/plain"), options.get(i));
             parameter.put("pt[" + i + "]", rbOption);
-            Log.d("test", "pt[" + i + "] " + options.get(i));
         }
 
         parameter.put("t", title);
@@ -283,7 +276,7 @@ public class RemoteServiceApi {
             RequestBody password = RequestBody.create(MediaType.parse("text/plain"), voteSetting.password);
             parameter.put("p", password);
         }
-        Log.d("test", "Need pw:" + voteSetting.getIsNeedPassword() + " pw:" + voteSetting.password
+        Log.d(TAG, "Need pw:" + voteSetting.getIsNeedPassword() + " pw:" + voteSetting.password
                 + "start time:" + voteSetting.getStartTime() + " ,end:" + voteSetting.getEndTime());
 
         RequestBody requestFile = null;

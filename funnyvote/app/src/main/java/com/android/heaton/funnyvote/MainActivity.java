@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -14,7 +15,9 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.transition.Slide;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +26,7 @@ import android.widget.Toast;
 
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
+import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.account.AccountFragment;
 import com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.android.heaton.funnyvote.ui.main.MainPageFragment;
@@ -30,6 +34,10 @@ import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.android.heaton.funnyvote.ui.personal.UserActivity;
 import com.android.heaton.funnyvote.ui.search.SearchFragment;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
+import org.greenrobot.eventbus.EventBus;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -45,8 +53,9 @@ public class MainActivity extends AppCompatActivity {
     private int mCurrentPage;
     boolean doubleBackToExitPressedOnce = false;
     private SearchView searchView;
-    private SearchFragment searchFragment;
     private String searchKeyword;
+    public static boolean ENABLE_ADMOB = true;
+    AdView adView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
         getSupportFragmentManager().beginTransaction().replace(R.id.frame_content
                 , new MainPageFragment()).commit();
-        toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbarMain);
+        adView = (AdView) findViewById(R.id.adView);
         toolbar.setTitle(getString(R.string.drawer_home));
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
@@ -65,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 R.string.drawer_close);
         drawerToggle.syncState();
 
+        ENABLE_ADMOB = getResources().getBoolean(R.bool.enable_main_admob);
 
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
         navigationView.getMenu().getItem(0).setChecked(true);
@@ -72,7 +83,17 @@ public class MainActivity extends AppCompatActivity {
 
         setupDrawerContent(navigationView);
         setupDrawerHeader();
+        setUpAdmob();
+    }
 
+    private void setUpAdmob() {
+        if (ENABLE_ADMOB) {
+            AdRequest adRequest = new AdRequest.Builder()
+                    .build();
+            adView.loadAd(adRequest);
+        } else {
+            adView.setVisibility(View.GONE);
+        }
     }
 
     private void setupDrawerContent(final NavigationView navigationView) {
@@ -121,8 +142,8 @@ public class MainActivity extends AppCompatActivity {
                 TextView name = (TextView) header.findViewById(R.id.txtUserName);
                 name.setText(user.getUserName());
                 Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
-                        .override((int) Util.convertDpToPixel(92, getApplicationContext())
-                                , (int) Util.convertDpToPixel(92, getApplicationContext()))
+                        .override((int)getResources().getDimension(R.dimen.drawer_image_width)
+                                , (int)getResources().getDimension(R.dimen.drawer_image_high))
                         .placeholder(R.drawable.ic_action_account_circle).into(icon);
             }
 
@@ -143,8 +164,11 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout.postDelayed(new Runnable() {
             @Override
             public void run() {
+                Fragment fragment;
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                ft.setCustomAnimations(R.anim.fragment_enter_from_left, 0);
+                Slide slide = new Slide();
+                slide.setDuration(400);
+                slide.setSlideEdge(Gravity.RIGHT);
                 if (Build.VERSION.SDK_INT > 21) {
                     toolbar.setBackgroundColor(getColor(R.color.color_primary));
                 } else {
@@ -153,7 +177,9 @@ public class MainActivity extends AppCompatActivity {
                 switch (menuId) {
                     case R.id.navigation_item_main:
                         mCurrentPage = menuItem.getItemId();
-                        ft.replace(R.id.frame_content, new MainPageFragment()).commit();
+                        fragment = new MainPageFragment();
+                        fragment.setEnterTransition(slide);
+                        ft.replace(R.id.frame_content, fragment).commit();
                         toolbar.setTitle(getString(R.string.drawer_home));
                         break;
                     case R.id.navigation_item_create_vote:
@@ -164,14 +190,19 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.navigation_item_search:
                         mCurrentPage = menuItem.getItemId();
-                        searchFragment = new SearchFragment();
-                        ft.replace(R.id.frame_content, searchFragment).commit();
+                        fragment = new SearchFragment();
+                        fragment.setEnterTransition(slide);
+                        ft.replace(R.id.frame_content, fragment).commit();
                         toolbar.setTitle(R.string.drawer_search);
-                        searchFragment.setQueryText(searchKeyword);
+                        Bundle argument = new Bundle();
+                        argument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
+                        fragment.setArguments(argument);
                         break;
                     case R.id.navigation_account:
                         mCurrentPage = menuItem.getItemId();
-                        ft.replace(R.id.frame_content, new AccountFragment()).commit();
+                        AccountFragment accountFragment = new AccountFragment();
+                        accountFragment.setEnterTransition(slide);
+                        ft.replace(R.id.frame_content, accountFragment).commit();
                         int bgColor;
                         if (Build.VERSION.SDK_INT >= 23) {
                             bgColor = getColor(R.color.md_light_blue_100);
@@ -191,7 +222,6 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
-
         }
         if (mCurrentPage != navigationView.getMenu().getItem(0).getItemId()) {
             mCurrentPage = navigationView.getMenu().getItem(0).getItemId();
@@ -237,7 +267,8 @@ public class MainActivity extends AppCompatActivity {
                     searchKeyword = newText;
                     if (searchKeyword.length() == 0) {
                         if (mCurrentPage == navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
-                            searchFragment.setQueryText(searchKeyword);
+                            EventBus.getDefault().post(new EventBusController.UIControlEvent(
+                                    EventBusController.UIControlEvent.SEARCH_KEYWORD, ""));
                         }
                     }
                     return false;
@@ -252,7 +283,8 @@ public class MainActivity extends AppCompatActivity {
                         switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
                         navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
                     } else {
-                        searchFragment.setQueryText(searchKeyword);
+                        EventBus.getDefault().post(new EventBusController.UIControlEvent(
+                                EventBusController.UIControlEvent.SEARCH_KEYWORD, searchKeyword));
                     }
                     return false;
                 }

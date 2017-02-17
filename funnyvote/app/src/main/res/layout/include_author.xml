@@ -10,8 +10,8 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imgAuthorIcon"
-        android:layout_width="@dimen/image_author_size"
-        android:layout_height="@dimen/image_author_size"
+        android:layout_width="@dimen/vote_image_author_size"
+        android:layout_height="@dimen/vote_image_author_size"
         android:layout_alignParentLeft="true"
         android:layout_gravity="center_vertical"
         android:scaleType="centerCrop"

@@ -2,6 +2,7 @@ package com.android.heaton.funnyvote.ui.main;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,6 +26,8 @@ import java.util.List;
  * Created by heaton on 16/4/1.
  */
 public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    public static String TAG = VoteWallItemAdapter.class.getSimpleName();
     public static final int ITEM_TYPE_VOTE = 41;
     public static final int ITEM_TYPE_RELOAD = 42;
     public static final int ITEM_TYPE_NO_VOTE = 43;
@@ -104,6 +107,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.voteList = datas;
         ENABLE_ADMOB = context.getResources().getBoolean(R.bool.enable_list_admob);
         ADMOB_FREQUENCE = context.getResources().getInteger(R.integer.list_admob_frequence);
+        Log.d(TAG, "Banner Admob ENABLE:" + ENABLE_ADMOB + " Frequency:" + ADMOB_FREQUENCE);
         itemTypeList = new ArrayList<>();
     }
 
@@ -134,7 +138,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
         if (showReload) {
             itemTypeList.add(new ListTypeItem(ITEM_TYPE_RELOAD, null));
-        } else if (!showReload && voteList.size() == 0) {
+        } else if (!showReload && voteList.size() == 0 && maxCount!= -1) {
             itemTypeList.add(new ListTypeItem(ITEM_TYPE_NO_VOTE, null));
         }
     }
@@ -158,9 +162,6 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         } else if (viewType == ITEM_TYPE_ADMOB) {
             if (bannerAdmob == null) {
                 bannerAdmob = LayoutInflater.from(context).inflate(R.layout.item_list_admob, parent, false);
-                AdView adView = (AdView) bannerAdmob.findViewById(R.id.adView);
-                AdRequest adRequest = new AdRequest.Builder().build();
-                adView.loadAd(adRequest);
             }
             return new VHAdMob(bannerAdmob);
         }
@@ -171,6 +172,8 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof VHVoteWallItem) {
             ((VHVoteWallItem) holder).setLayout(itemTypeList.get(position).getVoteData());
+        } else if (holder instanceof VHAdMob) {
+            ((VHAdMob) holder).setLayout();
         }
     }
 
@@ -224,13 +227,31 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     private class VHAdMob extends RecyclerView.ViewHolder {
 
+        private boolean isLoaded = false;
+        private AdView adView;
+
         public VHAdMob(View view) {
             super(view);
+            adView = (AdView) view.findViewById(R.id.adView);
+        }
+
+        public void setLayout() {
+            if (!isLoaded) {
+                isLoaded = true;
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "Build admob request.");
+                        AdRequest adRequest = new AdRequest.Builder().build();
+                        adView.loadAd(adRequest);
+                        adView.pause();
+                    }
+                }, 1000);
+            }
         }
     }
 
     public interface OnReloadClickListener {
         void onReloadClicked();
     }
-
 }

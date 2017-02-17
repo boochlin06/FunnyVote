@@ -1,14 +1,16 @@
 package com.android.heaton.funnyvote.ui.main;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -16,10 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
-import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.data.promotion.PromotionManager;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.DataLoader;
@@ -38,6 +38,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.grabner.circleprogress.CircleProgressView;
+import at.grabner.circleprogress.TextMode;
 import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
 
 /**
@@ -57,6 +59,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     private ViewPager vpMainPage;
     private UserManager userManager;
     private User user;
+    private Activity context;
+    private CircleProgressView circleLoad;
 
     private class PromotionType {
         public static final int PROM0TION_TYPE_ADMOB = 0;
@@ -82,30 +86,64 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         @Override
         public void onResponse(User user) {
             MainPageFragment.this.user = user;
+            Log.d(TAG, "getUserCallback user:" + user.getType());
             promotionManager.getPromotionList(user);
             tabsAdapter = new TabsAdapter(getChildFragmentManager());
+            int currentItem = vpMainPage.getCurrentItem();
             vpMainPage.setAdapter(tabsAdapter);
-            Log.d(TAG, "getUserCallback user:" + user.getType());
+            vpMainPage.setCurrentItem(currentItem);
         }
 
         @Override
         public void onFailure() {
             promotionManager.getPromotionList(user);
             tabsAdapter = new TabsAdapter(getChildFragmentManager());
+            int currentItem = vpMainPage.getCurrentItem();
             vpMainPage.setAdapter(tabsAdapter);
-
-            Toast.makeText(getContext().getApplicationContext()
-                    , R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
+            vpMainPage.setCurrentItem(currentItem);
+            hideLoadingCircle();
             Log.d(TAG, "getUserCallback user failure:" + user);
         }
     };
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        showLoadingCircle(getString(R.string.vote_detail_circle_loading));
+        promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
+        userManager = UserManager.getInstance(getContext().getApplicationContext());
+        if (user == null) {
+            userManager.getUser(getUserCallback, true);
+        } else {
+            tabsAdapter = new TabsAdapter(getChildFragmentManager());
+            vpMainPage.setAdapter(tabsAdapter);
+        }
+        vpHeader.startAutoScroll();
+        appBarMain.addOnOffsetChangedListener(new AppBarStateChangeListener() {
+            @Override
+            public void onStateChanged(AppBarLayout appBarLayout, State state) {
+                if (state == State.EXPANDED) {
+                    vpHeader.startAutoScroll();
+                } else if (state == State.COLLAPSED) {
+                    vpHeader.stopAutoScroll();
+                }
+            }
+        });
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main_page_top, null);
         initialHeaderView();
+        context = this.getActivity();
 
+        circleLoad = (CircleProgressView) view.findViewById(R.id.circleLoad);
+        circleLoad.setTextMode(TextMode.TEXT);
+        circleLoad.setShowTextWhileSpinning(true);
+        circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
+
+        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
         vpHeader = (AutoScrollViewPager) view.findViewById(R.id.vpHeader);
         vpHeader.setAdapter(new HeaderAdapter());
         vpHeader.setCurrentItem(0);
@@ -119,27 +157,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         titleIndicator.setViewPager(vpHeader);
         vpHeader.setInterval(100000);
         vpHeader.setScrollDurationFactor(5);
-        vpHeader.startAutoScroll();
-        appBarMain.addOnOffsetChangedListener(new AppBarStateChangeListener() {
-            @Override
-            public void onStateChanged(AppBarLayout appBarLayout, State state) {
-                if (state == State.EXPANDED) {
-                    vpHeader.startAutoScroll();
-                } else if (state == State.COLLAPSED) {
-                    vpHeader.stopAutoScroll();
-                }
-            }
-        });
 
         ENABLE_PROMOTION_ADMOB = getResources().getBoolean(R.bool.enable_promotion_admob);
-        promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
-        userManager = UserManager.getInstance(getContext().getApplicationContext());
-        if (user == null) {
-            userManager.getUser(getUserCallback, true);
-        } else {
-            tabsAdapter = new TabsAdapter(getChildFragmentManager());
-            vpMainPage.setAdapter(tabsAdapter);
-        }
 
         return view;
     }
@@ -161,10 +180,27 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         EventBus.getDefault().register(this);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onUIChange(EventBusController.UIControlEvent event) {
         if (event.message.equals(EventBusController.UIControlEvent.SCROLL_TO_TOP)) {
             appBarMain.setExpanded(true);
+        } else if (event.message.equals(EventBusController.UIControlEvent.HIDE_CIRCLE)) {
+            hideLoadingCircle();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkChange(EventBusController.NetworkEvent event) {
+        if (event.message.equals(EventBusController.NetworkEvent.RELOAD_USER)
+                && (event.tab.equals(MainPageTabFragment.TAB_HOT)
+                || event.tab.equals(MainPageTabFragment.TAB_NEW))) {
+            if (user == null) {
+                showLoadingCircle(getString(R.string.vote_detail_circle_loading));
+                userManager.getUser(getUserCallback, true);
+            } else {
+                tabsAdapter = new TabsAdapter(getChildFragmentManager());
+                vpMainPage.setAdapter(tabsAdapter);
+            }
         }
     }
 
@@ -177,7 +213,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                 vpHeader.getAdapter().notifyDataSetChanged();
                 Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size() + ",type list size:" + promotionTypeList.size());
             } else {
-                Toast.makeText(getContext(), R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -190,6 +226,17 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     private void initialHeaderView() {
         promotionList = DataLoader.getInstance(getContext()).queryAllPromotion();
         setupPromotionAdmob();
+    }
+
+    private void showLoadingCircle(String content) {
+        circleLoad.setVisibility(View.VISIBLE);
+        circleLoad.setText(content);
+        circleLoad.spin();
+    }
+
+    private void hideLoadingCircle() {
+        circleLoad.stopSpinning();
+        circleLoad.setVisibility(View.GONE);
     }
 
     private void setupPromotionAdmob() {
@@ -220,8 +267,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                 ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
                 Glide.with(getContext())
                         .load(promotionTypeList.get(position).getPromotion().getImageURL())
-                        .override((int) Util.convertDpToPixel(320, getContext())
-                                , (int) Util.convertDpToPixel(180, getContext()))
+                        .override((int) getResources().getDimension(R.dimen.promotion_image_width)
+                                , (int) getResources().getDimension(R.dimen.promotion_image_high))
                         .fitCenter()
                         .crossFade()
                         .into(promotion);
@@ -265,9 +312,15 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         }
     }
 
-    private class TabsAdapter extends FragmentPagerAdapter {
+    private class TabsAdapter extends FragmentStatePagerAdapter {
         public TabsAdapter(FragmentManager fm) {
             super(fm);
+        }
+
+        @Override
+        public void restoreState(Parcelable state, ClassLoader loader) {
+            // todo: work around : NullPointerException in FragmentStatePagerAdapter
+            //super.restoreState(state, loader);
         }
 
         @Override
@@ -277,19 +330,11 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
         @Override
         public Fragment getItem(int i) {
-            Bundle argument = new Bundle();
-            argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, user);
             switch (i) {
                 case 0:
-                    MainPageTabFragment hotFragment = MainPageTabFragment.newInstance();
-                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_HOT);
-                    hotFragment.setArguments(argument);
-                    return hotFragment;
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_HOT, user);
                 case 1:
-                    MainPageTabFragment newFragment = MainPageTabFragment.newInstance();
-                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_NEW);
-                    newFragment.setArguments(argument);
-                    return newFragment;
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_NEW, user);
             }
             return null;
         }
@@ -298,12 +343,13 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return getString(R.string.main_page_tab_hot);
+                    return context.getString(R.string.main_page_tab_hot);
                 case 1:
-                    return getString(R.string.main_page_tab_new);
+                    return context.getString(R.string.main_page_tab_new);
             }
             return "";
         }
+
     }
 
     public abstract static class AppBarStateChangeListener implements AppBarLayout.OnOffsetChangedListener {

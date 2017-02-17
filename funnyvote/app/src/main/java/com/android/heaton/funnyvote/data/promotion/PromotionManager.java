@@ -84,8 +84,14 @@ public class PromotionManager {
     }
 
     public void getPromotionList(User user) {
-        remoteServiceApi.getPromotionList(0, PAGE_COUNT, user, new getPromotionListResponseCallback(0
-                , EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST));
+        if (user == null) {
+            Log.d(TAG, "getPromotionListResponseCallback onFailure: user is null");
+            executorService.execute(new LoadListDBRunnable(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST
+                    , false, "user is null"));
+        } else {
+            remoteServiceApi.getPromotionList(0, PAGE_COUNT, user, new getPromotionListResponseCallback(0
+                    , EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST));
+        }
     }
 
     private class SaveAndLoadListDBRunnable implements Runnable {

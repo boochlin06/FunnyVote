@@ -25,13 +25,6 @@ public class CreateVoteTabOptionFragment extends Fragment {
     private List<Option> optionList;
 
     public CreateVoteTabOptionFragment(){
-        optionList = new ArrayList<>();
-        for (long i = 0; i < 2; i++) {
-            Option option = new Option();
-            option.setId(i);
-            option.setCount(0);
-            optionList.add(option);
-        }
     }
 
     public static CreateVoteTabOptionFragment newTabFragment() {
@@ -43,13 +36,19 @@ public class CreateVoteTabOptionFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_create_vote_tab_options, container, false);
         ryOptions = (RecyclerView) rootView.findViewById(R.id.ryOptions);
-        initOptionsRecyclerView();
         return rootView;
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        optionList = new ArrayList<>();
+        for (long i = 0; i < 2; i++) {
+            Option option = new Option();
+            option.setId(i);
+            option.setCount(0);
+            optionList.add(option);
+        }
         initOptionsRecyclerView();
     }
 

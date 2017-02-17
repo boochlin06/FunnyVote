@@ -58,17 +58,17 @@ public class VHSearchItem extends RecyclerView.ViewHolder implements View.OnClic
         } else {
             Glide.with(itemView.getContext())
                     .load(data.getVoteImage())
-                    .override((int) (Util.convertDpToPixel(120, itemView.getContext()))
-                            , (int) (Util.convertDpToPixel(80, itemView.getContext())))
+                    .override((int) itemView.getResources().getDimension(R.dimen.search_image_width)
+                            , (int) itemView.getResources().getDimension(R.dimen.search_image_high))
                     .centerCrop()
                     .crossFade()
                     .into(imgMain);
         }
         if (data.getEndTime() < System.currentTimeMillis()) {
             txtHint.setText(R.string.search_item_time_end);
-            txtHint.setTextColor(itemView.getContext().getColor(R.color.md_red_500));
+            txtHint.setTextColor(itemView.getContext().getResources().getColor(R.color.md_red_500));
         } else {
-            txtHint.setTextColor(itemView.getContext().getColor(R.color.md_blue_500));
+            txtHint.setTextColor(itemView.getContext().getResources().getColor(R.color.md_blue_500));
             txtHint.setText(R.string.search_item_time_voting);
         }
     }

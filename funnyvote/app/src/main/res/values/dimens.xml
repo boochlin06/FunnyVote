@@ -9,6 +9,8 @@
 
     <!--vote detail-->
     <dimen name="vote_detail_margin">10dp</dimen>>
+    <dimen name="vote_detail_image_width">320dp</dimen>
+    <dimen name="vote_detail_image_high">150dp</dimen>
 
     <!--create vote settings-->
     <dimen name="create_vote_settings_main_margin">16dp</dimen>
@@ -22,8 +24,9 @@
     <dimen name="create_vote_settings_sub_topic_text_size">18sp</dimen>
     <dimen name="create_vote_settings_sub_topic_time_text_size">18sp</dimen>
 
-    <dimen name="image_main_height">150dp</dimen>
-    <dimen name="image_author_size">36dp</dimen>
+    <dimen name="vote_image_main_height">150dp</dimen>
+    <dimen name="vote_image_main_width">320dp</dimen>
+    <dimen name="vote_image_author_size">36dp</dimen>
 
     <!--Dialog vote detail-->
     <dimen name="customTitle">14sp</dimen>
@@ -32,4 +35,17 @@
     <dimen name="vote_detail_fam_offset">100dp</dimen>
     <!--Share Vote Dialog -->
     <dimen name="share_btn_size">45dp</dimen>
+    <!--Search item image-->
+    <dimen name="search_image_width">80dp</dimen>
+    <dimen name="search_image_high">70dp</dimen>
+    <!-- Drawer image -->
+    <dimen name="drawer_image_width">92dp</dimen>
+    <dimen name="drawer_image_high">92dp</dimen>
+    <!-- promotion image -->
+    <dimen name="promotion_image_width">320dp</dimen>
+    <dimen name="promotion_image_high">180dp</dimen>
+
+    <!-- Personal image -->
+    <dimen name="personal_image_width">120dp</dimen>
+    <dimen name="personal_image_high">120dp</dimen>
 </resources>

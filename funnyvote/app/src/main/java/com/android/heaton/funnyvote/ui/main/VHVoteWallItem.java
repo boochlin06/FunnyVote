@@ -16,7 +16,6 @@ import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.Util;
-import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
@@ -100,6 +99,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     TextView txtThirdOption;
     @BindView(R.id.btnThirdOption)
     CardView btnThirdOption;
+
     public VHVoteWallItem(View v) {
         super(v);
         ButterKnife.bind(this, v);
@@ -122,10 +122,10 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         } else {
             Glide.with(itemView.getContext())
                     .load(data.getAuthorIcon())
-                    .override((int) (Util.convertDpToPixel(itemView.getContext().getResources()
-                                    .getDimension(R.dimen.image_author_size), itemView.getContext()))
-                            , (int) (Util.convertDpToPixel(itemView.getContext().getResources()
-                                    .getDimension(R.dimen.image_author_size), itemView.getContext())))
+                    .override((int) itemView.getContext().getResources()
+                                    .getDimension(R.dimen.vote_image_author_size)
+                            , (int) itemView.getContext().getResources()
+                                    .getDimension(R.dimen.vote_image_author_size))
                     .fitCenter()
                     .crossFade()
                     .into(imgAuthorIcon);
@@ -138,10 +138,10 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         } else {
             Glide.with(itemView.getContext())
                     .load(data.getVoteImage())
-                    .override((int) (Util.convertDpToPixel(320, itemView.getContext()))
-                            , (int) (Util.convertDpToPixel(itemView.getContext().getResources()
-                                    .getDimension(R.dimen.image_main_height), itemView.getContext())))
-                    .fitCenter()
+                    .override((int) itemView.getContext().getResources()
+                                    .getDimension(R.dimen.vote_image_main_width)
+                            , (int) (itemView.getContext().getResources()
+                                    .getDimension(R.dimen.vote_image_main_height)))
                     .crossFade()
                     .into(imgMain);
         }
@@ -440,7 +440,6 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
             Toast.makeText(itemView.getContext()
                     , R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
         }
-        DataLoader.getInstance(itemView.getContext()).getVoteDataDao().insertOrReplace(data);
         EventBus.getDefault().post(new EventBusController
                 .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_FAVORITE));
     }

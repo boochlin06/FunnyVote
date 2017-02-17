@@ -414,7 +414,10 @@ public class DataLoader {
 
     public List<VoteData> queryHotVotes(int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.Category.eq("hot")
-                , VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).offset(offset).limit(limit).list();
+                , VoteDataDao.Properties.StartTime.le(System.currentTimeMillis())
+                , VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).offset(offset)
+                .orderAsc(VoteDataDao.Properties.DisplayOrder)
+                .limit(limit).list();
     }
 
     public long queryHotVotesCount() {
@@ -435,7 +438,7 @@ public class DataLoader {
     }
 
     public List<VoteData> queryFavoriteVotes(int offset, int limit) {
-        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(1)).offset(offset).limit(limit).list();
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.IsFavorite.eq(true)).offset(offset).limit(limit).list();
     }
 
     public List<VoteData> querySearchVotes(String keyword, int offset, int limit) {
@@ -449,7 +452,10 @@ public class DataLoader {
 
     public List<VoteData> queryNewVotes(int offset, int limit) {
         // TODO: SECURITY HOT AND TIME
-        return voteDataDao.queryBuilder().orderDesc(VoteDataDao.Properties.StartTime).orderDesc().offset(offset).limit(limit).list();
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.StartTime.le(System.currentTimeMillis())
+                , VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC))
+                .orderDesc(VoteDataDao.Properties.StartTime)
+                .orderDesc().offset(offset).limit(limit).list();
     }
 
     public long queryNewVotesCount() {
@@ -481,14 +487,14 @@ public class DataLoader {
 
     public void updateVoteByVoteCode(String voteCode, VoteData data) {
 
-//        List<VoteData> list = voteDataDao.queryBuilder()
-//                .where(VoteDataDao.Properties.VoteCode.eq(voteCode)).list();
-//
-//        if (list.size() > 0) {
-//            VoteData voteData = list.get(0);
-//            data.setId(voteData.getId());
-//            voteDataDao.update(data);
-//        }
+        List<VoteData> list = voteDataDao.queryBuilder()
+                .where(VoteDataDao.Properties.VoteCode.eq(voteCode)).list();
+
+        if (list.size() > 0) {
+            VoteData voteData = list.get(0);
+            data.setId(voteData.getId());
+            voteDataDao.update(data);
+        }
     }
 
     public User getUser() {

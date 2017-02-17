@@ -7,14 +7,12 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.data.user.UserManager;
@@ -30,6 +28,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PersonalActivity extends AppCompatActivity
         implements AppBarLayout.OnOffsetChangedListener {
+    private static final String TAG = PersonalActivity.class.getSimpleName();
 
     private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 20;
     public static final String EXTRA_PERSONAL_CODE = "personal_code";
@@ -64,8 +63,6 @@ public class PersonalActivity extends AppCompatActivity
         public void onFailure() {
             tabsAdapter = new TabsAdapter(getSupportFragmentManager());
             viewPager.setAdapter(tabsAdapter);
-            Toast.makeText(getApplicationContext()
-                    , R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -111,14 +108,14 @@ public class PersonalActivity extends AppCompatActivity
 
     private void setUpUser(User user) {
         txtUserName.setText(user.getUserName());
-        Log.d("test","setUpUser:"+user.personalTokenType);
         txtSubTitle.setText(user.personalTokenType);
         if (user.getUserIcon() == null || user.getUserIcon().isEmpty()) {
             imgUserIcon.setImageResource(R.drawable.user_avatar);
         } else {
             Glide.with(this)
                     .load(user.getUserIcon())
-                    .override(160, 160)
+                    .override((int) getResources().getDimension(R.dimen.personal_image_width)
+                            , (int) getResources().getDimension(R.dimen.personal_image_high))
                     .dontAnimate()
                     .fitCenter()
                     .crossFade()
@@ -151,7 +148,7 @@ public class PersonalActivity extends AppCompatActivity
         }
     }
 
-    private class TabsAdapter extends FragmentPagerAdapter {
+    private class TabsAdapter extends FragmentStatePagerAdapter {
         public TabsAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -163,20 +160,11 @@ public class PersonalActivity extends AppCompatActivity
 
         @Override
         public Fragment getItem(int i) {
-            Bundle argument = new Bundle();
-            argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, loginUser);
-            argument.putParcelable(MainPageTabFragment.KEY_TARGET_USER, targetUser);
             switch (i) {
                 case 0:
-                    MainPageTabFragment createFragment = MainPageTabFragment.newInstance();
-                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_CREATE);
-                    createFragment.setArguments(argument);
-                    return createFragment;
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, loginUser, targetUser);
                 case 1:
-                    MainPageTabFragment favoriteFragment = MainPageTabFragment.newInstance();
-                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_FAVORITE);
-                    favoriteFragment.setArguments(argument);
-                    return favoriteFragment;
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, loginUser, targetUser);
             }
             return null;
         }

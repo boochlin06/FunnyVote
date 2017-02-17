@@ -1,6 +1,5 @@
 package com.android.heaton.funnyvote.ui;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -8,38 +7,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 import com.android.heaton.funnyvote.R;
 import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.share.Sharer;
-import com.facebook.share.model.ShareLinkContent;
-import com.facebook.share.widget.ShareDialog;
 
 import org.apmem.tools.layouts.FlowLayout;
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.jar.Attributes;
 
 /**
  * Created by chiu_mac on 2016/11/10.
@@ -69,7 +51,7 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.share_dialog);
+        setContentView(R.layout.dialog_share);
         ButterKnife.bind(this);
         mCallbackManager = CallbackManager.Factory.create();
         if (getIntent() != null) {
@@ -88,7 +70,7 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
             ComponentName componentName = new ComponentName(APPS[i][0], APPS[i][1]);
             try {
                 ActivityInfo info = pm.getActivityInfo(componentName, PackageManager.GET_META_DATA);
-                View view = getLayoutInflater().inflate(R.layout.share_btn, null);
+                View view = getLayoutInflater().inflate(R.layout.btn_share, null);
                 ImageView imageView = (ImageView) view.findViewById(R.id.app_share_icon);
                 imageView.setImageDrawable(info.loadIcon(pm));
                 TextView labelTextView = (TextView) view.findViewById(R.id.app_label);
@@ -101,7 +83,7 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
             }
         }
         //copy link to clipboard
-        View copy = getLayoutInflater().inflate(R.layout.share_btn, null);
+        View copy = getLayoutInflater().inflate(R.layout.btn_share, null);
         ImageView copyImage = (ImageView)copy.findViewById(R.id.app_share_icon);
         copyImage.setImageResource(R.drawable.ic_shortcut_content_copy);
         TextView copyLabel = (TextView)copy.findViewById(R.id.app_label);
@@ -114,7 +96,7 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
         });
         shareOptions.addView(copy);
         //more
-        View more = getLayoutInflater().inflate(R.layout.share_btn, null);
+        View more = getLayoutInflater().inflate(R.layout.btn_share, null);
         ImageView moreImg = (ImageView)more.findViewById(R.id.app_share_icon);
         moreImg.setImageResource(R.drawable.ic_navigation_more_horiz);
         TextView moreLabel = (TextView)more.findViewById(R.id.app_label);

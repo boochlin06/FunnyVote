@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:CircleProgressView="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -38,19 +39,47 @@
         <android.support.design.widget.TabLayout
             android:id="@+id/tabLayoutMainPage"
             android:layout_width="fill_parent"
-            android:layout_height="36dp"
+            android:layout_height="32dp"
             android:layout_gravity="center"
-            android:minHeight="36dp"
+            android:minHeight="32dp"
             app:tabIndicatorColor="@color/md_blue_100"
             app:tabIndicatorHeight="4dp"
             app:tabSelectedTextColor="?android:attr/textColorPrimaryInverse" />
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/vpMainPage"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="2dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-    ​
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/vpMainPage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/adView"
+            android:layout_marginTop="2dp" />
+        ​
+
+        <at.grabner.circleprogress.CircleProgressView
+            android:id="@+id/circleLoad"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="16dp"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone"
+            android:elevation="18dp"
+            CircleProgressView:cpv_autoTextSize="true"
+            CircleProgressView:cpv_barColor="@color/primary"
+            CircleProgressView:cpv_barWidth="10dp"
+            CircleProgressView:cpv_innerContourSize="0dp"
+            CircleProgressView:cpv_outerContourSize="2dp"
+            CircleProgressView:cpv_rimColor="@color/primary_light"
+            CircleProgressView:cpv_rimWidth="15dp"
+            CircleProgressView:cpv_seekMode="false"
+            CircleProgressView:cpv_spinColor="@color/primary"
+            CircleProgressView:cpv_textColor="@color/primary_dark"
+            CircleProgressView:cpv_textScale="1"
+            CircleProgressView:cpv_unitColor="@color/primary_light"
+            CircleProgressView:cpv_unitPosition="right_top" />
+    </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

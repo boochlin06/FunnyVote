@@ -16,10 +16,34 @@ public class EventBusController {
 
     public static class UIControlEvent {
         public static final String SCROLL_TO_TOP = "SCROLL_TO_TOP";
+        public static final String SHOW_CIRCLE = "SHOW_CIRCLE";
+        public static final String HIDE_CIRCLE = "HIDE_CIRCLE";
+        public static final String SEARCH_KEYWORD = "SEARCH_KEYWORD";
         public final String message;
+        public final String keyword;
 
         public UIControlEvent(String message) {
             this.message = message;
+            this.keyword = null;
+        }
+        public UIControlEvent(String message,String keyword) {
+            this.message = message;
+            this.keyword = keyword;
+        }
+    }
+
+    public static class NetworkEvent {
+        public static final String RELOAD_USER = "RELOAD_USER";
+        public final String message;
+        public final String tab;
+
+        public NetworkEvent(String message) {
+            this.message = message;
+            this.tab = null;
+        }
+        public NetworkEvent(String message,String tab) {
+            this.message = message;
+            this.tab = tab;
         }
     }
 

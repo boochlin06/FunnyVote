@@ -1,6 +1,7 @@
 package com.android.heaton.funnyvote.ui.votedetail;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,12 +17,13 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -222,15 +224,13 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
 
-        txtTitle.setMovementMethod(new ScrollingMovementMethod());
         txtTitle.setText(data.getTitle());
-        txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
 
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
             if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
                 TextDrawable drawable = TextDrawable.builder().beginConfig()
-                        .width((int) getResources().getDimension(R.dimen.image_author_size))
-                        .height((int) getResources().getDimension(R.dimen.image_author_size)).endConfig()
+                        .width((int) getResources().getDimension(R.dimen.vote_image_author_size))
+                        .height((int) getResources().getDimension(R.dimen.vote_image_author_size)).endConfig()
                         .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
                 imgAuthorIcon.setImageDrawable(drawable);
             } else {
@@ -239,8 +239,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         } else {
             Glide.with(this)
                     .load(data.getAuthorIcon())
-                    .override((int) (Util.convertDpToPixel(getResources().getDimension(R.dimen.image_author_size), this))
-                            , (int) (Util.convertDpToPixel(getResources().getDimension(R.dimen.image_author_size), this)))
+                    .override((int) getResources().getDimension(R.dimen.vote_image_author_size)
+                            , (int) getResources().getDimension(R.dimen.vote_image_author_size))
                     .fitCenter()
                     .crossFade()
                     .into(imgAuthorIcon);
@@ -254,8 +254,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
         Glide.with(this)
                 .load(data.getVoteImage())
-                .override((int) (Util.convertDpToPixel(320, this)), (int) (Util.convertDpToPixel(150, this)))
-                .fitCenter()
+                .override((int) getResources().getDimension(R.dimen.vote_detail_image_width)
+                        , (int) getResources().getDimension(R.dimen.vote_detail_image_high))
+                .dontAnimate()
                 .crossFade()
                 .into(imgMain);
 
@@ -339,14 +340,55 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
     @OnClick(R.id.imgTitleExtend)
     public void onTitleExtendClick() {
-        if (txtTitle.getMaxLines() == TITLE_EXTEND_MAX_LINE) {
-            txtTitle.setMaxLines(8);
-            imgTitleExtend.setImageResource(R.drawable.ic_expand_less_24dp);
-        } else if (txtTitle.getMaxLines() == 8) {
-            txtTitle.setMaxLines(TITLE_EXTEND_MAX_LINE);
-            imgTitleExtend.setImageResource(R.drawable.ic_expand_more_24dp);
-        }
+        showTitleDetailDialog();
     }
+
+    private void showTitleDetailDialog() {
+        final Dialog titleDetail = new Dialog(VoteDetailContentActivity.this
+                , android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+        titleDetail.requestWindowFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+        titleDetail.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT);
+
+        View content = LayoutInflater.from(getApplicationContext()).inflate(R.layout.dialog_title_detail, null);
+        TextView txtTitleDetail = (TextView) content.findViewById(R.id.txtTitleDetail);
+        TextView txtAuthorName = (TextView) content.findViewById(R.id.txtAuthorName);
+        TextView txtPubTime = (TextView) content.findViewById(R.id.txtPubTime);
+        ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
+        txtAuthorName.setText(data.getAuthorName());
+        txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
+                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
+        if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
+            if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
+                TextDrawable drawable = TextDrawable.builder().beginConfig()
+                        .width((int) getResources().getDimension(R.dimen.vote_image_author_size))
+                        .height((int) getResources().getDimension(R.dimen.vote_image_author_size)).endConfig()
+                        .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+                imgAuthorIcon.setImageDrawable(drawable);
+            } else {
+                imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
+            }
+        } else {
+            Glide.with(this)
+                    .load(data.getAuthorIcon())
+                    .override((int) getResources().getDimension(R.dimen.vote_image_author_size)
+                            , (int) getResources().getDimension(R.dimen.vote_image_author_size))
+                    .fitCenter()
+                    .crossFade()
+                    .into(imgAuthorIcon);
+        }
+        ImageView imgCross = (ImageView) content.findViewById(R.id.imgCross);
+        imgCross.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                titleDetail.dismiss();
+            }
+        });
+        txtTitleDetail.setText(data.getTitle());
+        titleDetail.setContentView(content);
+        titleDetail.show();
+    }
+
 
     @OnClick(R.id.relBarFavorite)
     public void onBarFavoriteClick() {
@@ -467,7 +509,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
                     @Override
                     public void onClick(View view) {
-                        Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size() + " vc:" + data.getVoteCode()
+                        Log.d(TAG, "choice:" + optionItemAdapter.getChoiceCodeList().size() + " vc:" + data.getVoteCode()
                                 + " pw input:" + password.getText().toString());
                         voteDataManager.pollVote(data.getVoteCode(), password.getText().toString()
                                 , optionItemAdapter.getChoiceCodeList(), user);
@@ -497,7 +539,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
                     @Override
                     public void onClick(View view) {
-                        Log.d("test", "New Option Text:" + newOptionText + " vc:" + data.getVoteCode()
+                        Log.d(TAG, "New Option Text:" + newOptionText + " vc:" + data.getVoteCode()
                                 + " pw input:" + password.getText().toString());
                         List<String> newOptions = new ArrayList<>();
                         newOptions.add(newOptionText);
@@ -612,7 +654,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     showPollPasswordDialog();
                 } else {
                     showLoadingCircle(getString(R.string.vote_detail_circle_updating));
-                    Log.d("test", "choice:" + optionItemAdapter.getChoiceCodeList().size()
+                    Log.d(TAG, "choice:" + optionItemAdapter.getChoiceCodeList().size()
                             + " vc:" + data.getVoteCode() + " user:" + user.getUserCode() + "  type:" + user.getType());
                     voteDataManager.pollVote(data.getVoteCode(), null, optionItemAdapter.getChoiceCodeList(), user);
                 }
@@ -631,9 +673,35 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         if (famOther.isExpanded()) {
             famOther.collapse();
         } else {
-            super.onBackPressed();
+            if (optionItemAdapter.getChoiceList().size() > 0) {
+                showExitCheckDialog();
+            } else {
+                super.onBackPressed();
+            }
         }
     }
+
+    private void showExitCheckDialog() {
+        final AlertDialog.Builder exitDialog = new AlertDialog.Builder(VoteDetailContentActivity.this);
+        exitDialog.setTitle(R.string.vote_detail_dialog_exit_title);
+        exitDialog.setMessage(R.string.vote_detail_dialog_exit_message);
+        exitDialog.setNegativeButton(R.string.vote_detail_dialog_exit_button_leave
+                , new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        VoteDetailContentActivity.super.onBackPressed();
+                    }
+                });
+        exitDialog.setPositiveButton(R.string.vote_detail_dialog_exit_button_keep
+                , new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        exitDialog.show();
+    }
+
 
     private void showVoteInfoDialog() {
         View content = LayoutInflater.from(this).inflate(R.layout.dialog_vote_detail_info, null);
@@ -667,7 +735,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     public void onOptionChoice(EventBusController.OptionChoiceEvent event) {
         long id = event.Id;
         if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_CHOICED)) {
-            Log.d("test", "onOptionChoice message:" + event.message + " id:" + id + " code:" + event.code);
+            Log.d(TAG, "onOptionChoice message:" + event.message + " id:" + id + " code:" + event.code);
 
             if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
                 return;
@@ -697,11 +765,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 }
             }
         } else if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_EXPAND)) {
-            if (optionItemAdapter.getExpandOptionlist().contains(id)) {
+            if (optionItemAdapter.getExpandOptionlist().contains(event.code)) {
                 optionItemAdapter.getExpandOptionlist().remove(optionItemAdapter.getExpandOptionlist()
-                        .indexOf(id));
+                        .indexOf(event.code));
             } else {
-                optionItemAdapter.getExpandOptionlist().add(id);
+                optionItemAdapter.getExpandOptionlist().add(event.code);
             }
         }
     }
@@ -737,7 +805,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 optionItemAdapter.notifyDataSetChanged();
             }
         } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_INPUT_TEXT)) {
-            //appBarMain.setExpanded(false);
             int targetPosition = -1;
             for (int i = 0; i < optionList.size(); i++) {
                 if (optionList.get(i).getId() == id) {

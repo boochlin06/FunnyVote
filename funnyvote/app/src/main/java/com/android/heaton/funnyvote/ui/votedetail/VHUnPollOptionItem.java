@@ -35,6 +35,7 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     private boolean isChoice = false;
     private boolean isMultiChoice = false;
     private boolean isExpand = false;
+    private int lineCount = 0;
 
     public VHUnPollOptionItem(View itemView, boolean isMultiChoice) {
         super(itemView);
@@ -68,17 +69,16 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
                     : R.drawable.ic_check_box_outline_blank_40dp);
         }
         cardOption.setCardBackgroundColor(itemView.getResources()
-                .getColor(isChoice? R.color.md_red_100 : R.color.md_blue_100));
+                .getColor(isChoice ? R.color.md_red_100 : R.color.md_blue_100));
     }
 
     @Override
     public void onClick(View v) {
-        if (txtOptionTitle.getLineCount() > 1) {
-            EventBus.getDefault().post(new EventBusController
-                    .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
-            isExpand = !isExpand;
-            setUpOptionExpandLayout();
-        } else {
+        EventBus.getDefault().post(new EventBusController
+                .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
+        isExpand = !isExpand;
+        setUpOptionExpandLayout();
+        if (txtOptionTitle.getLineCount() == 1) {
             onOptionChoice();
         }
     }

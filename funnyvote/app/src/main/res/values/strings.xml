@@ -96,6 +96,7 @@
     <string name="create_vote_error_hint_password_empty">Vote password cant be empty.</string>
     <string name="create_vote_error_hint_endtime_more_than_now">Vote End time should over now.</string>
     <string name="create_vote_error_hint_endtime_more_than_max" formatted="false">Vote End max time is %d day.</string>
+    <string name="create_vote_error_hint_title_duplicate">Vote title cant be duplicate.</string>
 
     <string name="create_vote_error_crop_image_title">Vote picture.</string>
 
@@ -108,8 +109,8 @@
     <string name="vote_detail_toast_fill_new_option">"Please fill and update all new option's content"</string>
     <string name="vote_detail_toast_confirm_new_option">"Please confirm the no update option before"</string>
 
-    <string name="vote_detail_circle_loading" formatted="false">"Loading..."</string>
-    <string name="vote_detail_circle_updating" formatted="false">"Updating..."</string>
+    <string name="vote_detail_circle_loading" formatted="false">"Loading"</string>
+    <string name="vote_detail_circle_updating" formatted="false">"Updating"</string>
     <string name="vote_detail_title">Detail</string>
 
     <string name="vote_detail_menu_share">Share</string>
@@ -143,6 +144,12 @@
     <string name="vote_detail_dialog_sort_alphabet">Alphabet</string>
     <string name="vote_detail_dialog_sort_poll">Poll count</string>
     <string name="vote_detail_dialog_sort_select">Select</string>
+
+    <!-- Vote exit dialog -->
+    <string name="vote_detail_dialog_exit_title">Are you sure to exit?</string>
+    <string name="vote_detail_dialog_exit_message">Dont you poll the vote?</string>
+    <string name="vote_detail_dialog_exit_button_leave">Leave</string>
+    <string name="vote_detail_dialog_exit_button_keep">Keep</string>
 
     <!-- vote password dialog-->
     <string name="vote_detail_dialog_password_hint">Input password</string>
@@ -182,10 +189,12 @@
     <!--Search-->
     <string name="search_item_time_end">End</string>
     <string name="search_item_time_voting">Voting</string>
+
     <!--admob-->
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
-    <bool name="enable_list_admob">true</bool>
+    <bool name="enable_list_admob">false</bool>
     <integer name="list_admob_frequence">10</integer>
-    <bool name="enable_detail_admob">true</bool>>
+    <bool name="enable_detail_admob">true</bool>>>
+    <bool name="enable_main_admob">false</bool>>
     <bool name="enable_promotion_admob">true</bool>
 </resources>

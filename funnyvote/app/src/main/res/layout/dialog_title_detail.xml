@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:alpha="0.95"
+    android:paddingTop="24dp"
+    android:background="@android:color/black"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/authorBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="8dp"
+        android:padding="2dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imgAuthorIcon"
+            android:layout_width="@dimen/vote_image_author_size"
+            android:layout_height="@dimen/vote_image_author_size"
+            android:layout_alignParentLeft="true"
+            android:layout_gravity="center_vertical"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_person_black_24dp" />
+
+        <ImageView
+            android:id="@+id/imgCross"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:src="@drawable/ic_close_24dp" />
+        <TextView
+            android:id="@+id/txtAuthorName"
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="6dp"
+            android:layout_toRightOf="@id/imgAuthorIcon"
+            android:layout_toLeftOf="@id/imgCross"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:textColor="@color/md_amber_50"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="Heaton Lin" />
+
+        <TextView
+            android:id="@+id/txtPubTime"
+            android:layout_width="wrap_content"
+            android:layout_height="14dp"
+            android:layout_below="@id/txtAuthorName"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="6dp"
+            android:layout_toRightOf="@id/imgAuthorIcon"
+            android:textColor="@color/md_amber_50"
+            android:textSize="10sp"
+            tools:text="2016/04/08" />
+
+    </RelativeLayout>
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="12dp"
+        android:layout_marginLeft="16dp"
+        android:layout_below="@id/authorBar"
+        android:fadeScrollbars="false">
+
+        <TextView
+            android:id="@+id/txtTitleDetail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@color/secondary_text"
+            android:textSize="20sp"
+            tools:text="long content\n\n\n\n long content\n\n\n\n\n\n\n\n\n\n
+        \n\nlong content\n\n\n\n\n long context \n\n\n\n\n\n end" />
+    </ScrollView>
+
+</RelativeLayout>

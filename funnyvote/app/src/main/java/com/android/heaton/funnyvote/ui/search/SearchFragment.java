@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.grabner.circleprogress.CircleProgressView;
+import at.grabner.circleprogress.TextMode;
 
 /**
  * Created by heaton on 2017/1/22.
@@ -36,7 +37,9 @@ import at.grabner.circleprogress.CircleProgressView;
 
 public class SearchFragment extends Fragment implements SearchItemAdapter.OnReloadClickListener {
 
+    private static final String TAG = SearchFragment.class.getSimpleName();
     private static final int LIMIT = VoteDataManager.PAGE_COUNT;
+    public static final String KEY_SEARCH_KEYWORD = "key_search_keyword";
     private RecyclerView ryMain;
     private RelativeLayout RootView;
     private SearchItemAdapter adapter;
@@ -72,6 +75,15 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
                 DividerItemDecoration.VERTICAL);
         ryMain.addItemDecoration(dividerItemDecoration);
         circleLoad = (CircleProgressView) RootView.findViewById(R.id.circleLoad);
+        circleLoad.setTextMode(TextMode.TEXT);
+        circleLoad.setShowTextWhileSpinning(true);
+        circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
+        return RootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         hideLoadingCircle();
         voteDataManager = VoteDataManager.getInstance(getContext().getApplicationContext());
 
@@ -81,7 +93,9 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
         } else {
             initRecyclerView();
         }
-        return RootView;
+        if (getArguments().getString(KEY_SEARCH_KEYWORD) != null) {
+            setQueryText(getArguments().getString(KEY_SEARCH_KEYWORD));
+        }
     }
 
     private void initRecyclerView() {
@@ -95,7 +109,7 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
         }
     }
 
-    public void setQueryText(String queryText) {
+    private void setQueryText(String queryText) {
         this.keyword = queryText;
         if (user != null) {
             this.showLoadingCircle(getString(R.string.vote_detail_circle_loading));
@@ -140,6 +154,13 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUIChange(EventBusController.UIControlEvent event) {
+        if (event.message.equals(EventBusController.UIControlEvent.SEARCH_KEYWORD)) {
+            setQueryText(event.keyword);
+        }
+    }
+
     private void refreshData(List<VoteData> voteDataList, int offset) {
         if (voteDataList == null) {
             voteDataList = new ArrayList<>();
@@ -147,7 +168,7 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
             voteDataList = DataLoader.getInstance(getContext()).querySearchVotes(keyword
                     , offset, LIMIT);
         }
-        Log.d("test", "Network Refresh wall item : Search");
+        Log.d(TAG, "Network Refresh wall item : Search");
         int pageNumber = offset / LIMIT;
 
         if (offset == 0) {

@@ -7,16 +7,14 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.heaton.funnyvote.R;
-import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.User;
 import com.android.heaton.funnyvote.ui.main.MainPageTabFragment;
@@ -26,6 +24,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserActivity extends AppCompatActivity
         implements AppBarLayout.OnOffsetChangedListener {
+    private static final String TAG = UserActivity.class.getSimpleName();
 
     private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 20;
     private boolean isAvatarShown = true;
@@ -51,8 +50,6 @@ public class UserActivity extends AppCompatActivity
         public void onFailure() {
             tabsAdapter = new TabsAdapter(getSupportFragmentManager());
             viewPager.setAdapter(tabsAdapter);
-            Toast.makeText(getApplicationContext()
-                    , R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -94,8 +91,8 @@ public class UserActivity extends AppCompatActivity
         } else {
             Glide.with(this)
                     .load(user.getUserIcon())
-                    .override((int) Util.convertDpToPixel(160, getApplicationContext())
-                            , (int) Util.convertDpToPixel(160, getApplicationContext()))
+                    .override((int) getResources().getDimension(R.dimen.personal_image_width)
+                            , (int) getResources().getDimension(R.dimen.personal_image_high))
                     .dontAnimate()
                     .fitCenter()
                     .crossFade()
@@ -128,7 +125,7 @@ public class UserActivity extends AppCompatActivity
         }
     }
 
-    private class TabsAdapter extends FragmentPagerAdapter {
+    private class TabsAdapter extends FragmentStatePagerAdapter {
         public TabsAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -144,20 +141,11 @@ public class UserActivity extends AppCompatActivity
             argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, user);
             switch (i) {
                 case 0:
-                    MainPageTabFragment createFragment = MainPageTabFragment.newInstance();
-                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_CREATE);
-                    createFragment.setArguments(argument);
-                    return createFragment;
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, user);
                 case 1:
-                    MainPageTabFragment participateFragment = MainPageTabFragment.newInstance();
-                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_PARTICIPATE);
-                    participateFragment.setArguments(argument);
-                    return participateFragment;
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_PARTICIPATE, user);
                 case 2:
-                    MainPageTabFragment favoriteFragment = MainPageTabFragment.newInstance();
-                    argument.putString(MainPageTabFragment.KEY_TAB, MainPageTabFragment.TAB_FAVORITE);
-                    favoriteFragment.setArguments(argument);
-                    return favoriteFragment;
+                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, user);
             }
             return null;
         }

@@ -1,7 +1,6 @@
 package com.android.heaton.funnyvote.data.user;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.android.heaton.funnyvote.R;
@@ -72,15 +71,26 @@ public class UserManager {
                     @Override
                     public void onResponse(Call<Server.UserDataQuery> call, Response<Server.UserDataQuery> response) {
                         String userCode = null;
-                        if (user.getType() == User.TYPE_GUEST) {
-                            userCode = response.body().guestCode;
+                        if (response.isSuccessful()) {
+                            if (user.getType() == User.TYPE_GUEST) {
+                                userCode = response.body().guestCode;
+                            } else {
+                                userCode = response.body().otp;
+                            }
+                            if (userCode != null) {
+                                user.setUserCode(userCode);
+                                userDataSource.setUser(user);
+                                callback.onResponse(userDataSource.getUser());
+                            }
                         } else {
-                            userCode = response.body().otp;
-                        }
-                        if (userCode != null) {
-                            user.setUserCode(userCode);
-                            userDataSource.setUser(user);
-                            callback.onResponse(userDataSource.getUser());
+                            String errorMessage = "";
+                            try {
+                                errorMessage = response.errorBody().string();
+                                Log.e(TAG, "getUser onResponse false" + errorMessage);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            callback.onFailure();
                         }
                     }
 
@@ -247,6 +257,7 @@ public class UserManager {
 
     public interface GetUserInfoCallback {
         void onResponse(Server.UserDataQuery userData);
+
         void onFailure();
     }
 

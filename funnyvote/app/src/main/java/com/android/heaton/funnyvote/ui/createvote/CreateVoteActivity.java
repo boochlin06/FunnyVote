@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -82,12 +83,46 @@ public class CreateVoteActivity extends AppCompatActivity {
     private Uri cropImageUri;
     private VoteData localVoteSetting;
     private VoteDataManager voteDataManager;
+    private float vpTabLayoutY = 0;
+    private boolean isShowKeyboard = false;
+    private ViewTreeObserver.OnGlobalLayoutListener keyboardLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+        @Override
+        public void onGlobalLayout() {
+            if (vpTabLayoutY <= tabLayoutCreateVote.getY()) {
+                vpTabLayoutY = tabLayoutCreateVote.getY();
+                onHiddenKeyBoard();
+            } else {
+                onShowKeyboard();
+            }
+        }
+    };
+
+    private void onShowKeyboard() {
+        if (!isShowKeyboard) {
+            Log.d(TAG, "onShowKeyboard");
+            isShowKeyboard = true;
+            imgMain.setVisibility(View.GONE);
+            edtTitle.setMaxLines(3);
+        }
+    }
+
+    private void onHiddenKeyBoard() {
+        if (isShowKeyboard) {
+            Log.d(TAG, "onHiddenKeyBoard");
+            isShowKeyboard = false;
+            if (imgPick.getVisibility() == View.GONE) {
+                imgMain.setVisibility(View.VISIBLE);
+            }
+            edtTitle.setMaxLines(5);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cteate_vote);
         ButterKnife.bind(this);
+        vpSubArea.getViewTreeObserver().addOnGlobalLayoutListener(keyboardLayoutListener);
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
 
         mainToolbar.setTitle(getString(R.string.create_vote_toolbar_title));
@@ -223,7 +258,9 @@ public class CreateVoteActivity extends AppCompatActivity {
                 Uri resultUri = result.getUri();
                 Log.d(TAG, "CROP_IMAGE_ACTIVITY_REQUEST_CODE ok:" + resultUri);
                 cropImageUri = resultUri;
-                Glide.with(this).load(resultUri).into(imgMain);
+                Glide.with(this)
+                        .load(resultUri)
+                        .into(imgMain);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
@@ -263,8 +300,16 @@ public class CreateVoteActivity extends AppCompatActivity {
                 sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_fill_all) + "\n");
                 break;
             }
-            optionTitles.add(optionList.get(i).getTitle());
-            Log.d(TAG, "option " + i + " title:" + optionTitles.get(i));
+        }
+        for (int i = 0; i < optionList.size(); i++) {
+            if (optionTitles.contains(optionList.get(i).getTitle())) {
+                errorNumber++;
+                sb.append(errorNumber + ". " + getString(R.string.create_vote_error_hint_title_duplicate) + "\n");
+                break;
+            } else {
+                optionTitles.add(optionList.get(i).getTitle());
+                Log.d(TAG, "option " + i + " title:" + optionTitles.get(i));
+            }
         }
         if (edtTitle.getText().length() == 0) {
             errorNumber++;

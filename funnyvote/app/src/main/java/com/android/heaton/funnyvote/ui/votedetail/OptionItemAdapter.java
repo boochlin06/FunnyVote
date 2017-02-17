@@ -28,7 +28,7 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
     private List<Option> searchList;
     private List<Long> choiceList;
     private List<String> choiceCodeList;
-    private List<Long> expandOptionlist;
+    private List<String> expandOptionlist;
     private int pollCount = 0;
     private int optionChoiceType = OPTION_UNPOLL;
     private VoteData data;
@@ -79,7 +79,7 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
             if (viewType == OPTION_UNPOLL_VIEW_TYPE_ADD_NEW
                     || viewType == OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT) {
                 return new VHUnpollCreateOptionItem(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.card_view_unpoll_create_new_option, parent, false));
+                        .inflate(R.layout.card_view_item_unpoll_create_new_option, parent, false));
             } else {
                 return new VHUnPollOptionItem(LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.card_view_item_unpoll_options, parent, false)
@@ -99,13 +99,13 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         boolean isExpand = false;
         if (holder instanceof VHUnPollOptionItem) {
             isChoice = choiceList.contains(getCurrentList().get(position).getId());
-            isExpand = expandOptionlist.contains(getCurrentList().get(position).getId());
+            isExpand = expandOptionlist.contains(getCurrentList().get(position).getCode());
             ((VHUnPollOptionItem) holder).setLayout(isChoice
                     , isExpand
                     , getCurrentList().get(position));
         } else if (holder instanceof VHResultOptionItem) {
             isChoice = choiceList.contains(getCurrentList().get(position).getId());
-            isExpand = expandOptionlist.contains(getCurrentList().get(position).getId());
+            isExpand = expandOptionlist.contains(getCurrentList().get(position).getCode());
             ((VHResultOptionItem) holder).setLayout(isChoice
                     , isExpand
                     , (getCurrentList().get(position).getCount() == data.getOptionTopCount()
@@ -152,7 +152,7 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         return choiceCodeList;
     }
 
-    public List<Long> getExpandOptionlist() {
+    public List<String> getExpandOptionlist() {
         return expandOptionlist;
     }
 }

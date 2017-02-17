@@ -3,8 +3,8 @@
     xmlns:CircleProgressView="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:ads="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
@@ -30,9 +30,7 @@
             android:layout_marginLeft="@dimen/vote_detail_margin"
             android:layout_marginRight="@dimen/vote_detail_margin"
             android:ellipsize="end"
-            android:fadeScrollbars="false"
-            android:maxLines="3"
-            android:scrollbars="vertical"
+            android:maxLines="5"
             android:textColor="@color/secondary_text"
             android:textSize="@dimen/create_vote_settings_sub_topic_text_size"
             tools:text="Do your mother know what you do in front of computer? " />
@@ -47,6 +45,7 @@
         <android.support.design.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="4dp"
             android:background="@android:color/background_light">
 
             <android.support.design.widget.AppBarLayout
@@ -72,7 +71,7 @@
                         <ImageView
                             android:id="@+id/imgMain"
                             android:layout_width="match_parent"
-                            android:layout_height="@dimen/image_main_height"
+                            android:layout_height="@dimen/vote_image_main_height"
                             android:background="#FFFFFF"
                             android:paddingLeft="12dp"
                             android:paddingRight="12dp"

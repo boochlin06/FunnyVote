@@ -112,8 +112,7 @@ public class VoteDataManager {
 
     public void getVoteList(int offset, String eventMessage, @NonNull User user) {
         if (TextUtils.isEmpty(eventMessage) || user == null) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(eventMessage
-                    , false, new IllegalArgumentException().toString()));
+            executorService.execute(new LoadListDBRunnable(offset,eventMessage,false));
         } else {
             int pageNumber = (int) offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
