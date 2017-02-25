@@ -38,6 +38,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private SearchView searchView;
     private String searchKeyword;
     public static boolean ENABLE_ADMOB = true;
-    AdView adView;
+    private AdView adView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +135,42 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUIChange(EventBusController.UIControlEvent event) {
+        if (event.message.equals(EventBusController.UIControlEvent.INTRO_TO_ACCOUNT)) {
+            drawerLayout.openDrawer(Gravity.LEFT);
+
+//            Target viewTarget = new Target() {
+//                @Override
+//                public Point getPoint() {
+//                    int actionBarSize = drawerLayout.getHeight();
+//                    int x = drawerLayout.getWidth() / 4;
+//                    int y = (int) navigationView.getMenu().findItem(R.id.navigation_item_account).get.getY();
+//                    Log.d("test", "actionBarSize:" + actionBarSize + " x:" + x + " y:" + y);
+//                    return new Point(x, y);
+//                }
+//            };
+//            new ShowcaseView.Builder(MainActivity.this)
+//                    .setTarget(new ViewTarget(navigationView.getMenu().getItem(5).getItemId(),MainActivity.this))
+//                    .setContentTitle("test title")
+//                    .setContentText("show case desc")
+//                    .build()
+//                    .show();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
     private void setupDrawerHeader() {
         UserManager.getInstance(getApplicationContext()).getUser(new UserManager.GetUserCallback() {
             @Override
@@ -142,8 +180,8 @@ public class MainActivity extends AppCompatActivity {
                 TextView name = (TextView) header.findViewById(R.id.txtUserName);
                 name.setText(user.getUserName());
                 Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
-                        .override((int)getResources().getDimension(R.dimen.drawer_image_width)
-                                , (int)getResources().getDimension(R.dimen.drawer_image_high))
+                        .override((int) getResources().getDimension(R.dimen.drawer_image_width)
+                                , (int) getResources().getDimension(R.dimen.drawer_image_high))
                         .placeholder(R.drawable.ic_action_account_circle).into(icon);
             }
 
@@ -198,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                         argument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
                         fragment.setArguments(argument);
                         break;
-                    case R.id.navigation_account:
+                    case R.id.navigation_item_account:
                         mCurrentPage = menuItem.getItemId();
                         AccountFragment accountFragment = new AccountFragment();
                         accountFragment.setEnterTransition(slide);
@@ -211,6 +249,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                         toolbar.setBackgroundColor(bgColor);
                         toolbar.setTitle(R.string.drawer_account);
+                        break;
+                    case R.id.navigation_item_settings:
+
                         break;
                 }
             }

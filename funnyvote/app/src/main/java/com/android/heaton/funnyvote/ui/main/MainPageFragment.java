@@ -1,7 +1,11 @@
 package com.android.heaton.funnyvote.ui.main;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -13,23 +17,33 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.android.heaton.funnyvote.FirstTimePref;
 import com.android.heaton.funnyvote.R;
+import com.android.heaton.funnyvote.Util;
 import com.android.heaton.funnyvote.data.promotion.PromotionManager;
 import com.android.heaton.funnyvote.data.user.UserManager;
 import com.android.heaton.funnyvote.database.DataLoader;
 import com.android.heaton.funnyvote.database.Promotion;
 import com.android.heaton.funnyvote.database.User;
+import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
+import com.android.heaton.funnyvote.ui.CirclePageIndicator;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.NativeExpressAdView;
-import com.viewpagerindicator.CirclePageIndicator;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -129,6 +143,11 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                 }
             }
         });
+        SharedPreferences firstTimePref = FirstTimePref.getInstance(getContext()).getPreferences();
+        if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_INTORDUTCION_QUICK_POLL, true)) {
+            firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTORDUTCION_QUICK_POLL, false).apply();
+            showIntroductionDialog();
+        }
     }
 
     @Nullable
@@ -161,6 +180,138 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         ENABLE_PROMOTION_ADMOB = getResources().getBoolean(R.bool.enable_promotion_admob);
 
         return view;
+    }
+
+    private void showIntroductionDialog() {
+        final Dialog introductionDialog = new Dialog(getActivity());
+        introductionDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        introductionDialog.requestWindowFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+        introductionDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT);
+        introductionDialog.setCanceledOnTouchOutside(false);
+
+        final VoteData data = new VoteData();
+        data.setAuthorName(getString(R.string.intro_vote_item_author_name));
+        data.setTitle(getString(R.string.intro_vote_item_title));
+        data.setOption1Title(getString(R.string.intro_vote_item_option1));
+        data.setOption2Title(getString(R.string.intro_vote_item_option2));
+        data.setPollCount(30);
+        data.setOption1Count(15);
+        data.setOption2Count(15);
+        data.setStartTime(System.currentTimeMillis() - 86400000);
+        data.setEndTime(System.currentTimeMillis() + 864000000);
+
+        View content = LayoutInflater.from(getActivity()).inflate(R.layout.card_view_wall_item_intro, null);
+        TextView txtAuthorName = (TextView) content.findViewById(R.id.txtAuthorName);
+        TextView txtTitle = (TextView) content.findViewById(R.id.txtTitle);
+        TextView txtOption1 = (TextView) content.findViewById(R.id.txtFirstOptionTitle);
+        TextView txtOption2 = (TextView) content.findViewById(R.id.txtSecondOptionTitle);
+        TextView txtPubTime = (TextView) content.findViewById(R.id.txtPubTime);
+        TextView txtPollCount = (TextView) content.findViewById(R.id.txtBarPollCount);
+        final TextView txtFirstPollCountPercent = (TextView) content.findViewById(R.id.txtFirstPollCountPercent);
+        final TextView txtSecondPollCountPercent = (TextView) content.findViewById(R.id.txtSecondPollCountPercent);
+        final RoundCornerProgressBar progressFirstOption = (RoundCornerProgressBar) content.findViewById(R.id.progressFirstOption);
+        final RoundCornerProgressBar progressSecondOption = (RoundCornerProgressBar) content.findViewById(R.id.progressSecondOption);
+        CardView btnThirdOption = (CardView) content.findViewById(R.id.btnThirdOption);
+        final CardView btnSecondOption = (CardView) content.findViewById(R.id.btnSecondOption);
+        final CardView btnFirstOption = (CardView) content.findViewById(R.id.btnFirstOption);
+        final ImageView imgChampion1 = (ImageView) content.findViewById(R.id.imgChampion1);
+        final ImageView imgChampion2 = (ImageView) content.findViewById(R.id.imgChampion2);
+
+        ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
+
+        TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
+                .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+        imgAuthorIcon.setImageDrawable(drawable);
+
+        btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
+        btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
+        btnThirdOption.setVisibility(View.GONE);
+
+        txtFirstPollCountPercent.setVisibility(View.GONE);
+        txtSecondPollCountPercent.setVisibility(View.GONE);
+
+        progressFirstOption.setVisibility(View.GONE);
+        progressSecondOption.setVisibility(View.GONE);
+
+        imgChampion1.setVisibility(View.GONE);
+        imgChampion2.setVisibility(View.GONE);
+
+        progressFirstOption.setMax(172);
+        progressSecondOption.setMax(172);
+
+        txtAuthorName.setText(data.getAuthorName());
+        txtTitle.setText(data.getTitle());
+        txtOption1.setText(data.getOption1Title());
+        txtOption2.setText(data.getOption2Title());
+        txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
+                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
+        txtPollCount.setText(Integer.toString(data.getPollCount()));
+        progressFirstOption.setProgressColor(getResources().getColor(R.color.md_blue_600));
+        progressFirstOption.setProgressBackgroundColor(getResources().getColor(R.color.md_blue_200));
+        btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
+        progressSecondOption.setProgressColor(getResources().getColor(R.color.md_blue_600));
+        progressSecondOption.setProgressBackgroundColor(getResources().getColor(R.color.md_blue_200));
+        btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
+
+        View.OnLongClickListener dialogLongClick = new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View optionButton) {
+                if (optionButton.getId() == R.id.btnFirstOption) {
+                    progressFirstOption.setProgressColor(getResources().getColor(R.color.md_red_600));
+                    progressFirstOption.setProgressBackgroundColor(getResources().getColor(R.color.md_red_200));
+                    btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_red_100));
+                    imgChampion1.setVisibility(View.VISIBLE);
+                    imgChampion2.setVisibility(View.INVISIBLE);
+                    data.setOption1Count(data.getOption1Count() + 1);
+                } else {
+                    progressSecondOption.setProgressColor(getResources().getColor(R.color.md_red_600));
+                    progressSecondOption.setProgressBackgroundColor(getResources().getColor(R.color.md_red_200));
+                    btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_red_100));
+                    imgChampion2.setVisibility(View.VISIBLE);
+                    imgChampion1.setVisibility(View.INVISIBLE);
+                    data.setOption2Count(data.getOption2Count() + 1);
+                }
+
+                progressFirstOption.setVisibility(View.VISIBLE);
+                progressFirstOption.setProgress(data.getOption1Count());
+
+                progressSecondOption.setVisibility(View.VISIBLE);
+                progressSecondOption.setProgress(data.getOption2Count());
+
+                txtFirstPollCountPercent.setVisibility(View.VISIBLE);
+                txtSecondPollCountPercent.setVisibility(View.VISIBLE);
+
+                double percent1 = data.getPollCount() == 0 ? 0
+                        : (double) data.getOption1Count() / data.getPollCount() * 100;
+                double percent2 = data.getPollCount() == 0 ? 0
+                        : (double) data.getOption2Count() / data.getPollCount() * 100;
+                txtFirstPollCountPercent.setText(String.format("%3.1f%%", percent1));
+                txtSecondPollCountPercent.setText(String.format("%3.1f%%", percent2));
+                Toast.makeText(getActivity(), R.string.toast_network_connect_success_poll
+                        , Toast.LENGTH_SHORT).show();
+                btnFirstOption.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        introductionDialog.dismiss();
+                    }
+                }, 3000);
+                return false;
+            }
+        };
+        introductionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                EventBus.getDefault().post(new EventBusController.UIControlEvent(EventBusController.UIControlEvent.INTRO_TO_ACCOUNT));
+            }
+        });
+        btnFirstOption.setOnLongClickListener(dialogLongClick);
+        btnSecondOption.setOnLongClickListener(dialogLongClick);
+
+        introductionDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        introductionDialog.setContentView(content);
+        introductionDialog.setCancelable(false);
+        introductionDialog.show();
     }
 
     @Override

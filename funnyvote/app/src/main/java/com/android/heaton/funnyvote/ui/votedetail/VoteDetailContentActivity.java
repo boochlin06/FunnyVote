@@ -77,7 +77,7 @@ import butterknife.OnClick;
 public class VoteDetailContentActivity extends AppCompatActivity {
 
     private static final int TITLE_EXTEND_MAX_LINE = 5;
-    private static final String TAG = "VoteDetailContentActivity";
+    private static final String TAG = VoteDetailContentActivity.class.getSimpleName();
     public static boolean ENABLE_ADMOB = true;
     @BindView(R.id.imgAuthorIcon)
     ImageView imgAuthorIcon;

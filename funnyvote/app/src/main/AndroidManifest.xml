@@ -2,11 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.android.heaton.funnyvote">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:name=".FunnyVoteApplication"
         android:allowBackup="true"
@@ -15,7 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/MyMaterialTheme">
 
-        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
 
         <activity
             android:name="com.android.heaton.funnyvote.ui.WelcomeActivity"
@@ -59,22 +62,37 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-        <provider android:authorities="com.facebook.app.FacebookContentProvider862171800585725"
+
+        <provider
             android:name="com.facebook.FacebookContentProvider"
-            android:exported="true"/>
-        <activity android:name=".ui.ShareDialogActivity"
+            android:authorities="com.facebook.app.FacebookContentProvider862171800585725"
+            android:exported="true" />
+
+        <activity
+            android:name=".ui.ShareDialogActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/MDDialog">
-        </activity>
-        <activity android:name=".ui.personal.UserActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".ui.personal.PersonalActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat"/>
+            android:theme="@style/MDDialog"></activity>
+
+        <activity
+            android:name=".ui.personal.UserActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.personal.PersonalActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="daa9bcc114edbbb7c147bab2e1fb2e6ae0018305" />
+
+        <activity
+            android:name=".ui.introduction.IntroductionActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>

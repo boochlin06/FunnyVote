@@ -1,6 +1,5 @@
 package com.android.heaton.funnyvote.ui;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -8,18 +7,21 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import com.android.heaton.funnyvote.FirstTimePref;
 import com.android.heaton.funnyvote.MainActivity;
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.DataLoader;
+import com.android.heaton.funnyvote.ui.introduction.IntroductionActivity;
+
+import static com.android.heaton.funnyvote.FirstTimePref.SP_FIRST_INTRODUCTION_PAGE;
+import static com.android.heaton.funnyvote.FirstTimePref.SP_FIRST_MOCK_DATA;
 
 /**
  * Created by heaton on 2016/10/26.
  */
 
 public class WelcomeActivity extends AppCompatActivity {
-    public static final String SP_FIRST_TIME = "first_time";
-    public static final String SP_FIRST_MOCK_DATA = "first_mock_data";
-    private SharedPreferences sp;
+    private SharedPreferences firstTimePref;
     private AsyncTask syncTask = new AsyncTask() {
         @Override
         protected Object doInBackground(Object[] params) {
@@ -28,10 +30,10 @@ public class WelcomeActivity extends AppCompatActivity {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (sp.getBoolean(SP_FIRST_MOCK_DATA, true)) {
-                //DataLoader.getInstance(getApplicationContext()).mockVoteData(200, 5);
+            if (firstTimePref.getBoolean(SP_FIRST_MOCK_DATA, true)) {
                 DataLoader.getInstance(getApplicationContext()).mockPromotions(5);
             }
+            firstTimePref.edit().putBoolean(SP_FIRST_MOCK_DATA, false);
             return null;
         }
 
@@ -42,8 +44,12 @@ public class WelcomeActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Object o) {
-            sp.edit().putBoolean(SP_FIRST_MOCK_DATA, false).apply();
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            if (firstTimePref.getBoolean(SP_FIRST_INTRODUCTION_PAGE, true)) {
+                firstTimePref.edit().putBoolean(SP_FIRST_INTRODUCTION_PAGE, false).apply();
+                startActivity(new Intent(WelcomeActivity.this, IntroductionActivity.class));
+            } else {
+                startActivity(new Intent(WelcomeActivity.this, MainActivity.class));
+            }
             finish();
         }
     };
@@ -52,8 +58,8 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-        sp = getSharedPreferences(SP_FIRST_TIME, Context.MODE_PRIVATE);
-
+        firstTimePref = FirstTimePref.getInstance(getApplicationContext())
+                .getPreferences();
         syncData();
 
     }

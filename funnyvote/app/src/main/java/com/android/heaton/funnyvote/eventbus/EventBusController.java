@@ -19,6 +19,8 @@ public class EventBusController {
         public static final String SHOW_CIRCLE = "SHOW_CIRCLE";
         public static final String HIDE_CIRCLE = "HIDE_CIRCLE";
         public static final String SEARCH_KEYWORD = "SEARCH_KEYWORD";
+        public static final String INTRO_TO_ACCOUNT = "INTRO_TO_ACCOUNT";
+
         public final String message;
         public final String keyword;
 

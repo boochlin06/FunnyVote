@@ -48,4 +48,8 @@
     <!-- Personal image -->
     <dimen name="personal_image_width">120dp</dimen>
     <dimen name="personal_image_high">120dp</dimen>
+
+    <!--Introduction -->
+    <dimen name="appIntroBottomBarHeight">64dp</dimen>
+    <dimen name="appIntro2BottomBarHeight">80dp</dimen>
 </resources>

@@ -64,11 +64,12 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="3dp"
             android:layout_marginRight="8dp"
+            android:layout_toRightOf="@id/txtOptionNumber"
+            android:fadeScrollbars="false"
+            android:hint="@string/create_vote_option_hint"
             android:maxLength="100"
             android:maxLines="3"
             android:scrollbars="vertical"
-            android:fadeScrollbars="false"
-            android:layout_toRightOf="@id/txtOptionNumber"
             android:textColor="@color/secondary_text"
             android:textSize="15sp"
             tools:text="Yes, i have tell my mother" />
@@ -77,8 +78,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/edtOptionTitle"
-            android:orientation="horizontal"
-            android:gravity="center_horizontal">
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
 
 
             <ImageView

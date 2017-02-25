@@ -73,6 +73,7 @@
             android:layout_centerVertical="true"
             android:maxLines="3"
             android:maxLength="100"
+            android:hint="@string/create_vote_option_hint"
             android:scrollbars="vertical"
             android:layout_marginLeft="3dp"
             android:layout_toLeftOf="@id/imgDeleteOption"
