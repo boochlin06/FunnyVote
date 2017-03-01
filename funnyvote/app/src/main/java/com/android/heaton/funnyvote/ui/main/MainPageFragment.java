@@ -439,7 +439,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                     promotionADMOB = inflater.inflate(R.layout.item_promotion_admob, null);
                     NativeExpressAdView adview = (NativeExpressAdView) promotionADMOB.findViewById(R.id.adViewPromotion);
                     AdRequest adRequest = new AdRequest.Builder()
-                            .setGender(user != null && user.getGender().equals(User.GENDER_MALE) ?
+                            .setGender(user != null && User.GENDER_MALE.equals(user.getGender()) ?
                                     AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
                             .build();
                     adview.loadAd(adRequest);

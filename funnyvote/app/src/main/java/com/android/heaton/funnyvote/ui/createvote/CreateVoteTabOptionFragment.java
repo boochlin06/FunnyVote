@@ -1,5 +1,6 @@
 package com.android.heaton.funnyvote.ui.createvote;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -7,12 +8,17 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.android.heaton.funnyvote.R;
 import com.android.heaton.funnyvote.database.Option;
+import com.bumptech.glide.Glide;
+import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.BindView;
 
 /**
  * Created by heaton on 2016/9/1.
@@ -23,6 +29,8 @@ public class CreateVoteTabOptionFragment extends Fragment {
     private View rootView;
     private OptionCreateItemAdapter optionItemAdapter;
     private List<Option> optionList;
+    ImageView imgMain;
+    ImageView imgPick;
 
     public CreateVoteTabOptionFragment(){
     }
@@ -36,6 +44,17 @@ public class CreateVoteTabOptionFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_create_vote_tab_options, container, false);
         ryOptions = (RecyclerView) rootView.findViewById(R.id.ryOptions);
+        imgPick = (ImageView) rootView.findViewById(R.id.imgPick);
+        imgMain = (ImageView) rootView.findViewById(R.id.imgMain);
+
+        View.OnClickListener pickImageListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CropImage.startPickImageActivity(getActivity());
+            }
+        };
+        imgMain.setOnClickListener(pickImageListener);
+        imgPick.setOnClickListener(pickImageListener);
         return rootView;
     }
 
@@ -58,6 +77,14 @@ public class CreateVoteTabOptionFragment extends Fragment {
     }
     public List<Option> getOptionList() {
         return optionList;
+    }
+
+    public void setVoteImage(Uri imageUri) {
+        imgMain.setVisibility(View.VISIBLE);
+        imgPick.setVisibility(View.GONE);
+        Glide.with(this)
+                .load(imageUri)
+                .into(imgMain);
     }
 
     @Override

@@ -308,7 +308,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private void setUpAdmob() {
         if (ENABLE_ADMOB) {
             AdRequest adRequest = new AdRequest.Builder()
-                    .setGender(user != null && user.getGender().equals(User.GENDER_MALE) ?
+                    .setGender(user != null && User.GENDER_MALE.equals(user.getGender()) ?
                             AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
                     .build();
             adView.loadAd(adRequest);

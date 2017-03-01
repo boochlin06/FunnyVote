@@ -3,6 +3,7 @@ package com.android.heaton.funnyvote.ui.createvote;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -21,11 +22,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,7 +35,6 @@ import com.android.heaton.funnyvote.database.VoteData;
 import com.android.heaton.funnyvote.eventbus.EventBusController;
 import com.android.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
-import com.bumptech.glide.Glide;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import org.greenrobot.eventbus.EventBus;
@@ -53,7 +49,6 @@ import at.grabner.circleprogress.CircleProgressView;
 import at.grabner.circleprogress.TextMode;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * Created by heaton on 16/1/10.
@@ -71,58 +66,20 @@ public class CreateVoteActivity extends AppCompatActivity {
     @BindView(R.id.circleLoad)
     CircleProgressView circleLoad;
     Toolbar mainToolbar;
-    @BindView(R.id.imgMain)
-    ImageView imgMain;
-    @BindView(R.id.imgPick)
-    ImageView imgPick;
 
-    public static String TAG = "CreateVoteActivity";
+    public static String TAG = CreateVoteActivity.class.getSimpleName();
     private CreateVoteTabSettingFragment settingFragment;
     private CreateVoteTabOptionFragment optionFragment;
     private long newOptionIdAuto = 2;
     private Uri cropImageUri;
     private VoteData localVoteSetting;
     private VoteDataManager voteDataManager;
-    private float vpTabLayoutY = 0;
-    private boolean isShowKeyboard = false;
-    private ViewTreeObserver.OnGlobalLayoutListener keyboardLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-        @Override
-        public void onGlobalLayout() {
-            if (vpTabLayoutY <= tabLayoutCreateVote.getY()) {
-                vpTabLayoutY = tabLayoutCreateVote.getY();
-                onHiddenKeyBoard();
-            } else {
-                onShowKeyboard();
-            }
-        }
-    };
-
-    private void onShowKeyboard() {
-        if (!isShowKeyboard) {
-            Log.d(TAG, "onShowKeyboard");
-            isShowKeyboard = true;
-            imgMain.setVisibility(View.GONE);
-            edtTitle.setMaxLines(3);
-        }
-    }
-
-    private void onHiddenKeyBoard() {
-        if (isShowKeyboard) {
-            Log.d(TAG, "onHiddenKeyBoard");
-            isShowKeyboard = false;
-            if (imgPick.getVisibility() == View.GONE) {
-                imgMain.setVisibility(View.VISIBLE);
-            }
-            edtTitle.setMaxLines(5);
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cteate_vote);
         ButterKnife.bind(this);
-        vpSubArea.getViewTreeObserver().addOnGlobalLayoutListener(keyboardLayoutListener);
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
 
         mainToolbar.setTitle(getString(R.string.create_vote_toolbar_title));
@@ -221,18 +178,6 @@ public class CreateVoteActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @OnClick({R.id.imgMain, R.id.imgPick})
-    public void onSelectImageClick(View view) {
-        imgMain.setVisibility(View.VISIBLE);
-        imgPick.setVisibility(View.GONE);
-        RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        p.addRule(RelativeLayout.BELOW, imgMain.getId());
-        p.addRule(RelativeLayout.ABOVE, tabLayoutCreateVote.getId());
-        vpSubArea.setLayoutParams(p);
-        CropImage.startPickImageActivity(this);
-    }
-
     @Override
     @SuppressLint("NewApi")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -258,9 +203,10 @@ public class CreateVoteActivity extends AppCompatActivity {
                 Uri resultUri = result.getUri();
                 Log.d(TAG, "CROP_IMAGE_ACTIVITY_REQUEST_CODE ok:" + resultUri);
                 cropImageUri = resultUri;
-                Glide.with(this)
-                        .load(resultUri)
-                        .into(imgMain);
+                if (optionFragment == null) {
+                    vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
+                }
+                optionFragment.setVoteImage(resultUri);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
@@ -281,9 +227,39 @@ public class CreateVoteActivity extends AppCompatActivity {
     private void startCropImageActivity(Uri imageUri) {
         CropImage.activity(imageUri)
                 .setActivityTitle(getString(R.string.create_vote_error_crop_image_title))
-                .setMaxCropResultSize(imgMain.getWidth() * 2, (int) Util.convertDpToPixel(150 * 2, this))
-                .setMinCropResultSize(imgMain.getWidth(), (int) Util.convertDpToPixel(150, this))
+                .setMaxCropResultSize((int) Util.convertDpToPixel(320 * 2, this), (int) Util.convertDpToPixel(150 * 2, this))
+                .setMinCropResultSize((int) Util.convertDpToPixel(320, this), (int) Util.convertDpToPixel(150, this))
                 .start(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (edtTitle.getText().toString().length() > 0) {
+            showExitCheckDialog();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private void showExitCheckDialog() {
+        final AlertDialog.Builder exitDialog = new AlertDialog.Builder(CreateVoteActivity.this);
+        exitDialog.setTitle(R.string.create_vote_dialog_exit_title);
+        exitDialog.setMessage(R.string.create_vote_dialog_exit_message);
+        exitDialog.setNegativeButton(R.string.create_vote_dialog_exit_button_leave
+                , new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        CreateVoteActivity.super.onBackPressed();
+                    }
+                });
+        exitDialog.setPositiveButton(R.string.create_vote_dialog_exit_button_keep
+                , new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+        exitDialog.show();
     }
 
     private void submitCreateVote() {

@@ -68,7 +68,7 @@
             android:fadeScrollbars="false"
             android:hint="@string/create_vote_option_hint"
             android:maxLength="100"
-            android:maxLines="3"
+            android:maxLines="2"
             android:scrollbars="vertical"
             android:textColor="@color/secondary_text"
             android:textSize="15sp"

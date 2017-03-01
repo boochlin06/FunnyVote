@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:CircleProgressView="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -32,41 +32,22 @@
         android:id="@+id/edtTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/txtTitle"
         android:layout_marginLeft="12dp"
         android:layout_marginRight="12dp"
-        android:maxLines="5"
         android:fadeScrollbars="false"
-        android:scrollbars="vertical"
-        android:layout_below="@id/txtTitle"
         android:fontFamily="sans-serif-light"
         android:hint="@string/create_vote_title_hint"
+        android:maxLines="4"
+        android:scrollbars="vertical"
         android:textSize="16sp" />
-    <ImageView
-        android:id="@+id/imgPick"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        android:scaleType="fitCenter"
-        android:layout_below="@id/edtTitle"
-        android:src="@drawable/ic_add_circle_outline_24dp"/>
-    <ImageView
-        android:id="@+id/imgMain"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/vote_image_main_height"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        android:scaleType="fitCenter"
-        android:visibility="gone"
-        android:src="@drawable/ic_photo_size_select_actual"
-        android:layout_below="@id/edtTitle"/>
 
     <android.support.design.widget.TabLayout
         android:id="@+id/tabLayoutCreateVote"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:layout_alignParentBottom="true"
+        android:layout_gravity="center"
         android:background="@color/md_blue_300"
         android:minHeight="36dp"
         app:tabIndicatorColor="@color/md_blue_100"
@@ -77,9 +58,10 @@
         android:id="@+id/vpSubArea"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/imgPick"
         android:layout_above="@id/tabLayoutCreateVote"
-        android:layout_weight="1"/>
+        android:layout_below="@id/edtTitle"
+        android:layout_weight="1" />
+
     <at.grabner.circleprogress.CircleProgressView
         android:id="@+id/circleLoad"
         android:layout_width="180dp"
