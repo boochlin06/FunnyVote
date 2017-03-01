@@ -18,9 +18,6 @@
     <string name="drawer_close">close</string>
     <string name="drawer_open">open</string>
 
-    <!--Facebook SDK-->
-    <string name="facebook_app_id">862171800585725</string>
-
     <!--Twitter API-->
     <string name="twitter_api_key">313e33f6d00449186693b8843745eb37e24df53f</string>
     <string name="twitter_api_id">13246251</string>

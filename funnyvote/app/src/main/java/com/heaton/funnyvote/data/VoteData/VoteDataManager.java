@@ -110,7 +110,7 @@ public class VoteDataManager {
         if (TextUtils.isEmpty(eventMessage) || user == null) {
             executorService.execute(new LoadListDBRunnable(offset,eventMessage,false));
         } else {
-            int pageNumber = (int) offset / PAGE_COUNT;
+            int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
             if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)) {
                 remoteServiceApi.getVoteList(pageNumber, pageCount, eventMessage, user
@@ -156,7 +156,7 @@ public class VoteDataManager {
                     EventBusController.RemoteServiceEvent.GET_VOTE_LIST_SEARCH
                     , false, new IllegalArgumentException().toString()));
         } else {
-            int pageNumber = (int) offset / PAGE_COUNT;
+            int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
             remoteServiceApi.getSearchVoteList(keyword, pageNumber, pageCount, user
                     , new getVoteListResponseCallback(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_SEARCH
@@ -170,7 +170,7 @@ public class VoteDataManager {
                     EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE
                     , false, new IllegalArgumentException().toString()));
         } else {
-            int pageNumber = (int) offset / PAGE_COUNT;
+            int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
             remoteServiceApi.getPersonalCreateVoteList(pageNumber, pageCount, loginUser, targetUser
                     , new getVoteListResponseCallback(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE
@@ -184,7 +184,7 @@ public class VoteDataManager {
                     EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE
                     , false, new IllegalArgumentException().toString()));
         } else {
-            int pageNumber = (int) offset / PAGE_COUNT;
+            int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
             remoteServiceApi.getPersonalFavoriteVoteList(pageNumber, pageCount, loginUser, targetUser
                     , new getVoteListResponseCallback(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE

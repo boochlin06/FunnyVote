@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -24,6 +25,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.eventbus.EventBusController;
@@ -33,9 +37,6 @@ import com.heaton.funnyvote.ui.main.MainPageFragment;
 import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.heaton.funnyvote.ui.personal.UserActivity;
 import com.heaton.funnyvote.ui.search.SearchFragment;
-import com.bumptech.glide.Glide;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -208,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
                 slide.setDuration(400);
                 slide.setSlideEdge(Gravity.RIGHT);
                 if (Build.VERSION.SDK_INT > 21) {
-                    toolbar.setBackgroundColor(getColor(R.color.color_primary));
+                    toolbar.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.color_primary));
                 } else {
                     toolbar.setBackgroundColor(getResources().getColor(R.color.color_primary));
                 }
@@ -241,12 +242,7 @@ public class MainActivity extends AppCompatActivity {
                         AccountFragment accountFragment = new AccountFragment();
                         accountFragment.setEnterTransition(slide);
                         ft.replace(R.id.frame_content, accountFragment).commit();
-                        int bgColor;
-                        if (Build.VERSION.SDK_INT >= 23) {
-                            bgColor = getColor(R.color.md_light_blue_100);
-                        } else {
-                            bgColor = getResources().getColor(R.color.md_light_blue_100);
-                        }
+                        int bgColor = ContextCompat.getColor(getApplicationContext(), R.color.md_light_blue_100);
                         toolbar.setBackgroundColor(bgColor);
                         toolbar.setTitle(R.string.drawer_account);
                         break;

@@ -90,8 +90,8 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Bundle argument = getArguments();
         this.tab = argument.getString(KEY_TAB);
-        this.loginUser = (User) argument.getParcelable(KEY_LOGIN_USER);
-        this.targetUser = (User) argument.getParcelable(KEY_TARGET_USER);
+        this.loginUser = argument.getParcelable(KEY_LOGIN_USER);
+        this.targetUser = argument.getParcelable(KEY_TARGET_USER);
         voteDataManager = VoteDataManager.getInstance(getContext().getApplicationContext());
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
         fabTop = (FloatingActionButton) RootView.findViewById(R.id.fabTop);

@@ -13,6 +13,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -88,7 +89,7 @@ public class CreateVoteActivity extends AppCompatActivity {
 
         circleLoad.setTextMode(TextMode.TEXT);
         circleLoad.setShowTextWhileSpinning(true);
-        circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
+        circleLoad.setFillCircleColor(ContextCompat.getColor(this, R.color.md_amber_50));
 
         mainToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
