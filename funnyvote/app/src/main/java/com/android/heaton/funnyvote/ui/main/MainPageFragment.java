@@ -237,9 +237,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         imgChampion1.setVisibility(View.GONE);
         imgChampion2.setVisibility(View.GONE);
 
-        progressFirstOption.setMax(172);
-        progressSecondOption.setMax(172);
-
         txtAuthorName.setText(data.getAuthorName());
         txtTitle.setText(data.getTitle());
         txtOption1.setText(data.getOption1Title());
@@ -281,6 +278,9 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
                 txtFirstPollCountPercent.setVisibility(View.VISIBLE);
                 txtSecondPollCountPercent.setVisibility(View.VISIBLE);
+                data.setPollCount(data.getPollCount() + 1);
+                progressFirstOption.setMax(data.getPollCount());
+                progressSecondOption.setMax(data.getPollCount());
 
                 double percent1 = data.getPollCount() == 0 ? 0
                         : (double) data.getOption1Count() / data.getPollCount() * 100;

@@ -71,7 +71,7 @@
         <activity
             android:name=".ui.ShareDialogActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/MDDialog"></activity>
+            android:theme="@style/MDDialog" />
 
         <activity
             android:name=".ui.personal.UserActivity"
