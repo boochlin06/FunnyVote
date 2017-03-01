@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.android.heaton.funnyvote">
+    package="com.heaton.funnyvote">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-        android:name=".FunnyVoteApplication"
+        android:name="com.heaton.funnyvote.FunnyVoteApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -21,7 +21,7 @@
             android:value="@string/facebook_app_id" />
 
         <activity
-            android:name="com.android.heaton.funnyvote.ui.WelcomeActivity"
+            android:name="com.heaton.funnyvote.ui.WelcomeActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -37,7 +37,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name="com.android.heaton.funnyvote.MainActivity"
+            android:name="com.heaton.funnyvote.MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -46,7 +46,7 @@
         </activity>
 
         <activity
-            android:name="com.android.heaton.funnyvote.ui.createvote.CreateVoteActivity"
+            android:name="com.heaton.funnyvote.ui.createvote.CreateVoteActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -55,7 +55,7 @@
         </activity>
 
         <activity
-            android:name="com.android.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity"
+            android:name="com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -69,16 +69,16 @@
             android:exported="true" />
 
         <activity
-            android:name=".ui.ShareDialogActivity"
+            android:name="com.heaton.funnyvote.ui.ShareDialogActivity"
             android:screenOrientation="portrait"
             android:theme="@style/MDDialog" />
 
         <activity
-            android:name=".ui.personal.UserActivity"
+            android:name="com.heaton.funnyvote.ui.personal.UserActivity"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".ui.personal.PersonalActivity"
+            android:name="com.heaton.funnyvote.ui.personal.PersonalActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
@@ -89,7 +89,7 @@
             android:value="daa9bcc114edbbb7c147bab2e1fb2e6ae0018305" />
 
         <activity
-            android:name=".ui.introduction.IntroductionActivity"
+            android:name="com.heaton.funnyvote.ui.introduction.IntroductionActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" />
 

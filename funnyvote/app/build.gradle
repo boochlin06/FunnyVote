@@ -23,7 +23,7 @@ android {
         jumboMode true
     }
     defaultConfig {
-        applicationId "com.android.heaton.funnyvote"
+        applicationId "com.heaton.funnyvote"
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
@@ -82,7 +82,7 @@ dependencies {
 }
 greendao {
     schemaVersion 1
-    daoPackage 'com.android.heaton.funnyvote.database'
+    daoPackage 'com.heaton.funnyvote.database'
     targetGenDir 'src/main/java'
 }
 apply plugin: 'com.google.gms.google-services'

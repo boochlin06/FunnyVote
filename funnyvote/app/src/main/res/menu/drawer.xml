@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.android.heaton.funnyvote.MainActivity">
+    tools:context="com.android.heaton.funnyvote.com.heaton.funnyvote.MainActivity">
     <group
         android:id="@+id/nav_classification"
         android:checkableBehavior="single">

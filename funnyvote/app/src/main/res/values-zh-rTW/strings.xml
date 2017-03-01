@@ -102,6 +102,12 @@
 
     <string name="create_vote_option_hint">Please input option.</string>
 
+    <!-- Create vote exit dialog -->
+    <string name="create_vote_dialog_exit_title">Are you sure to exit?</string>
+    <string name="create_vote_dialog_exit_message">Dont you create vote complete?</string>
+    <string name="create_vote_dialog_exit_button_leave">Leave</string>
+    <string name="create_vote_dialog_exit_button_keep">Keep</string>
+
     <!--Vote detail activity-->
     <string name="vote_detail_toast_option_choice_hint" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
     <string name="vote_detail_toast_option_over_max" formatted="false">"Over the max option:%d votes."</string>

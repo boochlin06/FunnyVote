@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="180dp" />
 
-            <com.android.heaton.funnyvote.ui.CirclePageIndicator
+            <com.heaton.funnyvote.ui.CirclePageIndicator
                 android:id="@+id/vpIndicator"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
