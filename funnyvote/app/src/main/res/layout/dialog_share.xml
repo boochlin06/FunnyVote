@@ -18,7 +18,7 @@
         android:layout_below="@+id/funny_vote_logo"
         android:layout_centerHorizontal="true"
         android:textSize="16sp"
-        android:text="@string/vote_share_via"/>
+        android:text="@string/vote_share_vote_via"/>
     <org.apmem.tools.layouts.FlowLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/share_options"

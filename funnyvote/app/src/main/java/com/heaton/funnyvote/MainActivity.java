@@ -31,6 +31,7 @@ import com.google.android.gms.ads.AdView;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.ui.about.AboutFragment;
 import com.heaton.funnyvote.ui.account.AccountFragment;
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.heaton.funnyvote.ui.main.MainPageFragment;
@@ -246,8 +247,12 @@ public class MainActivity extends AppCompatActivity {
                         toolbar.setBackgroundColor(bgColor);
                         toolbar.setTitle(R.string.drawer_account);
                         break;
-                    case R.id.navigation_item_settings:
-
+                    case R.id.navigation_item_about:
+                        mCurrentPage = menuItem.getItemId();
+                        AboutFragment aboutFragment = new AboutFragment();
+                        aboutFragment.setEnterTransition(slide);
+                        ft.replace(R.id.frame_content, aboutFragment).commit();
+                        toolbar.setTitle(R.string.drawer_about);
                         break;
                 }
             }

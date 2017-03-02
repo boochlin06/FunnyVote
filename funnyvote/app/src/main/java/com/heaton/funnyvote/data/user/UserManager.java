@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.Util;
 import com.heaton.funnyvote.data.RemoteServiceApi;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.eventbus.EventBusController;
@@ -50,11 +51,12 @@ public class UserManager {
     public void getUser(final GetUserCallback callback, boolean forceUpdateUserCode) {
         final User user = userDataSource.getUser();
         if (user.getType() == User.TYPE_GUEST && user.getUserCode().isEmpty()) {
-            Log.d(TAG, "Guest!" + user.getUserCode());
-            String guestName = context.getString(R.string.account_default_name);
+            final String guestName = Util.randomUserName(context);
+            Log.d(TAG, "Guest!" + user.getUserCode()+" name:"+guestName);
             remoteServiceApi.getGuestUserCode(new RemoteServiceApi.GetUserCodeCallback() {
                 @Override
                 public void onSuccess(String userCode) {
+                    user.setUserName(guestName);
                     user.setUserCode(userCode);
                     userDataSource.setUser(user);
                     callback.onResponse(userDataSource.getUser());

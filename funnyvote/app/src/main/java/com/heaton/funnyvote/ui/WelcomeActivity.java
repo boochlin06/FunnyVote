@@ -29,8 +29,8 @@ public class WelcomeActivity extends AppCompatActivity {
             }
             if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, true)) {
                 DataLoader.getInstance(getApplicationContext()).mockPromotions(5);
+                firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, false).apply();
             }
-            firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, false);
             return null;
         }
 
@@ -42,7 +42,6 @@ public class WelcomeActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Object o) {
             if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, true)) {
-                firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, false).apply();
                 startActivity(new Intent(WelcomeActivity.this, IntroductionActivity.class));
             } else {
                 startActivity(new Intent(WelcomeActivity.this, MainActivity.class));

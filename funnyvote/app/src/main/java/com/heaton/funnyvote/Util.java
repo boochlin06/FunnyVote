@@ -95,4 +95,12 @@ public class Util {
         canvas.drawText(text, 0, baseline, paint);
         return new BitmapDrawable(context.getResources(), image);
     }
+
+    public static String randomUserName(Context context) {
+        String[] area = context.getResources().getStringArray(R.array.area);
+        String[] name = context.getResources().getStringArray(R.array.name);
+        String randomArea = area[(int) (Math.random() * area.length)];
+        String randomName = name[(int) (Math.random() * name.length)];
+        return randomArea + randomName + Integer.toString((int) (Math.random() * 1000));
+    }
 }

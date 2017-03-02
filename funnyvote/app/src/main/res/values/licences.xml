@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="licences_title">
+        <item>@string/about_licence_title</item>
+        <item>@string/about_licence_circleimageview</item>
+        <item>@string/about_licence_butterknife</item>
+        <item>@string/about_licence_circle_progress_view</item>
+        <item>@string/about_licence_eventbus</item>
+        <item>@string/about_licence_facebook</item>
+        <item>@string/about_licence_floating_action_button</item>
+        <item>@string/about_licence_greendao</item>
+        <item>@string/about_licence_glide</item>
+        <item>@string/about_licence_image_cropper</item>
+        <item>@string/about_licence_material_picker</item>
+        <item>@string/about_licence_recycle_animators</item>
+        <item>@string/about_licence_roundcornerprogressbar</item>
+        <item>@string/about_licence_stetho</item>
+        <item>@string/about_licence_textdrawable</item>
+        <item>@string/about_licence_retrofit</item>
+        <item>@string/about_licence_showcaseview</item>
+        <item>@string/about_licence_flowlayout</item>
+        <item>@string/about_licence_freepik</item>
+    </string-array>
+    <string-array name="licences_desc">
+        <item>@string/about_licence_desc</item>
+        <item>@string/about_licence_circleimageview_desc</item>
+        <item>@string/about_licence_butterknife_desc</item>
+        <item>@string/about_licence_circle_progress_view_desc</item>
+        <item>@string/about_licence_eventbus_desc</item>
+        <item>@string/about_licence_facebook_desc</item>
+        <item>@string/about_licence_floating_action_button_desc</item>
+        <item>@string/about_licence_greendao_desc</item>
+        <item>@string/about_licence_glide_desc</item>
+        <item>@string/about_licence_image_cropper_desc</item>
+        <item>@string/about_licence_material_picker_desc</item>
+        <item>@string/about_licence_recycle_animators_desc</item>
+        <item>@string/about_licence_roundcornerprogressbar_desc</item>
+        <item>@string/about_licence_stetho_desc</item>
+        <item>@string/about_licence_textdrawable_desc</item>
+        <item>@string/about_licence_retrofit_desc</item>
+        <item>@string/about_licence_showcaseview_desc</item>
+        <item>@string/about_licence_flowlayout_desc</item>
+        <item>@string/about_licence_freepik_desc</item>
+    </string-array>
+
+
+    <string name="about_licence_circleimageview" translatable="false">CircleImageView</string>
+    <string name="about_licence_circleimageview_desc" translatable="false">
+        Copyright 2014 - 2017 Henning Dodenhof\n\nLicensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the LICENSE-2.0\n\n
+
+    http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+    </string>
+    <string name="about_licence_butterknife" translatable="false">butterknife</string>
+    <string name="about_licence_butterknife_desc" translatable="false">
+        Copyright 2013 Jake Wharton\n\nLicensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the LICENSE-2.0\n\n
+
+   http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+    </string>
+    <string name="about_licence_eventbus" translatable="false">EventBus</string>
+    <string name="about_licence_eventbus_desc" translatable="false">
+        Copyright (C) 2012-2016 Markus Junginger, greenrobot(http://greenrobot.org)\n\n
+        EventBus binaries and source code can be used according to the Apache License, Version 2.0.
+    </string>
+    <string name="about_licence_recycle_animators" translatable="false">CircleImageView</string>
+    <string name="about_licence_recycle_animators_desc" translatable="false">
+        Copyright 2015 Wasabeef\n\nLicensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the LICENSE-2.0\n\n
+
+   http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+    </string>
+    <string name="about_licence_circle_progress_view" translatable="false">Circle-Progress-View</string>
+    <string name="about_licence_circle_progress_view_desc" translatable="false">
+        The MIT License (MIT) Copyright (c) 2015 jakob-grabner</string>
+    <string name="about_licence_floating_action_button" translatable="false">android-floating-action-button</string>
+    <string name="about_licence_floating_action_button_desc" translatable="false">
+        Copyright (C) 2014 Jerzy Chalupski\n\nLicensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the LICENSE-2.0\n\n
+
+     http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+    </string>
+    <string name="about_licence_roundcornerprogressbar" translatable="false">Android-RoundCornerProgressBar</string>
+    <string name="about_licence_roundcornerprogressbar_desc" translatable="false">
+        Copyright 2015 Akexorcist\n\nLicensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the LICENSE-2.0\n\n
+
+     http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+    </string>
+    <string name="about_licence_greendao" translatable="false">greenDAO</string>
+    <string name="about_licence_greendao_desc" translatable="false">
+        greenDAO’s core library, which you need to include in your project, is available under the permissive Apache 2 license.\n\n
+        And of course, you can include all classes generated by DaoGenerator.</string>
+    <string name="about_licence_stetho" translatable="false">Stetho</string>
+    <string name="about_licence_stetho_desc" translatable="false">
+        Stetho is BSD-licensed. We also provide an additional patent grant.</string>
+
+    <string name="about_licence_facebook" translatable="false">Facebook</string>
+    <string name="about_licence_facebook_desc" translatable="false">
+        Except as otherwise noted, the Facebook SDK for Android is licensed under the Facebook Platform License\n
+        (https://github.com/facebook/facebook-android-sdk/blob/master/LICENSE.txt).\n\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed
+        on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied
+        . See the License for the specific language governing permissions and limitations under the License.</string>
+
+    <string name="about_licence_material_picker" translatable="false">MaterialDateTimePicker</string>
+    <string name="about_licence_material_picker_desc" translatable="false">
+        Copyright (c) 2015 Wouter Dullaert\n\nLicensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the LICENSE-2.0\n\n
+
+     http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+    </string>
+
+    <string name="about_licence_glide" translatable="false">glide</string>
+    <string name="about_licence_glide_desc" translatable="false">BSD, part MIT and Apache 2.0. See the LICENSE file for details.</string>
+
+    <string name="about_licence_textdrawable" translatable="false">TextDrawable</string>
+    <string name="about_licence_textdrawable_desc" translatable="false">The MIT License (MIT)Copyright (c) 2014 Amulya Khare</string>
+
+    <string name="about_licence_image_cropper" translatable="false">Android-Image-Cropper</string>
+    <string name="about_licence_image_cropper_desc" translatable="false">
+        Originally forked from edmodo/cropper.\n\nCopyright 2016, Arthur Teplitzki, 2013, Edmodo, Inc.\n\n
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the LICENSE-2.0\n\n
+
+     http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+    </string>
+    <string name="about_licence_retrofit" translatable="false">retrofit</string>
+    <string name="about_licence_retrofit_desc" translatable="false">
+        Copyright 2013 Square, Inc.\n\nLicensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the LICENSE-2.0\n\n
+
+   http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</string>
+    <string name="about_licence_flowlayout" translatable="false">android-flowlayout</string>
+    <string name="about_licence_flowlayout_desc" translatable="false">
+        Copyright 2015 Paolo Rotolo\n\nCopyright 2016 Maximilian Narr\n\nLicensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the LICENSE-2.0\n\n
+
+       http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.</string>
+    <string name="about_licence_showcaseview" translatable="false">ShowcaseView</string>
+    <string name="about_licence_showcaseview_desc" translatable="false">Copyright Alex Curran (@amlcurran) © 2012-2014.
+        All rights reserved.\n\nThis library is distributed under an Apache 2.0 License.</string>
+    <string name="about_licence_freepik" translatable="false">Freepik</string>
+    <string name="about_licence_freepik_desc" translatable="false">
+        Icon made by Freepik from www.flaticon.com.\n\n Background vector created by Freepik.</string>
+</resources>

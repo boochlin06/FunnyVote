@@ -36,6 +36,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
+import com.bumptech.glide.Glide;
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.Util;
 import com.heaton.funnyvote.data.VoteData.VoteDataManager;
@@ -49,11 +54,6 @@ import com.heaton.funnyvote.ui.HidingScrollListener;
 import com.heaton.funnyvote.ui.ShareDialogActivity;
 import com.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.heaton.funnyvote.ui.personal.PersonalActivity;
-import com.bumptech.glide.Glide;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;

@@ -49,8 +49,8 @@
             android:layout_toRightOf="@id/txtMaxOption"
             android:inputType="number"
             android:maxLines="1"
-            android:text="1"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:text="1" />
 
         <TextView
             android:id="@+id/txtMinOption"
@@ -74,8 +74,8 @@
             android:layout_toRightOf="@id/txtMinOption"
             android:inputType="number"
             android:maxLines="1"
-            android:text="1"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:text="1" />
 
         <TextView
             android:id="@+id/txtUserAdd"
@@ -105,8 +105,8 @@
             android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
             android:layout_marginRight="@dimen/create_vote_settings_main_margin"
             android:layout_marginTop="12dp"
-            android:visibility="gone"
-            android:background="@color/md_blue_200" />
+            android:background="@color/md_blue_200"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/txtAuthor"
@@ -115,9 +115,9 @@
             android:layout_below="@id/lineAuthor"
             android:layout_marginLeft="@dimen/create_vote_settings_main_margin"
             android:layout_marginTop="@dimen/create_vote_settings_main_topic_sep_margin"
-            android:visibility="gone"
             android:text="@string/create_vote_tab_settings_author"
-            android:textSize="@dimen/create_vote_settings_main_topic_text_size" />
+            android:textSize="@dimen/create_vote_settings_main_topic_text_size"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/txtAnonymous"
@@ -126,9 +126,9 @@
             android:layout_below="@id/txtAuthor"
             android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
-            android:visibility="gone"
             android:text="@string/create_vote_tab_settings_anonymous"
-            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size"
+            android:visibility="gone" />
 
         <Switch
             android:id="@+id/swtAnonymous"
@@ -137,35 +137,35 @@
             android:layout_alignBottom="@id/txtAnonymous"
             android:layout_alignParentRight="true"
             android:layout_below="@id/txtAuthor"
-            android:visibility="gone"
             android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
-            android:layout_marginTop="@dimen/create_vote_settings_sep_margin" />
+            android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/txtAuthorName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/txtAuthor"
-            android:visibility="gone"
             android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_sep_margin"
             android:text="@string/create_vote_tab_settings_name"
-            android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
+            android:textSize="@dimen/create_vote_settings_sub_topic_text_size"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/edtAuthorName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/txtAuthorName"
             android:layout_alignBaseline="@id/txtAuthorName"
             android:layout_alignParentRight="true"
             android:layout_below="@id/txtOption"
-            android:visibility="gone"
             android:layout_marginLeft="24dp"
             android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_toRightOf="@id/txtAuthorName"
             android:maxLines="1"
             android:textAlignment="textEnd"
             android:textSize="16sp"
+            android:visibility="gone"
             tools:text="Heaton" />
 
         <View
@@ -243,11 +243,11 @@
             android:id="@+id/txtSecurityDetail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/txtSecurity"
             android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_time_margin"
-            android:layout_below="@id/txtSecurity"
-            android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size"
-            android:textColor="@color/md_blue_300" />
+            android:textColor="@color/md_blue_300"
+            android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size" />
 
         <TextView
             android:id="@+id/txtNeedPwd"
@@ -287,9 +287,9 @@
             android:layout_alignParentRight="true"
             android:layout_below="@id/txtOption"
             android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
-            android:maxLines="1"
-            android:maxLength="20"
             android:inputType="textPassword"
+            android:maxLength="20"
+            android:maxLines="1"
             android:textAlignment="textEnd"
             android:textSize="16sp"
             tools:text="test" />

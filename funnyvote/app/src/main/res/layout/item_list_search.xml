@@ -45,8 +45,8 @@
                 android:layout_marginLeft="6dp"
                 android:layout_toRightOf="@id/imgPollCount"
                 android:gravity="center"
-                android:text="10 votes"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                tools:text="10 votes" />
 
         </RelativeLayout>
 
@@ -60,32 +60,32 @@
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="END"
             android:textColor="@color/md_red_500"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:text="END" />
 
         <TextView
             android:id="@+id/txtAuthorName"
             android:layout_width="match_parent"
             android:layout_height="18dp"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/txtTitle"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textSize="16sp"
-            tools:text="Heaton Lin"
-            android:layout_below="@+id/txtTitle"
-            android:layout_alignParentStart="true" />
+            android:textSize="14sp"
+            tools:text="Heaton Lin" />
 
         <TextView
             android:id="@+id/txtTitle"
             android:layout_width="match_parent"
             android:layout_height="20dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
             android:ellipsize="end"
             android:maxLines="1"
             android:textSize="18sp"
             android:textStyle="bold"
-            tools:text="The funny vote is the best vote app."
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true" />
+            tools:text="The funny vote is the best vote app." />
 
     </RelativeLayout>
 

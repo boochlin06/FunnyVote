@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:alpha="0.95"
-    android:paddingTop="24dp"
     android:background="@android:color/black"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingTop="24dp">
 
     <RelativeLayout
         android:id="@+id/authorBar"
@@ -33,14 +33,15 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
             android:src="@drawable/ic_close_24dp" />
+
         <TextView
             android:id="@+id/txtAuthorName"
             android:layout_width="wrap_content"
             android:layout_height="24dp"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="6dp"
-            android:layout_toRightOf="@id/imgAuthorIcon"
             android:layout_toLeftOf="@id/imgCross"
+            android:layout_toRightOf="@id/imgAuthorIcon"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
             android:textColor="@color/md_amber_50"
             android:textSize="18sp"
@@ -65,9 +66,10 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="12dp"
-        android:layout_marginLeft="16dp"
         android:layout_below="@id/authorBar"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="12dp"
         android:fadeScrollbars="false">
 
         <TextView

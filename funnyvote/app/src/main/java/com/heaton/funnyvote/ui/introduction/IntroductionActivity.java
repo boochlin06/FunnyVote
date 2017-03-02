@@ -1,12 +1,14 @@
 package com.heaton.funnyvote.ui.introduction;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 
 import com.github.paolorotolo.appintro.AppIntro2;
+import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.MainActivity;
 import com.heaton.funnyvote.R;
 
@@ -43,14 +45,22 @@ public class IntroductionActivity extends AppIntro2 {
     @Override
     public void onSkipPressed(Fragment currentFragment) {
         super.onSkipPressed(currentFragment);
-        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+        SharedPreferences firstTime = FirstTimePref.getInstance(this).getPreferences();
+        if (firstTime.getBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, true)) {
+            firstTime.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, false).apply();
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+        }
         finish();
     }
 
     @Override
     public void onDonePressed(Fragment currentFragment) {
         super.onDonePressed(currentFragment);
-        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+        SharedPreferences firstTime = FirstTimePref.getInstance(this).getPreferences();
+        if (firstTime.getBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, true)) {
+            firstTime.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, false).apply();
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+        }
         finish();
     }
 }

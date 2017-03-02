@@ -10,5 +10,5 @@
         android:layout_height="@dimen/promotion_image_high"
         android:paddingBottom="5dp"
         android:scaleType="fitXY"
-        android:src="@drawable/polls_md" />
+        android:src="@drawable/vote_box" />
 </LinearLayout>

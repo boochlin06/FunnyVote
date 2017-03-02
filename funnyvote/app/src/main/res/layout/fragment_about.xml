@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            app:contentPaddingBottom="8dp"
+            app:contentPaddingLeft="8dp"
+            app:contentPaddingRight="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/TextComponent.ItemRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_app_introduction"
+                    android:textAppearance="@style/TextAppearance.Header" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="24dp"
+                    android:src="@drawable/fv_ful_png_300px" />
+
+                <TextView
+                    android:id="@+id/txtAppIntroduction"
+                    style="@style/TextComponent.ItemRow.Selectable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableRight="@drawable/ic_arrow_forward_24dp"
+                    android:text="@string/about_detail_introduction"
+                    android:textAppearance="@style/TextAppearance.ItemExample" />
+
+                <TextView
+                    android:id="@+id/txtTutorial"
+                    style="@style/TextComponent.ItemRow.Selectable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableRight="@drawable/ic_arrow_forward_24dp"
+                    android:text="@string/about_show_tutorial"
+                    android:textAppearance="@style/TextAppearance.ItemExample" />
+
+                <TextView
+                    android:id="@+id/txtAuthorInfo"
+                    style="@style/TextComponent.ItemRow.Selectable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableRight="@drawable/ic_arrow_forward_24dp"
+                    android:text="@string/about_author_info"
+                    android:textAppearance="@style/TextAppearance.ItemExample" />
+
+                <TextView
+                    android:id="@+id/txtLicence"
+                    style="@style/TextComponent.ItemRow.Selectable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableRight="@drawable/ic_arrow_forward_24dp"
+                    android:text="@string/about_licence"
+                    android:textAppearance="@style/TextAppearance.ItemExample" />
+
+                <TextView
+                    android:id="@+id/txtProblem"
+                    style="@style/TextComponent.ItemRow.Selectable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableRight="@drawable/ic_arrow_forward_24dp"
+                    android:text="@string/about_common_problem"
+                    android:textAppearance="@style/TextAppearance.ItemExample" />
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/TextComponent.ItemRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:text="@string/about_funnyvote"
+                    android:textAppearance="@style/TextAppearance.Header" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:text="@string/about_current_version"
+                        android:textAppearance="@style/TextAppearance.ItemExample" />
+
+                    <TextView
+                        android:id="@+id/txtVersionName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:textAppearance="@style/TextAppearance.ItemExample"
+                        tools:text="1.0.0" />
+
+                </RelativeLayout>
+
+
+                <TextView
+                    android:id="@+id/txtUpdate"
+                    style="@style/TextComponent.ItemRow.Selectable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableRight="@drawable/ic_arrow_forward_24dp"
+                    android:text="@string/about_update"
+                    android:textAppearance="@style/TextAppearance.ItemExample" />
+
+                <android.support.v7.widget.CardView
+                    android:id="@+id/btnShareApp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    app:cardBackgroundColor="@color/md_blue_700"
+                    app:cardCornerRadius="20dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="4dp"
+                            android:src="@drawable/ic_share_white_24dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="@string/about_share_app"
+                            android:textColor="@color/md_amber_50" />
+                    </LinearLayout>
+                </android.support.v7.widget.CardView>
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
+    </LinearLayout>
+</ScrollView>

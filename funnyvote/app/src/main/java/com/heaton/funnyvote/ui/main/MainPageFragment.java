@@ -154,7 +154,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main_page_top, null);
-        initialHeaderView();
+        initPromotionData();
         context = this.getActivity();
 
         circleLoad = (CircleProgressView) view.findViewById(R.id.circleLoad);
@@ -207,7 +207,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         TextView txtOption1 = (TextView) content.findViewById(R.id.txtFirstOptionTitle);
         TextView txtOption2 = (TextView) content.findViewById(R.id.txtSecondOptionTitle);
         TextView txtPubTime = (TextView) content.findViewById(R.id.txtPubTime);
-        TextView txtPollCount = (TextView) content.findViewById(R.id.txtBarPollCount);
+        final TextView txtPollCount = (TextView) content.findViewById(R.id.txtBarPollCount);
         final TextView txtFirstPollCountPercent = (TextView) content.findViewById(R.id.txtFirstPollCountPercent);
         final TextView txtSecondPollCountPercent = (TextView) content.findViewById(R.id.txtSecondPollCountPercent);
         final RoundCornerProgressBar progressFirstOption = (RoundCornerProgressBar) content.findViewById(R.id.progressFirstOption);
@@ -281,6 +281,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                 data.setPollCount(data.getPollCount() + 1);
                 progressFirstOption.setMax(data.getPollCount());
                 progressSecondOption.setMax(data.getPollCount());
+                txtPollCount.setText(Integer.toString(data.getPollCount()));
 
                 double percent1 = data.getPollCount() == 0 ? 0
                         : (double) data.getOption1Count() / data.getPollCount() * 100;
@@ -374,7 +375,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         super.onDestroyView();
     }
 
-    private void initialHeaderView() {
+    private void initPromotionData() {
         promotionList = DataLoader.getInstance(getContext()).queryAllPromotion();
         setupPromotionAdmob();
     }
