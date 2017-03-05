@@ -30,9 +30,16 @@ import android.widget.Toast;
 
 import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.amulyakhare.textdrawable.TextDrawable;
+import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.NativeExpressAdView;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FirstTimePref;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.Util;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.promotion.PromotionManager;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.DataLoader;
@@ -41,9 +48,6 @@ import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.eventbus.EventBusController;
 import com.heaton.funnyvote.ui.CirclePageIndicator;
-import com.bumptech.glide.Glide;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.NativeExpressAdView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -75,6 +79,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     private User user;
     private Activity context;
     private CircleProgressView circleLoad;
+    private Tracker tracker;
 
     private class PromotionType {
         public static final int PROM0TION_TYPE_ADMOB = 0;
@@ -148,12 +153,38 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTORDUTCION_QUICK_POLL, false).apply();
             showIntroductionDialog();
         }
+        tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN_HOT);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+        vpMainPage.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN_HOT);
+                } else if (position == 1) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN_NEW);
+                }
+                tracker.send(new HitBuilders.ScreenViewBuilder().build());
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main_page_top, null);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
+        tracker = application.getDefaultTracker();
         initPromotionData();
         context = this.getActivity();
 

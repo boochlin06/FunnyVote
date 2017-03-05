@@ -27,9 +27,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FileUtils;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.Util;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.VoteData;
@@ -75,12 +79,16 @@ public class CreateVoteActivity extends AppCompatActivity {
     private Uri cropImageUri;
     private VoteData localVoteSetting;
     private VoteDataManager voteDataManager;
+    private Tracker tracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cteate_vote);
         ButterKnife.bind(this);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
 
         mainToolbar.setTitle(getString(R.string.create_vote_toolbar_title));
@@ -99,7 +107,30 @@ public class CreateVoteActivity extends AppCompatActivity {
         });
         setSupportActionBar(mainToolbar);
 
+        tracker.setScreenName(AnalyzticsTag.SCREEN_CREATE_VOTE_OPTIONS);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
         vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
+        vpSubArea.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_CREATE_VOTE_OPTIONS);
+                } else if (position == 1) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_CREATE_VOTE_SETTINGS);
+                }
+                tracker.send(new HitBuilders.ScreenViewBuilder().build());
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         tabLayoutCreateVote.setupWithViewPager(vpSubArea);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -156,6 +187,13 @@ public class CreateVoteActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        tracker.setScreenName(AnalyzticsTag.SCREEN_CREATE_VOTE);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @Override

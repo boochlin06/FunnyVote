@@ -11,14 +11,19 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.ui.main.MainPageTabFragment;
-import com.bumptech.glide.Glide;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -35,6 +40,7 @@ public class UserActivity extends AppCompatActivity
     private int maxScrollSize;
     private TabsAdapter tabsAdapter;
     private ViewPager viewPager;
+    private Tracker tracker;
 
     User user = null;
     UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
@@ -58,6 +64,8 @@ public class UserActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal);
 
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         txtSubTitle = (TextView) findViewById(R.id.txtSubTitle);
         txtUserName = (TextView) findViewById(R.id.txtUserName);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayoutPersonal);
@@ -80,7 +88,38 @@ public class UserActivity extends AppCompatActivity
         viewPager.setAdapter(tabsAdapter);
         tabLayout.setupWithViewPager(viewPager);
         UserManager.getInstance(getApplicationContext()).getUser(getUserCallback, false);
+        tracker.setScreenName(AnalyzticsTag.SCREEN_BOX_CREATE);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_BOX_CREATE);
+                } else if (position == 1) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_BOX_PARTICIPATE);
+                } else if (position == 2) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_BOX_FAVORITE);
+                }
+                tracker.send(new HitBuilders.ScreenViewBuilder().build());
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        tracker.setScreenName(AnalyzticsTag.SCREEN_BOX);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     private void setUpUser(User user) {

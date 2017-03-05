@@ -25,15 +25,10 @@ import butterknife.ButterKnife;
 
 public class IntroductionFragment extends Fragment implements ISlideSelectionListener,
         ISlideBackgroundColorHolder {
-    private static final String ARG_LAYOUT_RES_ID = "layoutResId";
-    protected static final String ARG_TITLE = "title";
-    protected static final String ARG_TITLE_TYPEFACE = "title_typeface";
+    public static final String ARG_TITLE = "title";
     protected static final String ARG_DESC = "desc";
-    protected static final String ARG_DESC_TYPEFACE = "desc_typeface";
     protected static final String ARG_DRAWABLE = "drawable";
     protected static final String ARG_BG_COLOR = "bg_color";
-    protected static final String ARG_TITLE_COLOR = "title_color";
-    protected static final String ARG_DESC_COLOR = "desc_color";
     @BindView(R.id.txtTitle)
     TextView txtTitle;
     @BindView(R.id.txtDescription)

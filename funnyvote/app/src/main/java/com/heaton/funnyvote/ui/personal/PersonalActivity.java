@@ -11,14 +11,19 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.ui.main.MainPageTabFragment;
-import com.bumptech.glide.Glide;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -51,6 +56,8 @@ public class PersonalActivity extends AppCompatActivity
 
     private User targetUser;
     private User loginUser;
+
+    private Tracker tracker;
     UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
         @Override
         public void onResponse(User user) {
@@ -70,6 +77,9 @@ public class PersonalActivity extends AppCompatActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         if (getIntent() != null) {
             personalCode = getIntent().getStringExtra(EXTRA_PERSONAL_CODE);
             personalCodeType = getIntent().getStringExtra(EXTRA_PERSONAL_CODE_TYPE);
@@ -104,6 +114,29 @@ public class PersonalActivity extends AppCompatActivity
         tabLayout.setupWithViewPager(viewPager);
         setUpUser(targetUser);
         UserManager.getInstance(getApplicationContext()).getUser(getUserCallback, false);
+        tracker.setScreenName(AnalyzticsTag.SCREEN_PERSONAL_CREATE);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_PERSONAL_CREATE);
+                } else if (position == 1) {
+                    tracker.setScreenName(AnalyzticsTag.SCREEN_PERSONAL_FAVORITE);
+                }
+                tracker.send(new HitBuilders.ScreenViewBuilder().build());
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     private void setUpUser(User user) {
@@ -125,6 +158,13 @@ public class PersonalActivity extends AppCompatActivity
 
     public static void start(Context c) {
         c.startActivity(new Intent(c, PersonalActivity.class));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        tracker.setScreenName(AnalyzticsTag.SCREEN_PERSONAL);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @Override

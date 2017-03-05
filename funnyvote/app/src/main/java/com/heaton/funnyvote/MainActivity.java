@@ -28,6 +28,9 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.eventbus.EventBusController;
@@ -60,12 +63,15 @@ public class MainActivity extends AppCompatActivity {
     private String searchKeyword;
     public static boolean ENABLE_ADMOB = true;
     private AdView adView;
+    private Tracker tracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         getSupportFragmentManager().beginTransaction().replace(R.id.frame_content
                 , new MainPageFragment()).commit();
         toolbar = (Toolbar) findViewById(R.id.toolbarMain);
@@ -221,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
                         fragment.setEnterTransition(slide);
                         ft.replace(R.id.frame_content, fragment).commit();
                         toolbar.setTitle(getString(R.string.drawer_home));
+                        tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN);
                         break;
                     case R.id.navigation_item_create_vote:
                         startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
@@ -229,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(MainActivity.this, UserActivity.class));
                         break;
                     case R.id.navigation_item_search:
+                        tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
                         mCurrentPage = menuItem.getItemId();
                         fragment = new SearchFragment();
                         fragment.setEnterTransition(slide);
@@ -239,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
                         fragment.setArguments(argument);
                         break;
                     case R.id.navigation_item_account:
+                        tracker.setScreenName(AnalyzticsTag.SCREEN_ACCOUNT);
                         mCurrentPage = menuItem.getItemId();
                         AccountFragment accountFragment = new AccountFragment();
                         accountFragment.setEnterTransition(slide);
@@ -248,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
                         toolbar.setTitle(R.string.drawer_account);
                         break;
                     case R.id.navigation_item_about:
+                        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT);
                         mCurrentPage = menuItem.getItemId();
                         AboutFragment aboutFragment = new AboutFragment();
                         aboutFragment.setEnterTransition(slide);
@@ -255,6 +265,7 @@ public class MainActivity extends AppCompatActivity {
                         toolbar.setTitle(R.string.drawer_about);
                         break;
                 }
+                tracker.send(new HitBuilders.ScreenViewBuilder().build());
             }
         }, 500);
     }

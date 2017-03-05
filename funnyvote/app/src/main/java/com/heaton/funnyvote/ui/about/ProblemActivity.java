@@ -8,7 +8,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 
 /**
  * Created by heaton on 2017/3/2.
@@ -16,10 +20,15 @@ import com.heaton.funnyvote.R;
 
 public class ProblemActivity extends AppCompatActivity {
     private Toolbar mainToolbar;
+    private Tracker tracker;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_common_problem);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
 
         mainToolbar.setTitle(getString(R.string.about_author_info));
@@ -36,6 +45,13 @@ public class ProblemActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_PROBLEM);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @Override

@@ -41,8 +41,12 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.Util;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.Option;
@@ -144,6 +148,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private long newOptionIdAuto = -1;
     private int sortType = 0;
     private User user;
+    private Tracker tracker;
 
     private VoteDataManager voteDataManager;
     private UserManager userManager;
@@ -185,6 +190,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vote_detail);
         ButterKnife.bind(this);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         context = this;
         data = new VoteData();
         optionList = new ArrayList<>();
@@ -216,6 +224,13 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         voteDataManager = VoteDataManager.getInstance(getApplicationContext());
         userManager = UserManager.getInstance(getApplicationContext());
         userManager.getUser(getUserCallback, false);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        tracker.setScreenName(AnalyzticsTag.SCREEN_VOTE_DETAIL);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     private void setUpViews() {

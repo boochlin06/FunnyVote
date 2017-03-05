@@ -15,7 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.ui.ShareDialogActivity;
 import com.heaton.funnyvote.ui.introduction.IntroductionActivity;
 
@@ -43,11 +47,15 @@ public class AboutFragment extends Fragment {
     @BindView(R.id.btnShareApp)
     CardView btnShareApp;
 
+    private Tracker tracker;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_about, null);
         ButterKnife.bind(this, view);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
+        tracker = application.getDefaultTracker();
         PackageInfo pinfo = null;
         try {
             pinfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
@@ -82,6 +90,8 @@ public class AboutFragment extends Fragment {
                 startActivity(new Intent(getActivity(), ProblemActivity.class));
                 break;
             case R.id.txtUpdate:
+                tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_UPDATE_APP);
+                tracker.send(new HitBuilders.ScreenViewBuilder().build());
                 final String appPackageName = getActivity().getPackageName();
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW

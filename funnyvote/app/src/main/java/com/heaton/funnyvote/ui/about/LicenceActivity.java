@@ -9,7 +9,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +30,15 @@ public class LicenceActivity extends AppCompatActivity {
     RecyclerView ryLicence;
     @BindView(R.id.main_toolbar)
     Toolbar mainToolbar;
-
+    private Tracker tracker;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_licence);
         ButterKnife.bind(this);
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         String[] titles = getResources().getStringArray(R.array.licences_title);
         String[] descs = getResources().getStringArray(R.array.licences_desc);
         List<LicenceItem> licenceItemList = new ArrayList<>();
@@ -56,6 +62,13 @@ public class LicenceActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_LICENCE);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @Override

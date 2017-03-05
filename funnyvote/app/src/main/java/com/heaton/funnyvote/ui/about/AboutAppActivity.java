@@ -10,7 +10,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,12 +27,15 @@ public class AboutAppActivity extends AppCompatActivity {
     @BindView(R.id.txtAppDesc)
     TextView txtAppDesc;
     private Toolbar mainToolbar;
+    private Tracker tracker;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about_app);
         ButterKnife.bind(this);
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
 
         mainToolbar.setTitle(getString(R.string.about_funnyvote));
@@ -48,6 +55,13 @@ public class AboutAppActivity extends AppCompatActivity {
 
         String desc = getString(R.string.about_introduction_desc);
         txtAppDesc.setText(Html.fromHtml(desc));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_FUNNYVOTE_APP);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @Override

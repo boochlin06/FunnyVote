@@ -16,7 +16,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.CallbackManager;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 
 import org.apmem.tools.layouts.FlowLayout;
 
@@ -50,11 +54,16 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
     private String voteURL;
     private boolean isShareApp;
 
+    private Tracker tracker;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_share);
         ButterKnife.bind(this);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
         mCallbackManager = CallbackManager.Factory.create();
         if (getIntent() != null) {
             voteURL = getIntent().getStringExtra(EXTRA_VOTE_URL);
@@ -68,6 +77,17 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
         } else {
             shareTo.setText(R.string.vote_share_vote_via);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isShareApp) {
+            tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_SHARE_APP);
+        } else {
+            tracker.setScreenName(AnalyzticsTag.SCREEN_SHARE_VOTE);
+        }
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     private void initShareOptions() {
