@@ -108,7 +108,7 @@ public class VoteDataManager {
 
     public void getVoteList(int offset, String eventMessage, @NonNull User user) {
         if (TextUtils.isEmpty(eventMessage) || user == null) {
-            executorService.execute(new LoadListDBRunnable(offset,eventMessage,false));
+            executorService.execute(new LoadListDBRunnable(offset, eventMessage, false));
         } else {
             int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
@@ -603,8 +603,8 @@ public class VoteDataManager {
             EventBusController.RemoteServiceEvent event = new EventBusController.RemoteServiceEvent(this.message
                     , this.success, this.offset, voteDataList);
             event.errorResponseMessage = errorResponse;
-            Log.d(TAG, "getVoteListResponseCallback onResponse message:" + message
-                    + " , success: false " + ", error message" + errorResponse
+            Log.e(TAG, "getVoteListResponseCallback onResponse message:" + message
+                    + " , success: false " + ", error message:" + errorResponse
                     + ",LoadListDBRunnable offset:" + offset + ", size:" + voteDataList.size());
             EventBus.getDefault().post(event);
         }
@@ -625,8 +625,13 @@ public class VoteDataManager {
         @Override
         public void run() {
             VoteData data = DataLoader.getInstance(context).queryVoteDataById(this.voteCode);
-            List<Option> optionList = data.getOptions();
-
+            List<Option> optionList;
+            if (TextUtils.isEmpty(data.getVoteCode())) {
+                Log.e(TAG, "No this vote code:" + voteCode);
+                optionList = new ArrayList<>();
+            } else {
+                optionList = data.getOptions();
+            }
             EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(this.message
                     , this.success, data, optionList));
         }

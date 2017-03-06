@@ -18,6 +18,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -217,8 +218,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         final Dialog introductionDialog = new Dialog(getActivity());
         introductionDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         introductionDialog.requestWindowFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
-        introductionDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT);
+        introductionDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT);
         introductionDialog.setCanceledOnTouchOutside(false);
 
         final VoteData data = new VoteData();
@@ -341,7 +342,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         btnSecondOption.setOnLongClickListener(dialogLongClick);
 
         introductionDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        introductionDialog.setContentView(content);
+        introductionDialog.setContentView(content, new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
         introductionDialog.setCancelable(false);
         introductionDialog.show();
     }
@@ -395,8 +397,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                 setupPromotionAdmob();
                 vpHeader.getAdapter().notifyDataSetChanged();
                 Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size() + ",type list size:" + promotionTypeList.size());
-            } else {
-                //Toast.makeText(getContext(), R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
             }
         }
     }

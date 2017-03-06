@@ -24,6 +24,8 @@
     <dimen name="create_vote_settings_sub_topic_text_size">18sp</dimen>
     <dimen name="create_vote_settings_sub_topic_time_text_size">18sp</dimen>
 
+    <dimen name="title_content_text_size">16sp</dimen>
+
     <dimen name="vote_image_main_height">150dp</dimen>
     <dimen name="vote_image_main_width">320dp</dimen>
     <dimen name="vote_image_author_size">36dp</dimen>

@@ -48,6 +48,7 @@ public class AboutFragment extends Fragment {
     CardView btnShareApp;
 
     private Tracker tracker;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -93,12 +94,17 @@ public class AboutFragment extends Fragment {
                 tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_UPDATE_APP);
                 tracker.send(new HitBuilders.ScreenViewBuilder().build());
                 final String appPackageName = getActivity().getPackageName();
+
                 try {
-                    startActivity(new Intent(Intent.ACTION_VIEW
+                    Intent intent = new Intent(new Intent(Intent.ACTION_VIEW
                             , Uri.parse("market://details?id=" + appPackageName)));
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                 } catch (ActivityNotFoundException anfe) {
-                    startActivity(new Intent(Intent.ACTION_VIEW
+                    Intent intent = new Intent(new Intent(Intent.ACTION_VIEW
                             , Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                 }
                 break;
             case R.id.txtAppIntroduction:

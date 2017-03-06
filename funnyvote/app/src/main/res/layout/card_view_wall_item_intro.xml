@@ -9,7 +9,7 @@
     android:gravity="center">
 
     <android.support.v7.widget.CardView
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/card_margin"
         android:layout_marginRight="@dimen/card_margin"
@@ -40,7 +40,7 @@
                 android:ellipsize="end"
                 android:maxLines="5"
                 android:textColor="@color/secondary_text"
-                android:textSize="@dimen/create_vote_settings_sub_topic_text_size"
+                android:textSize="@dimen/title_content_text_size"
                 tools:text="Do your mother know what you do in front of computer?" />
 
             <ImageView

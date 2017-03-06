@@ -83,6 +83,7 @@ dependencies {
     compile 'com.google.firebase:firebase-crash:10.2.0'
     compile 'com.google.firebase:firebase-core:10.2.0'
     compile 'com.google.android.gms:play-services-analytics:10.2.0'
+    compile 'com.google.firebase:firebase-appindexing:10.2.0'
 }
 greendao {
     schemaVersion 1

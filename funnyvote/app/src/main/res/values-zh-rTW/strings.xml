@@ -1,194 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Funny Vote</string>
-    <string name="drawer_close">close</string>
-    <string name="drawer_open">open</string>
+    <string name="app_name">趣投票</string>
+    <string name="drawer_close">關閉</string>
+    <string name="drawer_open">開啟</string>
 
     <!--Drawer Menu and toolbar title-->
-    <string name="drawer_home">Home</string>
-    <string name="drawer_my_box">My box</string>
-    <string name="drawer_favorite">Favorite</string>
-    <string name="drawer_create_new_vote">Create New Vote</string>
-    <string name="drawer_settings">Settings</string>
-    <string name="drawer_account">Account</string>
-    <string name="drawer_about">About</string>
-    <string name="drawer_search">Search</string>
+    <string name="drawer_home">首頁</string>
+    <string name="drawer_my_box">收集箱</string>
+    <string name="drawer_favorite">收藏</string>
+    <string name="drawer_create_new_vote">發起投票</string>
+    <string name="drawer_settings">設定</string>
+    <string name="drawer_account">帳戶</string>
+    <string name="drawer_about">關於</string>
+    <string name="drawer_search">搜尋</string>
 
     <!--Main page tab classification-->
-    <string name="main_page_tab_hot">Hot</string>
-    <string name="main_page_tab_new">New</string>
+    <string name="main_page_tab_hot">熱門</string>
+    <string name="main_page_tab_new">最新</string>
 
     <!--Vote Wall item-->
-    <string name="wall_item_vote_end">Vote END</string>
-    <string name="wall_item_more">More...</string>
-    <string name="wall_item_no_one_poll">No one poll</string>
-    <string name="wall_item_bar_vote_count" formatted="false">Vote:%d </string>
-    <string name="wall_item_bar_Share">Share</string>
-    <string name="wall_item_no_vote_create_new">No vote in list.\nWould you create new vote?</string>
-    <string name="wall_item_no_vote">No vote in list.</string>
-    <string name="wall_item_no_vote_search">No vote in list. \nPlease search on tool bar.</string>
-    <string name="wall_item_no_vote_refresh">No vote in list.\nPlease refresh list.</string>
-    <string name="wall_item_toast_no_vote_refresh">No vote after refresh</string>
-    <string name="wall_item_toast_double_click_to_exit">Please click BACK again to exit</string>
-    <string name="wall_item_other_option" formatted="false">"Other %d options..."</string>
+    <string name="wall_item_vote_end">投票已結束</string>
+    <string name="wall_item_more">還有喔...</string>
+    <string name="wall_item_no_one_poll">沒人投票阿</string>
+    <string name="wall_item_bar_vote_count" formatted="false">"票數:%d "</string>
+    <string name="wall_item_bar_Share">分享</string>
+    <string name="wall_item_no_vote_create_new">這裡沒有投票喔.\n自己創一個如何?</string>
+    <string name="wall_item_no_vote">對，就是沒有任何投票</string>
+    <string name="wall_item_no_vote_search">每看到阿，這裡沒有投票阿 \n在工具列搜尋看看.</string>
+    <string name="wall_item_no_vote_refresh">好像沒有投票.\n重新整理看看.</string>
+    <string name="wall_item_toast_no_vote_refresh">之後沒投票啦</string>
+    <string name="wall_item_toast_double_click_to_exit">在點一下返回鍵離開</string>
+    <string name="wall_item_other_option" formatted="false">\"其他 %d 選項...\"</string>
 
     <!--Create vote page tab classification-->
-    <string name="create_vote_title">Title</string>
-    <string name="create_vote_title_hint">What is your vote?</string>
-    <string name="create_vote_tab_options">Options</string>
-    <string name="create_vote_tab_settings">Settings</string>
-    <string name="create_vote_toolbar_title">New Vote</string>
+    <string name="create_vote_title">標題</string>
+    <string name="create_vote_title_hint">有何問題，煩惱通通來吧</string>
+    <string name="create_vote_tab_options">選項</string>
+    <string name="create_vote_tab_settings">設定</string>
+    <string name="create_vote_toolbar_title">新投票</string>
 
     <!--Create vote page tab options settings-->
-    <string name="create_vote_tab_settings_options">Options</string>
-    <string name="create_vote_tab_setting_max_options">Max :</string>
-    <string name="create_vote_tab_setting_min_options">Min :</string>
-    <string name="create_vote_tab_setting_user_add_option">Let poller add :</string>
-    <string name="create_vote_tab_settings_author">Author</string>
-    <string name="create_vote_tab_settings_anonymous">Anonymous</string>
-    <string name="create_vote_tab_settings_name">Name:</string>
-    <string name="create_vote_tab_settings_behavior">Behavior</string>
-    <string name="create_vote_tab_settings_end_time">End time:</string>
-    <string name="create_vote_tab_settings_security">Security:</string>
-    <string name="create_vote_tab_settings_need_password">Need password:</string>
-    <string name="create_vote_tab_settings_pre_result">View result before poll:</string>
-    <string name="create_vote_tab_settings_password">Password:</string>
+    <string name="create_vote_tab_settings_options">選項</string>
+    <string name="create_vote_tab_setting_max_options">最多：</string>
+    <string name="create_vote_tab_setting_min_options">最少 :</string>
+    <string name="create_vote_tab_setting_user_add_option">投票者可以增加選項：</string>
+    <string name="create_vote_tab_settings_author">作者</string>
+    <string name="create_vote_tab_settings_anonymous">匿名</string>
+    <string name="create_vote_tab_settings_name">名稱：</string>
+    <string name="create_vote_tab_settings_behavior">行為</string>
+    <string name="create_vote_tab_settings_end_time">結束時間：</string>
+    <string name="create_vote_tab_settings_security">隱私：</string>
+    <string name="create_vote_tab_settings_need_password">是否需要密碼：</string>
+    <string name="create_vote_tab_settings_pre_result">可以先看投票結果：</string>
+    <string name="create_vote_tab_settings_password">密碼：</string>
 
-    <string name="create_vote_tab_settings_public">Public</string>
-    <string name="create_vote_tab_settings_public_hint">Public:Vote show to all user.</string>
-    <string name="create_vote_tab_settings_private">Private</string>
-    <string name="create_vote_tab_settings_private_hint">Private:Vote only show to user that link to here.</string>
-    <string name="create_vote_create_successful">Create vote successful.</string>
+    <string name="create_vote_tab_settings_public">公開</string>
+    <string name="create_vote_tab_settings_public_hint">全部使用者都可以投票.</string>
+    <string name="create_vote_tab_settings_private">私有</string>
+    <string name="create_vote_tab_settings_private_hint">只有擁有投票連結的人可以投票。</string>
+    <string name="create_vote_create_successful">發起投票成功</string>
 
-    <string name="create_vote_toast_less_than_2_option">Option number cant less than 2.</string>
-    <string name="create_vote_toast_endtime_more_than_current">Vote end time should over now.</string>
-    <string name="create_vote_toast_image_permission">"Cancelling, required permissions are not granted"</string>
-    <string name="create_vote_toast_create_fail">"Network connect fail, Please check your network status"</string>
+    <string name="create_vote_toast_less_than_2_option">選項一定要超過兩個，不然不就變成自說自話。</string>
+    <string name="create_vote_toast_endtime_more_than_current">投票結束時間怎抹可能會在過去啦。</string>
+    <string name="create_vote_toast_image_permission">取消中，請授權需要的權限</string>
+    <string name="create_vote_toast_create_fail">網路不給力，去確認一下你的網路狀態啦</string>
 
-    <string name="create_vote_dialog_error_title">Error</string>
-    <string name="create_vote_dialog_error_done">DONE</string>
-    <string name="create_vote_error_hint_fill_all">Please fill all option content.</string>
-    <string name="create_vote_error_hint_error_user_code">User register error, please check account page.</string>
-    <string name="create_vote_error_hint_max_option_0">Max option cant be 0.</string>
-    <string name="create_vote_error_hint_min_option_0">Min option cant be 0.</string>
-    <string name="create_vote_error_hint_max_smaller_than_min">Max option number should more than min option number.</string>
-    <string name="create_vote_error_hint_max_smaller_than_total">Max option number should smaller than option count.</string>
-    <string name="create_vote_error_hint_title_empty">Vote title cant be empty.</string>
-    <string name="create_vote_error_hint_password_empty">Vote password cant be empty.</string>
-    <string name="create_vote_error_hint_endtime_more_than_now">Vote End time should over now.</string>
-    <string name="create_vote_error_hint_endtime_more_than_max" formatted="false">Vote End max time is %d day.</string>
-    <string name="create_vote_error_hint_title_duplicate">Vote title cant be duplicate.</string>
+    <string name="create_vote_dialog_error_title">錯誤</string>
+    <string name="create_vote_dialog_error_done">搞定</string>
+    <string name="create_vote_error_hint_fill_all">選項內容請寫好寫滿</string>
+    <string name="create_vote_error_hint_error_user_code">應該是註冊相關問題。建議去帳戶頁面檢查。</string>
+    <string name="create_vote_error_hint_max_option_0">最大可選數量不可為零。不能投的投票，這很有趣。</string>
+    <string name="create_vote_error_hint_min_option_0">最小選項不可為零。可以不選的話，哪不就是路過而已嗎。</string>
+    <string name="create_vote_error_hint_max_smaller_than_min">最大可選數量應該要大於等於最小可選數量。這是文字邏輯問題。</string>
+    <string name="create_vote_error_hint_max_smaller_than_total">最大可選數量應該要小於等於選項總數。這是文字邏輯問題。</string>
+    <string name="create_vote_error_hint_title_empty">投票標題不可空白.</string>
+    <string name="create_vote_error_hint_password_empty">密碼不能空白</string>
+    <string name="create_vote_error_hint_endtime_more_than_now">最好投票還沒開始就要結束了。</string>
+    <string name="create_vote_error_hint_endtime_more_than_max" formatted="false">投票最多 %d 天</string>
+    <string name="create_vote_error_hint_title_duplicate">投票標題重複</string>
 
-    <string name="create_vote_error_crop_image_title">Vote picture.</string>
-
-    <string name="create_vote_option_hint">Please input option.</string>
+    <string name="create_vote_option_hint">請輸入選項內容.</string>
 
     <!-- Create vote exit dialog -->
-    <string name="create_vote_dialog_exit_title">Are you sure to exit?</string>
-    <string name="create_vote_dialog_exit_message">Dont you create vote complete?</string>
-    <string name="create_vote_dialog_exit_button_leave">Leave</string>
-    <string name="create_vote_dialog_exit_button_keep">Keep</string>
+    <string name="create_vote_dialog_exit_title">確定要閃？</string>
+    <string name="create_vote_dialog_exit_message">事情都還沒辦完，真的要閃？</string>
+    <string name="create_vote_dialog_exit_button_leave">離開</string>
+    <string name="create_vote_dialog_exit_button_keep">停留</string>
 
     <!--Vote detail activity-->
-    <string name="vote_detail_toast_option_choice_hint" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
-    <string name="vote_detail_toast_option_over_max" formatted="false">"Over the max option:%d votes."</string>
-    <string name="vote_detail_toast_option_at_least_min" formatted="false">"Please choice at least :%d votes."</string>
-    <string name="vote_detail_toast_add_favorite">"Add to favorite"</string>
-    <string name="vote_detail_toast_remove_favorite">"Remove favorite"</string>
-    <string name="vote_detail_toast_fill_new_option">"Please fill and update all new option's content"</string>
-    <string name="vote_detail_toast_confirm_new_option">"Please confirm the no update option before"</string>
+    <string name="vote_detail_toast_option_choice_hint" formatted="false">"多選:\n請選擇 %d - %d 選項."</string>
+    <string name="vote_detail_toast_option_over_max" formatted="false">\"最多選:%d 選項.\"</string>
+    <string name="vote_detail_toast_option_at_least_min" formatted="false">至少要選 :%d 選項.</string>
+    <string name="vote_detail_toast_add_favorite">加入收藏</string>
+    <string name="vote_detail_toast_remove_favorite">移除收藏</string>
+    <string name="vote_detail_toast_fill_new_option">請先確認是否寫好並上傳新的選項。</string>
+    <string name="vote_detail_toast_confirm_new_option">請先確認之前的選項是否建立完成</string>
 
-    <string name="vote_detail_circle_loading" formatted="false">"Loading"</string>
-    <string name="vote_detail_circle_updating" formatted="false">"Updating"</string>
-    <string name="vote_detail_title">Detail</string>
+    <string name="vote_detail_circle_loading" formatted="false">等等</string>
+    <string name="vote_detail_circle_updating" formatted="false">上傳中</string>
+    <string name="vote_detail_title">詳情</string>
 
-    <string name="vote_detail_menu_share">Share</string>
-    <string name="vote_detail_menu_submit">Submit</string>
-    <string name="vote_detail_menu_info">Information</string>
-    <string name="vote_detail_menu_search_hint">Search Options</string>
-    <string name="vote_share_vote_via">Share this vote via</string>
-    <string name="vote_share_app_via">Share Funny vote via</string>
-    <string name="vote_share_msg">Please help to vote this\n\n%s</string>
-    <string name="vote_share_more">More</string>
-    <string name="vote_share_copy_url">Copy Link</string>
-    <string name="vote_share_copied_msg">Link Copied</string>
+    <string name="vote_detail_menu_share">分享</string>
+    <string name="vote_detail_menu_submit">提交</string>
+    <string name="vote_detail_menu_info">資訊</string>
+    <string name="vote_detail_menu_search_hint">搜尋選項</string>
+    <string name="vote_share_vote_via">快找人一起來作功德吧</string>
+    <string name="vote_share_app_via">厲害的 App 是需要推廣的</string>
+    <string name="vote_share_msg">各位，為他人解惑的時間到了，幫忙投個票\n\n%s</string>
+    <string name="vote_share_more">更多</string>
+    <string name="vote_share_copy_url">複製連結</string>
+    <string name="vote_share_copied_msg">已複製連結</string>
 
-    <string name="vote_detail_fab_top">Top</string>
-    <string name="vote_detail_fab_sort_option">Sort option</string>
-    <string name="vote_detail_fab_pre_result">Preview result</string>
-    <string name="vote_detail_fab_return_poll">Return to poll</string>
+    <string name="vote_detail_fab_top">置頂</string>
+    <string name="vote_detail_fab_sort_option">排序選項</string>
+    <string name="vote_detail_fab_pre_result">偷看結果</string>
+    <string name="vote_detail_fab_return_poll">回去投票</string>
 
-    <string name="vote_share_to_other_app_default_message" formatted="false">A question I need your help: %s</string>
+    <string name="vote_share_to_other_app_default_message" formatted="false">拍謝，這裡有一個好問題想請教各位 %s</string>
 
     <!-- vote detail Dialog-->
-    <string name="vote_detail_dialog_title_info">Information</string>
-    <string name="vote_detail_dialog_option">Option</string>
-    <string name="vote_detail_dialog_done">Done</string>
-    <string name="vote_detail_dialog_time">Time</string>
-    <string name="vote_detail_dialog_security">Security</string>
-    <string name="vote_detail_dialog_single_option">Single option</string>
-    <string name="vote_detail_dialog_multi_option" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
+    <string name="vote_detail_dialog_title_info">資訊</string>
+    <string name="vote_detail_dialog_option">選項</string>
+    <string name="vote_detail_dialog_done">搞定</string>
+    <string name="vote_detail_dialog_time">時間</string>
+    <string name="vote_detail_dialog_security">隱私</string>
+    <string name="vote_detail_dialog_single_option">單選</string>
+    <string name="vote_detail_dialog_multi_option" formatted="false">"多選:\n請選擇 %d - %d 選項."</string>
 
-    <string name="vote_detail_dialog_sort_option">Sort Option By:</string>
-    <string name="vote_detail_dialog_sort_default">Default</string>
-    <string name="vote_detail_dialog_sort_alphabet">Alphabet</string>
-    <string name="vote_detail_dialog_sort_poll">Poll count</string>
-    <string name="vote_detail_dialog_sort_select">Select</string>
+    <string name="vote_detail_dialog_sort_option">排序選項依：</string>
+    <string name="vote_detail_dialog_sort_default">預設</string>
+    <string name="vote_detail_dialog_sort_alphabet">字母</string>
+    <string name="vote_detail_dialog_sort_poll">票數</string>
+    <string name="vote_detail_dialog_sort_select">選擇</string>
 
     <!-- Vote exit dialog -->
-    <string name="vote_detail_dialog_exit_title">Are you sure to exit?</string>
-    <string name="vote_detail_dialog_exit_message">Dont you poll the vote?</string>
-    <string name="vote_detail_dialog_exit_button_leave">Leave</string>
-    <string name="vote_detail_dialog_exit_button_keep">Keep</string>
+    <string name="vote_detail_dialog_exit_title">確定要閃人嗎？</string>
+    <string name="vote_detail_dialog_exit_message">別走，人們需要你的意見阿?</string>
+    <string name="vote_detail_dialog_exit_button_leave">離開</string>
+    <string name="vote_detail_dialog_exit_button_keep">停留</string>
 
     <!-- vote password dialog-->
-    <string name="vote_detail_dialog_password_hint">Input password</string>
-    <string name="vote_detail_dialog_password_title">Please enter password to continue</string>
-    <string name="vote_detail_dialog_password_toast_retry">Incorrect. Please retry password</string>
-    <string name="vote_detail_dialog_password_input">Input</string>
+    <string name="vote_detail_dialog_password_hint">輸入密碼</string>
+    <string name="vote_detail_dialog_password_title">請輸入密碼以繼續投票</string>
+    <string name="vote_detail_dialog_password_toast_retry">錯誤，再來阿</string>
+    <string name="vote_detail_dialog_password_input">輸入</string>
 
     <!-- Account-->
-    <string name="account_fb_log_in">Facebook Log In</string>
-    <string name="account_google_log_in">Google Log In</string>
-    <string name="account_twitter_log_in">Twitter Log In</string>
-    <string name="account_log_out">Log out</string>
+    <string name="account_fb_log_in">Facebook 登入</string>
+    <string name="account_google_log_in">Google 登入</string>
+    <string name="account_twitter_log_in">Twitter 登入</string>
+    <string name="account_log_out">登出</string>
 
-    <string name="account_default_name">Village people 9527</string>
+    <string name="account_default_name">鄉民9527</string>
 
-    <string name="account_dialog_new_name_title">Enter new name</string>
-    <string name="account_dialog_ok">OK</string>
-    <string name="account_dialog_cancel">Cancel</string>
-    <string name="account_dialog_no">No</string>
-    <string name="merge_option_title">Keep your data</string>
-    <string name="merge_option_msg">Would you like to merge your voting record to login user?(If you choose no, you will lose your record)</string>
+    <string name="account_dialog_new_name_title">輸入新的名子</string>
+    <string name="account_dialog_cancel">取消</string>
+    <string name="merge_option_title">保留你的資料</string>
+    <string name="merge_option_msg">是否想要合併目前的選項紀錄到新登入用戶帳號？（如果選擇 NO, 你將會失去你現在的紀錄）</string>
 
     <!--Personal -->
-    <string name="personal_tab_create">CREATE</string>
-    <string name="personal_tab_participate">PARTICIPATE</string>
-    <string name="personal_tab_favorite">FAVORITE</string>
+    <string name="personal_tab_create">發起</string>
+    <string name="personal_tab_participate">參與</string>
+    <string name="personal_tab_favorite">收集</string>
 
     <!--Network-->
-    <string name="toast_network_connect_error">Network connect error.</string>
-    <string name="toast_network_connect_error_get_list">Get List connect error.</string>
+    <string name="toast_network_connect_error">網路不給力阿</string>
+    <string name="toast_network_connect_error_get_list">取得投票列表失敗</string>
 
-    <string name="toast_network_connect_success_poll">Poll vote successful.</string>
+    <string name="toast_network_connect_success_poll">感謝你成功幫助迷途者</string>
 
-    <string name="toast_network_connect_error_favorite">favorite operation fail , Network connect error.</string>
-    <string name="toast_network_connect_error_quick_poll">Poll the vote fail , Network connect error.</string>
+    <string name="toast_network_connect_error_favorite">加入收藏失敗，網路不給力阿。</string>
+    <string name="toast_network_connect_error_quick_poll">投票失敗。網路加油，好嗎？</string>
 
     <!--Search-->
-    <string name="search_item_time_end">End</string>
-    <string name="search_item_time_voting">Voting</string>
-
-    <!--admob-->
-    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
-    <bool name="enable_list_admob">false</bool>
-    <integer name="list_admob_frequence">10</integer>
-    <bool name="enable_detail_admob">true</bool>>>
-    <bool name="enable_main_admob">false</bool>>
-    <bool name="enable_promotion_admob">true</bool>
+    <string name="search_item_time_end">已結束</string>
+    <string name="search_item_time_voting">投票中</string>
 
     <!-- App introduction-->
-    <string name="intro_title_funnyvote">趣投</string>
+    <string name="intro_title_funnyvote">趣投票</string>
     <string name="intro_title_quickpoll">快速投票</string>
     <string name="intro_title_no_comment">沒有廢話</string>
     <string name="intro_title_bigdata">大數據</string>
@@ -196,59 +185,56 @@
     <string name="intro_title_come">來吧</string>
 
     <string name="intro_desc_funnyvote">就是有趣的投票，雖然是這樣說，但是內容有不有趣完全是看你，我們不過只是讓『發起投票』這件事變得超簡單</string>
-    <string name="intro_desc_quickpoll">為他人指引明路乃是一種功德，但是搞得太麻煩就興致缺缺的，趣投讓做功德這件事簡單到只要『長壓選項』就搞定</string>
-    <string name="intro_desc_no_comment">求助最怕有疑惑時，想尋求眾人智慧，卻被一堆人指指點點，趣投考慮到這一點，所以我們『沒有留言板』</string>
+    <string name="intro_desc_quickpoll">為他人指引明路乃是一種功德，但是搞得太麻煩就興致缺缺的，趣投票讓做功德這件事簡單到只要『長按選項』就搞定</string>
+    <string name="intro_desc_no_comment">求助最怕有疑惑時，想尋求眾人智慧，卻被一堆人指指點點，趣投票考慮到這一點，所以我們『沒有留言板』</string>
     <string name="intro_desc_bigdata">關於這個，我們完全沒有，絕對不是因為技術上的問題。</string>
     <string name="intro_desc_sharefin">聽說現在共享很流行，其實投票不也是一種知識共享嗎？經濟的部分只能看看有沒有廣告收入了</string>
     <string name="intro_desc_come">如果你完全搞不懂前面在說啥？先玩再說吧</string>
 
-    <string name="intro_vote_item_title">Long press option area to quick poll.\nIs Funny vote the best app?</string>
-    <string name="intro_vote_item_option1">"Yes, long press here to continue."</string>
-    <string name="intro_vote_item_option2">"No , long press here to continue."</string>
-    <string name="intro_vote_item_author_name">"Teacher"</string>
+    <string name="intro_vote_item_title">你媽知道你在發廢文嗎？\nFEATURE_ACTIVITY_TRANSITIONS底下選項以繼續?</string>
+    <string name="intro_vote_item_option1">知道。長按此處以繼續。</string>
+    <string name="intro_vote_item_option2">不知道，長按此處以繼續。</string>
+    <string name="intro_vote_item_author_name">請叫我教練</string>
 
     <!--About-->
-    <string name="about_show_tutorial">Show tutorial page</string>
-    <string name="about_author_info">Author info</string>
-    <string name="about_licence">Licence</string>
-    <string name="about_common_problem">Common problem</string>
-    <string name="about_app_introduction">APP Introduction</string>
+    <string name="about_show_tutorial">導覽介紹</string>
+    <string name="about_author_info">作者資訊</string>
+    <string name="about_licence">應用授權</string>
+    <string name="about_common_problem">常見問題</string>
+    <string name="about_app_introduction">關於趣投票</string>
     <string name="about_introduction_desc"><![CDATA[
         <b><big>全台最廢投票軟體上線啦</big></b><br><br>
-        要說有啥功能，你可以再看一次 Tutorial page，底下簡單介紹一下:<br><br>
-<b>快速創建投票</b>：會想發起投票就是因為心中有苦，有猶豫，或是只是覺得有趣，這種情況下，想當然是趕快問問眾人的意見，趣投讓創建投票這件事變得超級方便。<br><br>
-<b>快速投票</b>：替人解惑乃是大善事大慈悲，但是如果搞得很麻煩，還要註冊，驗證碼，那就提不起勁，趣投完全不需要繁複的過程，只要長按就可以快速投票。<br><br>
-<b>沒有廢話</b>：求助時最怕有疑惑時，想尋求眾人智慧，卻一堆人指指點，趣投考慮到這一點，所以我們『沒有留言板』。<br><br>
+        要說有啥功能，你可以再看一次 『導覽介紹』，底下簡單介紹一下:<br><br>
+<b>快速發起投票</b>：會想發起投票就是因為心中有苦，有猶豫，或是只是覺得有趣，這種情況下，想當然是趕快問問眾人的意見，趣投票讓發起投票這件事變得超級方便。<br><br>
+<b>快速投票</b>：替人解惑乃是大善事大慈悲，但是如果搞得很麻煩，還要註冊，驗證碼，那就提不起勁，趣投票完全不需要繁複的過程，只要長按就可以快速投票。<br><br>
+<b>沒有廢話</b>：求助時最怕有疑惑時，想尋求眾人智慧，卻一堆人指指點，趣投票考慮到這一點，所以我們『沒有留言板』。<br><br>
 <b>大數據</b>：關於這個，感覺 APP 沒有提到這個就弱掉了，但是我們真的完全沒有，絕對不是技術上的問題。<br><br>
 <b>共享經濟</b>：聽說共享很流行，其實投票不也是一種智慧共享嗎？經濟的部分就只能看廣告收入了。<br><br>
 管他那麼多，先來拯救眾生，順手打個五星評價]]></string>
-    <string name="about_share_app">Share funny vote</string>
-    <string name="about_funnyvote">About Funny vote</string>
-    <string name="about_current_version">Current version</string>
-    <string name="about_update">Update app</string>
-    <string name="about_detail_introduction">About Funny vote</string>
+    <string name="about_share_app">分享趣投票</string>
+    <string name="about_funnyvote">關於趣投票</string>
+    <string name="about_current_version">目前版本</string>
+    <string name="about_update">更新 App</string>
+    <string name="about_detail_introduction">關於趣投票</string>
 
-    <string name="about_author_information">Author Information</string>
+    <string name="about_author_information">作者相關</string>
     <string name="about_author_desc">你是真的想看開發團隊喔？真閒</string>
 
-    <string name="about_author_info_heaton">Heaton</string>
     <string name="about_author_desc_heaton">基本上除了後端碰比較少，剩下 PM,APP RD,UI,QA,文案 全部都搞，真是搞死人,有沒有人可以幫個忙啊</string>
 
-    <string name="about_author_info_eason">Eason</string>
     <string name="about_author_desc_eason">宿霧爽</string>
 
-    <string name="about_author_info_jim">JJJ</string>
-    <string name="about_author_desc_jim">負責後端的胖子，想要靠 funny vote 賺錢，直到看到報表</string>
+    <string name="about_author_desc_jim">負責後端的現充，想要靠趣投票賺錢，直到看到報表</string>
 
-    <string name="about_author_info_nick">Nick</string>
     <string name="about_author_desc_nick">文案主要擔當，但是一直拖稿</string>
 
-    <string name="about_licence_title">Licence</string>
+    <string name="about_licence_title">授權</string>
     <string name="about_licence_desc">開發程式最忌諱造重複的輪子，感謝大神開發好的跑車。</string>
 
-    <string name="about_common_problem_title">Common problem</string>
-    <string name="about_common_problem_desc">No, there are no question in funny vote app.</string>
+    <string name="about_common_problem_title">常見問題</string>
+    <string name="about_common_problem_desc">趣投票 一定不會有問題的，相信我，跟者我一起唸三次『一切都沒有問題』。</string>
 
-    <string name="share_funny_vote_app">The most funny vote center is coming. share to you. \n\n%s</string>
+    <string name="share_funny_vote_app">全台最X的投票軟體上線啦，分享給你. \n\n%s</string>
 
+    <string name="about_link_to_home">官方網站：https://www.funny-vote.com</string>
 </resources>

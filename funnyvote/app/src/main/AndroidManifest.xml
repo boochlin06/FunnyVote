@@ -58,8 +58,17 @@
             android:name=".ui.votedetail.VoteDetailContentActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="www.funny-vote.com" />
+                <data android:host="funny-vote.com" />
+                <data android:scheme="https"
+                    android:host="www.funny-vote.com" />
+                <data android:pathPrefix="/link"/>
             </intent-filter>
         </activity>
 

@@ -62,7 +62,6 @@
 
     </RelativeLayout>
 
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -77,7 +76,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:textColor="@color/secondary_text"
-            android:textSize="20sp"
+            android:textSize="@dimen/title_content_text_size"
             tools:text="long content\n\n\n\n long content\n\n\n\n\n\n\n\n\n\n
         \n\nlong content\n\n\n\n\n long context \n\n\n\n\n\n end" />
     </ScrollView>

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Funny Vote</string>
     <string name="drawer_close">close</string>
@@ -85,7 +86,7 @@
     <string name="create_vote_error_hint_endtime_more_than_max" formatted="false">Vote End max time is %d day.</string>
     <string name="create_vote_error_hint_title_duplicate">Vote title cant be duplicate.</string>
 
-    <string name="create_vote_error_crop_image_title">Vote picture.</string>
+    <string name="create_vote_error_crop_image_title" translatable="false">Vote picture.</string>
 
     <string name="create_vote_option_hint">Please input option.</string>
 
@@ -162,9 +163,9 @@
     <string name="account_default_name">Village people 9527</string>
 
     <string name="account_dialog_new_name_title">Enter new name</string>
-    <string name="account_dialog_ok">OK</string>
+    <string name="account_dialog_ok" translatable="false">OK</string>
     <string name="account_dialog_cancel">Cancel</string>
-    <string name="account_dialog_no">No</string>
+    <string name="account_dialog_no" translatable="false">No</string>
     <string name="merge_option_title">Keep your data</string>
     <string name="merge_option_msg">Would you like to merge your voting record to login user?(If you choose no, you will lose your record)</string>
 
@@ -187,7 +188,7 @@
     <string name="search_item_time_voting">Voting</string>
 
     <!--admob-->
-    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="banner_ad_unit_id" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
     <bool name="enable_list_admob">false</bool>
     <integer name="list_admob_frequence">10</integer>
     <bool name="enable_detail_admob">true</bool>>>
@@ -195,16 +196,16 @@
     <bool name="enable_promotion_admob">true</bool>
 
     <!-- App introduction-->
-    <string name="intro_title_funnyvote">趣投</string>
-    <string name="intro_title_quickpoll">快速投票</string>
-    <string name="intro_title_no_comment">沒有廢話</string>
-    <string name="intro_title_bigdata">大數據</string>
-    <string name="intro_title_sharefin">共享經濟</string>
-    <string name="intro_title_come">來吧</string>
+    <string name="intro_title_funnyvote">Funny Vote</string>
+    <string name="intro_title_quickpoll">Quick Poll</string>
+    <string name="intro_title_no_comment">No Comment</string>
+    <string name="intro_title_bigdata">Big Data</string>
+    <string name="intro_title_sharefin">Share Fincence</string>
+    <string name="intro_title_come">Let\'s poll</string>
 
     <string name="intro_desc_funnyvote">就是有趣的投票，雖然是這樣說，但是內容有不有趣完全是看你，我們不過只是讓『發起投票』這件事變得超簡單</string>
-    <string name="intro_desc_quickpoll">為他人指引明路乃是一種功德，但是搞得太麻煩就興致缺缺的，趣投讓做功德這件事簡單到只要『長壓選項』就搞定</string>
-    <string name="intro_desc_no_comment">求助最怕有疑惑時，想尋求眾人智慧，卻被一堆人指指點點，趣投考慮到這一點，所以我們『沒有留言板』</string>
+    <string name="intro_desc_quickpoll">為他人指引明路乃是一種功德，但是搞得太麻煩就興致缺缺的，趣投票讓做功德這件事簡單到只要『長按選項』就搞定</string>
+    <string name="intro_desc_no_comment">求助最怕有疑惑時，想尋求眾人智慧，卻被一堆人指指點點，趣投票考慮到這一點，所以我們『沒有留言板』</string>
     <string name="intro_desc_bigdata">關於這個，我們完全沒有，絕對不是因為技術上的問題。</string>
     <string name="intro_desc_sharefin">聽說現在共享很流行，其實投票不也是一種知識共享嗎？經濟的部分只能看看有沒有廣告收入了</string>
     <string name="intro_desc_come">如果你完全搞不懂前面在說啥？先玩再說吧</string>
@@ -215,17 +216,17 @@
     <string name="intro_vote_item_author_name">"Teacher"</string>
 
     <!--About-->
-    <string name="about_show_tutorial">Show tutorial page</string>
-    <string name="about_author_info">Author info</string>
-    <string name="about_licence">Licence</string>
-    <string name="about_common_problem">Common problem</string>
-    <string name="about_app_introduction">APP Introduction</string>
+    <string name="about_show_tutorial">導覽介紹</string>
+    <string name="about_author_info">作者資訊</string>
+    <string name="about_licence">應用授權</string>
+    <string name="about_common_problem">常見問題</string>
+    <string name="about_app_introduction">關於趣投票</string>
     <string name="about_introduction_desc"><![CDATA[
         <b><big>全台最廢投票軟體上線啦</big></b><br><br>
         要說有啥功能，你可以再看一次 Tutorial page，底下簡單介紹一下:<br><br>
-<b>快速創建投票</b>：會想發起投票就是因為心中有苦，有猶豫，或是只是覺得有趣，這種情況下，想當然是趕快問問眾人的意見，趣投讓創建投票這件事變得超級方便。<br><br>
-<b>快速投票</b>：替人解惑乃是大善事大慈悲，但是如果搞得很麻煩，還要註冊，驗證碼，那就提不起勁，趣投完全不需要繁複的過程，只要長按就可以快速投票。<br><br>
-<b>沒有廢話</b>：求助時最怕有疑惑時，想尋求眾人智慧，卻一堆人指指點，趣投考慮到這一點，所以我們『沒有留言板』。<br><br>
+<b>快速發起投票</b>：會想發起投票就是因為心中有苦，有猶豫，或是只是覺得有趣，這種情況下，想當然是趕快問問眾人的意見，趣投票讓發起投票這件事變得超級方便。<br><br>
+<b>快速投票</b>：替人解惑乃是大善事大慈悲，但是如果搞得很麻煩，還要註冊，驗證碼，那就提不起勁，趣投票完全不需要繁複的過程，只要長按就可以快速投票。<br><br>
+<b>沒有廢話</b>：求助時最怕有疑惑時，想尋求眾人智慧，卻一堆人指指點，趣投票考慮到這一點，所以我們『沒有留言板』。<br><br>
 <b>大數據</b>：關於這個，感覺 APP 沒有提到這個就弱掉了，但是我們真的完全沒有，絕對不是技術上的問題。<br><br>
 <b>共享經濟</b>：聽說共享很流行，其實投票不也是一種智慧共享嗎？經濟的部分就只能看廣告收入了。<br><br>
 管他那麼多，先來拯救眾生，順手打個五星評價]]></string>
@@ -238,24 +239,26 @@
     <string name="about_author_information">Author Information</string>
     <string name="about_author_desc">你是真的想看開發團隊喔？真閒</string>
 
-    <string name="about_author_info_heaton">Heaton</string>
+    <string name="about_author_info_heaton" translatable="false">Heaton</string>
     <string name="about_author_desc_heaton">基本上除了後端碰比較少，剩下 PM,APP RD,UI,QA,文案 全部都搞，真是搞死人,有沒有人可以幫個忙啊</string>
 
-    <string name="about_author_info_eason">Eason</string>
+    <string name="about_author_info_eason" translatable="false">Eason</string>
     <string name="about_author_desc_eason">宿霧爽</string>
 
-    <string name="about_author_info_jim">Jim</string>
-    <string name="about_author_desc_jim">負責後端的胖子，想要靠 funny vote 賺錢，直到看到報表</string>
+    <string name="about_author_info_jim" translatable="false">Jim</string>
+    <string name="about_author_desc_jim">負責後端的現充，想要靠 funny vote 賺錢，直到看到報表</string>
 
-    <string name="about_author_info_nick">Nick</string>
+    <string name="about_author_info_nick" translatable="false">Nick</string>
     <string name="about_author_desc_nick">文案主要擔當，但是一直拖稿</string>
 
     <string name="about_licence_title">Licence</string>
-    <string name="about_licence_desc">開發程式最忌諱造重複的輪子，感謝大神開發好的跑車。</string>
+    <string name="about_licence_desc">Stop Trying to Reinvent the Wheel.</string>
 
     <string name="about_common_problem_title">Common problem</string>
     <string name="about_common_problem_desc">No, there are no question in funny vote app.</string>
 
     <string name="share_funny_vote_app">The most funny vote center is coming. share to you. \n\n%s</string>
+
+    <string name="about_link_to_home">official website：https://www.funny-vote.com</string>
 
 </resources>

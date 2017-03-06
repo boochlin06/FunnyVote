@@ -196,6 +196,11 @@ public class DataLoader {
     }
 
     public VoteData queryVoteDataById(String code) {
+        if (TextUtils.isEmpty(code)) {
+            VoteData voteData = new VoteData();
+            voteData.setVoteCode(code);
+            return voteData;
+        }
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(code)).list().get(0);
     }
 

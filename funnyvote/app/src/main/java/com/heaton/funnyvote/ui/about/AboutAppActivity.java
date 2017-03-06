@@ -18,6 +18,7 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by heaton on 2017/3/4.
@@ -73,5 +74,9 @@ public class AboutAppActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+    @OnClick(R.id.btnShareApp)
+    public void onClick(View view) {
+        AboutFragment.sendShareAppIntent(getApplicationContext());
     }
 }

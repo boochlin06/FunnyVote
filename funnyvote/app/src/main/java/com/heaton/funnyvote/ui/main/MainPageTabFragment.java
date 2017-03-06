@@ -26,13 +26,13 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.eventbus.EventBusController;
 import com.heaton.funnyvote.ui.HidingScrollListener;
-import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -247,6 +247,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             }
         }
     }
+
     private void updateVoteDataFavoriteToList(VoteData data) {
         for (int i = 0; i < voteDataList.size(); i++) {
             if (data.getVoteCode().equals(voteDataList.get(i).getVoteCode())) {
@@ -289,7 +290,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         passwordDialog.show();
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
 
         boolean refreshFragment = false;

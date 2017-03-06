@@ -56,6 +56,7 @@ import com.heaton.funnyvote.eventbus.EventBusController;
 import com.heaton.funnyvote.retrofit.Server;
 import com.heaton.funnyvote.ui.HidingScrollListener;
 import com.heaton.funnyvote.ui.ShareDialogActivity;
+import com.heaton.funnyvote.ui.about.AboutFragment;
 import com.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.heaton.funnyvote.ui.personal.PersonalActivity;
 
@@ -204,8 +205,22 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        String voteCode = "";
+        Intent intent = getIntent();
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            voteCode = intent.getData().getLastPathSegment();
+            if (TextUtils.isEmpty(voteCode)) {
+                AboutFragment.sendShareAppIntent(getApplicationContext());
+                finish();
+            } else {
+                Log.d(TAG, "Link:" + intent.getData().toString()
+                        + ",vote code:" + intent.getData().getLastPathSegment());
+            }
+        } else {
+            voteCode = intent.getExtras().getString(VHVoteWallItem.BUNDLE_KEY_VOTE_CODE);
+            Log.d(TAG, "Start activity vote code:" + voteCode);
+        }
 
-        String voteCode = getIntent().getExtras().getString(VHVoteWallItem.BUNDLE_KEY_VOTE_CODE);
         data.setVoteCode(voteCode);
 
         circleLoad.setText(getString(R.string.vote_detail_circle_loading));
