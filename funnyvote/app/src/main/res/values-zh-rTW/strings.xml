@@ -191,7 +191,7 @@
     <string name="intro_desc_sharefin">聽說現在共享很流行，其實投票不也是一種知識共享嗎？經濟的部分只能看看有沒有廣告收入了</string>
     <string name="intro_desc_come">如果你完全搞不懂前面在說啥？先玩再說吧</string>
 
-    <string name="intro_vote_item_title">你媽知道你在發廢文嗎？\nFEATURE_ACTIVITY_TRANSITIONS底下選項以繼續?</string>
+    <string name="intro_vote_item_title">你媽知道你在發廢文嗎？\n底下選項以繼續?</string>
     <string name="intro_vote_item_option1">知道。長按此處以繼續。</string>
     <string name="intro_vote_item_option2">不知道，長按此處以繼續。</string>
     <string name="intro_vote_item_author_name">請叫我教練</string>
