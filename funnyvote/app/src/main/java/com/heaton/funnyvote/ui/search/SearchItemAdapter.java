@@ -128,16 +128,18 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
         public ImageView imgAddVote;
         public ImageView imgRefreshVote;
+        public ImageView imgLogo;
         public TextView txtNoVote;
 
         public VHNoVote(View itemView) {
             super(itemView);
             imgAddVote = (ImageView) itemView.findViewById(R.id.imgAddVote);
             imgRefreshVote = (ImageView) itemView.findViewById(R.id.imgRefreshVote);
+            imgLogo = (ImageView) itemView.findViewById(R.id.imgLogo);
             txtNoVote = (TextView) itemView.findViewById(R.id.txtNoVote);
             imgAddVote.setVisibility(View.GONE);
-            imgRefreshVote.setImageResource(R.drawable.fv_ful_png_300px);
-            imgRefreshVote.setVisibility(View.VISIBLE);
+            imgRefreshVote.setVisibility(View.GONE);
+            imgLogo.setVisibility(View.VISIBLE);
             txtNoVote.setText(R.string.wall_item_no_vote_search);
         }
     }

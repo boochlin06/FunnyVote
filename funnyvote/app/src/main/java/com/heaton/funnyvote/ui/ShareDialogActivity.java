@@ -177,6 +177,11 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
                 send.putExtra(Intent.EXTRA_TEXT, String.format(
                         getString(R.string.vote_share_msg), voteURL));
             }
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(send.getComponent().getPackageName())
+                    .setAction(isShareApp ? AnalyzticsTag.ACTION_SHARE_APP : AnalyzticsTag.ACTION_SHARE_VOTE)
+                    .setLabel(voteURL)
+                    .build());
             startActivity(send);
             finish();
         }

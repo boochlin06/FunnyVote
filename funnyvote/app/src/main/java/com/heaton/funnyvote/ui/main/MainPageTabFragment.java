@@ -27,7 +27,11 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
@@ -69,6 +73,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     private User loginUser;
     private User targetUser;
     private AlertDialog passwordDialog;
+    private Tracker tracker;
 
     public static MainPageTabFragment newInstance(String tab, User loginUser) {
         return newInstance(tab, loginUser, null);
@@ -92,6 +97,8 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         this.tab = argument.getString(KEY_TAB);
         this.loginUser = argument.getParcelable(KEY_LOGIN_USER);
         this.targetUser = argument.getParcelable(KEY_TARGET_USER);
+        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
+        tracker = application.getDefaultTracker();
         voteDataManager = VoteDataManager.getInstance(getContext().getApplicationContext());
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
         fabTop = (FloatingActionButton) RootView.findViewById(R.id.fabTop);
@@ -144,13 +151,17 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
             voteDataManager.getNewVoteList(0, loginUser);
         } else if (tab.equals(TAB_CREATE)) {
-            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
+            if (targetUser == null) {
+                adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
+            } else {
+                adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW_OTHER);
+            }
             voteDataManager.getUserCreateVoteList(0, loginUser, targetUser);
         } else if (tab.equals(TAB_PARTICIPATE)) {
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
             voteDataManager.getUserParticipateVoteList(0, loginUser);
         } else if (tab.equals(TAB_FAVORITE)) {
-            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
+            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_FAVORITE);
             voteDataManager.getUserFavoriteVoteList(0, loginUser, targetUser);
         }
         adapter.resetItemTypeList();
@@ -223,6 +234,12 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_FAVORITE)) {
                 voteDataManager.favoriteVote(event.data.getVoteCode()
                         , event.data.getIsFavorite(), loginUser);
+                tracker.send(new HitBuilders.EventBuilder()
+                        .setCategory(tab)
+                        .setAction(event.data.getIsFavorite() ? AnalyzticsTag.ACTION_ADD_FAVORITE
+                                : AnalyzticsTag.ACTION_REMOVE_FAVORITE)
+                        .setLabel(event.data.getVoteCode())
+                        .build());
             } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)) {
                 updateVoteDataToList(event.data);
             } else if (getUserVisibleHint() && event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)
@@ -232,6 +249,11 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                     showPasswordDialog(event.data, event.optionList, loginUser);
                 } else {
                     voteDataManager.pollVote(event.data.getVoteCode(), null, event.optionList, loginUser);
+                    tracker.send(new HitBuilders.EventBuilder()
+                            .setCategory(tab)
+                            .setAction(AnalyzticsTag.ACTION_QUICK_POLL_VOTE)
+                            .setLabel(event.data.getVoteCode())
+                            .build());
                 }
             }
         }
@@ -283,6 +305,11 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                     @Override
                     public void onClick(View view) {
                         voteDataManager.pollVote(data.getVoteCode(), password.getText().toString(), optionList, user);
+                        tracker.send(new HitBuilders.EventBuilder()
+                                .setCategory(tab)
+                                .setAction(AnalyzticsTag.ACTION_QUICK_POLL_VOTE)
+                                .setLabel(data.getVoteCode())
+                                .build());
                     }
                 });
             }
@@ -327,6 +354,8 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                 if (tab.equals(TAB_PARTICIPATE)) {
                     refreshFragment = true;
                 }
+                EventBus.getDefault().post(new EventBusController
+                        .VoteDataControlEvent(event.voteData, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
                 Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_success_poll
                         , Toast.LENGTH_SHORT).show();
             } else {

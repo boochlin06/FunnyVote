@@ -150,8 +150,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             }
         });
         SharedPreferences firstTimePref = FirstTimePref.getInstance(getContext()).getPreferences();
-        if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_INTORDUTCION_QUICK_POLL, true)) {
-            firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTORDUTCION_QUICK_POLL, false).apply();
+        if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, true)) {
+            firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, false).apply();
             showIntroductionDialog();
         }
         tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN_HOT);
@@ -461,6 +461,11 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                     public void onClick(View view) {
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW
                                 , Uri.parse(actionURL));
+                        tracker.send(new HitBuilders.EventBuilder()
+                                .setCategory(AnalyzticsTag.CATEGORY_PROMOTION)
+                                .setAction(AnalyzticsTag.ACTION_CLICK_PROMOTION)
+                                .setLabel(actionURL)
+                                .build());
                         startActivity(browserIntent);
                     }
                 });

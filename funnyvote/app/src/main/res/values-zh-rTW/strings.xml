@@ -24,9 +24,12 @@
     <string name="wall_item_no_one_poll">沒人投票阿</string>
     <string name="wall_item_bar_vote_count" formatted="false">"票數:%d "</string>
     <string name="wall_item_bar_Share">分享</string>
-    <string name="wall_item_no_vote_create_new">這裡沒有投票喔.\n自己創一個如何?</string>
+    <string name="wall_item_no_vote_create_new">這裡沒有投票喔.\n自己創一個如何?\n發個牢騷也行</string>
+    <string name="wall_item_no_vote_create_new_other">這裡沒有投票喔.\n這位大德並無任何問題。</string>
     <string name="wall_item_no_vote">對，就是沒有任何投票</string>
-    <string name="wall_item_no_vote_search">每看到阿，這裡沒有投票阿 \n在工具列搜尋看看.</string>
+    <string name="wall_item_no_vote_favorite">恩，依然沒有任何投票.\n莫非這功能很雞肋.</string>
+    <string name="wall_item_no_vote_participate">沒有參與任何投票\nCome on 老兄，去幫忙解個惑啊.</string>
+    <string name="wall_item_no_vote_search">沒找到阿，這裡沒有投票 \n在工具列搜尋看看.</string>
     <string name="wall_item_no_vote_refresh">好像沒有投票.\n重新整理看看.</string>
     <string name="wall_item_toast_no_vote_refresh">之後沒投票啦</string>
     <string name="wall_item_toast_double_click_to_exit">在點一下返回鍵離開</string>
@@ -41,7 +44,7 @@
 
     <!--Create vote page tab options settings-->
     <string name="create_vote_tab_settings_options">選項</string>
-    <string name="create_vote_tab_setting_max_options">最多：</string>
+    <string name="create_vote_tab_setting_max_options">票數最多：</string>
     <string name="create_vote_tab_setting_min_options">最少 :</string>
     <string name="create_vote_tab_setting_user_add_option">投票者可以增加選項：</string>
     <string name="create_vote_tab_settings_author">作者</string>
@@ -133,6 +136,11 @@
     <string name="vote_detail_dialog_sort_poll">票數</string>
     <string name="vote_detail_dialog_sort_select">選擇</string>
 
+    <!-- vote case view -->
+    <string name="vote_detail_case_view_close">關閉</string>
+    <string name="vote_detail_case_view_title">就是這裡，提交結果</string>
+    <string name="vote_detail_case_view_content">你可以長按選項提交結果，或是選了選項後，在此提交結果。</string>
+
     <!-- Vote exit dialog -->
     <string name="vote_detail_dialog_exit_title">確定要閃人嗎？</string>
     <string name="vote_detail_dialog_exit_message">別走，人們需要你的意見阿?</string>
@@ -161,7 +169,7 @@
     <!--Personal -->
     <string name="personal_tab_create">發起</string>
     <string name="personal_tab_participate">參與</string>
-    <string name="personal_tab_favorite">收集</string>
+    <string name="personal_tab_favorite">收藏</string>
 
     <!--Network-->
     <string name="toast_network_connect_error">網路不給力阿</string>

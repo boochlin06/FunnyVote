@@ -52,6 +52,7 @@
         <item name="android:gravity">center_vertical</item>
         <item name="android:minHeight">48dp</item>
     </style>
+
     <style name="TextComponent.LicenceItemRow">
         <item name="android:gravity">center_vertical</item>
         <item name="android:textAllCaps">false</item>
@@ -77,5 +78,11 @@
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">#5f5f5f</item>
+    </style>
+
+    <style name="CustomShowcaseTheme" parent="ShowcaseView">
+        <item name="sv_backgroundColor">#e51249d9</item>
+        <item name="sv_showcaseColor">#25467A</item>
+        <item name="sv_buttonText">@string/vote_detail_case_view_close</item>
     </style>
 </resources>

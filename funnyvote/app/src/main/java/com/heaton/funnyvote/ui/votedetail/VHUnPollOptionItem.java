@@ -15,8 +15,10 @@ import org.greenrobot.eventbus.EventBus;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 
 import static com.heaton.funnyvote.eventbus.EventBusController.OptionChoiceEvent.OPTION_CHOICED;
+import static com.heaton.funnyvote.eventbus.EventBusController.OptionChoiceEvent.OPTION_QUICK_POLL;
 
 /**
  * Created by heaton on 2016/8/22.
@@ -35,7 +37,6 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     private boolean isChoice = false;
     private boolean isMultiChoice = false;
     private boolean isExpand = false;
-    private int lineCount = 0;
 
     public VHUnPollOptionItem(View itemView, boolean isMultiChoice) {
         super(itemView);
@@ -50,17 +51,17 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
         txtOptionTitle.setText(option.getTitle());
         txtOptionNumber.setText(Integer.toString(getAdapterPosition() + 1));
         setUpOptionExpandLayout();
-        setUpImgChoiceLaout();
+        setUpImgChoiceLayout();
         this.itemView.setOnClickListener(this);
     }
 
     @OnClick(R.id.imgChoice)
     public void onOptionChoice() {
-        setUpImgChoiceLaout();
+        setUpImgChoiceLayout();
         EventBus.getDefault().post(new EventBusController.OptionChoiceEvent(option.getId(), OPTION_CHOICED, option.getCode()));
     }
 
-    private void setUpImgChoiceLaout() {
+    private void setUpImgChoiceLayout() {
         if (!isMultiChoice) {
             imgChoice.setImageResource(isChoice ? R.drawable.ic_radio_button_checked_40dp
                     : R.drawable.ic_radio_button_unchecked_40dp);
@@ -81,6 +82,17 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
         if (txtOptionTitle.getLineCount() == 1) {
             onOptionChoice();
         }
+    }
+
+    @OnLongClick(R.id.cardOption)
+    public boolean onLongClick(View v) {
+        if (!isMultiChoice) {
+            EventBus.getDefault().post(new EventBusController.OptionChoiceEvent(option.getId()
+                    , OPTION_QUICK_POLL, option.getCode()));
+        } else {
+            onClick(v);
+        }
+        return true;
     }
 
     private void setUpOptionExpandLayout() {

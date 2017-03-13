@@ -11,7 +11,6 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -137,6 +136,10 @@ public class UserActivity extends AppCompatActivity
                     .crossFade()
                     .into(imgUserIcon);
         }
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_USER)
+                .setAction(AnalyzticsTag.ACTION_ENTER_USER_INFO)
+                .setLabel(user.getUserCode()).build());
     }
 
     public static void start(Context c) {

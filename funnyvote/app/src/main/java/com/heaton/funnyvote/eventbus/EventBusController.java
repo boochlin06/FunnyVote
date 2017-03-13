@@ -52,6 +52,8 @@ public class EventBusController {
     public final static class OptionChoiceEvent {
         public static final String OPTION_CHOICED = "OPTION_CHOICED";
         public static final String OPTION_EXPAND = "OPTION_EXPAND";
+        // Only for single choice.
+        public static final String OPTION_QUICK_POLL = "OPTION_QUICK_POLL";
         public final String message;
         public final long Id;
         public final String code;

@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private NavigationView navigationView;
 
-    private int mCurrentPage;
+    private int currentPage;
     boolean doubleBackToExitPressedOnce = false;
     private SearchView searchView;
     private String searchKeyword;
@@ -89,7 +89,16 @@ public class MainActivity extends AppCompatActivity {
 
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
         navigationView.getMenu().getItem(0).setChecked(true);
-        mCurrentPage = R.id.navigation_item_main;
+        navigationView.getHeaderView(0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentPage != navigationView.getMenu().findItem(R.id.navigation_item_account).getItemId()) {
+                    switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_account));
+                }
+                drawerLayout.closeDrawers();
+            }
+        });
+        currentPage = R.id.navigation_item_main;
 
         setupDrawerContent(navigationView);
         setupDrawerHeader();
@@ -133,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        if (mCurrentPage != menuItem.getItemId()) {
+                        if (currentPage != menuItem.getItemId()) {
                             switchFragment(menuItem);
                         }
                         drawerLayout.closeDrawers();
@@ -147,23 +156,6 @@ public class MainActivity extends AppCompatActivity {
     public void onUIChange(EventBusController.UIControlEvent event) {
         if (event.message.equals(EventBusController.UIControlEvent.INTRO_TO_ACCOUNT)) {
             drawerLayout.openDrawer(Gravity.LEFT);
-
-//            Target viewTarget = new Target() {
-//                @Override
-//                public Point getPoint() {
-//                    int actionBarSize = drawerLayout.getHeight();
-//                    int x = drawerLayout.getWidth() / 4;
-//                    int y = (int) navigationView.getMenu().findItem(R.id.navigation_item_account).get.getY();
-//                    Log.d("test", "actionBarSize:" + actionBarSize + " x:" + x + " y:" + y);
-//                    return new Point(x, y);
-//                }
-//            };
-//            new ShowcaseView.Builder(MainActivity.this)
-//                    .setTarget(new ViewTarget(navigationView.getMenu().getItem(5).getItemId(),MainActivity.this))
-//                    .setContentTitle("test title")
-//                    .setContentText("show case desc")
-//                    .build()
-//                    .show();
         }
     }
 
@@ -202,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        navigationView.setCheckedItem(mCurrentPage);
+        navigationView.setCheckedItem(currentPage);
     }
 
     private void switchFragment(final MenuItem menuItem) {
@@ -222,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 switch (menuId) {
                     case R.id.navigation_item_main:
-                        mCurrentPage = menuItem.getItemId();
+                        currentPage = menuItem.getItemId();
                         fragment = new MainPageFragment();
                         fragment.setEnterTransition(slide);
                         ft.replace(R.id.frame_content, fragment).commit();
@@ -237,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.navigation_item_search:
                         tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
-                        mCurrentPage = menuItem.getItemId();
+                        currentPage = menuItem.getItemId();
                         fragment = new SearchFragment();
                         fragment.setEnterTransition(slide);
                         ft.replace(R.id.frame_content, fragment).commit();
@@ -248,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.navigation_item_account:
                         tracker.setScreenName(AnalyzticsTag.SCREEN_ACCOUNT);
-                        mCurrentPage = menuItem.getItemId();
+                        currentPage = menuItem.getItemId();
                         AccountFragment accountFragment = new AccountFragment();
                         accountFragment.setEnterTransition(slide);
                         ft.replace(R.id.frame_content, accountFragment).commit();
@@ -258,13 +250,14 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.navigation_item_about:
                         tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT);
-                        mCurrentPage = menuItem.getItemId();
+                        currentPage = menuItem.getItemId();
                         AboutFragment aboutFragment = new AboutFragment();
                         aboutFragment.setEnterTransition(slide);
                         ft.replace(R.id.frame_content, aboutFragment).commit();
                         toolbar.setTitle(R.string.drawer_about);
                         break;
                 }
+                navigationView.setCheckedItem(currentPage);
                 tracker.send(new HitBuilders.ScreenViewBuilder().build());
             }
         }, 500);
@@ -276,8 +269,8 @@ public class MainActivity extends AppCompatActivity {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         }
-        if (mCurrentPage != navigationView.getMenu().getItem(0).getItemId()) {
-            mCurrentPage = navigationView.getMenu().getItem(0).getItemId();
+        if (currentPage != navigationView.getMenu().getItem(0).getItemId()) {
+            currentPage = navigationView.getMenu().getItem(0).getItemId();
             navigationView.getMenu().getItem(0).setChecked(true);
             switchFragment(navigationView.getMenu().getItem(0));
         } else {
@@ -319,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
                 public boolean onQueryTextChange(String newText) {
                     searchKeyword = newText;
                     if (searchKeyword.length() == 0) {
-                        if (mCurrentPage == navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
+                        if (currentPage == navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
                             EventBus.getDefault().post(new EventBusController.UIControlEvent(
                                     EventBusController.UIControlEvent.SEARCH_KEYWORD, ""));
                         }
@@ -330,9 +323,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
                     searchKeyword = query;
-                    Log.d(TAG, "onQueryTextSubmit:" + query + "  page:" + mCurrentPage
+                    Log.d(TAG, "onQueryTextSubmit:" + query + "  page:" + currentPage
                             + " search page:" + navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
-                    if (mCurrentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
+                    if (currentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
                         switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
                         navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
                     } else {

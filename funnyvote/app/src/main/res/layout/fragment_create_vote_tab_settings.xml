@@ -218,16 +218,28 @@
             android:text="@string/create_vote_tab_settings_end_time"
             android:textSize="@dimen/create_vote_settings_sub_topic_text_size" />
 
+        <ImageView
+            android:id="@+id/imgEndTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@id/txtEndTime"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_editor_mode_edit" />
+
         <TextView
             android:id="@+id/txtEndTimeDetail"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/txtEndTime"
             android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_time_margin"
+            android:layout_toLeftOf="@id/imgEndTime"
             android:text="2016/10/10"
             android:textColor="@color/md_blue_300"
             android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size" />
+
 
         <TextView
             android:id="@+id/txtSecurity"
@@ -239,15 +251,28 @@
             android:text="@string/create_vote_tab_settings_security"
             android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size" />
 
+        <ImageView
+            android:id="@+id/imgSecurity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@id/txtSecurity"
+            android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/ic_editor_mode_edit" />
+
         <TextView
             android:id="@+id/txtSecurityDetail"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/txtSecurity"
             android:layout_marginLeft="@dimen/create_vote_settings_sub_margin"
             android:layout_marginTop="@dimen/create_vote_settings_time_margin"
+            android:layout_toLeftOf="@id/imgSecurity"
             android:textColor="@color/md_blue_300"
-            android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size" />
+            android:textSize="@dimen/create_vote_settings_sub_topic_time_text_size"
+            tools:text="private" />
+
 
         <TextView
             android:id="@+id/txtNeedPwd"

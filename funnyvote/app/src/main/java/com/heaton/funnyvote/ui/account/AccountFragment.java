@@ -17,10 +17,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.data.user.UserManager;
-import com.heaton.funnyvote.database.User;
-import com.heaton.funnyvote.twitter.CustomTwitterApiClient;
 import com.bumptech.glide.Glide;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -32,6 +28,8 @@ import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -40,6 +38,12 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.heaton.funnyvote.FunnyVoteApplication;
+import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
+import com.heaton.funnyvote.data.user.UserManager;
+import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.twitter.CustomTwitterApiClient;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
@@ -86,8 +90,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
                 if (profile.has("age_range")) {
                     JSONObject ageRange = profile.getJSONObject("age_range");
-                    min = ageRange.has("min") ? ageRange.getInt("min"):-1;
-                    max = ageRange.has("max") ? ageRange.getInt("max"):-1;
+                    min = ageRange.has("min") ? ageRange.getInt("min") : -1;
+                    max = ageRange.has("max") ? ageRange.getInt("max") : -1;
                 }
 
                 String link = "";
@@ -111,6 +115,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
         }
     };
 
+
+    private Tracker tracker;
     //Google Sign in API
     private GoogleApiClient googleApiClient;
 
@@ -223,6 +229,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
+        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
+        tracker = application.getDefaultTracker();
         View view = inflater.inflate(R.layout.fragment_account, null);
 
         callbackManager = CallbackManager.Factory.create();
@@ -262,7 +270,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         nameTextView = (TextView) view.findViewById(R.id.profile_name);
         nameTextView.setOnClickListener(this);
         picImageView = (ImageView) view.findViewById(R.id.profile_picture);
-        googleSignInBtn = (Button)view.findViewById(R.id.google_sign_in_button);
+        googleSignInBtn = (Button) view.findViewById(R.id.google_sign_in_button);
         googleSignInBtn.setOnClickListener(this);
         signoutBtn = (Button) view.findViewById(R.id.sign_out_button);
         signoutBtn.setOnClickListener(this);
@@ -292,10 +300,10 @@ public class AccountFragment extends android.support.v4.app.Fragment
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
+        super.onDestroy();
         accessTokenTracker.stopTracking();
         googleApiClient.stopAutoManage(getActivity());
         googleApiClient.disconnect();
-        super.onDestroy();
     }
 
     @Override
@@ -337,7 +345,9 @@ public class AccountFragment extends android.support.v4.app.Fragment
             user.setUserName(name);
             user.setUserID(googleID);
             user.setEmail(email);
-            user.setUserIcon(picLink.toString());
+            if (picLink != null) {
+                user.setUserIcon(picLink.toString());
+            }
             user.setType(User.TYPE_GOOGLE);
             userManager.registerUser(user, mergeGuest, registerUserCallback);
         }
@@ -351,6 +361,10 @@ public class AccountFragment extends android.support.v4.app.Fragment
     private void googleSignIn() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
         startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
+                .setAction(AnalyzticsTag.ACTION_ACCOUNT_LOGIN)
+                .setLabel("google").build());
     }
 
     private void googleSignOut() {
@@ -365,15 +379,27 @@ public class AccountFragment extends android.support.v4.app.Fragment
                         }
                     }
                 });
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
+                .setAction(AnalyzticsTag.ACTION_ACCOUNT_LOGOUT)
+                .setLabel("google").build());
     }
 
     private void facebookLogin() {
         LoginManager.getInstance().logInWithReadPermissions(this,
                 Arrays.asList("public_profile", "email"));
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
+                .setAction(AnalyzticsTag.ACTION_ACCOUNT_LOGIN)
+                .setLabel("facebook").build());
     }
 
     private void facebookLogout() {
         LoginManager.getInstance().logOut();
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
+                .setAction(AnalyzticsTag.ACTION_ACCOUNT_LOGOUT)
+                .setLabel("facebook").build());
     }
 
     private void showUser(User user) {
@@ -420,6 +446,11 @@ public class AccountFragment extends android.support.v4.app.Fragment
         builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+
+                tracker.send(new HitBuilders.EventBuilder()
+                        .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
+                        .setAction(AnalyzticsTag.ACTION_ACCOUNT_RENAME)
+                        .setLabel(editText.getText().toString()).build());
                 userManager.changeCurrentUserName(editText.getText().toString(), changeUserNameCallback);
             }
         });
@@ -509,12 +540,20 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     private void twitterLogin() {
         getTwitterAuthClient().authorize(getActivity(), twitterLoginCallback);
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
+                .setAction(AnalyzticsTag.ACTION_ACCOUNT_LOGIN)
+                .setLabel("twitter").build());
     }
 
     private void twitterlogout() {
         Twitter.getSessionManager().clearActiveSession();
         userManager.unregisterUser();
         updateUI();
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
+                .setAction(AnalyzticsTag.ACTION_ACCOUNT_LOGOUT)
+                .setLabel("twitter").build());
     }
 
     private TwitterAuthClient getTwitterAuthClient() {

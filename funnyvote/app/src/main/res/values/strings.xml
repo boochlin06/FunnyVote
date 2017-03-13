@@ -32,7 +32,10 @@
     <string name="wall_item_bar_vote_count" formatted="false">Vote:%d </string>
     <string name="wall_item_bar_Share">Share</string>
     <string name="wall_item_no_vote_create_new">No vote in list.\nWould you create new vote?</string>
+    <string name="wall_item_no_vote_create_new_other">No vote in list.\nNo question for this people.</string>
     <string name="wall_item_no_vote">No vote in list.</string>
+    <string name="wall_item_no_vote_favorite">No vote in list.\nMaybe you have something interested.</string>
+    <string name="wall_item_no_vote_participate">No vote in list.\nPlease go to help other.</string>
     <string name="wall_item_no_vote_search">No vote in list. \nPlease search on tool bar.</string>
     <string name="wall_item_no_vote_refresh">No vote in list.\nPlease refresh list.</string>
     <string name="wall_item_toast_no_vote_refresh">No vote after refresh</string>
@@ -141,6 +144,11 @@
     <string name="vote_detail_dialog_sort_alphabet">Alphabet</string>
     <string name="vote_detail_dialog_sort_poll">Poll count</string>
     <string name="vote_detail_dialog_sort_select">Select</string>
+
+    <!-- vote case view -->
+    <string name="vote_detail_case_view_close">Close</string>
+    <string name="vote_detail_case_view_title">Please submit options</string>
+    <string name="vote_detail_case_view_content">After choice options , submit result.</string>
 
     <!-- Vote exit dialog -->
     <string name="vote_detail_dialog_exit_title">Are you sure to exit?</string>

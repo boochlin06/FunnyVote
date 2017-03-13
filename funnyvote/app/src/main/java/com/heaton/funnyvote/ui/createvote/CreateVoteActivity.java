@@ -253,6 +253,13 @@ public class CreateVoteActivity extends AppCompatActivity {
     }
 
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == CropImage.CAMERA_CAPTURE_PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCropImageActivity(cropImageUri);
+            } else {
+                Toast.makeText(this, "Cancelling, required permissions are not granted", Toast.LENGTH_LONG).show();
+            }
+        }
         if (requestCode == CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE) {
             if (cropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // required permissions granted, start crop image activity
@@ -433,6 +440,11 @@ public class CreateVoteActivity extends AppCompatActivity {
                     }
                 }, 1000);
                 hideLoadingCircle();
+                tracker.send(new HitBuilders.EventBuilder()
+                        .setCategory(AnalyzticsTag.CATEGORY_CREATE_VOTE)
+                        .setAction(AnalyzticsTag.ACTION_CREATE_VOTE)
+                        .setLabel(event.voteData.getVoteCode())
+                        .build());
                 finish();
                 Log.d(TAG, "create vote success:" + event.voteData.getVoteCode() + " image:" + localVoteSetting.getVoteImage());
             } else {

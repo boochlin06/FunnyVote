@@ -87,6 +87,7 @@ public class VoteData {
     private boolean isNeedPassword;
     @Transient
     public String password;
+    @SerializedName("sec")
     private String security = SECURITY_PUBLIC;
 
     private String category;

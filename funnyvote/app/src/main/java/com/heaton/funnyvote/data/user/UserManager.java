@@ -189,9 +189,14 @@ public class UserManager {
                     userDataSource.setUser(user);
                     callback.onSuccess();
                 } else {
+                    try {
+                        Log.d(TAG, "changeUserName response status:" + response.code() +" ,message:"+response.errorBody().string());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     callback.onFailure();
                 }
-                Log.d(TAG, "changeUserName response status:" + response.code());
+
             }
 
             @Override

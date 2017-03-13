@@ -100,6 +100,8 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     TextView txtThirdOption;
     @BindView(R.id.btnThirdOption)
     CardView btnThirdOption;
+    @BindView(R.id.imgLock)
+    ImageView imgLock;
 
     public VHVoteWallItem(View v) {
         super(v);
@@ -133,6 +135,12 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         }
 
         txtAuthorName.setText(data.getAuthorName());
+
+        if (VoteData.SECURITY_PUBLIC.equals(data.getSecurity())) {
+            imgLock.setVisibility(View.INVISIBLE);
+        } else {
+            imgLock.setVisibility(View.VISIBLE);
+        }
 
         if (data.getVoteImage() == null || data.getVoteImage().isEmpty()) {
             imgMain.setImageResource(data.getLocalImage());
@@ -351,8 +359,8 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                 setUpFirstButtonProgressLayout(data.getOption1Polled());
                 setUpSecondButtonProgressLayout(data.getOption2Polled());
             } else {
-                btnFirstOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_blue_100));
-                btnSecondOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_blue_100));
+                btnFirstOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_100));
+                btnSecondOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_100));
 
                 txtFirstPollCountPercent.setVisibility(View.GONE);
                 txtSecondPollCountPercent.setVisibility(View.GONE);
@@ -385,26 +393,26 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
     private void setUpFirstButtonProgressLayout(boolean isPolled) {
         if (isPolled) {
-            progressFirstOption.setProgressColor(ContextCompat.getColor(itemView.getContext(),R.color.md_red_600));
-            progressFirstOption.setProgressBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_red_200));
-            btnFirstOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_red_100));
+            progressFirstOption.setProgressColor(ContextCompat.getColor(itemView.getContext(), R.color.md_red_600));
+            progressFirstOption.setProgressBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_red_200));
+            btnFirstOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_red_100));
         } else {
-            progressFirstOption.setProgressColor(ContextCompat.getColor(itemView.getContext(),R.color.md_blue_600));
-            progressFirstOption.setProgressBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_blue_200));
-            btnFirstOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_blue_100));
+            progressFirstOption.setProgressColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_600));
+            progressFirstOption.setProgressBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_200));
+            btnFirstOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_100));
         }
     }
 
     private void setUpSecondButtonProgressLayout(boolean isPolled) {
         if (isPolled) {
-            progressSecondOption.setProgressColor(ContextCompat.getColor(itemView.getContext(),R.color.md_red_600));
+            progressSecondOption.setProgressColor(ContextCompat.getColor(itemView.getContext(), R.color.md_red_600));
             progressSecondOption.setProgressBackgroundColor(itemView
                     .getResources().getColor(R.color.md_red_200));
-            btnSecondOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_red_100));
+            btnSecondOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_red_100));
         } else {
-            progressSecondOption.setProgressColor(ContextCompat.getColor(itemView.getContext(),R.color.md_blue_600));
-            progressSecondOption.setProgressBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_blue_200));
-            btnSecondOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.md_blue_100));
+            progressSecondOption.setProgressColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_600));
+            progressSecondOption.setProgressBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_200));
+            btnSecondOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_100));
         }
     }
 

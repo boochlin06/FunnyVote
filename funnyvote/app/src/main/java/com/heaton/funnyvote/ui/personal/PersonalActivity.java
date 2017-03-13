@@ -11,7 +11,6 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -93,6 +92,10 @@ public class PersonalActivity extends AppCompatActivity
         } else {
             finish();
         }
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_PERSONAL)
+                .setAction(AnalyzticsTag.ACTION_ENTER_PERSONAL_INFO)
+                .setLabel(personalCode).build());
         txtSubTitle = (TextView) findViewById(R.id.txtSubTitle);
         txtUserName = (TextView) findViewById(R.id.txtUserName);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayoutPersonal);

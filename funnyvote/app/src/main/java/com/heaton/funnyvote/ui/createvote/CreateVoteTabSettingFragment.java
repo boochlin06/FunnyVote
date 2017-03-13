@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -88,6 +89,10 @@ public class CreateVoteTabSettingFragment extends Fragment {
     TextView txtPwd;
     @BindView(R.id.edtPwd)
     EditText edtPwd;
+    @BindView(R.id.imgEndTime)
+    ImageView imgEndTime;
+    @BindView(R.id.imgSecurity)
+    ImageView imgSecurity;
 
     private VoteData voteSettings;
     private UserManager userManager;
@@ -197,7 +202,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
         super.onDestroyView();
     }
 
-    @OnClick({R.id.txtEndTimeDetail, R.id.txtEndTime})
+    @OnClick({R.id.txtEndTimeDetail, R.id.txtEndTime, R.id.imgEndTime})
     public void onTimeDetailClick() {
         Calendar now = Calendar.getInstance();
         now.add(Calendar.DAY_OF_MONTH, (int) DEFAULT_END_TIME);
@@ -215,7 +220,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
                         } else if (endTime.getTimeInMillis() - System.currentTimeMillis()
                                 > DEFAULT_END_TIME_MAX * 86400 * 1000) {
                             Toast.makeText(getContext(), String.format(getString(
-                                    R.string.create_vote_error_hint_endtime_more_than_max),DEFAULT_END_TIME_MAX)
+                                    R.string.create_vote_error_hint_endtime_more_than_max), DEFAULT_END_TIME_MAX)
                                     , Toast.LENGTH_LONG).show();
                             return;
                         } else {
@@ -231,7 +236,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
     }
 
 
-    @OnClick({R.id.txtSecurityDetail, R.id.txtSecurity})
+    @OnClick({R.id.txtSecurityDetail, R.id.txtSecurity, R.id.imgSecurity})
     public void onSecurityDetailClick() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         String[] allType = new String[]{getString(R.string.create_vote_tab_settings_public_hint)

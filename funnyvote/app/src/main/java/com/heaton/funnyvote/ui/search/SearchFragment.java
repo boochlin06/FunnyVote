@@ -13,7 +13,11 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.DataLoader;
@@ -48,6 +52,7 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
     private UserManager userManager;
     private User user;
     private String keyword = "";
+    private Tracker tracker;
 
     CircleProgressView circleLoad;
 
@@ -69,6 +74,9 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
+        tracker = application.getDefaultTracker();
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_search, container, false);
         ryMain = (RecyclerView) RootView.findViewById(R.id.rySearchResult);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(ryMain.getContext(),
@@ -114,6 +122,10 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
         if (user != null) {
             this.showLoadingCircle(getString(R.string.vote_detail_circle_loading));
             voteDataManager.getSearchVoteList(keyword, 0, user);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(AnalyzticsTag.CATEGORY_SEARCH_VOTE)
+                    .setAction(AnalyzticsTag.ACTION_SEARCH_VOTE)
+                    .setLabel(keyword).build());
         }
     }
 

@@ -34,8 +34,11 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public static final int ITEM_TYPE_ADMOB = 44;
 
     public static final String TAG_NO_VOTE_CREATE_NEW = "CREATE_NEW";
+    public static final String TAG_NO_VOTE_CREATE_NEW_OTHER = "CREATE_NEW_OTHER";
     public static final String TAG_NO_VOTE_REFRESH = "REFRESH";
     public static final String TAG_NO_VOTE_NOPE = "CREATE_NOPE";
+    public static final String TAG_NO_VOTE_PARTICIPATE = "PARTICIPATE";
+    public static final String TAG_NO_VOTE_FAVORITE = "FAVORITE";
 
     public static int ADMOB_FREQUENCE = 10;
     public static boolean ENABLE_ADMOB = false;
@@ -201,25 +204,45 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         public ImageView imgAddVote;
         public ImageView imgRefreshVote;
+        public ImageView imgLogo;
         public TextView txtNoVote;
 
         public VHNoVote(View itemView) {
             super(itemView);
             imgAddVote = (ImageView) itemView.findViewById(R.id.imgAddVote);
             imgRefreshVote = (ImageView) itemView.findViewById(R.id.imgRefreshVote);
+            imgLogo = (ImageView) itemView.findViewById(R.id.imgLogo);
             txtNoVote = (TextView) itemView.findViewById(R.id.txtNoVote);
             if (tagNoVote.equals(TAG_NO_VOTE_CREATE_NEW)) {
                 imgAddVote.setVisibility(View.VISIBLE);
                 imgRefreshVote.setVisibility(View.GONE);
                 txtNoVote.setText(R.string.wall_item_no_vote_create_new);
+                imgLogo.setVisibility(View.GONE);
             } else if (tagNoVote.equals(TAG_NO_VOTE_NOPE)) {
                 imgAddVote.setVisibility(View.GONE);
                 txtNoVote.setText(R.string.wall_item_no_vote);
                 imgRefreshVote.setVisibility(View.GONE);
+                imgLogo.setVisibility(View.VISIBLE);
             } else if (tagNoVote.equals(TAG_NO_VOTE_REFRESH)) {
                 imgAddVote.setVisibility(View.GONE);
                 imgRefreshVote.setVisibility(View.VISIBLE);
                 txtNoVote.setText(R.string.wall_item_no_vote_refresh);
+                imgLogo.setVisibility(View.GONE);
+            } else if (tagNoVote.equals(TAG_NO_VOTE_FAVORITE)) {
+                imgAddVote.setVisibility(View.GONE);
+                txtNoVote.setText(R.string.wall_item_no_vote_favorite);
+                imgRefreshVote.setVisibility(View.GONE);
+                imgLogo.setVisibility(View.VISIBLE);
+            } else if (tagNoVote.equals(TAG_NO_VOTE_PARTICIPATE)) {
+                imgAddVote.setVisibility(View.GONE);
+                txtNoVote.setText(R.string.wall_item_no_vote_participate);
+                imgRefreshVote.setVisibility(View.GONE);
+                imgLogo.setVisibility(View.VISIBLE);
+            } else if (tagNoVote.equals(TAG_NO_VOTE_CREATE_NEW_OTHER)) {
+                imgAddVote.setVisibility(View.GONE);
+                txtNoVote.setText(R.string.wall_item_no_vote_create_new_other);
+                imgRefreshVote.setVisibility(View.GONE);
+                imgLogo.setVisibility(View.VISIBLE);
             }
             itemView.setOnClickListener(noVoteItemClickListener);
         }
