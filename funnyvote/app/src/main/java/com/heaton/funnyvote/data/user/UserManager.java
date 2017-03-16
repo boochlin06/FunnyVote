@@ -52,7 +52,7 @@ public class UserManager {
         final User user = userDataSource.getUser();
         if (user.getType() == User.TYPE_GUEST && user.getUserCode().isEmpty()) {
             final String guestName = Util.randomUserName(context);
-            Log.d(TAG, "Guest!" + user.getUserCode()+" name:"+guestName);
+            Log.d(TAG, "Guest!" + user.getUserCode() + " name:" + guestName);
             remoteServiceApi.getGuestUserCode(new RemoteServiceApi.GetUserCodeCallback() {
                 @Override
                 public void onSuccess(String userCode) {
@@ -139,14 +139,24 @@ public class UserManager {
                                 remoteServiceApi.linkGuestToLoginUser(userCode, guestCode, new Callback<ResponseBody>() {
                                     @Override
                                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                        user.setUserCode(userCode);
-                                        userDataSource.setUser(user);
-                                        callback.onSuccess();
+                                        if (response.isSuccessful()) {
+                                            user.setUserCode(userCode);
+                                            userDataSource.setUser(user);
+                                            callback.onSuccess();
+                                        } else {
+                                            callback.onFailure();
+                                            try {
+                                                Log.e(TAG, "registerUser" + response.errorBody().string());
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
                                     }
 
                                     @Override
                                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                                         callback.onFailure();
+                                        Log.e(TAG, "registerUser onFailure , error message:" + t.getMessage());
                                     }
                                 });
                             } else {
@@ -159,10 +169,12 @@ public class UserManager {
                         @Override
                         public void onFalure() {
                             callback.onFailure();
+                            Log.e(TAG, "registerUser onFailure");
                         }
                     });
         } else {
             callback.onFailure();
+            Log.e(TAG, "registerUser onFailure");
         }
     }
 
@@ -190,7 +202,7 @@ public class UserManager {
                     callback.onSuccess();
                 } else {
                     try {
-                        Log.d(TAG, "changeUserName response status:" + response.code() +" ,message:"+response.errorBody().string());
+                        Log.d(TAG, "changeUserName response status:" + response.code() + " ,message:" + response.errorBody().string());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

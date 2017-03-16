@@ -54,13 +54,14 @@
             android:id="@+id/imgFragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minHeight="360dp"
+            android:minHeight="400dp"
             android:maxHeight="400dp"
+            android:minWidth="240dp"
             android:layout_gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:scaleType="fitCenter"
-            tools:src="@drawable/vote_box"
+            tools:src="@drawable/intro_image_funnyvote"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 

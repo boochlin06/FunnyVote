@@ -41,7 +41,7 @@ public class IntroductionActivity extends AppIntro2 {
                 , R.drawable.intro_image_no_comment, ContextCompat.getColor(this, R.color.md_blue_300)));
         addSlide(IntroductionFragment.newInstance(getString(R.string.intro_title_bigdata)
                 , getString(R.string.intro_desc_bigdata)
-                , R.drawable.intro_image_quickvote, ContextCompat.getColor(this, R.color.md_red_300)));
+                , R.drawable.intro_image_big_data, ContextCompat.getColor(this, R.color.md_red_300)));
         addSlide(IntroductionFragment.newInstance(getString(R.string.intro_title_sharefin)
                 , getString(R.string.intro_desc_sharefin)
                 , R.drawable.intro_image_sharefin, ContextCompat.getColor(this, R.color.md_red_300)));

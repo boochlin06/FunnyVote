@@ -22,13 +22,13 @@
     <string name="wall_item_vote_end">投票已結束</string>
     <string name="wall_item_more">還有喔...</string>
     <string name="wall_item_no_one_poll">沒人投票阿</string>
-    <string name="wall_item_bar_vote_count" formatted="false">"票數:%d "</string>
+    <string name="wall_item_bar_vote_count" formatted="false">票數:%d </string>
     <string name="wall_item_bar_Share">分享</string>
-    <string name="wall_item_no_vote_create_new">這裡沒有投票喔.\n自己創一個如何?\n發個牢騷也行</string>
+    <string name="wall_item_no_vote_create_new">這裡沒有投票喔.\n『自己創一個如何?』</string>
     <string name="wall_item_no_vote_create_new_other">這裡沒有投票喔.\n這位大德並無任何問題。</string>
     <string name="wall_item_no_vote">對，就是沒有任何投票</string>
-    <string name="wall_item_no_vote_favorite">恩，依然沒有任何投票.\n莫非這功能很雞肋.</string>
-    <string name="wall_item_no_vote_participate">沒有參與任何投票\nCome on 老兄，去幫忙解個惑啊.</string>
+    <string name="wall_item_no_vote_favorite">恩，依然沒有任何投票.\n『莫非這功能很雞肋』</string>
+    <string name="wall_item_no_vote_participate">沒有參與任何投票\n『Come on 老兄，去幫忙解個惑啊』</string>
     <string name="wall_item_no_vote_search">沒找到阿，這裡沒有投票 \n在工具列搜尋看看.</string>
     <string name="wall_item_no_vote_refresh">好像沒有投票.\n重新整理看看.</string>
     <string name="wall_item_toast_no_vote_refresh">之後沒投票啦</string>
@@ -71,16 +71,16 @@
     <string name="create_vote_dialog_error_title">錯誤</string>
     <string name="create_vote_dialog_error_done">搞定</string>
     <string name="create_vote_error_hint_fill_all">選項內容請寫好寫滿</string>
-    <string name="create_vote_error_hint_error_user_code">應該是註冊相關問題。建議去帳戶頁面檢查。</string>
+    <string name="create_vote_error_hint_error_user_code">要馬網路要馬帳戶問題。建議去確認網路或帳戶頁面檢查。</string>
     <string name="create_vote_error_hint_max_option_0">最大可選數量不可為零。不能投的投票，這很有趣。</string>
     <string name="create_vote_error_hint_min_option_0">最小選項不可為零。可以不選的話，哪不就是路過而已嗎。</string>
-    <string name="create_vote_error_hint_max_smaller_than_min">最大可選數量應該要大於等於最小可選數量。這是文字邏輯問題。</string>
-    <string name="create_vote_error_hint_max_smaller_than_total">最大可選數量應該要小於等於選項總數。這是文字邏輯問題。</string>
+    <string name="create_vote_error_hint_max_smaller_than_min">最大可選數量應該要大於等於最小可選數量。</string>
+    <string name="create_vote_error_hint_max_smaller_than_total">最大可選數量應該要小於等於總體選項總數。</string>
     <string name="create_vote_error_hint_title_empty">投票標題不可空白.</string>
     <string name="create_vote_error_hint_password_empty">密碼不能空白</string>
     <string name="create_vote_error_hint_endtime_more_than_now">最好投票還沒開始就要結束了。</string>
     <string name="create_vote_error_hint_endtime_more_than_max" formatted="false">投票最多 %d 天</string>
-    <string name="create_vote_error_hint_title_duplicate">投票標題重複</string>
+    <string name="create_vote_error_hint_title_duplicate">選項標題重複</string>
 
     <string name="create_vote_option_hint">請輸入選項內容.</string>
 
@@ -163,6 +163,7 @@
 
     <string name="account_dialog_new_name_title">輸入新的名子</string>
     <string name="account_dialog_cancel">取消</string>
+    <string name="account_toast_login_fail">哪裡怪怪的，試試看別的帳號如何？</string>
     <string name="merge_option_title">保留你的資料</string>
     <string name="merge_option_msg">是否想要合併目前的選項紀錄到新登入用戶帳號？（如果選擇 NO, 你將會失去你現在的紀錄）</string>
 

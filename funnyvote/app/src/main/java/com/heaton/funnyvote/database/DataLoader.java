@@ -138,15 +138,13 @@ public class DataLoader {
 
     public List<VoteData> queryHotVotes(int offset, int limit) {
         return voteDataDao.queryBuilder().where(VoteDataDao.Properties.Category.eq("hot")
-                , VoteDataDao.Properties.StartTime.le(System.currentTimeMillis())
-                , VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).offset(offset)
+                , VoteDataDao.Properties.StartTime.le(System.currentTimeMillis())).offset(offset)
                 .orderAsc(VoteDataDao.Properties.DisplayOrder)
                 .limit(limit).list();
     }
 
     public long queryHotVotesCount() {
-        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.Category.eq("hot")
-                , VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).buildCount().count();
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.Category.eq("hot")).buildCount().count();
     }
 
     public long queryFavoriteVotesCount() {
@@ -175,16 +173,13 @@ public class DataLoader {
     }
 
     public List<VoteData> queryNewVotes(int offset, int limit) {
-        // TODO: SECURITY HOT AND TIME
-        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.StartTime.le(System.currentTimeMillis())
-                , VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC))
+        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.StartTime.le(System.currentTimeMillis()))
                 .orderDesc(VoteDataDao.Properties.StartTime)
                 .orderDesc().offset(offset).limit(limit).list();
     }
 
     public long queryNewVotesCount() {
-        return voteDataDao.queryBuilder().where(
-                VoteDataDao.Properties.Security.eq(VoteData.SECURITY_PUBLIC)).buildCount().count();
+        return voteDataDao.queryBuilder().buildCount().count();
     }
 
     public List<Option> queryOptionsByVoteCode(String voteCode) {

@@ -158,7 +158,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             }
             voteDataManager.getUserCreateVoteList(0, loginUser, targetUser);
         } else if (tab.equals(TAB_PARTICIPATE)) {
-            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
+            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_PARTICIPATE);
             voteDataManager.getUserParticipateVoteList(0, loginUser);
         } else if (tab.equals(TAB_FAVORITE)) {
             adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_FAVORITE);

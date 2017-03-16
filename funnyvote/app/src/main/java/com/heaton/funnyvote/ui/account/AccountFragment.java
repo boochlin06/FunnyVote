@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.facebook.AccessToken;
@@ -196,12 +197,15 @@ public class AccountFragment extends android.support.v4.app.Fragment
                         newUser.setUserIcon(user.profileImageUrl.replace("normal", "bigger"));
                         newUser.setType(User.TYPE_TWITTER);
                         userManager.registerUser(newUser, mergeGuest, registerUserCallback);
+                    } else {
+                        Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<com.twitter.sdk.android.core.models.User> call, Throwable t) {
                     t.printStackTrace();
+                    Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -249,7 +253,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
             @Override
             public void onError(FacebookException error) {
-                Log.d(TAG, "onError:" + error.getMessage());
+                Log.e(TAG, "onError:" + error.getMessage());
+                Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -350,6 +355,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
             }
             user.setType(User.TYPE_GOOGLE);
             userManager.registerUser(user, mergeGuest, registerUserCallback);
+        } else {
+            Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -500,7 +507,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+        Log.e(TAG, "onConnectionFailed:" + connectionResult);
+        Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
     }
 
     @Override
