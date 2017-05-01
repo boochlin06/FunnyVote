@@ -19,7 +19,7 @@ import com.bumptech.glide.Glide;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.Util;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 
 import org.greenrobot.eventbus.EventBus;
@@ -442,8 +442,8 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
             Toast.makeText(itemView.getContext()
                     , R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
         }
-        EventBus.getDefault().post(new EventBusController
-                .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_FAVORITE));
+        EventBus.getDefault().post(new EventBusManager
+                .VoteDataControlEvent(data, EventBusManager.VoteDataControlEvent.VOTE_FAVORITE));
     }
 
     @OnClick(R.id.relBarShare)
@@ -469,24 +469,24 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                 Toast.makeText(itemView.getContext(), R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_SHORT).show();
                 return true;
             } else if (data.getIsNeedPassword()) {
-                EventBus.getDefault().post(new EventBusController
+                EventBus.getDefault().post(new EventBusManager
                         .VoteDataControlEvent(data, btnFirstOption.getId() == R.id.btnFirstOption ?
                         data.getOption1Code() : data.getOption2Code()
-                        , EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
+                        , EventBusManager.VoteDataControlEvent.VOTE_QUICK_POLL));
             } else {
                 if (optionButton.getId() == R.id.btnFirstOption) {
-                    EventBus.getDefault().post(new EventBusController
+                    EventBus.getDefault().post(new EventBusManager
                             .VoteDataControlEvent(data, data.getOption1Code()
-                            , EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
+                            , EventBusManager.VoteDataControlEvent.VOTE_QUICK_POLL));
                     data.setOption1Polled(true);
                     data.setOption1Count(data.getOption1Count() + 1);
                     data.setOptionUserChoiceTitle(data.getOption1Title());
                     data.setOptionUserChoiceCount(data.getOption1Count());
                     data.setOptionUserChoiceCode(data.getOption1Code());
                 } else {
-                    EventBus.getDefault().post(new EventBusController
+                    EventBus.getDefault().post(new EventBusManager
                             .VoteDataControlEvent(data, data.getOption2Code()
-                            , EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL));
+                            , EventBusManager.VoteDataControlEvent.VOTE_QUICK_POLL));
                     data.setOption2Polled(true);
                     data.setOption2Count(data.getOption2Count() + 1);
                     data.setOptionUserChoiceTitle(data.getOption2Title());

@@ -7,7 +7,7 @@ import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.Util;
 import com.heaton.funnyvote.data.RemoteServiceApi;
 import com.heaton.funnyvote.database.User;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.retrofit.Server;
 
 import org.greenrobot.eventbus.EventBus;
@@ -236,8 +236,8 @@ public class UserManager {
                 User personal = response.body();
                 personal.setUserCode(userCode);
                 personal.personalTokenType = userCodeType;
-                EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                        EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO, true
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                        EventBusManager.RemoteServiceEvent.GET_PERSONAL_INFO, true
                         , personal));
             } else {
                 String errorMessage = "";
@@ -248,8 +248,8 @@ public class UserManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                        EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO, false
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                        EventBusManager.RemoteServiceEvent.GET_PERSONAL_INFO, false
                         , errorMessage));
             }
         }
@@ -258,8 +258,8 @@ public class UserManager {
         public void onFailure(Call<User> call, Throwable t) {
             Log.d(TAG, "getPersonalInfoResponseCallback onResponse onFailure, error message:"
                     + t.getMessage() + " user code:" + userCode);
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.GET_PERSONAL_INFO, false
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.GET_PERSONAL_INFO, false
                     , t.getMessage()));
         }
     }

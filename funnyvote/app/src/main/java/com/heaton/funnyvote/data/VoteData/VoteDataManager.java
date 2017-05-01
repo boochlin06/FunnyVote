@@ -11,7 +11,7 @@ import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.database.VoteDataDao;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.greendao.query.QueryBuilder;
@@ -63,8 +63,8 @@ public class VoteDataManager {
 
     public void createVote(@NonNull VoteData voteSetting, @NonNull List<String> options, File image) {
         if (voteSetting == null || options == null || options.size() < 2) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.CREATE_VOTE, false, new IllegalArgumentException().toString()));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.CREATE_VOTE, false, new IllegalArgumentException().toString()));
         } else {
             remoteServiceApi.createVote(voteSetting, options, image, new createVoteResponseCallback());
         }
@@ -72,7 +72,7 @@ public class VoteDataManager {
 
     public void getVote(@NonNull String voteCode, User user) {
         if (user == null) {
-            executorService.execute(new LoadDBRunnable(voteCode, EventBusController
+            executorService.execute(new LoadDBRunnable(voteCode, EventBusManager
                     .RemoteServiceEvent.GET_VOTE, false));
         } else {
             remoteServiceApi.getVote(voteCode, user, new getVoteResponseCallback(voteCode));
@@ -81,8 +81,8 @@ public class VoteDataManager {
 
     public void pollVote(@NonNull String voteCode, String password, @NonNull List<String> pollOptions, @NonNull User user) {
         if (TextUtils.isEmpty(voteCode) || pollOptions.size() == 0 || user == null) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.POLL_VOTE, false, new IllegalArgumentException().toString()));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.POLL_VOTE, false, new IllegalArgumentException().toString()));
         } else {
             remoteServiceApi.pollVote(voteCode, password, pollOptions, user, new pollVoteResponseCallback());
         }
@@ -90,8 +90,8 @@ public class VoteDataManager {
 
     public void addNewOption(@NonNull String voteCode, String password, @NonNull List<String> newOptions, @NonNull User user) {
         if (TextUtils.isEmpty(voteCode) || newOptions.size() == 0 || user == null) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.ADD_NEW_OPTION, false, new IllegalArgumentException().toString()));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.ADD_NEW_OPTION, false, new IllegalArgumentException().toString()));
         } else {
             remoteServiceApi.addNewOption(voteCode, password, newOptions, user, new addNewOptionResponseCallback());
         }
@@ -99,8 +99,8 @@ public class VoteDataManager {
 
     public void favoriteVote(@NonNull String voteCode, boolean isFavorite, @NonNull User user) {
         if (TextUtils.isEmpty(voteCode) || user == null) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.FAVORITE_VOTE, false, new IllegalArgumentException().toString()));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.FAVORITE_VOTE, false, new IllegalArgumentException().toString()));
         } else {
             remoteServiceApi.favoriteVote(voteCode, isFavorite, user, new favoriteVoteResponseCallback(voteCode, isFavorite));
         }
@@ -112,7 +112,7 @@ public class VoteDataManager {
         } else {
             int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
-            if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)) {
+            if (eventMessage.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)) {
                 remoteServiceApi.getVoteList(pageNumber, pageCount, eventMessage, user
                         , new getVoteListResponseCallback(offset, eventMessage, user.getUserCode()));
             } else {
@@ -123,16 +123,16 @@ public class VoteDataManager {
     }
 
     public void getHotVoteList(int offset, @NonNull User user) {
-        getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HOT, user);
+        getVoteList(offset, EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HOT, user);
     }
 
     public void getNewVoteList(int offset, @NonNull User user) {
-        getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_NEW, user);
+        getVoteList(offset, EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_NEW, user);
     }
 
     public void getUserFavoriteVoteList(int offset, @NonNull User loginUser, User targetUser) {
         if (targetUser == null) {
-            getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE, loginUser);
+            getVoteList(offset, EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE, loginUser);
         } else {
             getPersonalFavoriteVoteList(offset, loginUser, targetUser);
         }
@@ -140,54 +140,54 @@ public class VoteDataManager {
 
     public void getUserCreateVoteList(int offset, @NonNull User loginUser, User targetUser) {
         if (targetUser == null) {
-            getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE, loginUser);
+            getVoteList(offset, EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE, loginUser);
         } else {
             getPersonalCreateVoteList(offset, loginUser, targetUser);
         }
     }
 
     public void getUserParticipateVoteList(int offset, @NonNull User user) {
-        getVoteList(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE, user);
+        getVoteList(offset, EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE, user);
     }
 
     public void getSearchVoteList(String keyword, int offset, @NonNull User user) {
         if (TextUtils.isEmpty(keyword) || user == null) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.GET_VOTE_LIST_SEARCH
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_SEARCH
                     , false, new IllegalArgumentException().toString()));
         } else {
             int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
             remoteServiceApi.getSearchVoteList(keyword, pageNumber, pageCount, user
-                    , new getVoteListResponseCallback(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_SEARCH
+                    , new getVoteListResponseCallback(offset, EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_SEARCH
                             , user.getUserCode()));
         }
     }
 
     public void getPersonalCreateVoteList(int offset, @NonNull User loginUser, User targetUser) {
         if (loginUser == null) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE
                     , false, new IllegalArgumentException().toString()));
         } else {
             int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
             remoteServiceApi.getPersonalCreateVoteList(pageNumber, pageCount, loginUser, targetUser
-                    , new getVoteListResponseCallback(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE
+                    , new getVoteListResponseCallback(offset, EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE
                             , targetUser.getUserCode(), false));
         }
     }
 
     public void getPersonalFavoriteVoteList(int offset, @NonNull User loginUser, User targetUser) {
         if (loginUser == null) {
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE
                     , false, new IllegalArgumentException().toString()));
         } else {
             int pageNumber = offset / PAGE_COUNT;
             int pageCount = PAGE_COUNT;
             remoteServiceApi.getPersonalFavoriteVoteList(pageNumber, pageCount, loginUser, targetUser
-                    , new getVoteListResponseCallback(offset, EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE
+                    , new getVoteListResponseCallback(offset, EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE
                             , targetUser.getUserCode(), false));
         }
     }
@@ -200,7 +200,7 @@ public class VoteDataManager {
         @Override
         public void onResponse(Call<VoteData> call, Response<VoteData> response) {
             if (response.isSuccessful()) {
-                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusController
+                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusManager
                         .RemoteServiceEvent.CREATE_VOTE, true));
             } else {
                 String errorMessage = "";
@@ -210,16 +210,16 @@ public class VoteDataManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                        EventBusController.RemoteServiceEvent.CREATE_VOTE, false, errorMessage));
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                        EventBusManager.RemoteServiceEvent.CREATE_VOTE, false, errorMessage));
             }
         }
 
         @Override
         public void onFailure(Call<VoteData> call, Throwable t) {
             Log.e(TAG, "createVoteResponseCallback onResponse onFailure, error message:" + t.getMessage());
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.CREATE_VOTE, false, t.getMessage()));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.CREATE_VOTE, false, t.getMessage()));
         }
     }
 
@@ -234,7 +234,7 @@ public class VoteDataManager {
         @Override
         public void onResponse(Call<VoteData> call, Response<VoteData> response) {
             if (response.isSuccessful()) {
-                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusController
+                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusManager
                         .RemoteServiceEvent.GET_VOTE, true));
             } else {
                 String errorMessage = "";
@@ -245,7 +245,7 @@ public class VoteDataManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                executorService.execute(new LoadDBRunnable(voteCode, EventBusController
+                executorService.execute(new LoadDBRunnable(voteCode, EventBusManager
                         .RemoteServiceEvent.GET_VOTE, false));
             }
         }
@@ -254,7 +254,7 @@ public class VoteDataManager {
         public void onFailure(Call<VoteData> call, Throwable t) {
             Log.e(TAG, "getVoteResponseCallback onResponse onFailure, vote code:" + voteCode
                     + ", error message:" + t.getMessage());
-            executorService.execute(new LoadDBRunnable(voteCode, EventBusController
+            executorService.execute(new LoadDBRunnable(voteCode, EventBusManager
                     .RemoteServiceEvent.GET_VOTE, false));
         }
     }
@@ -318,7 +318,7 @@ public class VoteDataManager {
         @Override
         public void onResponse(Call<VoteData> call, Response<VoteData> response) {
             if (response.isSuccessful()) {
-                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusController
+                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusManager
                         .RemoteServiceEvent.POLL_VOTE, true));
             } else {
                 String errorMessage = "";
@@ -328,16 +328,16 @@ public class VoteDataManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                        EventBusController.RemoteServiceEvent.POLL_VOTE, false, errorMessage));
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                        EventBusManager.RemoteServiceEvent.POLL_VOTE, false, errorMessage));
             }
         }
 
         @Override
         public void onFailure(Call<VoteData> call, Throwable t) {
             Log.e(TAG, "pollVoteResponseCallback onFailure , error message:" + t.getMessage());
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.POLL_VOTE, false, t.getMessage()));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.POLL_VOTE, false, t.getMessage()));
         }
     }
 
@@ -349,7 +349,7 @@ public class VoteDataManager {
         @Override
         public void onResponse(Call<VoteData> call, Response<VoteData> response) {
             if (response.isSuccessful()) {
-                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusController
+                executorService.execute(new SaveAndLoadDBRunnable(response.body(), EventBusManager
                         .RemoteServiceEvent.ADD_NEW_OPTION, true));
             } else {
                 String errorMessage = "";
@@ -359,16 +359,16 @@ public class VoteDataManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                        EventBusController.RemoteServiceEvent.ADD_NEW_OPTION, false, errorMessage));
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                        EventBusManager.RemoteServiceEvent.ADD_NEW_OPTION, false, errorMessage));
             }
         }
 
         @Override
         public void onFailure(Call<VoteData> call, Throwable t) {
             Log.e(TAG, "addNewOptionResponseCallback onFailure , error message:" + t.getMessage());
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(
-                    EventBusController.RemoteServiceEvent.ADD_NEW_OPTION, false, t.getMessage()));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(
+                    EventBusManager.RemoteServiceEvent.ADD_NEW_OPTION, false, t.getMessage()));
         }
     }
 
@@ -386,8 +386,8 @@ public class VoteDataManager {
             if (response.isSuccessful()) {
                 DataLoader.getInstance(context.getApplicationContext())
                         .updateVoteByVoteCode(voteData.getVoteCode(), this.voteData);
-                EventBus.getDefault().post(new EventBusController
-                        .RemoteServiceEvent(EventBusController.RemoteServiceEvent.FAVORITE_VOTE, true, this.voteData, null));
+                EventBus.getDefault().post(new EventBusManager
+                        .RemoteServiceEvent(EventBusManager.RemoteServiceEvent.FAVORITE_VOTE, true, this.voteData, null));
             } else {
                 String errorMessage = "";
                 try {
@@ -396,16 +396,16 @@ public class VoteDataManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                EventBus.getDefault().post(new EventBusController
-                        .RemoteServiceEvent(EventBusController.RemoteServiceEvent.FAVORITE_VOTE, false, voteData, null));
+                EventBus.getDefault().post(new EventBusManager
+                        .RemoteServiceEvent(EventBusManager.RemoteServiceEvent.FAVORITE_VOTE, false, voteData, null));
             }
         }
 
         @Override
         public void onFailure(Call<ResponseBody> call, Throwable t) {
             Log.e(TAG, "favoriteVoteResponseCallback onFailure , error message:" + t.getMessage());
-            EventBus.getDefault().post(new EventBusController
-                    .RemoteServiceEvent(EventBusController.RemoteServiceEvent.FAVORITE_VOTE, false, voteData, null));
+            EventBus.getDefault().post(new EventBusManager
+                    .RemoteServiceEvent(EventBusManager.RemoteServiceEvent.FAVORITE_VOTE, false, voteData, null));
         }
     }
 
@@ -465,7 +465,7 @@ public class VoteDataManager {
             VoteData data = DataLoader.getInstance(context).queryVoteDataById(voteSetting.getVoteCode());
             optionList = data.getOptions();
 
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(message, success, data, optionList));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(message, success, data, optionList));
         }
     }
 
@@ -522,7 +522,7 @@ public class VoteDataManager {
                     voteData.setOptionUserChoiceTitle(voteData.getUserOption().getTitle());
                     voteData.setOptionUserChoiceCount(voteData.getUserOption().getCount());
                 }
-                if (message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HOT)) {
+                if (message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HOT)) {
                     voteData.setDisplayOrder((offset) * PAGE_COUNT + i);
                     voteData.setCategory("hot");
                 } else {
@@ -552,7 +552,7 @@ public class VoteDataManager {
                     + " , success: true , SaveAndLoadListDBRunnable offset:"
                     + offset + ", size:" + voteDataList.size());
 
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(message, success, offset, voteDataList));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(message, success, offset, voteDataList));
         }
     }
 
@@ -583,24 +583,24 @@ public class VoteDataManager {
         public void run() {
             List<VoteData> voteDataList = new ArrayList<>();
             if (isLoginUser) {
-                if (this.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HOT)) {
+                if (this.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HOT)) {
                     voteDataList = DataLoader.getInstance(context.getApplicationContext())
                             .queryHotVotes(offset, PAGE_COUNT);
-                } else if (this.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_NEW)) {
+                } else if (this.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_NEW)) {
                     voteDataList = DataLoader.getInstance(context.getApplicationContext())
                             .queryNewVotes(offset, PAGE_COUNT);
-                } else if (message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE)) {
+                } else if (message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE)) {
                     voteDataList = DataLoader.getInstance(context.getApplicationContext())
                             .queryFavoriteVotes(offset, PAGE_COUNT);
-                } else if (message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)) {
+                } else if (message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)) {
                     voteDataList = DataLoader.getInstance(context.getApplicationContext())
                             .queryVoteDataByAuthor(authorCode, offset, PAGE_COUNT);
-                } else if (message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)) {
+                } else if (message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)) {
                     voteDataList = DataLoader.getInstance(context.getApplicationContext())
                             .queryVoteDataByParticipate(offset, PAGE_COUNT);
                 }
             }
-            EventBusController.RemoteServiceEvent event = new EventBusController.RemoteServiceEvent(this.message
+            EventBusManager.RemoteServiceEvent event = new EventBusManager.RemoteServiceEvent(this.message
                     , this.success, this.offset, voteDataList);
             event.errorResponseMessage = errorResponse;
             Log.e(TAG, "getVoteListResponseCallback onResponse message:" + message
@@ -632,7 +632,7 @@ public class VoteDataManager {
             } else {
                 optionList = data.getOptions();
             }
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(this.message
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(this.message
                     , this.success, data, optionList));
         }
     }

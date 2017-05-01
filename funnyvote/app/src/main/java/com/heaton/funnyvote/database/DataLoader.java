@@ -209,6 +209,12 @@ public class DataLoader {
                 .limit(limit).offset(offset).orderDesc(VoteDataDao.Properties.StartTime).list();
     }
 
+    public long countUserCreateOrParticipate(String authorCode) {
+        return voteDataDao.queryBuilder().whereOr(VoteDataDao.Properties.IsPolled.eq(true)
+                , VoteDataDao.Properties.AuthorCode.eq(authorCode))
+                .where(VoteDataDao.Properties.StartTime.le(System.currentTimeMillis())).count();
+    }
+
     public void updateVoteByVoteCode(String voteCode, VoteData data) {
 
         List<VoteData> list = voteDataDao.queryBuilder()

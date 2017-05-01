@@ -23,7 +23,7 @@ import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.DataLoader;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -159,16 +159,16 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_SEARCH)) {
+    public void onRemoteEvent(EventBusManager.RemoteServiceEvent event) {
+        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_SEARCH)) {
             refreshData(event.voteDataList, event.offset);
             hideLoadingCircle();
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUIChange(EventBusController.UIControlEvent event) {
-        if (event.message.equals(EventBusController.UIControlEvent.SEARCH_KEYWORD)) {
+    public void onUIChange(EventBusManager.UIControlEvent event) {
+        if (event.message.equals(EventBusManager.UIControlEvent.SEARCH_KEYWORD)) {
             setQueryText(event.keyword);
         }
     }

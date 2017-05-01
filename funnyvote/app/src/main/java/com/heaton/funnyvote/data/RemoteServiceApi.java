@@ -7,7 +7,7 @@ import com.heaton.funnyvote.data.promotion.PromotionManager;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.retrofit.Server;
 
 import org.json.JSONObject;
@@ -163,23 +163,23 @@ public class RemoteServiceApi {
     public void getVoteList(int pageNumber, int pageCount, String eventMessage, User user
             , VoteDataManager.getVoteListResponseCallback callback) {
         pageNumber = pageNumber + 1;
-        if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HOT)) {
+        if (eventMessage.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HOT)) {
             Call<List<VoteData>> call = voteService.getVoteList(pageNumber, pageCount, "hot", user.getUserCode()
                     , user.getTokenType());
             call.enqueue(callback);
-        } else if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_NEW)) {
+        } else if (eventMessage.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_NEW)) {
             Call<List<VoteData>> call = voteService.getVoteList(pageNumber, pageCount, "new", user.getUserCode()
                     , user.getTokenType());
             call.enqueue(callback);
-        } else if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE)) {
+        } else if (eventMessage.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE)) {
             Call<List<VoteData>> call = voteService.getFavoriteVoteList(pageNumber, pageCount, user.getUserCode()
                     , user.getTokenType());
             call.enqueue(callback);
-        } else if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)) {
+        } else if (eventMessage.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)) {
             Call<List<VoteData>> call = voteService.getUserCreateVoteList(pageNumber, pageCount, user.getUserCode()
                     , user.getTokenType());
             call.enqueue(callback);
-        } else if (eventMessage.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)) {
+        } else if (eventMessage.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)) {
             Call<List<VoteData>> call = voteService.getUserParticipateVoteList(pageNumber, pageCount, user.getUserCode()
                     , user.getTokenType());
             call.enqueue(callback);

@@ -33,7 +33,7 @@
     <string name="wall_item_no_vote_refresh">好像沒有投票.\n重新整理看看.</string>
     <string name="wall_item_toast_no_vote_refresh">之後沒投票啦</string>
     <string name="wall_item_toast_double_click_to_exit">在點一下返回鍵離開</string>
-    <string name="wall_item_other_option" formatted="false">\"其他 %d 選項...\"</string>
+    <string name="wall_item_other_option" formatted="false">其他 %d 選項...\</string>
 
     <!--Create vote page tab classification-->
     <string name="create_vote_title">標題</string>
@@ -98,6 +98,8 @@
     <string name="vote_detail_toast_remove_favorite">移除收藏</string>
     <string name="vote_detail_toast_fill_new_option">請先確認是否寫好並上傳新的選項。</string>
     <string name="vote_detail_toast_confirm_new_option">請先確認之前的選項是否建立完成</string>
+    <string name="vote_detail_toast_vote_end_not_poll">投票結束了喔，下次請早.</string>
+    <string name="vote_detail_toast_vote_end_polled">投票已結束，來看看結果吧</string>
 
     <string name="vote_detail_circle_loading" formatted="false">等等</string>
     <string name="vote_detail_circle_updating" formatted="false">上傳中</string>
@@ -217,7 +219,7 @@
 <b>快速發起投票</b>：會想發起投票就是因為心中有苦，有猶豫，或是只是覺得有趣，這種情況下，想當然是趕快問問眾人的意見，趣投票讓發起投票這件事變得超級方便。<br><br>
 <b>快速投票</b>：替人解惑乃是大善事大慈悲，但是如果搞得很麻煩，還要註冊，驗證碼，那就提不起勁，趣投票完全不需要繁複的過程，只要長按就可以快速投票。<br><br>
 <b>沒有廢話</b>：求助時最怕有疑惑時，想尋求眾人智慧，卻一堆人指指點，趣投票考慮到這一點，所以我們『沒有留言板』。<br><br>
-<b>大數據</b>：關於這個，感覺 APP 沒有提到這個就弱掉了，但是我們真的完全沒有，絕對不是技術上的問題。<br><br>
+<b>大數據</b>：關於這個，感覺 APP 沒有提到這個就弱掉了，但是我們真的完全沒有，絕對不是因為覺得很麻煩。<br><br>
 <b>共享經濟</b>：聽說共享很流行，其實投票不也是一種智慧共享嗎？經濟的部分就只能看廣告收入了。<br><br>
 管他那麼多，先來拯救眾生，順手打個五星評價]]></string>
     <string name="about_share_app">分享趣投票</string>
@@ -246,4 +248,8 @@
     <string name="share_funny_vote_app">全台最X的投票軟體上線啦，分享給你. \n\n%s</string>
 
     <string name="about_link_to_home">官方網站：https://www.funny-vote.com</string>
+
+    <string name="notification_title">趣投票，投你所趣</string>
+    <string name="notification_content_nothing">其實，只是想提醒你這裡有有趣的投票喔</string>
+    <string name="notification_content_updated">你的投票好像有些動靜～來看看吧</string>
 </resources>

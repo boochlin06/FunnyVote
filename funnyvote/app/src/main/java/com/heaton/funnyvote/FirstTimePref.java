@@ -7,7 +7,7 @@ import android.content.SharedPreferences;
  * Created by heaton on 2017/2/26.
  */
 public class FirstTimePref {
-    private static final String SP_FIRST_TIME = "first_time";
+    private static final String SP_FIRST_TIME = "first_time_use";
     public static final String SP_FIRST_MOCK_DATA = "first_mock_data";
     public static final String SP_FIRST_INTRODUCTION_PAGE = "first_introduction_page";
     public static final String SP_FIRST_INTRODUTCION_QUICK_POLL = "first_introduction_quick_poll";

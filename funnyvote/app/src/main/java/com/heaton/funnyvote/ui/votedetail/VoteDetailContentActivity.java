@@ -60,7 +60,7 @@ import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.retrofit.Server;
 import com.heaton.funnyvote.ui.HidingScrollListener;
 import com.heaton.funnyvote.ui.ShareDialogActivity;
@@ -275,7 +275,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private void setUpViews() {
         txtAuthorName.setText(data.getAuthorName());
         txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
-                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
+                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm")
+                + (data.getEndTime() < System.currentTimeMillis() ? "  " + getString(R.string.wall_item_vote_end) : ""));
         txtTitle.setText(data.getTitle());
 
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
@@ -872,9 +873,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onOptionChoice(EventBusController.OptionChoiceEvent event) {
+    public void onOptionChoice(EventBusManager.OptionChoiceEvent event) {
         long id = event.Id;
-        if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_CHOICED)) {
+        if (event.message.equals(EventBusManager.OptionChoiceEvent.OPTION_CHOICED)) {
             Log.d(TAG, "onOptionChoice message:" + event.message + " id:" + id + " code:" + event.code);
 
             if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
@@ -904,14 +905,14 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     }
                 }
             }
-        } else if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_EXPAND)) {
+        } else if (event.message.equals(EventBusManager.OptionChoiceEvent.OPTION_EXPAND)) {
             if (optionItemAdapter.getExpandOptionlist().contains(event.code)) {
                 optionItemAdapter.getExpandOptionlist().remove(optionItemAdapter.getExpandOptionlist()
                         .indexOf(event.code));
             } else {
                 optionItemAdapter.getExpandOptionlist().add(event.code);
             }
-        } else if (event.message.equals(EventBusController.OptionChoiceEvent.OPTION_QUICK_POLL)) {
+        } else if (event.message.equals(EventBusManager.OptionChoiceEvent.OPTION_QUICK_POLL)) {
             if (!isMultiChoice) {
                 optionItemAdapter.getChoiceList().clear();
                 optionItemAdapter.getChoiceList().add(id);
@@ -924,9 +925,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onOptionControl(EventBusController.OptionControlEvent event) {
+    public void onOptionControl(EventBusManager.OptionControlEvent event) {
         long id = event.Id;
-        if (event.message.equals(EventBusController.OptionControlEvent.OPTION_ADD)) {
+        if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_ADD)) {
             if (isUserOnAddNewOption) {
                 Toast.makeText(getApplicationContext(), R.string.vote_detail_toast_confirm_new_option, Toast.LENGTH_SHORT).show();
             } else {
@@ -938,7 +939,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 optionList.add(option);
                 optionItemAdapter.notifyDataSetChanged();
             }
-        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_REMOVE)) {
+        } else if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_REMOVE)) {
             isUserOnAddNewOption = false;
             int removePosition = -1;
             for (int i = 0; i < optionList.size(); i++) {
@@ -951,7 +952,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 optionList.remove(removePosition);
                 optionItemAdapter.notifyDataSetChanged();
             }
-        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_INPUT_TEXT)) {
+        } else if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_INPUT_TEXT)) {
             int targetPosition = -1;
             for (int i = 0; i < optionList.size(); i++) {
                 if (optionList.get(i).getId() == id) {
@@ -962,7 +963,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             if (targetPosition >= 0) {
                 optionList.get(targetPosition).setTitle(event.inputText);
             }
-        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_ADD_CHECK)) {
+        } else if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_ADD_CHECK)) {
             if (event.inputText != null && !TextUtils.isEmpty(event.inputText)) {
                 if (data.getIsNeedPassword()) {
                     showAddNewOptionPasswordDialog(event.inputText);
@@ -984,8 +985,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteService(EventBusController.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE)) {
+    public void onRemoteService(EventBusManager.RemoteServiceEvent event) {
+        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE)) {
             this.optionList = event.optionList;
             this.data = event.voteData;
             hideLoadingCircle();
@@ -995,14 +996,22 @@ public class VoteDetailContentActivity extends AppCompatActivity {
             setUpSubmit();
             optionItemAdapter.notifyDataSetChanged();
             if (event.success) {
-                if (!data.getIsPolled() && isMultiChoice) {
+                if (data.getEndTime() > System.currentTimeMillis() && !data.getIsPolled() && isMultiChoice) {
                     Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
-                            , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_LONG).show();
+                            , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_SHORT).show();
+                } else if (data.getEndTime() < System.currentTimeMillis()) {
+                    if (data.getIsPolled()) {
+                        Toast.makeText(context, getString(R.string.vote_detail_toast_vote_end_polled)
+                                , Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, getString(R.string.vote_detail_toast_vote_end_not_poll)
+                                , Toast.LENGTH_SHORT).show();
+                    }
                 }
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
             }
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE)) {
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.POLL_VOTE)) {
             hideLoadingCircle();
             if (event.success && this.data.getVoteCode().equals(event.voteData.getVoteCode())) {
                 this.data = event.voteData;
@@ -1018,8 +1027,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                 setUpOptionAdapter(optionList);
                 setUpSubmit();
                 optionItemAdapter.notifyDataSetChanged();
-                EventBus.getDefault().post(new EventBusController
-                        .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
+                EventBus.getDefault().post(new EventBusManager
+                        .VoteDataControlEvent(data, EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
             } else {
                 if (!event.success && event.errorResponseMessage.equals("error_invalid_password")) {
                     if (pollPasswordDialog != null && pollPasswordDialog.isShowing()) {
@@ -1035,7 +1044,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     Toast.makeText(this, R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_LONG).show();
                 }
             }
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.FAVORITE_VOTE)) {
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.FAVORITE_VOTE)) {
             if (event.voteData.getVoteCode().equals(data.getVoteCode())) {
                 if (event.success) {
                     imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
@@ -1045,8 +1054,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     } else {
                         Toast.makeText(this, R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
                     }
-                    EventBus.getDefault().post(new EventBusController
-                            .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE));
+                    EventBus.getDefault().post(new EventBusManager
+                            .VoteDataControlEvent(data, EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE));
                 } else {
                     // fail, reverse to request status
                     data.setIsFavorite(!event.voteData.getIsFavorite());
@@ -1055,7 +1064,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     Toast.makeText(this, R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
                 }
             }
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.ADD_NEW_OPTION)) {
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.ADD_NEW_OPTION)) {
             hideLoadingCircle();
             if (event.success && this.data.getVoteCode().equals(event.voteData.getVoteCode())) {
                 this.data = event.voteData;
@@ -1071,8 +1080,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     newOptionPasswordDialog.dismiss();
                 }
                 optionItemAdapter.notifyDataSetChanged();
-                EventBus.getDefault().post(new EventBusController
-                        .VoteDataControlEvent(data, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
+                EventBus.getDefault().post(new EventBusManager
+                        .VoteDataControlEvent(data, EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
             } else {
                 if (!event.success && event.errorResponseMessage.equals("error_invalid_password")) {
                     if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {

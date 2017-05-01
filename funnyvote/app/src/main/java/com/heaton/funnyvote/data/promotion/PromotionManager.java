@@ -7,7 +7,7 @@ import com.heaton.funnyvote.data.RemoteServiceApi;
 import com.heaton.funnyvote.database.DataLoader;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -86,11 +86,11 @@ public class PromotionManager {
     public void getPromotionList(User user) {
         if (user == null) {
             Log.d(TAG, "getPromotionListResponseCallback onFailure: user is null");
-            executorService.execute(new LoadListDBRunnable(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST
+            executorService.execute(new LoadListDBRunnable(EventBusManager.RemoteServiceEvent.GET_PROMOTION_LIST
                     , false, "user is null"));
         } else {
             remoteServiceApi.getPromotionList(0, PAGE_COUNT, user, new getPromotionListResponseCallback(0
-                    , EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST));
+                    , EventBusManager.RemoteServiceEvent.GET_PROMOTION_LIST));
         }
     }
 
@@ -110,7 +110,7 @@ public class PromotionManager {
             Log.d(TAG, "promotion count:" + promotionList.size() + " message:" + message +" success:"+success);
             DataLoader.getInstance(context.getApplicationContext()).getPromotionDao().deleteAll();
             DataLoader.getInstance(context.getApplicationContext()).getPromotionDao().insertInTx(promotionList);
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(message, success, promotionList));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(message, success, promotionList));
         }
     }
 
@@ -130,7 +130,7 @@ public class PromotionManager {
         @Override
         public void run() {
             List<Promotion> promotionList = DataLoader.getInstance(context.getApplicationContext()).getPromotionDao().loadAll();
-            EventBus.getDefault().post(new EventBusController.RemoteServiceEvent(message, success, errorResponse));
+            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(message, success, errorResponse));
         }
     }
 }

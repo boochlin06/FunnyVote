@@ -47,7 +47,7 @@ import com.heaton.funnyvote.database.DataLoader;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.ui.CirclePageIndicator;
 
 import org.greenrobot.eventbus.EventBus;
@@ -335,7 +335,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         introductionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                EventBus.getDefault().post(new EventBusController.UIControlEvent(EventBusController.UIControlEvent.INTRO_TO_ACCOUNT));
+                EventBus.getDefault().post(new EventBusManager.UIControlEvent(EventBusManager.UIControlEvent.INTRO_TO_ACCOUNT));
             }
         });
         btnFirstOption.setOnLongClickListener(dialogLongClick);
@@ -366,17 +366,17 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onUIChange(EventBusController.UIControlEvent event) {
-        if (event.message.equals(EventBusController.UIControlEvent.SCROLL_TO_TOP)) {
+    public void onUIChange(EventBusManager.UIControlEvent event) {
+        if (event.message.equals(EventBusManager.UIControlEvent.SCROLL_TO_TOP)) {
             appBarMain.setExpanded(true);
-        } else if (event.message.equals(EventBusController.UIControlEvent.HIDE_CIRCLE)) {
+        } else if (event.message.equals(EventBusManager.UIControlEvent.HIDE_CIRCLE)) {
             hideLoadingCircle();
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNetworkChange(EventBusController.NetworkEvent event) {
-        if (event.message.equals(EventBusController.NetworkEvent.RELOAD_USER)
+    public void onNetworkChange(EventBusManager.NetworkEvent event) {
+        if (event.message.equals(EventBusManager.NetworkEvent.RELOAD_USER)
                 && (event.tab.equals(MainPageTabFragment.TAB_HOT)
                 || event.tab.equals(MainPageTabFragment.TAB_NEW))) {
             if (user == null) {
@@ -390,8 +390,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_PROMOTION_LIST)) {
+    public void onRemoteEvent(EventBusManager.RemoteServiceEvent event) {
+        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_PROMOTION_LIST)) {
             if (event.success) {
                 promotionList = event.promotionList;
                 setupPromotionAdmob();
@@ -425,7 +425,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     private void setupPromotionAdmob() {
         promotionTypeList = new ArrayList<>();
         for (int i = 0; i < promotionList.size(); i++) {
-            if (i % 3 == 1 && ENABLE_PROMOTION_ADMOB) {
+            if (i % 4 == 0 && ENABLE_PROMOTION_ADMOB) {
                 promotionTypeList.add(new PromotionType(PromotionType.PROM0TION_TYPE_ADMOB, null));
 
             }

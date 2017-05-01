@@ -37,7 +37,7 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -386,16 +386,16 @@ public class CreateVoteActivity extends AppCompatActivity {
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onOptionControl(EventBusController.OptionControlEvent event) {
+    public void onOptionControl(EventBusManager.OptionControlEvent event) {
         long id = event.Id;
-        if (event.message.equals(EventBusController.OptionControlEvent.OPTION_ADD)) {
+        if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_ADD)) {
             Option option = new Option();
             option.setCount(0);
             option.setId(newOptionIdAuto++);
             optionFragment.getOptionList().add(option);
             optionFragment.notifyOptionChange();
             // refresh option
-        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_REMOVE)) {
+        } else if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_REMOVE)) {
             if (optionFragment.getOptionList().size() <= 2) {
                 Toast.makeText(getApplicationContext(), getString(R.string.create_vote_toast_less_than_2_option)
                         , Toast.LENGTH_LONG).show();
@@ -412,7 +412,7 @@ public class CreateVoteActivity extends AppCompatActivity {
                 optionFragment.getOptionList().remove(removePosition);
                 optionFragment.notifyOptionChange();
             }
-        } else if (event.message.equals(EventBusController.OptionControlEvent.OPTION_INPUT_TEXT)) {
+        } else if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_INPUT_TEXT)) {
             int targetPosition = -1;
             for (int i = 0; i < optionFragment.getOptionList().size(); i++) {
                 if (optionFragment.getOptionList().get(i).getId() == id) {
@@ -427,8 +427,8 @@ public class CreateVoteActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteService(final EventBusController.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusController.RemoteServiceEvent.CREATE_VOTE)) {
+    public void onRemoteService(final EventBusManager.RemoteServiceEvent event) {
+        if (event.message.equals(EventBusManager.RemoteServiceEvent.CREATE_VOTE)) {
             if (event.success) {
                 this.localVoteSetting = event.voteData;
                 Toast.makeText(getApplicationContext(), R.string.create_vote_create_successful, Toast.LENGTH_LONG).show();

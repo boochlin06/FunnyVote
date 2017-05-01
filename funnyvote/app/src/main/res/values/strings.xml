@@ -105,8 +105,10 @@
     <string name="vote_detail_toast_option_at_least_min" formatted="false">"Please choice at least :%d votes."</string>
     <string name="vote_detail_toast_add_favorite">"Add to favorite"</string>
     <string name="vote_detail_toast_remove_favorite">"Remove favorite"</string>
-    <string name="vote_detail_toast_fill_new_option">"Please fill and update all new option's content"</string>
-    <string name="vote_detail_toast_confirm_new_option">"Please confirm the no update option before"</string>
+    <string name="vote_detail_toast_fill_new_option">Please fill and update all new option\'s content</string>
+    <string name="vote_detail_toast_confirm_new_option">Please confirm the no update option before</string>
+    <string name="vote_detail_toast_vote_end_not_poll">Vote END. Take care next time.</string>
+    <string name="vote_detail_toast_vote_end_polled">Vote END. Let\'s check the result.</string>
 
     <string name="vote_detail_circle_loading" formatted="false">"Loading"</string>
     <string name="vote_detail_circle_updating" formatted="false">"Updating"</string>
@@ -215,7 +217,7 @@
     <string name="intro_desc_funnyvote">就是有趣的投票，雖然是這樣說，但是內容有不有趣完全是看你，我們不過只是讓『發起投票』這件事變得超簡單</string>
     <string name="intro_desc_quickpoll">為他人指引明路乃是一種功德，但是搞得太麻煩就興致缺缺的，趣投票讓做功德這件事簡單到只要『長按選項』就搞定</string>
     <string name="intro_desc_no_comment">求助最怕有疑惑時，想尋求眾人智慧，卻被一堆人指指點點，趣投票考慮到這一點，所以我們『沒有留言板』</string>
-    <string name="intro_desc_bigdata">關於這個，我們完全沒有，絕對不是因為技術上的問題。</string>
+    <string name="intro_desc_bigdata">關於這個，我們完全沒有，絕對不是因為覺得很麻煩。</string>
     <string name="intro_desc_sharefin">聽說現在共享很流行，其實投票不也是一種知識共享嗎？經濟的部分只能看看有沒有廣告收入了</string>
     <string name="intro_desc_come">如果你完全搞不懂前面在說啥？先玩再說吧</string>
 
@@ -269,5 +271,9 @@
     <string name="share_funny_vote_app">The most funny vote center is coming. share to you. \n\n%s</string>
 
     <string name="about_link_to_home">official website：https://www.funny-vote.com</string>
+
+    <string name="notification_title">Funny Vote</string>
+    <string name="notification_content_nothing">Come to vote</string>
+    <string name="notification_content_updated">Someone poll your vote</string>
 
 </resources>

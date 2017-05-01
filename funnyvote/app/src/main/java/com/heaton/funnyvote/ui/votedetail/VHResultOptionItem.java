@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -106,8 +106,8 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
 
     @Override
     public void onClick(View v) {
-        EventBus.getDefault().post(new EventBusController
-                .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
+        EventBus.getDefault().post(new EventBusManager
+                .OptionChoiceEvent(option.getId(), EventBusManager.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
         isExpand = !isExpand;
         setUpOptionExpandLayout();
     }

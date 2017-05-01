@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -76,22 +76,22 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
 
     @OnClick(R.id.relAdd)
     public void addNewOption() {
-        EventBus.getDefault().post(new EventBusController.OptionControlEvent(0
-                , null, EventBusController.OptionControlEvent.OPTION_ADD, null));
+        EventBus.getDefault().post(new EventBusManager.OptionControlEvent(0
+                , null, EventBusManager.OptionControlEvent.OPTION_ADD, null));
     }
 
     @OnClick(R.id.imgDeleteOption)
     public void removeOption() {
-        EventBus.getDefault().post(new EventBusController
+        EventBus.getDefault().post(new EventBusManager
                 .OptionControlEvent(option.getId(), null
-                , EventBusController.OptionControlEvent.OPTION_REMOVE, option.getCode()));
+                , EventBusManager.OptionControlEvent.OPTION_REMOVE, option.getCode()));
     }
 
     @OnClick(R.id.imgNewOption)
     public void onOptionAddNewCheck() {
-        EventBus.getDefault().post(new EventBusController
+        EventBus.getDefault().post(new EventBusManager
                 .OptionControlEvent(option.getId(), edtOptionTitle.getText().toString()
-                , EventBusController.OptionControlEvent.OPTION_ADD_CHECK, null));
+                , EventBusManager.OptionControlEvent.OPTION_ADD_CHECK, null));
     }
 
     private final class optionEditTextListener implements TextWatcher {
@@ -103,9 +103,9 @@ public class VHUnpollCreateOptionItem extends RecyclerView.ViewHolder {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            EventBus.getDefault().post(new EventBusController
+            EventBus.getDefault().post(new EventBusManager
                     .OptionControlEvent(option.getId(), s.toString()
-                    , EventBusController.OptionControlEvent.OPTION_INPUT_TEXT, option.getCode()));
+                    , EventBusManager.OptionControlEvent.OPTION_INPUT_TEXT, option.getCode()));
 
         }
 

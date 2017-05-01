@@ -35,7 +35,7 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.VoteData.VoteDataManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.ui.HidingScrollListener;
 
 import org.greenrobot.eventbus.EventBus;
@@ -197,8 +197,8 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                 ryMain.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        EventBus.getDefault().post(new EventBusController.UIControlEvent(
-                                EventBusController.UIControlEvent.SCROLL_TO_TOP));
+                        EventBus.getDefault().post(new EventBusManager.UIControlEvent(
+                                EventBusManager.UIControlEvent.SCROLL_TO_TOP));
                     }
                 }, 200);
             }
@@ -218,10 +218,10 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onVoteControl(EventBusController.VoteDataControlEvent event) {
+    public void onVoteControl(EventBusManager.VoteDataControlEvent event) {
         if (getUserVisibleHint()) {
             Log.d(TAG, tab + " ,On Vote Control :" + event.message);
-            if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT)) {
+            if (event.message.equals(EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT)) {
                 VoteData data = event.data;
                 for (int i = 0; i < voteDataList.size(); i++) {
                     if (data.getVoteCode().equals(voteDataList.get(i).getVoteCode())) {
@@ -231,7 +231,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                         break;
                     }
                 }
-            } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_FAVORITE)) {
+            } else if (event.message.equals(EventBusManager.VoteDataControlEvent.VOTE_FAVORITE)) {
                 voteDataManager.favoriteVote(event.data.getVoteCode()
                         , event.data.getIsFavorite(), loginUser);
                 tracker.send(new HitBuilders.EventBuilder()
@@ -240,9 +240,9 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                                 : AnalyzticsTag.ACTION_REMOVE_FAVORITE)
                         .setLabel(event.data.getVoteCode())
                         .build());
-            } else if (event.message.equals(EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)) {
+            } else if (event.message.equals(EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE)) {
                 updateVoteDataToList(event.data);
-            } else if (getUserVisibleHint() && event.message.equals(EventBusController.VoteDataControlEvent.VOTE_QUICK_POLL)
+            } else if (getUserVisibleHint() && event.message.equals(EventBusManager.VoteDataControlEvent.VOTE_QUICK_POLL)
                     && isResumed()) {
                 if (event.data.getIsNeedPassword()) {
                     Log.d(TAG, "Vote code:" + event.data.getVoteCode() + " pw:" + event.data.getIsNeedPassword());
@@ -318,33 +318,33 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onRemoteEvent(EventBusController.RemoteServiceEvent event) {
+    public void onRemoteEvent(EventBusManager.RemoteServiceEvent event) {
 
         boolean refreshFragment = false;
-        if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HOT)
+        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HOT)
                 && tab.equals(TAB_HOT)) {
             Log.d(TAG, "Hot vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_NEW)
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_NEW)
                 && tab.equals(TAB_NEW)) {
             Log.d(TAG, "New vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_CREATE)
                 && tab.equals(TAB_CREATE)) {
             Log.d(TAG, "Create history vote list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_HISTORY_PARTICIPATE)
                 && tab.equals(TAB_PARTICIPATE)) {
             Log.d(TAG, "Participate history list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE)
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_FAVORITE)
                 && tab.equals(TAB_FAVORITE)) {
             Log.d(TAG, "favorite list size:" + event.voteDataList.size() + " offset:" + event.offset);
             refreshFragment = true;
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.FAVORITE_VOTE)) {
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.FAVORITE_VOTE)) {
             Log.d(TAG, "favorite vote");
             updateVoteDataFavoriteToList(event.voteData);
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.POLL_VOTE)
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.POLL_VOTE)
                 && getUserVisibleHint()) {
             Log.d(TAG, "poll vote");
             if (event.success) {
@@ -354,8 +354,8 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                 if (tab.equals(TAB_PARTICIPATE)) {
                     refreshFragment = true;
                 }
-                EventBus.getDefault().post(new EventBusController
-                        .VoteDataControlEvent(event.voteData, EventBusController.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
+                EventBus.getDefault().post(new EventBusManager
+                        .VoteDataControlEvent(event.voteData, EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
                 Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_success_poll
                         , Toast.LENGTH_SHORT).show();
             } else {
@@ -375,7 +375,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
                     Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_LONG).show();
                 }
             }
-        } else if (event.message.equals(EventBusController.RemoteServiceEvent.CREATE_VOTE) && getUserVisibleHint()
+        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.CREATE_VOTE) && getUserVisibleHint()
                 && tab.equals(TAB_CREATE) && event.success) {
             refreshFragment = true;
         }
@@ -385,12 +385,12 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
             if (swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(false);
             }
-            EventBus.getDefault().post(new EventBusController.UIControlEvent(EventBusController.UIControlEvent.HIDE_CIRCLE));
+            EventBus.getDefault().post(new EventBusManager.UIControlEvent(EventBusManager.UIControlEvent.HIDE_CIRCLE));
         }
         if (refreshFragment && !event.success && !"error_no_poll_event".equals(event.errorResponseMessage)
                 && getUserVisibleHint()) {
             Toast.makeText(getContext().getApplicationContext(), R.string.toast_network_connect_error_get_list, Toast.LENGTH_SHORT).show();
-            EventBus.getDefault().post(new EventBusController.UIControlEvent(EventBusController.UIControlEvent.HIDE_CIRCLE));
+            EventBus.getDefault().post(new EventBusManager.UIControlEvent(EventBusManager.UIControlEvent.HIDE_CIRCLE));
         }
     }
 
@@ -404,7 +404,7 @@ public class MainPageTabFragment extends Fragment implements VoteWallItemAdapter
         @Override
         public void onRefresh() {
             if (loginUser == null) {
-                EventBus.getDefault().post(new EventBusController.NetworkEvent(EventBusController.NetworkEvent.RELOAD_USER
+                EventBus.getDefault().post(new EventBusManager.NetworkEvent(EventBusManager.NetworkEvent.RELOAD_USER
                         , tab));
             } else {
                 if (tab.equals(TAB_HOT)) {

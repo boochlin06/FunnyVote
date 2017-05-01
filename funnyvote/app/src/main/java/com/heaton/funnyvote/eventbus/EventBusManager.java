@@ -12,7 +12,7 @@ import java.util.List;
  * Created by heaton on 2016/10/2.
  */
 
-public class EventBusController {
+public class EventBusManager {
 
     public static class UIControlEvent {
         public static final String SCROLL_TO_TOP = "SCROLL_TO_TOP";

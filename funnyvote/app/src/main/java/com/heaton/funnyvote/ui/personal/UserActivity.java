@@ -18,10 +18,12 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
+import com.heaton.funnyvote.MainActivity;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.notification.VoteNotificationManager;
 import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -40,6 +42,7 @@ public class UserActivity extends AppCompatActivity
     private TabsAdapter tabsAdapter;
     private ViewPager viewPager;
     private Tracker tracker;
+    private boolean isMainActivityNeedRestart = false;
 
     User user = null;
     UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
@@ -112,6 +115,23 @@ public class UserActivity extends AppCompatActivity
 
             }
         });
+
+        if (VoteNotificationManager.ACTION_NOTIFICATION_USER_ACTIVITY_START.equals(getIntent().getAction())) {
+            isMainActivityNeedRestart = true;
+        } else {
+            isMainActivityNeedRestart = false;
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        String action = intent.getAction();
+        if (VoteNotificationManager.ACTION_NOTIFICATION_USER_ACTIVITY_START.equals(action)) {
+            isMainActivityNeedRestart = true;
+        } else {
+            isMainActivityNeedRestart = false;
+        }
+        super.onNewIntent(intent);
     }
 
     @Override
@@ -119,6 +139,16 @@ public class UserActivity extends AppCompatActivity
         super.onResume();
         tracker.setScreenName(AnalyzticsTag.SCREEN_BOX);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isMainActivityNeedRestart) {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+        super.onBackPressed();
     }
 
     private void setUpUser(User user) {

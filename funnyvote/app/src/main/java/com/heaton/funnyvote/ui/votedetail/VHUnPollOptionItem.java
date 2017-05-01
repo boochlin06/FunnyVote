@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -17,8 +17,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
 
-import static com.heaton.funnyvote.eventbus.EventBusController.OptionChoiceEvent.OPTION_CHOICED;
-import static com.heaton.funnyvote.eventbus.EventBusController.OptionChoiceEvent.OPTION_QUICK_POLL;
+import static com.heaton.funnyvote.eventbus.EventBusManager.OptionChoiceEvent.OPTION_CHOICED;
+import static com.heaton.funnyvote.eventbus.EventBusManager.OptionChoiceEvent.OPTION_QUICK_POLL;
 
 /**
  * Created by heaton on 2016/8/22.
@@ -58,7 +58,7 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     @OnClick(R.id.imgChoice)
     public void onOptionChoice() {
         setUpImgChoiceLayout();
-        EventBus.getDefault().post(new EventBusController.OptionChoiceEvent(option.getId(), OPTION_CHOICED, option.getCode()));
+        EventBus.getDefault().post(new EventBusManager.OptionChoiceEvent(option.getId(), OPTION_CHOICED, option.getCode()));
     }
 
     private void setUpImgChoiceLayout() {
@@ -75,8 +75,8 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
 
     @Override
     public void onClick(View v) {
-        EventBus.getDefault().post(new EventBusController
-                .OptionChoiceEvent(option.getId(), EventBusController.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
+        EventBus.getDefault().post(new EventBusManager
+                .OptionChoiceEvent(option.getId(), EventBusManager.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
         isExpand = !isExpand;
         setUpOptionExpandLayout();
         if (txtOptionTitle.getLineCount() == 1) {
@@ -87,7 +87,7 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     @OnLongClick(R.id.cardOption)
     public boolean onLongClick(View v) {
         if (!isMultiChoice) {
-            EventBus.getDefault().post(new EventBusController.OptionChoiceEvent(option.getId()
+            EventBus.getDefault().post(new EventBusManager.OptionChoiceEvent(option.getId()
                     , OPTION_QUICK_POLL, option.getCode()));
         } else {
             onClick(v);

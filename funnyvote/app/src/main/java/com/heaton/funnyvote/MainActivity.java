@@ -33,7 +33,8 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.User;
-import com.heaton.funnyvote.eventbus.EventBusController;
+import com.heaton.funnyvote.eventbus.EventBusManager;
+import com.heaton.funnyvote.notification.VoteNotificationManager;
 import com.heaton.funnyvote.ui.about.AboutFragment;
 import com.heaton.funnyvote.ui.account.AccountFragment;
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
@@ -103,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
         setupDrawerContent(navigationView);
         setupDrawerHeader();
         setUpAdmob();
+
+        VoteNotificationManager.getInstance(getApplicationContext()).startNotificationAlarm();
     }
 
     private void setUpAdmob() {
@@ -153,8 +156,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUIChange(EventBusController.UIControlEvent event) {
-        if (event.message.equals(EventBusController.UIControlEvent.INTRO_TO_ACCOUNT)) {
+    public void onUIChange(EventBusManager.UIControlEvent event) {
+        if (event.message.equals(EventBusManager.UIControlEvent.INTRO_TO_ACCOUNT)) {
             drawerLayout.openDrawer(Gravity.LEFT);
         }
     }
@@ -313,8 +316,8 @@ public class MainActivity extends AppCompatActivity {
                     searchKeyword = newText;
                     if (searchKeyword.length() == 0) {
                         if (currentPage == navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
-                            EventBus.getDefault().post(new EventBusController.UIControlEvent(
-                                    EventBusController.UIControlEvent.SEARCH_KEYWORD, ""));
+                            EventBus.getDefault().post(new EventBusManager.UIControlEvent(
+                                    EventBusManager.UIControlEvent.SEARCH_KEYWORD, ""));
                         }
                     }
                     return false;
@@ -329,8 +332,8 @@ public class MainActivity extends AppCompatActivity {
                         switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
                         navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
                     } else {
-                        EventBus.getDefault().post(new EventBusController.UIControlEvent(
-                                EventBusController.UIControlEvent.SEARCH_KEYWORD, searchKeyword));
+                        EventBus.getDefault().post(new EventBusManager.UIControlEvent(
+                                EventBusManager.UIControlEvent.SEARCH_KEYWORD, searchKeyword));
                     }
                     return false;
                 }
