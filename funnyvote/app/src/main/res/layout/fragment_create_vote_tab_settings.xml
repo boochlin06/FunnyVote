@@ -306,12 +306,13 @@
 
         <EditText
             android:id="@+id/edtPwd"
-            android:layout_width="80dp"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@id/txtPwd"
             android:layout_alignParentRight="true"
             android:layout_below="@id/txtOption"
             android:layout_marginRight="@dimen/create_vote_settings_sub_margin"
+            android:hint="@string/vote_detail_dialog_password_hint"
             android:inputType="textPassword"
             android:maxLength="20"
             android:maxLines="1"

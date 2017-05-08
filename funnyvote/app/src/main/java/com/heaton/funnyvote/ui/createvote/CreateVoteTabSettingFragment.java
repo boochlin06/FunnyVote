@@ -8,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -153,12 +154,28 @@ public class CreateVoteTabSettingFragment extends Fragment {
         swtPreResult.setChecked(voteSettings.getIsUserCanAddOption());
         voteSettings.setIsNeedPassword(false);
         swtNeedPwd.setChecked(voteSettings.getIsNeedPassword());
+        swtNeedPwd.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                updateSwtNeedPwd(isChecked);
+            }
+        });
+        updateSwtNeedPwd(voteSettings.getIsNeedPassword());
         voteSettings.setSecurity(VoteData.SECURITY_PUBLIC);
         txtSecurityDetail.setText(getString(R.string.create_vote_tab_settings_public));
         voteSettings.setEndTime(System.currentTimeMillis() + DEFAULT_END_TIME * 86400 * 1000);
         txtEndTimeDetail.setText(Util.getDate(voteSettings.getEndTime(), "yyyy/MM/dd"));
 
         swtAnonymous.setChecked(false);
+    }
+    private void updateSwtNeedPwd (boolean isChecked) {
+        if (isChecked) {
+            edtPwd.setVisibility(View.VISIBLE);
+            txtPwd.setVisibility(View.VISIBLE);
+        } else {
+            edtPwd.setVisibility(View.INVISIBLE);
+            txtPwd.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void updateUserSetting() {

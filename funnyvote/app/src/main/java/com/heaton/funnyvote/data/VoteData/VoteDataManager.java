@@ -463,9 +463,13 @@ public class VoteDataManager {
             DataLoader.getInstance(context.getApplicationContext()).getOptionDao().insertOrReplaceInTx(optionList);
 
             VoteData data = DataLoader.getInstance(context).queryVoteDataById(voteSetting.getVoteCode());
-            optionList = data.getOptions();
+            if (data == null) {
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(message, false, data, optionList));
+            } else {
+                optionList = data.getOptions();
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(message, success, data, optionList));
+            }
 
-            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(message, success, data, optionList));
         }
     }
 
@@ -626,14 +630,16 @@ public class VoteDataManager {
         public void run() {
             VoteData data = DataLoader.getInstance(context).queryVoteDataById(this.voteCode);
             List<Option> optionList;
-            if (TextUtils.isEmpty(data.getVoteCode())) {
+            if (data == null || TextUtils.isEmpty(data.getVoteCode())) {
                 Log.e(TAG, "No this vote code:" + voteCode);
                 optionList = new ArrayList<>();
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(this.message
+                        , false, data, optionList));
             } else {
                 optionList = data.getOptions();
+                EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(this.message
+                        , this.success, data, optionList));
             }
-            EventBus.getDefault().post(new EventBusManager.RemoteServiceEvent(this.message
-                    , this.success, data, optionList));
         }
     }
 }

@@ -103,7 +103,7 @@
                     android:layout_height="wrap_content"
                     android:paddingLeft="8dp"
                     android:paddingRight="8dp"
-                    android:text="@string/about_funnyvote"
+                    android:text="@string/about_funnyvote_app"
                     android:textAppearance="@style/TextAppearance.Header" />
 
                 <RelativeLayout

@@ -2,6 +2,7 @@ package com.heaton.funnyvote.ui.main;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
@@ -158,7 +159,11 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         // Check vote is end.
         if (data.getEndTime() < System.currentTimeMillis()) {
             txtPubTime.setText(itemView.getContext().getString(R.string.wall_item_vote_end));
+            txtPubTime.setTextColor(itemView.getContext().getResources().getColor(R.color.md_red_700));
+            //txtPubTime.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.md_red_700));
         } else {
+            txtPubTime.setTextColor(itemView.getContext().getResources().getColor(R.color.secondary_text));
+            //txtPubTime.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.secondary_text));
             txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
                     + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
         }

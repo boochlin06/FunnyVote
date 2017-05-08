@@ -196,7 +196,12 @@ public class DataLoader {
             voteData.setVoteCode(code);
             return voteData;
         }
-        return voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(code)).list().get(0);
+        List<VoteData> list = voteDataDao.queryBuilder().where(VoteDataDao.Properties.VoteCode.eq(code)).list();
+        if (list.size() > 0) {
+            return list.get(0);
+        } else {
+            return null;
+        }
     }
 
     public List<VoteData> queryVoteDataByAuthor(String authorCode, int offset, int limit) {

@@ -31,7 +31,7 @@ public class ProblemActivity extends AppCompatActivity {
         tracker = application.getDefaultTracker();
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
 
-        mainToolbar.setTitle(getString(R.string.about_author_info));
+        mainToolbar.setTitle(getString(R.string.about_common_problem));
         mainToolbar.setTitleTextColor(Color.WHITE);
         mainToolbar.setElevation(10);
 

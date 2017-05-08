@@ -56,6 +56,7 @@
     <string name="create_vote_tab_settings_need_password">是否需要密碼：</string>
     <string name="create_vote_tab_settings_pre_result">可以先看投票結果：</string>
     <string name="create_vote_tab_settings_password">密碼：</string>
+    <string name="create_vote_tab_settings_password_hint">密碼寫在這裡</string>
 
     <string name="create_vote_tab_settings_public">公開</string>
     <string name="create_vote_tab_settings_public_hint">全部使用者都可以投票.</string>
@@ -214,7 +215,7 @@
     <string name="about_common_problem">常見問題</string>
     <string name="about_app_introduction">關於趣投票</string>
     <string name="about_introduction_desc"><![CDATA[
-        <b><big>全台最廢投票軟體上線啦</big></b><br><br>
+        <b><big>全台最大投票軟體上線啦</big></b><br><br>
         要說有啥功能，你可以再看一次 『導覽介紹』，底下簡單介紹一下:<br><br>
 <b>快速發起投票</b>：會想發起投票就是因為心中有苦，有猶豫，或是只是覺得有趣，這種情況下，想當然是趕快問問眾人的意見，趣投票讓發起投票這件事變得超級方便。<br><br>
 <b>快速投票</b>：替人解惑乃是大善事大慈悲，但是如果搞得很麻煩，還要註冊，驗證碼，那就提不起勁，趣投票完全不需要繁複的過程，只要長按就可以快速投票。<br><br>
@@ -224,6 +225,7 @@
 管他那麼多，先來拯救眾生，順手打個五星評價]]></string>
     <string name="about_share_app">分享趣投票</string>
     <string name="about_funnyvote">關於趣投票</string>
+    <string name="about_funnyvote_app">關於趣投票 APP</string>
     <string name="about_current_version">目前版本</string>
     <string name="about_update">更新 App</string>
     <string name="about_detail_introduction">關於趣投票</string>
