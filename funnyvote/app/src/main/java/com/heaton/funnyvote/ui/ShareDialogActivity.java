@@ -52,6 +52,7 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
 
     private CallbackManager mCallbackManager;
     private String voteURL;
+    private String title;
     private boolean isShareApp;
 
     private Tracker tracker;
@@ -67,6 +68,12 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
         mCallbackManager = CallbackManager.Factory.create();
         if (getIntent() != null) {
             voteURL = getIntent().getStringExtra(EXTRA_VOTE_URL);
+            title = getIntent().getStringExtra(EXTRA_TITLE);
+            if (title.length() > 80) {
+                title = title.substring(0, 80);
+                title = title + " ...";
+            }
+
             isShareApp = getIntent().getBooleanExtra(EXTRA_IS_SHARE_APP, false);
             initShareOptions();
         } else {
@@ -155,7 +162,7 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
                     , getResources().getText(R.string.vote_share_app_via)));
         } else {
             sendIntent.putExtra(Intent.EXTRA_TEXT, String.format(
-                    getString(R.string.vote_share_msg), voteURL));
+                    getString(R.string.vote_share_msg), title, voteURL));
             startActivity(Intent.createChooser(sendIntent
                     , getResources().getText(R.string.vote_share_vote_via)));
         }
@@ -175,7 +182,7 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
                         , String.format(getString(R.string.share_funny_vote_app), voteURL));
             } else {
                 send.putExtra(Intent.EXTRA_TEXT, String.format(
-                        getString(R.string.vote_share_msg), voteURL));
+                        getString(R.string.vote_share_msg), title, voteURL));
             }
             tracker.send(new HitBuilders.EventBuilder()
                     .setCategory(send.getComponent().getPackageName())

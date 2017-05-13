@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="imageURL" translatable="false">
-        <item>"http://vinta.ws/booch/wp-content/uploads/2016/11/vote_finger.png"</item>
-        <item>"http://vinta.ws/booch/wp-content/uploads/2016/11/vote_box.jpg"</item>
-        <item>"http://vinta.ws/booch/wp-content/uploads/2016/11/ballot_box.png"</item>
-        <item>"http://vinta.ws/booch/wp-content/uploads/2016/11/handsup.png"</item>
-        <item>"http://vinta.ws/booch/wp-content/uploads/2016/11/funny_vote_eng_50.png"</item>
+        <item>"https://vinta.ws/booch/wp-content/uploads/2017/05/promotion_five_star.jpg"</item>
     </string-array>
 </resources>

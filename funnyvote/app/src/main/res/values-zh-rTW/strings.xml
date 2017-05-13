@@ -112,7 +112,7 @@
     <string name="vote_detail_menu_search_hint">搜尋選項</string>
     <string name="vote_share_vote_via">快找人一起來作功德吧</string>
     <string name="vote_share_app_via">厲害的 App 是需要推廣的</string>
-    <string name="vote_share_msg">各位，為他人解惑的時間到了，幫忙投個票\n\n%s</string>
+    <string name="vote_share_msg" formatted="false">各位，為他人解惑的時間到了，幫忙投個票\n\n『%s』\n\n%s</string>
     <string name="vote_share_more">更多</string>
     <string name="vote_share_copy_url">複製連結</string>
     <string name="vote_share_copied_msg">已複製連結</string>

@@ -121,7 +121,7 @@
     <string name="vote_detail_menu_search_hint">Search Options</string>
     <string name="vote_share_vote_via">Share this vote via</string>
     <string name="vote_share_app_via">Share Funny vote via</string>
-    <string name="vote_share_msg">Please help to vote this\n\n%s</string>
+    <string name="vote_share_msg" formatted="false">Please help to vote this\n\n『%s』\n\n%s</string>
     <string name="vote_share_more">More</string>
     <string name="vote_share_copy_url">Copy Link</string>
     <string name="vote_share_copied_msg">Link Copied</string>

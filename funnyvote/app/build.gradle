@@ -26,8 +26,8 @@ android {
         applicationId "com.heaton.funnyvote"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 7
-        versionName "170508"
+        versionCode 8
+        versionName "170511"
         multiDexEnabled true
     }
     buildTypes {

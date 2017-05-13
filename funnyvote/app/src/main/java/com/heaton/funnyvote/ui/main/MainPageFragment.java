@@ -425,7 +425,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     private void setupPromotionAdmob() {
         promotionTypeList = new ArrayList<>();
         for (int i = 0; i < promotionList.size(); i++) {
-            if (i % 4 == 0 && ENABLE_PROMOTION_ADMOB) {
+            if (i == 0 && ENABLE_PROMOTION_ADMOB) {
                 promotionTypeList.add(new PromotionType(PromotionType.PROM0TION_TYPE_ADMOB, null));
 
             }

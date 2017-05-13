@@ -118,7 +118,7 @@ public class DataLoader {
         for (int i = 0; i < limit; i++) {
             Promotion promotion = new Promotion();
             promotion.setImageURL(imageURL[i % imageURL.length]);
-            promotion.setActionURL("https://vinta.ws/booch/?p=226");
+            promotion.setActionURL("https://play.google.com/store/apps/details?id=com.heaton.funnyvote");
             promotion.setTitle("title:" + i);
             promotions.add(promotion);
         }

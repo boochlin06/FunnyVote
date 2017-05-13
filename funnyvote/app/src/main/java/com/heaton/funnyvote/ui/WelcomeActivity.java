@@ -29,7 +29,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, true)) {
-                DataLoader.getInstance(getApplicationContext()).mockPromotions(5);
+                DataLoader.getInstance(getApplicationContext()).mockPromotions(1);
                 firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, false).apply();
             }
             return null;
