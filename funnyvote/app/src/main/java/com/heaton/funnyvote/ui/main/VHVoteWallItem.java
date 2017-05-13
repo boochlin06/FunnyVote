@@ -309,6 +309,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                             && data.getOption2Count() != 0);
                     setUpSecondButtonProgressLayout(data.getOption2Polled());
                 }
+                imgThirdOption.setVisibility(View.GONE);
             } else {
                 // vote is not end or not poll.
                 txtFirstOptionTitle.setText(data.getOption1Title());
@@ -326,9 +327,16 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
                 imgChampion1.setVisibility(View.GONE);
                 imgChampion2.setVisibility(View.GONE);
+
+                if (data.getIsUserCanAddOption()) {
+                    imgThirdOption.setVisibility(View.VISIBLE);
+                } else {
+                    imgThirdOption.setVisibility(View.GONE);
+                }
             }
             txtThirdOption.setText(String.format(itemView.getContext().getString(R.string.wall_item_other_option)
                     , (data.getOptionCount() - 2)));
+            txtThirdOption.setVisibility(View.VISIBLE);
             btnThirdOption.setVisibility(View.VISIBLE);
             btnThirdOption.setOnClickListener(MoveToVoteDetailOnClickListener);
         } else {
@@ -363,6 +371,8 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                         && data.getOption2Count() != 0);
                 setUpFirstButtonProgressLayout(data.getOption1Polled());
                 setUpSecondButtonProgressLayout(data.getOption2Polled());
+
+                btnThirdOption.setVisibility(View.GONE);
             } else {
                 btnFirstOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_100));
                 btnSecondOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_100));
@@ -375,8 +385,18 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
                 imgChampion1.setVisibility(View.GONE);
                 imgChampion2.setVisibility(View.GONE);
+
+                if (data.getIsUserCanAddOption()) {
+                    imgThirdOption.setVisibility(View.VISIBLE);
+                    btnThirdOption.setVisibility(View.VISIBLE);
+                    txtThirdOption.setVisibility(View.GONE);
+                } else {
+                    txtThirdOption.setVisibility(View.GONE);
+                    imgThirdOption.setVisibility(View.GONE);
+                    btnThirdOption.setVisibility(View.GONE);
+                }
             }
-            btnThirdOption.setVisibility(View.GONE);
+            btnThirdOption.setOnClickListener(MoveToVoteDetailOnClickListener);
         }
     }
 

@@ -856,6 +856,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     , data.getMinOption(), data.getMaxOption());
             option.setText(multi);
         }
+        if (data.getIsUserCanAddOption()) {
+            option.setText(option.getText() + "\n\n" + getString(R.string.vote_detail_dialog_can_add_option));
+        } else {
+            option.setText(option.getText() + "\n\n" + getString(R.string.vote_detail_dialog_can_not_add_option));
+        }
         time.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
         security.setText(VoteData.getSecurityString(getApplicationContext(), data.getSecurity()));

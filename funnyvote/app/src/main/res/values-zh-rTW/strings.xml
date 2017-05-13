@@ -131,7 +131,9 @@
     <string name="vote_detail_dialog_time">時間</string>
     <string name="vote_detail_dialog_security">隱私</string>
     <string name="vote_detail_dialog_single_option">單選</string>
-    <string name="vote_detail_dialog_multi_option" formatted="false">"多選:\n請選擇 %d - %d 選項."</string>
+    <string name="vote_detail_dialog_multi_option" formatted="false">"多選:\n請選擇 %d - %d 選項"</string>
+    <string name="vote_detail_dialog_can_add_option">可新增選項</string>
+    <string name="vote_detail_dialog_can_not_add_option">不可新增選項</string>
 
     <string name="vote_detail_dialog_sort_option">排序選項依：</string>
     <string name="vote_detail_dialog_sort_default">預設</string>

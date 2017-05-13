@@ -140,7 +140,9 @@
     <string name="vote_detail_dialog_time">Time</string>
     <string name="vote_detail_dialog_security">Security</string>
     <string name="vote_detail_dialog_single_option">Single option</string>
-    <string name="vote_detail_dialog_multi_option" formatted="false">"Multi option:\nPlease choice %d - %d votes."</string>
+    <string name="vote_detail_dialog_multi_option" formatted="false">"Multi option:\nPlease choice %d - %d votes"</string>
+    <string name="vote_detail_dialog_can_add_option">User can add new option</string>
+    <string name="vote_detail_dialog_can_not_add_option">User can not add new option</string>
 
     <string name="vote_detail_dialog_sort_option">Sort Option By:</string>
     <string name="vote_detail_dialog_sort_default">Default</string>
