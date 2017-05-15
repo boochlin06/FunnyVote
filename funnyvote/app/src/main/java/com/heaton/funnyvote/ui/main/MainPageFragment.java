@@ -425,9 +425,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     private void setupPromotionAdmob() {
         promotionTypeList = new ArrayList<>();
         for (int i = 0; i < promotionList.size(); i++) {
-            if (i == 0 && ENABLE_PROMOTION_ADMOB) {
+            if (i == 0 && ENABLE_PROMOTION_ADMOB && Util.isNetworkConnected(getContext())) {
                 promotionTypeList.add(new PromotionType(PromotionType.PROM0TION_TYPE_ADMOB, null));
-
             }
             promotionTypeList.add(new PromotionType(PromotionType.PROMOTION_TYPE_FUNNY_VOTE
                     , promotionList.get(i)));
@@ -448,27 +447,51 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
             if (promotionTypeList.get(position).getPromotionType() == PromotionType.PROMOTION_TYPE_FUNNY_VOTE) {
                 View headerItem = inflater.inflate(R.layout.item_promotion_funny_vote, null);
                 ImageView promotion = (ImageView) headerItem.findViewById(R.id.headerImage);
-                Glide.with(getContext())
-                        .load(promotionTypeList.get(position).getPromotion().getImageURL())
-                        .override((int) getResources().getDimension(R.dimen.promotion_image_width)
-                                , (int) getResources().getDimension(R.dimen.promotion_image_high))
-                        .fitCenter()
-                        .crossFade()
-                        .into(promotion);
-                final String actionURL = promotionTypeList.get(position).getPromotion().getActionURL();
-                promotion.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW
-                                , Uri.parse(actionURL));
-                        tracker.send(new HitBuilders.EventBuilder()
-                                .setCategory(AnalyzticsTag.CATEGORY_PROMOTION)
-                                .setAction(AnalyzticsTag.ACTION_CLICK_PROMOTION)
-                                .setLabel(actionURL)
-                                .build());
-                        startActivity(browserIntent);
-                    }
-                });
+                if (Util.isNetworkConnected(getContext())) {
+                    Glide.with(getContext())
+                            .load(promotionTypeList.get(position).getPromotion().getImageURL())
+                            .override((int) getResources().getDimension(R.dimen.promotion_image_width)
+                                    , (int) getResources().getDimension(R.dimen.promotion_image_high))
+                            .fitCenter()
+                            .crossFade()
+                            .into(promotion);
+                    final String actionURL = promotionTypeList.get(position).getPromotion().getActionURL();
+                    promotion.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW
+                                    , Uri.parse(actionURL));
+                            tracker.send(new HitBuilders.EventBuilder()
+                                    .setCategory(AnalyzticsTag.CATEGORY_PROMOTION)
+                                    .setAction(AnalyzticsTag.ACTION_CLICK_PROMOTION)
+                                    .setLabel(actionURL)
+                                    .build());
+                            startActivity(browserIntent);
+                        }
+                    });
+                } else {
+                    Glide.with(getContext())
+                            .load(R.drawable.main_topic)
+                            .override((int) getResources().getDimension(R.dimen.promotion_image_width)
+                                    , (int) getResources().getDimension(R.dimen.promotion_image_high))
+                            .fitCenter()
+                            .crossFade()
+                            .into(promotion);
+                    final String actionURL = "https://play.google.com/store/apps/details?id=com.heaton.funnyvote";
+                    promotion.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW
+                                    , Uri.parse(actionURL));
+                            tracker.send(new HitBuilders.EventBuilder()
+                                    .setCategory(AnalyzticsTag.CATEGORY_PROMOTION)
+                                    .setAction(AnalyzticsTag.ACTION_CLICK_PROMOTION)
+                                    .setLabel(actionURL)
+                                    .build());
+                            startActivity(browserIntent);
+                        }
+                    });
+                }
                 container.addView(headerItem);
                 return headerItem;
             } else if (promotionTypeList.get(position).getPromotionType() == PromotionType.PROM0TION_TYPE_ADMOB) {

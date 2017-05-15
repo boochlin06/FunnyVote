@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:alpha="0.95"
-    android:background="@android:color/black"
+    android:background="@android:color/background_light"
     android:orientation="vertical"
     android:paddingTop="24dp">
 
@@ -12,7 +11,6 @@
         android:id="@+id/authorBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="3dp"
         android:layout_marginLeft="5dp"
         android:layout_marginTop="8dp"
         android:padding="2dp">
@@ -32,6 +30,7 @@
             android:layout_height="40dp"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
+            android:layout_marginRight="12dp"
             android:src="@drawable/ic_close_24dp" />
 
         <TextView
@@ -43,7 +42,7 @@
             android:layout_toLeftOf="@id/imgCross"
             android:layout_toRightOf="@id/imgAuthorIcon"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textColor="@color/md_amber_50"
+            android:textColor="@color/primary_text"
             android:textSize="18sp"
             android:textStyle="bold"
             tools:text="Heaton Lin" />
@@ -56,7 +55,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="6dp"
             android:layout_toRightOf="@id/imgAuthorIcon"
-            android:textColor="@color/md_amber_50"
+            android:textColor="@color/primary_text"
             android:textSize="10sp"
             tools:text="2016/04/08" />
 
@@ -68,7 +67,7 @@
         android:layout_below="@id/authorBar"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:fadeScrollbars="false">
 
         <TextView
