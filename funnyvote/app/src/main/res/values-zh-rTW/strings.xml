@@ -24,6 +24,7 @@
     <string name="wall_item_no_one_poll">沒人投票阿</string>
     <string name="wall_item_bar_vote_count" formatted="false">票數:%d </string>
     <string name="wall_item_bar_Share">分享</string>
+    <string name="wall_item_bar_favorite">收藏</string>
     <string name="wall_item_no_vote_create_new">這裡沒有投票喔.\n『自己創一個如何?』</string>
     <string name="wall_item_no_vote_create_new_other">這裡沒有投票喔.\n這位大德並無任何問題。</string>
     <string name="wall_item_no_vote">對，就是沒有任何投票</string>
@@ -111,7 +112,7 @@
     <string name="vote_detail_menu_info">資訊</string>
     <string name="vote_detail_menu_search_hint">搜尋選項</string>
     <string name="vote_share_vote_via">快找人一起來作功德吧</string>
-    <string name="vote_share_app_via">厲害的 App 是需要推廣的</string>
+    <string name="vote_share_app_via">有趣的 App 是需要推廣的</string>
     <string name="vote_share_msg" formatted="false">各位，為他人解惑的時間到了，幫忙投個票\n\n『%s』\n\n%s</string>
     <string name="vote_share_more">更多</string>
     <string name="vote_share_copy_url">複製連結</string>
@@ -249,7 +250,7 @@
     <string name="about_common_problem_title">常見問題</string>
     <string name="about_common_problem_desc">趣投票 一定不會有問題的，相信我，跟者我一起唸三次『一切都沒有問題』。</string>
 
-    <string name="share_funny_vote_app">全台最X的投票軟體上線啦，分享給你. \n\n%s</string>
+    <string name="share_funny_vote_app">全台最大的投票軟體上線啦，分享給你. \n\n%s</string>
 
     <string name="about_link_to_home">官方網站：https://www.funny-vote.com</string>
 

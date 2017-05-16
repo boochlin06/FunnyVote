@@ -57,7 +57,7 @@
             android:layout_marginLeft="6dp"
             android:layout_toRightOf="@id/imgBarFavorite"
             android:gravity="center"
-            android:text="Favorite" />
+            android:text="@string/wall_item_bar_favorite" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -81,7 +81,7 @@
             android:layout_marginLeft="6dp"
             android:layout_toRightOf="@id/imgBarShare"
             android:gravity="center"
-            android:text="Share" />
+            android:text="@string/wall_item_bar_Share" />
 
     </RelativeLayout>
 

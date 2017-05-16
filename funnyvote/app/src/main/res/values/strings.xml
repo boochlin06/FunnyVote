@@ -31,6 +31,7 @@
     <string name="wall_item_no_one_poll">No one poll</string>
     <string name="wall_item_bar_vote_count" formatted="false">Vote:%d </string>
     <string name="wall_item_bar_Share">Share</string>
+    <string name="wall_item_bar_favorite">Favorite</string>
     <string name="wall_item_no_vote_create_new">No vote in list.\nWould you create new vote?</string>
     <string name="wall_item_no_vote_create_new_other">No vote in list.\nNo question for this people.</string>
     <string name="wall_item_no_vote">No vote in list.</string>

@@ -68,13 +68,16 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
         mCallbackManager = CallbackManager.Factory.create();
         if (getIntent() != null) {
             voteURL = getIntent().getStringExtra(EXTRA_VOTE_URL);
-            title = getIntent().getStringExtra(EXTRA_TITLE);
-            if (title.length() > 80) {
-                title = title.substring(0, 80);
-                title = title + " ...";
-            }
 
             isShareApp = getIntent().getBooleanExtra(EXTRA_IS_SHARE_APP, false);
+            if (!isShareApp) {
+                title = getIntent().getStringExtra(EXTRA_TITLE);
+                if (title.length() > 80) {
+                    title = title.substring(0, 80);
+                    title = title + " ...";
+                }
+            }
+
             initShareOptions();
         } else {
             finish();
