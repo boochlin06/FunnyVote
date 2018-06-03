@@ -1,24 +1,17 @@
-buildscript {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-    }
-
-    dependencies {
-        classpath 'io.fabric.tools:gradle:1.+'
-    }
-}
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.firebase.firebase-crash'
 apply plugin: 'io.fabric'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+
 repositories {
     maven { url 'https://maven.fabric.io/public' }
 }
 
 apply plugin: 'org.greenrobot.greendao'
-apply plugin: 'com.jakewharton.butterknife'
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     dexOptions {
         jumboMode true
     }
@@ -44,46 +37,47 @@ android {
     }
 }
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile group: 'com.squareup.retrofit2', name: 'converter-gson', version: '2.1.0'
-    compile('cn.trinea.android.view.autoscrollviewpager:android-auto-scroll-view-pager:1.1.2') {
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation group: 'com.squareup.retrofit2', name: 'converter-gson', version: '2.1.0'
+    implementation('cn.trinea.android.view.autoscrollviewpager:android-auto-scroll-view-pager:1.1.2') {
         exclude module: 'support-v4'
     }
-    compile('com.twitter.sdk.android:twitter:2.3.1@aar') {
+    implementation('com.twitter.sdk.android:twitter:2.3.1@aar') {
         transitive = true;
     }
-    compile 'com.android.support:appcompat-v7:25.2.0'
-    compile 'com.android.support:customtabs:25.2.0'
-    compile 'com.android.support:design:25.2.0'
-    compile 'com.android.support:cardview-v7:25.2.0'
-    compile 'com.android.support:recyclerview-v7:25.2.0'
-    compile 'de.hdodenhof:circleimageview:2.1.0'
-    compile 'com.jakewharton:butterknife:8.5.1'
-    compile 'org.greenrobot:eventbus:3.0.0'
-    compile 'jp.wasabeef:recyclerview-animators:2.2.4'
-    compile 'com.github.jakob-grabner:Circle-Progress-View:v1.2.9.1'
-    compile 'com.getbase:floatingactionbutton:1.10.1'
-    compile 'com.akexorcist:RoundCornerProgressBar:2.0.3'
-    compile 'org.greenrobot:greendao:3.2.0'
-    compile 'com.facebook.stetho:stetho:1.4.2'
-    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-    compile 'com.wdullaer:materialdatetimepicker:2.5.0'
-    compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
-    compile 'com.theartofdev.edmodo:android-image-cropper:2.3.+'
-    compile 'com.squareup.retrofit2:retrofit:2.1.0'
-    compile 'org.apmem.tools:layouts:1.10@aar'
-    compile 'com.google.firebase:firebase-ads:10.2.0'
-    compile 'com.google.android.gms:play-services-auth:10.2.0'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:customtabs:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:cardview-v7:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'de.hdodenhof:circleimageview:2.1.0'
+    implementation 'com.jakewharton:butterknife:8.5.1'
+    implementation 'org.greenrobot:eventbus:3.0.0'
+    implementation 'jp.wasabeef:recyclerview-animators:2.2.4'
+    implementation 'com.github.jakob-grabner:Circle-Progress-View:v1.2.9.1'
+    implementation 'com.getbase:floatingactionbutton:1.10.1'
+    implementation 'com.akexorcist:RoundCornerProgressBar:2.0.3'
+    implementation 'org.greenrobot:greendao:3.2.0'
+    implementation 'com.facebook.stetho:stetho:1.4.2'
+    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation 'com.wdullaer:materialdatetimepicker:2.5.0'
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
+    implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.3.+'
+    implementation 'com.squareup.retrofit2:retrofit:2.1.0'
+    implementation 'org.apmem.tools:layouts:1.10@aar'
+    implementation 'com.google.firebase:firebase-ads:10.2.0'
+    implementation 'com.google.android.gms:play-services-auth:10.2.0'
     // wait the app intro release the 4.2.0 to solve the proguard issue.
-    compile 'com.github.paolorotolo:appintro:4.0.0'
-    testCompile 'junit:junit:4.12'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
-    compile 'com.github.amlcurran.showcaseview:library:5.4.3'
-    compile 'com.google.firebase:firebase-crash:10.2.0'
-    compile 'com.google.firebase:firebase-core:10.2.0'
-    compile 'com.google.android.gms:play-services-analytics:10.2.0'
-    compile 'com.google.firebase:firebase-appindexing:10.2.0'
+    implementation 'com.github.paolorotolo:appintro:4.0.0'
+    testImplementation 'junit:junit:4.12'
+    kapt 'com.jakewharton:butterknife-compiler:8.8.1'
+    implementation 'com.github.amlcurran.showcaseview:library:5.4.3'
+    implementation 'com.google.firebase:firebase-crash:10.2.0'
+    implementation 'com.google.firebase:firebase-core:10.2.0'
+    implementation 'com.google.android.gms:play-services-analytics:10.2.0'
+    implementation 'com.google.firebase:firebase-appindexing:10.2.0'
 }
 greendao {
     schemaVersion 1
