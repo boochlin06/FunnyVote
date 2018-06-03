@@ -92,9 +92,6 @@
             android:name=".ui.personal.UserActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
-        <intent-filter>
-            <category android:name="android.intent.category.DEFAULT" />
-        </intent-filter>
         <activity
             android:name=".ui.personal.PersonalActivity"
             android:screenOrientation="portrait" />
