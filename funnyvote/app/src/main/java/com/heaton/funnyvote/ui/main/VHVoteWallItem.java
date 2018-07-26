@@ -1,8 +1,8 @@
 package com.heaton.funnyvote.ui.main;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
@@ -18,12 +18,9 @@ import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.Util;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
-
-import org.greenrobot.eventbus.EventBus;
+import com.heaton.funnyvote.utils.Util;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,10 +32,10 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
     public static String BUNDLE_KEY_VOTE_CODE = "VOTE_ID";
     public VoteData data;
-    public View.OnClickListener MoveToVoteDetailOnClickListener = new View.OnClickListener() {
+    private View.OnClickListener MoveToVoteDetailOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            startActivityToVoteDetail(v.getContext(), data.getVoteCode());
+            wallItemListener.onVoteItemClick(data);
         }
     };
     @BindView(R.id.imgAuthorIcon)
@@ -103,12 +100,15 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     CardView btnThirdOption;
     @BindView(R.id.imgLock)
     ImageView imgLock;
+    private MainPageTabFragment.VoteWallItemListener wallItemListener;
 
-    public VHVoteWallItem(View v) {
+    public VHVoteWallItem(View v, MainPageTabFragment.VoteWallItemListener wallItemListener) {
         super(v);
         ButterKnife.bind(this, v);
+        this.wallItemListener = wallItemListener;
     }
 
+    @SuppressLint("SetTextI18n")
     public void setLayout(VoteData data) {
         this.data = data;
         txtTitle.setText(data.getTitle());
@@ -180,11 +180,12 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         setUpOptionArea(false);
     }
 
+    @SuppressLint("DefaultLocale")
     private void setUpOptionArea(boolean isQuickPoll) {
         // More than 3 options.
         if (data.getOptionCount() > 2) {
             if (data.getIsPolled() || data.getEndTime() < System.currentTimeMillis()) {
-                boolean isShowTopOption = false;
+                boolean isShowTopOption;
 
                 progressFirstOption.setVisibility(View.VISIBLE);
                 progressFirstOption.setMax(data.getPollCount());
@@ -241,7 +242,6 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                     isShowTopOption = false;
                     txtFirstOptionTitle.setText(data.getOption1Title());
                     progressFirstOption.setProgress(data.getOption1Count());
-                    ;
                     double percent1 = data.getPollCount() == 0 ? 0
                             : (double) data.getOption1Count() / data.getPollCount() * 100;
                     txtFirstPollCountPercent.setText(String.format("%3.1f%%", percent1));
@@ -458,27 +458,17 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
             return;
         }
         data.setIsFavorite(!data.getIsFavorite());
-        imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
-                R.drawable.ic_star_border_24dp);
-        if (data.getIsFavorite()) {
-            Toast.makeText(itemView.getContext()
-                    , R.string.vote_detail_toast_add_favorite, Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(itemView.getContext()
-                    , R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
-        }
-        EventBus.getDefault().post(new EventBusManager
-                .VoteDataControlEvent(data, EventBusManager.VoteDataControlEvent.VOTE_FAVORITE));
+        wallItemListener.onVoteFavoriteChange(data);
     }
 
     @OnClick(R.id.relBarShare)
     public void onBarShareClick() {
-        VoteDetailContentActivity.sendShareIntent(itemView.getContext(), data);
+        wallItemListener.onVoteShare(data);
     }
 
     @OnClick({R.id.imgAuthorIcon, R.id.txtAuthorName})
     public void onAuthorClick() {
-        VoteDetailContentActivity.sendPersonalDetailIntent(itemView.getContext(), data);
+        wallItemListener.onVoteAuthorClick(data);
     }
 
     @OnLongClick({R.id.btnFirstOption, R.id.btnSecondOption, R.id.btnThirdOption})
@@ -486,62 +476,25 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         if (!(data.getMinOption() == 1 && data.getMaxOption() == 1)
                 || data.getIsPolled() || data.getEndTime() < System.currentTimeMillis()
                 || optionButton.getId() == R.id.btnThirdOption) {
-            startActivityToVoteDetail(optionButton.getContext(), data.getVoteCode());
+            wallItemListener.onVoteItemClick(data);
+            //startActivityToVoteDetail(optionButton.getContext(), data.getVoteCode());
             return true;
         }
         if (!data.getIsPolled()) {
             if (!Util.isNetworkConnected(itemView.getContext())) {
                 Toast.makeText(itemView.getContext(), R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_SHORT).show();
                 return true;
-            } else if (data.getIsNeedPassword()) {
-                EventBus.getDefault().post(new EventBusManager
-                        .VoteDataControlEvent(data, btnFirstOption.getId() == R.id.btnFirstOption ?
-                        data.getOption1Code() : data.getOption2Code()
-                        , EventBusManager.VoteDataControlEvent.VOTE_QUICK_POLL));
             } else {
                 if (optionButton.getId() == R.id.btnFirstOption) {
-                    EventBus.getDefault().post(new EventBusManager
-                            .VoteDataControlEvent(data, data.getOption1Code()
-                            , EventBusManager.VoteDataControlEvent.VOTE_QUICK_POLL));
-                    data.setOption1Polled(true);
-                    data.setOption1Count(data.getOption1Count() + 1);
-                    data.setOptionUserChoiceTitle(data.getOption1Title());
-                    data.setOptionUserChoiceCount(data.getOption1Count());
-                    data.setOptionUserChoiceCode(data.getOption1Code());
+                    wallItemListener.onVoteQuickPoll(data, data.getOption1Code());
+
                 } else {
-                    EventBus.getDefault().post(new EventBusManager
-                            .VoteDataControlEvent(data, data.getOption2Code()
-                            , EventBusManager.VoteDataControlEvent.VOTE_QUICK_POLL));
-                    data.setOption2Polled(true);
-                    data.setOption2Count(data.getOption2Count() + 1);
-                    data.setOptionUserChoiceTitle(data.getOption2Title());
-                    data.setOptionUserChoiceCount(data.getOption2Count());
-                    data.setOptionUserChoiceCode(data.getOption2Code());
+                    wallItemListener.onVoteQuickPoll(data, data.getOption2Code());
                 }
 
-                if (data.getOptionUserChoiceCount() > data.getOptionTopCount()) {
-                    data.setOptionTopCode(data.getOptionUserChoiceCode());
-                    data.setOptionTopTitle(data.getOptionUserChoiceTitle());
-                    data.setOptionTopCount(data.getOptionUserChoiceCount());
-                    data.setOptionTopPolled(true);
-                }
-                data.setPollCount(data.getPollCount() + 1);
-                data.setIsPolled(true);
-                itemView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateUI();
-                    }
-                }, 500);
             }
         }
         return true;
-    }
-
-    private void updateUI() {
-        txtBarPollCount.setText(String.format(itemView.getContext()
-                .getString(R.string.wall_item_bar_vote_count), data.getPollCount()));
-        setUpOptionArea(true);
     }
 
 }

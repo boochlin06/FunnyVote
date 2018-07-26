@@ -25,15 +25,17 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public static final int ITEM_TYPE_RELOAD = 42;
     public static final int ITEM_TYPE_NO_VOTE = 43;
 
-    private OnReloadClickListener mOnReloadClickListener;
     private boolean showReload;
 
     private List<VoteData> voteList;
     private Context context;
     private long maxCount;
+    private SearchFragment.VoteSearchItemListener itemListener;
 
-    public SearchItemAdapter(Context context, List<VoteData> datas) {
+    public SearchItemAdapter(Context context
+            ,List<VoteData> datas, SearchFragment.VoteSearchItemListener itemListener) {
         this.context = context;
+        this.itemListener = itemListener;
         this.voteList = datas;
     }
 
@@ -41,10 +43,10 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == ITEM_TYPE_VOTE) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_search, parent, false);
-            return new VHSearchItem(v);
+            return new VHSearchItem(v,itemListener);
         } else if (viewType == ITEM_TYPE_RELOAD) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_reload, parent, false);
-            return new ReloadViewHolder(v);
+            return new ReloadViewHolder(v,itemListener);
         } else if (viewType == ITEM_TYPE_NO_VOTE) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_no_vote, parent, false);
             return new VHNoVote(v);
@@ -98,28 +100,22 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         maxCount = count;
     }
 
-    public void setOnReloadClickListener(OnReloadClickListener listener) {
-        mOnReloadClickListener = listener;
-    }
-
-    private View.OnClickListener mReloadItemClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Animation animation = AnimationUtils.loadAnimation(context, R.anim.reload_rotate);
-            view.findViewById(R.id.img_load_more).startAnimation(animation);
-            if (mOnReloadClickListener != null) {
-                mOnReloadClickListener.onReloadClicked();
-            }
-        }
-    };
 
     private class ReloadViewHolder extends RecyclerView.ViewHolder {
         public ImageView reloadImage;
 
-        public ReloadViewHolder(View itemView) {
+
+        public ReloadViewHolder(View itemView, final SearchFragment.VoteSearchItemListener itemListener) {
             super(itemView);
             reloadImage = (ImageView) itemView.findViewById(R.id.img_load_more);
-            itemView.setOnClickListener(mReloadItemClickListener);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Animation animation = AnimationUtils.loadAnimation(context, R.anim.reload_rotate);
+                    v.findViewById(R.id.img_load_more).startAnimation(animation);
+                    itemListener.onReloadVote();
+                }
+            });
         }
     }
 
@@ -143,9 +139,4 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             txtNoVote.setText(R.string.wall_item_no_vote_search);
         }
     }
-
-    public interface OnReloadClickListener {
-        void onReloadClicked();
-    }
-
 }

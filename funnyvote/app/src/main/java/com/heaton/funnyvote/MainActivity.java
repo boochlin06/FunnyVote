@@ -31,9 +31,8 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.user.UserManager;
+import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.User;
-import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.notification.VoteNotificationManager;
 import com.heaton.funnyvote.ui.about.AboutFragment;
 import com.heaton.funnyvote.ui.account.AccountFragment;
@@ -43,13 +42,9 @@ import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.heaton.funnyvote.ui.personal.UserActivity;
 import com.heaton.funnyvote.ui.search.SearchFragment;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainPageContract.View {
 
     public static String TAG = MainPageTabFragment.class.getSimpleName();
     private static final int ANIM_DURATION_TOOLBAR = 300;
@@ -61,10 +56,10 @@ public class MainActivity extends AppCompatActivity {
     private int currentPage;
     boolean doubleBackToExitPressedOnce = false;
     private SearchView searchView;
-    private String searchKeyword;
     public static boolean ENABLE_ADMOB = true;
     private AdView adView;
     private Tracker tracker;
+    private MainPageContract.Presenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,10 +97,12 @@ public class MainActivity extends AppCompatActivity {
         currentPage = R.id.navigation_item_main;
 
         setupDrawerContent(navigationView);
-        setupDrawerHeader();
         setUpAdmob();
 
         VoteNotificationManager.getInstance(getApplicationContext()).startNotificationAlarm();
+        presenter = new MainPagePresenter(Injection.provideUserRepository(getApplicationContext())
+                , this);
+        presenter.start();
     }
 
     private void setUpAdmob() {
@@ -128,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onDrawerOpened(View drawerView) {
-                setupDrawerHeader();
             }
 
             @Override
@@ -155,45 +151,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUIChange(EventBusManager.UIControlEvent event) {
-        if (event.message.equals(EventBusManager.UIControlEvent.INTRO_TO_ACCOUNT)) {
-            drawerLayout.openDrawer(Gravity.LEFT);
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    private void setupDrawerHeader() {
-        UserManager.getInstance(getApplicationContext()).getUser(new UserManager.GetUserCallback() {
-            @Override
-            public void onResponse(User user) {
-                View header = navigationView.getHeaderView(0);
-                CircleImageView icon = (CircleImageView) header.findViewById(R.id.imgUserIcon);
-                TextView name = (TextView) header.findViewById(R.id.txtUserName);
-                name.setText(user.getUserName());
-                Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
-                        .override((int) getResources().getDimension(R.dimen.drawer_image_width)
-                                , (int) getResources().getDimension(R.dimen.drawer_image_high))
-                        .placeholder(R.drawable.ic_action_account_circle).into(icon);
-            }
-
-            @Override
-            public void onFailure() {
-            }
-        }, false);
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -205,11 +162,7 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Fragment fragment;
-                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                Slide slide = new Slide();
-                slide.setDuration(400);
-                slide.setSlideEdge(Gravity.RIGHT);
+                currentPage = menuItem.getItemId();
                 if (Build.VERSION.SDK_INT > 21) {
                     toolbar.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.color_primary));
                 } else {
@@ -217,47 +170,22 @@ public class MainActivity extends AppCompatActivity {
                 }
                 switch (menuId) {
                     case R.id.navigation_item_main:
-                        currentPage = menuItem.getItemId();
-                        fragment = new MainPageFragment();
-                        fragment.setEnterTransition(slide);
-                        ft.replace(R.id.frame_content, fragment).commit();
-                        toolbar.setTitle(getString(R.string.drawer_home));
-                        tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN);
+                        presenter.IntentToMainPage();
                         break;
                     case R.id.navigation_item_create_vote:
-                        startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
+                        presenter.IntentToCreatePage();
                         break;
                     case R.id.navigation_item_list_my_box:
-                        startActivity(new Intent(MainActivity.this, UserActivity.class));
+                        presenter.IntentToUserPage();
                         break;
                     case R.id.navigation_item_search:
-                        tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
-                        currentPage = menuItem.getItemId();
-                        fragment = new SearchFragment();
-                        fragment.setEnterTransition(slide);
-                        ft.replace(R.id.frame_content, fragment).commit();
-                        toolbar.setTitle(R.string.drawer_search);
-                        Bundle argument = new Bundle();
-                        argument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
-                        fragment.setArguments(argument);
+                        presenter.IntentToSearchPage();
                         break;
                     case R.id.navigation_item_account:
-                        tracker.setScreenName(AnalyzticsTag.SCREEN_ACCOUNT);
-                        currentPage = menuItem.getItemId();
-                        AccountFragment accountFragment = new AccountFragment();
-                        accountFragment.setEnterTransition(slide);
-                        ft.replace(R.id.frame_content, accountFragment).commit();
-                        int bgColor = ContextCompat.getColor(getApplicationContext(), R.color.md_light_blue_100);
-                        toolbar.setBackgroundColor(bgColor);
-                        toolbar.setTitle(R.string.drawer_account);
+                        presenter.IntentToAccountPage();
                         break;
                     case R.id.navigation_item_about:
-                        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT);
-                        currentPage = menuItem.getItemId();
-                        AboutFragment aboutFragment = new AboutFragment();
-                        aboutFragment.setEnterTransition(slide);
-                        ft.replace(R.id.frame_content, aboutFragment).commit();
-                        toolbar.setTitle(R.string.drawer_about);
+                        presenter.IntentToAboutPage();
                         break;
                 }
                 navigationView.setCheckedItem(currentPage);
@@ -313,27 +241,16 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    searchKeyword = newText;
-                    if (searchKeyword.length() == 0) {
-                        if (currentPage == navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
-                            EventBus.getDefault().post(new EventBusManager.UIControlEvent(
-                                    EventBusManager.UIControlEvent.SEARCH_KEYWORD, ""));
-                        }
-                    }
                     return false;
                 }
 
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    searchKeyword = query;
                     Log.d(TAG, "onQueryTextSubmit:" + query + "  page:" + currentPage
                             + " search page:" + navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
                     if (currentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
                         switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
                         navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
-                    } else {
-                        EventBus.getDefault().post(new EventBusManager.UIControlEvent(
-                                EventBusManager.UIControlEvent.SEARCH_KEYWORD, searchKeyword));
                     }
                     return false;
                 }
@@ -344,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.menu_add) {
-            startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
+            presenter.IntentToCreatePage();
             return true;
         }
 
@@ -358,5 +275,88 @@ public class MainActivity extends AppCompatActivity {
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public void showSearchPage() {
+        Fragment fragment;
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Slide slide = new Slide();
+        slide.setDuration(400);
+        slide.setSlideEdge(Gravity.RIGHT);
+        tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
+        fragment = new SearchFragment();
+        fragment.setEnterTransition(slide);
+        ft.replace(R.id.frame_content, fragment).commit();
+        toolbar.setTitle(R.string.drawer_search);
+    }
+
+    @Override
+    public void showCreatePage() {
+        startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
+    }
+
+    @Override
+    public void showUserPage() {
+        startActivity(new Intent(MainActivity.this, UserActivity.class));
+    }
+
+    @Override
+    public void showMainPage() {
+        Fragment fragment;
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Slide slide = new Slide();
+        slide.setDuration(400);
+        slide.setSlideEdge(Gravity.RIGHT);
+        fragment = new MainPageFragment();
+        fragment.setEnterTransition(slide);
+        ft.replace(R.id.frame_content, fragment).commit();
+        toolbar.setTitle(getString(R.string.drawer_home));
+        tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN);
+    }
+
+    @Override
+    public void showAboutPage() {
+        Fragment fragment;
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Slide slide = new Slide();
+        slide.setDuration(400);
+        slide.setSlideEdge(Gravity.RIGHT);
+        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT);
+        AboutFragment aboutFragment = new AboutFragment();
+        aboutFragment.setEnterTransition(slide);
+        ft.replace(R.id.frame_content, aboutFragment).commit();
+        toolbar.setTitle(R.string.drawer_about);
+    }
+
+    @Override
+    public void showAccountPage() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Slide slide = new Slide();
+        slide.setDuration(400);
+        tracker.setScreenName(AnalyzticsTag.SCREEN_ACCOUNT);
+        AccountFragment accountFragment = new AccountFragment();
+        accountFragment.setEnterTransition(slide);
+        ft.replace(R.id.frame_content, accountFragment).commit();
+        int bgColor = ContextCompat.getColor(getApplicationContext(), R.color.md_light_blue_100);
+        toolbar.setBackgroundColor(bgColor);
+        toolbar.setTitle(R.string.drawer_account);
+    }
+
+    @Override
+    public void updateUserView(User user) {
+        View header = navigationView.getHeaderView(0);
+        CircleImageView icon = (CircleImageView) header.findViewById(R.id.imgUserIcon);
+        TextView name = (TextView) header.findViewById(R.id.txtUserName);
+        name.setText(user.getUserName());
+        Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
+                .override((int) getResources().getDimension(R.dimen.drawer_image_width)
+                        , (int) getResources().getDimension(R.dimen.drawer_image_high))
+                .placeholder(R.drawable.ic_action_account_circle).into(icon);
+    }
+
+    @Override
+    public void setPresenter(MainPageContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 }

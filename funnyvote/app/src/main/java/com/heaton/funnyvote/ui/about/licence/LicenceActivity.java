@@ -1,4 +1,4 @@
-package com.heaton.funnyvote.ui.about;
+package com.heaton.funnyvote.ui.about.licence;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -25,12 +25,13 @@ import butterknife.ButterKnife;
  * Created by heaton on 2017/3/2.
  */
 
-public class LicenceActivity extends AppCompatActivity {
+public class LicenceActivity extends AppCompatActivity implements LicenceContract.View{
     @BindView(R.id.ryLicence)
     RecyclerView ryLicence;
     @BindView(R.id.main_toolbar)
     Toolbar mainToolbar;
     private Tracker tracker;
+    private LicenceContract.Presenter presenter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,6 +63,8 @@ public class LicenceActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        presenter = new LicencePresenter(this);
     }
 
     @Override
@@ -80,6 +83,11 @@ public class LicenceActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void setPresenter(LicenceContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 
     public class LicenceItem {
@@ -108,4 +116,3 @@ public class LicenceActivity extends AppCompatActivity {
         }
     }
 }
-

@@ -33,10 +33,17 @@ allprojects {
         maven {
             url 'http://dl.bintray.com/amulyakhare/maven'
         }
+        google()
 
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+ext {
+
+    guavaVersion = '18.0'
+    junitVersion = '4.12'
+    mockitoVersion = '1.10.19'
 }

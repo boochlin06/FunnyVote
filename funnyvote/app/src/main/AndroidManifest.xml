@@ -108,16 +108,16 @@
             android:label="@string/app_name"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.about.AuthorInfoActivity"
+            android:name=".ui.about.authorinfo.AuthorInfoActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.about.ProblemActivity"
+            android:name=".ui.about.problem.ProblemActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.about.LicenceActivity"
+            android:name=".ui.about.licence.LicenceActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.about.AboutAppActivity"
+            android:name=".ui.about.aboutapp.AboutAppActivity"
             android:screenOrientation="portrait" />
         <receiver android:name=".notification.AlarmReceiver">
             <intent-filter>

@@ -2,6 +2,7 @@ package com.heaton.funnyvote.ui.createvote;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
@@ -10,27 +11,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
-import com.bumptech.glide.Glide;
 import com.theartofdev.edmodo.cropper.CropImage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by heaton on 2016/9/1.
  */
 
-public class CreateVoteTabOptionFragment extends Fragment {
+public class CreateVoteTabOptionFragment extends Fragment implements CreateVoteContract.OptionFragmentView {
     private RecyclerView ryOptions;
     private View rootView;
     private OptionCreateItemAdapter optionItemAdapter;
-    private List<Option> optionList;
+    private OptionItemListener itemListener;
+    private CreateVoteContract.Presenter presenter;
     ImageView imgMain;
     ImageView imgPick;
 
-    public CreateVoteTabOptionFragment(){
+    public CreateVoteTabOptionFragment() {
     }
 
     public static CreateVoteTabOptionFragment newTabFragment() {
@@ -45,6 +46,23 @@ public class CreateVoteTabOptionFragment extends Fragment {
         imgPick = (ImageView) rootView.findViewById(R.id.imgPick);
         imgMain = (ImageView) rootView.findViewById(R.id.imgMain);
 
+        itemListener = new OptionItemListener() {
+            @Override
+            public void onOptionTextChange(long optionId, String newOptionText) {
+                presenter.reviseOption(optionId, newOptionText);
+            }
+
+            @Override
+            public void onOptionAddNew() {
+                presenter.addNewOption();
+            }
+
+            @Override
+            public void onOptionRemove(long optionId) {
+                presenter.removeOption(optionId);
+            }
+        };
+
         View.OnClickListener pickImageListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,26 +75,18 @@ public class CreateVoteTabOptionFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        optionList = new ArrayList<>();
-        for (long i = 0; i < 2; i++) {
-            Option option = new Option();
-            option.setId(i);
-            option.setCount(0);
-            optionList.add(option);
-        }
-        initOptionsRecyclerView();
+        presenter.setOptionFragmentView(this);
     }
 
-    private void initOptionsRecyclerView() {
-        optionItemAdapter = new OptionCreateItemAdapter(optionList);
+    @Override
+    public void setUpOptionAdapter(List<Option> optionList) {
+        optionItemAdapter = new OptionCreateItemAdapter(optionList, itemListener);
         ryOptions.setAdapter(optionItemAdapter);
     }
-    public List<Option> getOptionList() {
-        return optionList;
-    }
 
+    @Override
     public void setVoteImage(Uri imageUri) {
         imgMain.setVisibility(View.VISIBLE);
         imgPick.setVisibility(View.GONE);
@@ -90,8 +100,21 @@ public class CreateVoteTabOptionFragment extends Fragment {
         super.onDestroyView();
     }
 
+    @Override
+    public void setPresenter(CreateVoteContract.Presenter presenter) {
+        this.presenter = presenter;
+    }
 
-    public void notifyOptionChange() {
+    @Override
+    public void refreshOptions() {
         optionItemAdapter.notifyDataSetChanged();
+    }
+
+    public interface OptionItemListener {
+        void onOptionTextChange(long optionId, String newOptionText);
+
+        void onOptionAddNew();
+
+        void onOptionRemove(long optionId);
     }
 }

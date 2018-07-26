@@ -42,7 +42,7 @@ import com.google.android.gms.common.api.Status;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.user.UserManager;
+import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.twitter.CustomTwitterApiClient;
 import com.twitter.sdk.android.Twitter;
@@ -67,7 +67,7 @@ import retrofit2.Response;
  */
 
 public class AccountFragment extends android.support.v4.app.Fragment
-        implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+        implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener, AccountContract.View {
     private static final String TAG = AccountFragment.class.getSimpleName();
     private static final int RC_GOOGLE_SIGN_IN = 101;
     private static final int LOGIN_FB = 111;
@@ -109,7 +109,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 user.setMinAge(min);
                 user.setMaxAge(max);
                 user.setType(User.TYPE_FACEBOOK);
-                userManager.registerUser(user, mergeGuest, registerUserCallback);
+                presenter.registerUser(user);
+                //userManager.registerUser(user, mergeGuest, registerUserCallback);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -122,48 +123,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
     private GoogleApiClient googleApiClient;
 
     //UserManager
-    UserManager userManager;
-    UserManager.RegisterUserCallback registerUserCallback = new UserManager.RegisterUserCallback() {
-        @Override
-        public void onSuccess() {
-            updateUI();
-        }
-
-        @Override
-        public void onFailure() {
-            updateUI();
-        }
-    };
-    UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
-        @Override
-        public void onResponse(User user) {
-            Log.d(TAG, "user:" + user.getUserCode());
-            AccountFragment.this.user = user;
-            if (user.getType() != User.TYPE_GUEST) {
-                showUser(user);
-            } else {
-                showLoginView(user.getUserName());
-            }
-        }
-
-        @Override
-        public void onFailure() {
-            showLoginView(getString(R.string.account_default_name));
-        }
-    };
-    UserManager.ChangeUserNameCallback changeUserNameCallback = new UserManager.ChangeUserNameCallback() {
-        @Override
-        public void onSuccess() {
-            updateUI();
-        }
-
-        @Override
-        public void onFailure() {
-            Log.d(TAG, "ChangeUserNameCallback onFailure");
-        }
-    };
-    User user;
-    boolean mergeGuest = true;
+    private AccountContract.Presenter presenter;
 
     //Views
     private ImageView picImageView;
@@ -196,16 +156,17 @@ public class AccountFragment extends android.support.v4.app.Fragment
                         newUser.setEmail(user.email);
                         newUser.setUserIcon(user.profileImageUrl.replace("normal", "bigger"));
                         newUser.setType(User.TYPE_TWITTER);
-                        userManager.registerUser(newUser, mergeGuest, registerUserCallback);
+                        presenter.registerUser(newUser);
+                        //userManager.registerUser(newUser, mergeGuest, registerUserCallback);
                     } else {
-                        Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.account_toast_login_fail, Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<com.twitter.sdk.android.core.models.User> call, Throwable t) {
                     t.printStackTrace();
-                    Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), R.string.account_toast_login_fail, Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -226,7 +187,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 .enableAutoManage(getActivity(), this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        userManager = UserManager.getInstance(getContext().getApplicationContext());
+        //userManager = UserManager.getInstance(getContext().getApplicationContext());
     }
 
     @Nullable
@@ -254,7 +215,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
             @Override
             public void onError(FacebookException error) {
                 Log.e(TAG, "onError:" + error.getMessage());
-                Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.account_toast_login_fail, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -263,8 +224,10 @@ public class AccountFragment extends android.support.v4.app.Fragment
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
                 Log.d(TAG, "onCurrentAccessTokenChanged");
                 if (currentAccessToken == null) {
-                    userManager.unregisterUser();
-                    updateUI();
+                    //userManager.unregisterUser();
+                    presenter.unregisterUser();
+                    presenter.updateUser();
+                    //updateUI();
                 }
             }
         };
@@ -285,7 +248,10 @@ public class AccountFragment extends android.support.v4.app.Fragment
         twitterLoginBtn = (Button) view.findViewById(R.id.twitter_log_in_button);
         twitterLoginBtn.setOnClickListener(this);
 
-        updateUI();
+
+        presenter = new AccountPresenter(Injection.provideUserRepository(getContext()), this);
+        presenter.start();
+        //updateUI();
 
         return view;
     }
@@ -354,18 +320,14 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 user.setUserIcon(picLink.toString());
             }
             user.setType(User.TYPE_GOOGLE);
-            userManager.registerUser(user, mergeGuest, registerUserCallback);
+            presenter.registerUser(user);
+            //userManager.registerUser(user, mergeGuest, registerUserCallback);
         } else {
-            Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.account_toast_login_fail, Toast.LENGTH_SHORT).show();
         }
     }
 
-
-    private void updateUI() {
-        userManager.getUser(getUserCallback, false);
-    }
-
-    private void googleSignIn() {
+    public void googleSignIn() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
         startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN);
         tracker.send(new HitBuilders.EventBuilder()
@@ -374,15 +336,17 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 .setLabel("google").build());
     }
 
-    private void googleSignOut() {
+    public void googleSignOut() {
         Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
                         Log.d(TAG, "status:" + status.isSuccess());
                         if (status.isSuccess()) {
-                            userManager.unregisterUser();
-                            updateUI();
+                            presenter.unregisterUser();
+                            presenter.updateUser();
+                            //userManager.unregisterUser();
+                            //updateUI();
                         }
                     }
                 });
@@ -392,7 +356,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 .setLabel("google").build());
     }
 
-    private void facebookLogin() {
+    public void facebookLogin() {
         LoginManager.getInstance().logInWithReadPermissions(this,
                 Arrays.asList("public_profile", "email"));
         tracker.send(new HitBuilders.EventBuilder()
@@ -401,7 +365,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 .setLabel("facebook").build());
     }
 
-    private void facebookLogout() {
+    public void facebookLogout() {
         LoginManager.getInstance().logOut();
         tracker.send(new HitBuilders.EventBuilder()
                 .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
@@ -409,7 +373,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 .setLabel("facebook").build());
     }
 
-    private void showUser(User user) {
+    public void showUser(User user) {
         nameTextView.setText(user.getUserName());
         loadProfileImage(user.getUserIcon());
         loadingProgressBar.setVisibility(View.GONE);
@@ -421,7 +385,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         signoutBtn.setVisibility(View.VISIBLE);
     }
 
-    private void showLoginView(String guestName) {
+    public void showLoginView(String guestName) {
         nameTextView.setText(guestName);
         picImageView.setImageResource(R.drawable.ic_action_account_circle);
         loadingProgressBar.setVisibility(View.GONE);
@@ -442,7 +406,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         signoutBtn.setVisibility(View.GONE);
     }
 
-    private void showNameEditDialog() {
+    public void showNameEditDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         View input = LayoutInflater.from(getContext()).inflate(R.layout.dialog_account_name_edit
                 , null);
@@ -458,7 +422,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
                         .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
                         .setAction(AnalyzticsTag.ACTION_ACCOUNT_RENAME)
                         .setLabel(editText.getText().toString()).build());
-                userManager.changeCurrentUserName(editText.getText().toString(), changeUserNameCallback);
+                presenter.changeCurrentUserName(editText.getText().toString());
+                //userManager.changeCurrentUserName(editText.getText().toString(), changeUserNameCallback);
             }
         });
         builder.setNegativeButton(R.string.account_dialog_cancel, new DialogInterface.OnClickListener() {
@@ -470,45 +435,30 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
     }
 
-    private void showMergeOptionDialog(final int loginType) {
+    public void showMergeOptionDialog(final int loginType) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setMessage(R.string.merge_option_msg);
         builder.setTitle(R.string.merge_option_title);
         builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mergeGuest = true;
-                login(loginType);
+                presenter.login(loginType,true);
             }
         });
         builder.setNegativeButton(R.string.account_dialog_no, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mergeGuest = false;
-                login(loginType);
+                presenter.login(loginType,false);
             }
         });
         builder.show();
     }
 
-    private void login(int loginType) {
-        switch (loginType) {
-            case LOGIN_FB:
-                facebookLogin();
-                break;
-            case LOGIN_GOOGLE:
-                googleSignIn();
-                break;
-            case LOGIN_TWITTER:
-                twitterLogin();
-                break;
-        }
-    }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(getContext(),R.string.account_toast_login_fail,Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), R.string.account_toast_login_fail, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -523,17 +473,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
             case R.id.twitter_log_in_button:
                 showMergeOptionDialog(LOGIN_TWITTER);
             case R.id.sign_out_button:
-                switch (user.getType()) {
-                    case User.TYPE_FACEBOOK:
-                        facebookLogout();
-                        break;
-                    case User.TYPE_GOOGLE:
-                        googleSignOut();
-                        break;
-                    case User.TYPE_TWITTER:
-                        twitterlogout();
-                        break;
-                }
+                presenter.logout();
                 break;
             case R.id.edit_name:
             case R.id.profile_name:
@@ -546,7 +486,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
         Glide.with(this).load(link).into(picImageView);
     }
 
-    private void twitterLogin() {
+    public void twitterLogin() {
         getTwitterAuthClient().authorize(getActivity(), twitterLoginCallback);
         tracker.send(new HitBuilders.EventBuilder()
                 .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
@@ -554,10 +494,12 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 .setLabel("twitter").build());
     }
 
-    private void twitterlogout() {
+    public void twitterlogout() {
         Twitter.getSessionManager().clearActiveSession();
-        userManager.unregisterUser();
-        updateUI();
+        presenter.unregisterUser();
+        presenter.updateUser();
+        //userManager.unregisterUser();
+        //updateUI();
         tracker.send(new HitBuilders.EventBuilder()
                 .setCategory(AnalyzticsTag.CATEGORY_ACCOUNT)
                 .setAction(AnalyzticsTag.ACTION_ACCOUNT_LOGOUT)
@@ -573,5 +515,10 @@ public class AccountFragment extends android.support.v4.app.Fragment
             }
         }
         return authClient;
+    }
+
+    @Override
+    public void setPresenter(AccountContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 }

@@ -12,13 +12,11 @@ import com.heaton.funnyvote.database.VoteData;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Created by heaton on 2016/8/22.
  */
 
 public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
-
 
     public static final int OPTION_UNPOLL_VIEW_TYPE_ADD_NEW = 20;
     public static final int OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT = 21;
@@ -26,35 +24,43 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
     public static final int OPTION_SHOW_RESULT = 3;
     private List<Option> optionList;
     private List<Option> searchList;
+
     private List<Long> choiceList;
     private List<String> choiceCodeList;
-    private List<String> expandOptionlist;
+    private List<String> expandOptionList;
     private int pollCount = 0;
     private int optionChoiceType = OPTION_UNPOLL;
     private VoteData data;
     private boolean isSearchMode = false;
+    private VoteDetailContentActivity.OptionItemListener itemListener;
 
+    public void setOptionList(List<Option> optionList) {
+        this.optionList = optionList;
+    }
 
-    public OptionItemAdapter(int optionType, List<Option> optionList, VoteData data) {
+    public void setChoiceList(List<Long> choiceList) {
+        this.choiceList = choiceList;
+    }
+
+    public void setExpandOptionList(List<String> expandOptionList) {
+        this.expandOptionList = expandOptionList;
+    }
+
+    public OptionItemAdapter(int optionType, List<Option> optionList, VoteData data
+            , VoteDetailContentActivity.OptionItemListener itemListener) {
         this.optionList = optionList;
         this.optionChoiceType = optionType;
         this.pollCount = data.getPollCount();
         this.choiceList = new ArrayList<>();
         this.choiceCodeList = new ArrayList<>();
-        this.expandOptionlist = new ArrayList<>();
+        this.expandOptionList = new ArrayList<>();
         this.searchList = new ArrayList<>();
         this.data = data;
+        this.itemListener = itemListener;
     }
 
     public void setSearchList(List<Option> searchList) {
         this.searchList = searchList;
-        this.isSearchMode = true;
-        this.notifyDataSetChanged();
-    }
-
-    public void setVoteData(VoteData data) {
-        this.data = data;
-        this.pollCount = data.getPollCount();
     }
 
     public boolean isSearchMode() {
@@ -78,17 +84,18 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         if (optionChoiceType == OPTION_UNPOLL) {
             if (viewType == OPTION_UNPOLL_VIEW_TYPE_ADD_NEW
                     || viewType == OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT) {
-                return new VHUnpollCreateOptionItem(LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.card_view_item_unpoll_create_new_option, parent, false));
+                return new VHUnPollCreateOptionItem(LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.card_view_item_unpoll_create_new_option, parent, false)
+                        , itemListener);
             } else {
                 return new VHUnPollOptionItem(LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.card_view_item_unpoll_options, parent, false)
-                        , data.isMultiChoice());
+                        , data.isMultiChoice(), itemListener);
             }
         } else if (optionChoiceType == OPTION_SHOW_RESULT) {
             return new VHResultOptionItem(LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.card_view_item_result_option, parent, false)
-                    , pollCount);
+                    , pollCount, itemListener);
         }
         return null;
     }
@@ -99,24 +106,24 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         boolean isExpand = false;
         if (holder instanceof VHUnPollOptionItem) {
             isChoice = choiceList.contains(getCurrentList().get(position).getId());
-            isExpand = expandOptionlist.contains(getCurrentList().get(position).getCode());
+            isExpand = expandOptionList.contains(getCurrentList().get(position).getCode());
             ((VHUnPollOptionItem) holder).setLayout(isChoice
                     , isExpand
                     , getCurrentList().get(position));
         } else if (holder instanceof VHResultOptionItem) {
             isChoice = choiceList.contains(getCurrentList().get(position).getId());
-            isExpand = expandOptionlist.contains(getCurrentList().get(position).getCode());
+            isExpand = expandOptionList.contains(getCurrentList().get(position).getCode());
             ((VHResultOptionItem) holder).setLayout(isChoice
                     , isExpand
                     , (getCurrentList().get(position).getCount() == data.getOptionTopCount()
                             && data.getPollCount() != 0)
                     , getCurrentList().get(position));
-        } else if (holder instanceof VHUnpollCreateOptionItem) {
+        } else if (holder instanceof VHUnPollCreateOptionItem) {
             if (holder.getItemViewType() == OPTION_UNPOLL_VIEW_TYPE_INPUT_CONTENT) {
                 isChoice = choiceList.contains(getCurrentList().get(position).getId());
-                ((VHUnpollCreateOptionItem) holder).setLayout(getCurrentList().get(position));
+                ((VHUnPollCreateOptionItem) holder).setLayout(getCurrentList().get(position));
             } else {
-                ((VHUnpollCreateOptionItem) holder).setLayout(null);
+                ((VHUnPollCreateOptionItem) holder).setLayout(null);
             }
         }
     }
@@ -152,7 +159,4 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         return choiceCodeList;
     }
 
-    public List<String> getExpandOptionlist() {
-        return expandOptionlist;
-    }
 }

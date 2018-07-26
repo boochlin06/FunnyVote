@@ -34,16 +34,20 @@ public class VHSearchItem extends RecyclerView.ViewHolder implements View.OnClic
     @BindView(R.id.txtAuthorName)
     TextView txtAuthorName;
     private VoteData data;
+    private SearchFragment.VoteSearchItemListener itemListener;
 
-    public VHSearchItem(View itemView) {
+    public VHSearchItem(View itemView, SearchFragment.VoteSearchItemListener itemListener) {
         super(itemView);
         ButterKnife.bind(this, itemView);
+        this.itemListener = itemListener;
         itemView.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        VHVoteWallItem.startActivityToVoteDetail(itemView.getContext().getApplicationContext(), data.getVoteCode());
+        itemListener.onVoteItemClick(data);
+
+        //VHVoteWallItem.startActivityToVoteDetail(itemView.getContext().getApplicationContext(), data.getVoteCode());
     }
 
     public void setLayout(VoteData data) {

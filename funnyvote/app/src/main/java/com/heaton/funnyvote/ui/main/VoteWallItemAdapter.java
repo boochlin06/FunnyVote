@@ -1,7 +1,6 @@
 package com.heaton.funnyvote.ui.main;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,11 +12,10 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.database.VoteData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +48,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private boolean showReload;
     private String tagNoVote = TAG_NO_VOTE_NOPE;
     private View bannerAdmob;
+    private MainPageTabFragment.VoteWallItemListener wallItemListener;
 
     private class ListTypeItem {
         private int viewType;
@@ -77,45 +76,16 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
     }
 
-    private View.OnClickListener mReloadItemClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Animation animation = AnimationUtils.loadAnimation(context, R.anim.reload_rotate);
-            view.findViewById(R.id.img_load_more).startAnimation(animation);
-            if (mOnReloadClickListener != null) {
-                mOnReloadClickListener.onReloadClicked();
-            }
-        }
-    };
-    private View.OnClickListener noVoteItemClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            if (tagNoVote.equals(TAG_NO_VOTE_CREATE_NEW)) {
-                context.startActivity(new Intent(context, CreateVoteActivity.class));
-            } else if (tagNoVote.equals(TAG_NO_VOTE_REFRESH)) {
-                Animation animation = AnimationUtils.loadAnimation(context, R.anim.reload_rotate);
-                view.findViewById(R.id.imgRefreshVote).startAnimation(animation);
-                if (mOnReloadClickListener != null) {
-                    mOnReloadClickListener.onReloadClicked();
-                }
-            } else if (tagNoVote.equals(TAG_NO_VOTE_NOPE)) {
-
-            }
-        }
-    };
-    private OnReloadClickListener mOnReloadClickListener;
-
-    public VoteWallItemAdapter(Context context, List<VoteData> datas) {
-        this.context = context;
+    public VoteWallItemAdapter(Context context, MainPageTabFragment.VoteWallItemListener wallItemListener
+            , List<VoteData> datas) {
         this.voteList = datas;
-        ENABLE_ADMOB = context.getResources().getBoolean(R.bool.enable_list_admob);
-        ADMOB_FREQUENCE = context.getResources().getInteger(R.integer.list_admob_frequence);
+        this.wallItemListener = wallItemListener;
+        this.context = context;
+        //ENABLE_ADMOB = context.getResources().getBoolean(R.bool.enable_list_admob);
+        //ADMOB_FREQUENCE = context.getResources().getInteger(R.integer.list_admob_frequence);
+        Log.d(TAG, "LIST SIZE:" + voteList.size());
         Log.d(TAG, "Banner Admob ENABLE:" + ENABLE_ADMOB + " Frequency:" + ADMOB_FREQUENCE);
         itemTypeList = new ArrayList<>();
-    }
-
-    public void setOnReloadClickListener(OnReloadClickListener listener) {
-        mOnReloadClickListener = listener;
     }
 
     public void setVoteList(List<VoteData> voteList) {
@@ -141,7 +111,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
         if (showReload) {
             itemTypeList.add(new ListTypeItem(ITEM_TYPE_RELOAD, null));
-        } else if (!showReload && voteList.size() == 0 && maxCount!= -1) {
+        } else if (!showReload && voteList.size() == 0 && maxCount != -1) {
             itemTypeList.add(new ListTypeItem(ITEM_TYPE_NO_VOTE, null));
         }
     }
@@ -155,13 +125,13 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         if (viewType == ITEM_TYPE_VOTE) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_wall_item, parent, false);
-            return new VHVoteWallItem(v);
+            return new VHVoteWallItem(v, wallItemListener);
         } else if (viewType == ITEM_TYPE_RELOAD) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_reload, parent, false);
-            return new ReloadViewHolder(v);
+            return new ReloadViewHolder(v, wallItemListener);
         } else if (viewType == ITEM_TYPE_NO_VOTE) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_no_vote, parent, false);
-            return new VHNoVote(v);
+            return new VHNoVote(v, wallItemListener);
         } else if (viewType == ITEM_TYPE_ADMOB) {
             if (bannerAdmob == null) {
                 bannerAdmob = LayoutInflater.from(context).inflate(R.layout.item_list_admob, parent, false);
@@ -174,6 +144,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof VHVoteWallItem) {
+            Log.d(TAG,"favorite:"+itemTypeList.get(position).getVoteData().getIsFavorite());
             ((VHVoteWallItem) holder).setLayout(itemTypeList.get(position).getVoteData());
         } else if (holder instanceof VHAdMob) {
             ((VHAdMob) holder).setLayout();
@@ -193,10 +164,17 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private class ReloadViewHolder extends RecyclerView.ViewHolder {
         public ImageView reloadImage;
 
-        public ReloadViewHolder(View itemView) {
+        public ReloadViewHolder(View itemView, final MainPageTabFragment.VoteWallItemListener wallItemListener) {
             super(itemView);
             reloadImage = (ImageView) itemView.findViewById(R.id.img_load_more);
-            itemView.setOnClickListener(mReloadItemClickListener);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Animation animation = AnimationUtils.loadAnimation(context, R.anim.reload_rotate);
+                    v.findViewById(R.id.img_load_more).startAnimation(animation);
+                    wallItemListener.onReloadVote();
+                }
+            });
         }
     }
 
@@ -207,7 +185,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         public ImageView imgLogo;
         public TextView txtNoVote;
 
-        public VHNoVote(View itemView) {
+        public VHNoVote(View itemView, final MainPageTabFragment.VoteWallItemListener wallItemListener) {
             super(itemView);
             imgAddVote = (ImageView) itemView.findViewById(R.id.imgAddVote);
             imgRefreshVote = (ImageView) itemView.findViewById(R.id.imgRefreshVote);
@@ -244,7 +222,22 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 imgRefreshVote.setVisibility(View.GONE);
                 imgLogo.setVisibility(View.VISIBLE);
             }
-            itemView.setOnClickListener(noVoteItemClickListener);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (tagNoVote.equals(TAG_NO_VOTE_CREATE_NEW)) {
+                        wallItemListener.onNoVoteCreateNew();
+                        //context.startActivity(new Intent(context, CreateVoteActivity.class));
+                    } else if (tagNoVote.equals(TAG_NO_VOTE_REFRESH)) {
+                        //wallItemListener.onReloadVote();
+                        Animation animation = AnimationUtils.loadAnimation(context, R.anim.reload_rotate);
+                        v.findViewById(R.id.imgRefreshVote).startAnimation(animation);
+                        wallItemListener.onReloadVote();
+                    } else if (tagNoVote.equals(TAG_NO_VOTE_NOPE)) {
+
+                    }
+                }
+            });
         }
     }
 
@@ -272,9 +265,5 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 }, 1000);
             }
         }
-    }
-
-    public interface OnReloadClickListener {
-        void onReloadClicked();
     }
 }

@@ -11,9 +11,6 @@ import android.widget.TextView;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
-import com.heaton.funnyvote.eventbus.EventBusManager;
-
-import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,17 +34,17 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
     EditText edtOptionTitle;
     @BindView(R.id.relNormal)
     RelativeLayout relNormal;
-    int position = 0;
     private optionEditTextListener optionEditTextListener;
     private Option option;
+    private CreateVoteTabOptionFragment.OptionItemListener itemListener;
 
-    public VHCreateOptionItem(View itemView) {
+    public VHCreateOptionItem(View itemView, CreateVoteTabOptionFragment.OptionItemListener itemListener) {
         super(itemView);
         ButterKnife.bind(this, itemView);
+        this.itemListener = itemListener;
     }
 
-    public void setLayout(int viewType, int position, Option option) {
-        this.position = position;
+    public void setLayout(int viewType, Option option) {
         this.option = option;
         if (viewType == OptionCreateItemAdapter.VIEW_TYPE_ADD_OPTION) {
             relNormal.setVisibility(View.INVISIBLE);
@@ -64,7 +61,7 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
             edtOptionTitle.removeTextChangedListener(optionEditTextListener);
             edtOptionTitle.setText(option.getTitle());
             if (optionEditTextListener == null) {
-                optionEditTextListener = new optionEditTextListener();
+                optionEditTextListener = new optionEditTextListener(itemListener);
             }
             edtOptionTitle.addTextChangedListener(optionEditTextListener);
         }
@@ -72,19 +69,20 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
 
     @OnClick(R.id.relAdd)
     public void addNewOption() {
-        EventBus.getDefault().post(new EventBusManager.OptionControlEvent(0
-                , null, EventBusManager.OptionControlEvent.OPTION_ADD, null));
+        itemListener.onOptionAddNew();
     }
 
     @OnClick(R.id.imgDeleteOption)
     public void removeOption() {
-        EventBus.getDefault().post(new EventBusManager
-                .OptionControlEvent(option.getId(), null
-                , EventBusManager.OptionControlEvent.OPTION_REMOVE, option.getCode()));
+        itemListener.onOptionRemove(option.getId());
     }
 
     private final class optionEditTextListener implements TextWatcher {
 
+        CreateVoteTabOptionFragment.OptionItemListener itemListener;
+        public optionEditTextListener(CreateVoteTabOptionFragment.OptionItemListener itemListener) {
+            this.itemListener = itemListener;
+        }
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -92,10 +90,7 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            EventBus.getDefault().post(new EventBusManager
-                    .OptionControlEvent(option.getId(), s.toString()
-                    , EventBusManager.OptionControlEvent.OPTION_INPUT_TEXT, option.getCode()));
-
+            itemListener.onOptionTextChange(option.getId(),s.toString());
         }
 
         @Override

@@ -8,17 +8,12 @@ import android.widget.TextView;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
-import com.heaton.funnyvote.eventbus.EventBusManager;
-
-import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
 
-import static com.heaton.funnyvote.eventbus.EventBusManager.OptionChoiceEvent.OPTION_CHOICED;
-import static com.heaton.funnyvote.eventbus.EventBusManager.OptionChoiceEvent.OPTION_QUICK_POLL;
 
 /**
  * Created by heaton on 2016/8/22.
@@ -37,10 +32,13 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
     private boolean isChoice = false;
     private boolean isMultiChoice = false;
     private boolean isExpand = false;
+    private VoteDetailContentActivity.OptionItemListener itemListener;
 
-    public VHUnPollOptionItem(View itemView, boolean isMultiChoice) {
+    public VHUnPollOptionItem(View itemView, boolean isMultiChoice
+            , VoteDetailContentActivity.OptionItemListener itemListener) {
         super(itemView);
         this.isMultiChoice = isMultiChoice;
+        this.itemListener = itemListener;
         ButterKnife.bind(this, itemView);
     }
 
@@ -57,8 +55,7 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
 
     @OnClick(R.id.imgChoice)
     public void onOptionChoice() {
-        setUpImgChoiceLayout();
-        EventBus.getDefault().post(new EventBusManager.OptionChoiceEvent(option.getId(), OPTION_CHOICED, option.getCode()));
+        itemListener.onOptionChoice(option.getId(), option.getCode());
     }
 
     private void setUpImgChoiceLayout() {
@@ -75,20 +72,17 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
 
     @Override
     public void onClick(View v) {
-        EventBus.getDefault().post(new EventBusManager
-                .OptionChoiceEvent(option.getId(), EventBusManager.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
-        isExpand = !isExpand;
-        setUpOptionExpandLayout();
         if (txtOptionTitle.getLineCount() == 1) {
             onOptionChoice();
+        } else {
+            itemListener.onOptionExpand(option.getCode());
         }
     }
 
     @OnLongClick(R.id.cardOption)
     public boolean onLongClick(View v) {
         if (!isMultiChoice) {
-            EventBus.getDefault().post(new EventBusManager.OptionChoiceEvent(option.getId()
-                    , OPTION_QUICK_POLL, option.getCode()));
+            itemListener.onOptionQuickPoll(option.getId(), option.getCode());
         } else {
             onClick(v);
         }

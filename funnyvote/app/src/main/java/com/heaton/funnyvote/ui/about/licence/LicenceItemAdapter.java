@@ -1,4 +1,4 @@
-package com.heaton.funnyvote.ui.about;
+package com.heaton.funnyvote.ui.about.licence;
 
 
 import android.support.v7.widget.RecyclerView;

@@ -21,6 +21,10 @@ import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.ui.ShareDialogActivity;
+import com.heaton.funnyvote.ui.about.aboutapp.AboutAppActivity;
+import com.heaton.funnyvote.ui.about.authorinfo.AuthorInfoActivity;
+import com.heaton.funnyvote.ui.about.licence.LicenceActivity;
+import com.heaton.funnyvote.ui.about.problem.ProblemActivity;
 import com.heaton.funnyvote.ui.introduction.IntroductionActivity;
 
 import butterknife.BindView;

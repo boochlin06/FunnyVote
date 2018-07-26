@@ -1,6 +1,6 @@
 package com.heaton.funnyvote.ui.personal;
 
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
@@ -9,10 +9,17 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.analytics.HitBuilders;
@@ -20,9 +27,17 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.user.UserManager;
+import com.heaton.funnyvote.data.Injection;
+import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
+import com.heaton.funnyvote.ui.main.MainPageContract;
 import com.heaton.funnyvote.ui.main.MainPageTabFragment;
+import com.heaton.funnyvote.ui.main.VHVoteWallItem;
+import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
+
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -31,7 +46,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  */
 
 public class PersonalActivity extends AppCompatActivity
-        implements AppBarLayout.OnOffsetChangedListener {
+        implements AppBarLayout.OnOffsetChangedListener, PersonalContract.UserPageView {
     private static final String TAG = PersonalActivity.class.getSimpleName();
 
     private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 20;
@@ -53,24 +68,11 @@ public class PersonalActivity extends AppCompatActivity
     private TabsAdapter tabsAdapter;
     private ViewPager viewPager;
 
-    private User targetUser;
-    private User loginUser;
+    private MainPageContract.Presenter presenter;
+    private MainPageTabFragment createFragment, favoriteFragment;
 
     private Tracker tracker;
-    UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
-        @Override
-        public void onResponse(User user) {
-            PersonalActivity.this.loginUser = user;
-            tabsAdapter = new TabsAdapter(getSupportFragmentManager());
-            viewPager.setAdapter(tabsAdapter);
-        }
-
-        @Override
-        public void onFailure() {
-            tabsAdapter = new TabsAdapter(getSupportFragmentManager());
-            viewPager.setAdapter(tabsAdapter);
-        }
-    };
+    private AlertDialog passwordDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,6 +81,7 @@ public class PersonalActivity extends AppCompatActivity
 
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
+        User targetUser = null;
         if (getIntent() != null) {
             personalCode = getIntent().getStringExtra(EXTRA_PERSONAL_CODE);
             personalCodeType = getIntent().getStringExtra(EXTRA_PERSONAL_CODE_TYPE);
@@ -102,7 +105,7 @@ public class PersonalActivity extends AppCompatActivity
         viewPager = (ViewPager) findViewById(R.id.vpMain);
         AppBarLayout appbarLayout = (AppBarLayout) findViewById(R.id.appBarMain);
         imgUserIcon = (CircleImageView) findViewById(R.id.imgUserIcon);
-
+        tabsAdapter = new TabsAdapter(getSupportFragmentManager(), null, null);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarSub);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,8 +118,7 @@ public class PersonalActivity extends AppCompatActivity
         maxScrollSize = appbarLayout.getTotalScrollRange();
 
         tabLayout.setupWithViewPager(viewPager);
-        setUpUser(targetUser);
-        UserManager.getInstance(getApplicationContext()).getUser(getUserCallback, false);
+        //setUpUser(targetUser);
         tracker.setScreenName(AnalyzticsTag.SCREEN_PERSONAL_CREATE);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -140,6 +142,11 @@ public class PersonalActivity extends AppCompatActivity
 
             }
         });
+
+        presenter = new UserPresenter(Injection.provideVoteDataRepository(getApplicationContext())
+                , Injection.provideUserRepository(getApplicationContext()), this);
+        presenter.setTargetUser(targetUser);
+        presenter.start();
     }
 
     private void setUpUser(User user) {
@@ -157,10 +164,6 @@ public class PersonalActivity extends AppCompatActivity
                     .crossFade()
                     .into(imgUserIcon);
         }
-    }
-
-    public static void start(Context c) {
-        c.startActivity(new Intent(c, PersonalActivity.class));
     }
 
     @Override
@@ -191,9 +194,155 @@ public class PersonalActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void setUpUserView(User user) {
+        txtUserName.setText(user.getUserName());
+        txtSubTitle.setText(user.personalTokenType);
+        if (user.getUserIcon() == null || user.getUserIcon().isEmpty()) {
+            imgUserIcon.setImageResource(R.drawable.user_avatar);
+        } else {
+            Glide.with(this)
+                    .load(user.getUserIcon())
+                    .override((int) getResources().getDimension(R.dimen.personal_image_width)
+                            , (int) getResources().getDimension(R.dimen.personal_image_high))
+                    .dontAnimate()
+                    .fitCenter()
+                    .crossFade()
+                    .into(imgUserIcon);
+        }
+    }
+
+    @Override
+    public void showShareDialog(VoteData data) {
+        VoteDetailContentActivity.sendShareIntent(this, data);
+    }
+
+    @Override
+    public void showAuthorDetail(VoteData data) {
+        VoteDetailContentActivity.sendPersonalDetailIntent(this, data);
+    }
+
+    @Override
+    public void showCreateVote() {
+        this.startActivity(new Intent(this, CreateVoteActivity.class));
+    }
+
+    @Override
+    public void showVoteDetail(VoteData data) {
+        VHVoteWallItem.startActivityToVoteDetail(this, data.getVoteCode());
+    }
+
+
+    @Override
+    public void showIntroductionDialog() {
+        //nothing
+    }
+
+    @Override
+    public void showLoadingCircle() {
+//        circleLoad.setVisibility(View.VISIBLE);
+//        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
+//        circleLoad.spin();
+    }
+
+    @Override
+    public void hideLoadingCircle() {
+//        circleLoad.stopSpinning();
+//        circleLoad.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void setupPromotionAdmob(List<Promotion> promotionList, User user) {
+        //none
+    }
+
+    @Override
+    public void setUpTabsAdapter(User user) {
+        setUpTabsAdapter(user, null);
+    }
+
+    @Override
+    public void setUpTabsAdapter(User user, User targetUser) {
+        tabsAdapter = new TabsAdapter(PersonalActivity.this.getSupportFragmentManager(), user, targetUser);
+        int currentItem = viewPager.getCurrentItem();
+        viewPager.setAdapter(tabsAdapter);
+        viewPager.setCurrentItem(currentItem);
+    }
+
+    @Override
+    public void showHintToast(int res, long arg) {
+        Toast.makeText(this, getString(res, arg), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showPollPasswordDialog(final VoteData data, final String optionCode) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(R.layout.password_dialog);
+        builder.setPositiveButton(this.getResources()
+                .getString(R.string.vote_detail_dialog_password_input), null);
+        builder.setNegativeButton(this.getApplicationContext().getResources()
+                .getString(R.string.account_dialog_cancel), null);
+        builder.setTitle(this.getString(R.string.vote_detail_dialog_password_title));
+        passwordDialog = builder.create();
+
+        passwordDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
+                Button ok = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                ok.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+
+                        Log.d(TAG, "showPollPasswordDialog PW:");
+                        presenter.pollVote(data, optionCode, password.getText().toString());
+//                        tracker.send(new HitBuilders.EventBuilder()
+//                                .setCategory(tab)
+//                                .setAction(AnalyzticsTag.ACTION_QUICK_POLL_VOTE)
+//                                .setLabel(data.getVoteCode())
+//                                .build());
+                    }
+                });
+            }
+        });
+        passwordDialog.show();
+    }
+
+    @Override
+    public void hidePollPasswordDialog() {
+        if (passwordDialog != null && passwordDialog.isShowing()) {
+            passwordDialog.dismiss();
+        }
+    }
+
+    @Override
+    public void shakePollPasswordDialog() {
+        if (passwordDialog != null && passwordDialog.isShowing()) {
+            final EditText password = (EditText) passwordDialog.findViewById(R.id.edtEnterPassword);
+            password.selectAll();
+            Animation shake = AnimationUtils.loadAnimation(this, R.anim.edittext_shake);
+            password.startAnimation(shake);
+        }
+    }
+
+    @Override
+    public boolean isPasswordDialogShowing() {
+        return passwordDialog != null && passwordDialog.isShowing();
+    }
+
+    @Override
+    public void setPresenter(MainPageContract.Presenter presenter) {
+        this.presenter = presenter;
+    }
+
     private class TabsAdapter extends FragmentStatePagerAdapter {
-        public TabsAdapter(FragmentManager fm) {
+        private User loginUser, targetUser;
+
+        public TabsAdapter(FragmentManager fm, User loginUser, User targetUser) {
             super(fm);
+            this.loginUser = loginUser;
+            this.targetUser = targetUser;
         }
 
         @Override
@@ -205,9 +354,19 @@ public class PersonalActivity extends AppCompatActivity
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, loginUser, targetUser);
+                    if (createFragment == null) {
+                        createFragment
+                                = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, loginUser, targetUser);
+                        createFragment.setPresenter(presenter);
+                    }
+                    return createFragment;
                 case 1:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, loginUser, targetUser);
+                    if (favoriteFragment == null) {
+                        favoriteFragment
+                                = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, loginUser, targetUser);
+                        favoriteFragment.setPresenter(presenter);
+                    }
+                    return favoriteFragment;
             }
             return null;
         }

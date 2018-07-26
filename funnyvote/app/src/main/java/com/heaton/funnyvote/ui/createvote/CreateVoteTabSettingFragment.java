@@ -2,6 +2,7 @@ package com.heaton.funnyvote.ui.createvote;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -13,13 +14,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.Util;
-import com.heaton.funnyvote.data.user.UserManager;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.utils.Util;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.Calendar;
@@ -33,10 +32,9 @@ import butterknife.OnClick;
  * Created by heaton on 2016/9/1.
  */
 
-public class CreateVoteTabSettingFragment extends Fragment {
+public class CreateVoteTabSettingFragment extends Fragment implements CreateVoteContract.SettingFragmentView {
 
     private static final long DEFAULT_END_TIME = 30;
-    private static final long DEFAULT_END_TIME_MAX = 90;
 
     @BindView(R.id.lineOption)
     View lineOption;
@@ -95,24 +93,8 @@ public class CreateVoteTabSettingFragment extends Fragment {
     @BindView(R.id.imgSecurity)
     ImageView imgSecurity;
 
-    private VoteData voteSettings;
-    private UserManager userManager;
+    private CreateVoteContract.Presenter presenter;
     private int SecurityType = 0;
-
-    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
-        @Override
-        public void onResponse(User user) {
-            CreateVoteTabSettingFragment.this.user = user;
-            updateUserSetting();
-        }
-
-        @Override
-        public void onFailure() {
-
-        }
-    };
-
-    private User user;
 
     public CreateVoteTabSettingFragment() {
     }
@@ -135,24 +117,17 @@ public class CreateVoteTabSettingFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        initVoteSettings();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        presenter.setSettingFragmentView(this);
     }
 
-    private void initVoteSettings() {
-        userManager = UserManager.getInstance(getContext());
-        userManager.getUser(getUserCallback, true);
-        voteSettings = new VoteData();
-        voteSettings.setMaxOption(1);
+    @Override
+    public void setUpVoteSettings(VoteData voteSettings) {
         edtMaxOption.setText(Integer.toString(voteSettings.getMaxOption()));
-        voteSettings.setMinOption(1);
         edtMinOption.setText(Integer.toString(voteSettings.getMinOption()));
-        voteSettings.setIsUserCanAddOption(false);
         swtUserAdd.setChecked(voteSettings.getIsUserCanAddOption());
-        voteSettings.setIsCanPreviewResult(false);
         swtPreResult.setChecked(voteSettings.getIsUserCanAddOption());
-        voteSettings.setIsNeedPassword(false);
         swtNeedPwd.setChecked(voteSettings.getIsNeedPassword());
         swtNeedPwd.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -161,14 +136,15 @@ public class CreateVoteTabSettingFragment extends Fragment {
             }
         });
         updateSwtNeedPwd(voteSettings.getIsNeedPassword());
-        voteSettings.setSecurity(VoteData.SECURITY_PUBLIC);
         txtSecurityDetail.setText(getString(R.string.create_vote_tab_settings_public));
         voteSettings.setEndTime(System.currentTimeMillis() + DEFAULT_END_TIME * 86400 * 1000);
         txtEndTimeDetail.setText(Util.getDate(voteSettings.getEndTime(), "yyyy/MM/dd"));
 
         swtAnonymous.setChecked(false);
     }
-    private void updateSwtNeedPwd (boolean isChecked) {
+
+    @Override
+    public void updateSwtNeedPwd(boolean isChecked) {
         if (isChecked) {
             edtPwd.setVisibility(View.VISIBLE);
             txtPwd.setVisibility(View.VISIBLE);
@@ -178,40 +154,26 @@ public class CreateVoteTabSettingFragment extends Fragment {
         }
     }
 
-    private void updateUserSetting() {
+    @Override
+    public void updateUserSetting(User user) {
         edtAuthorName.setText(user.getUserName());
     }
 
+    @Override
+    public VoteData getFinalVoteSettings(VoteData oldVoteData) {
 
-    public VoteData getVoteSettings() {
-        voteSettings.setMaxOption(edtMaxOption.getText().length() == 0 ? 0 :
+        VoteData finalVoteSettings = oldVoteData;
+        finalVoteSettings.setMaxOption(edtMaxOption.getText().length() == 0 ? 0 :
                 Integer.parseInt(edtMaxOption.getText().toString()));
-        voteSettings.setMinOption(edtMinOption.getText().length() == 0 ? 0 :
+        finalVoteSettings.setMinOption(edtMinOption.getText().length() == 0 ? 0 :
                 Integer.parseInt(edtMinOption.getText().toString()));
-        voteSettings.setIsUserCanAddOption(swtUserAdd.isChecked());
-        if (swtAnonymous.isChecked() || user == null) {
-            if (edtAuthorName.getText().length() == 0) {
-                voteSettings.setAuthorName(getString(R.string.create_vote_tab_settings_anonymous));
-            } else {
-                voteSettings.setAuthorName(edtAuthorName.getText().toString());
-            }
-        } else {
-            String name = user.getUserName();
-            String code = user.getUserCode();
-            String icon = user.getUserIcon();
-            voteSettings.setAuthorName(name);
-            voteSettings.setAuthorCode(code);
-            voteSettings.setAuthorIcon(icon);
-            voteSettings.author = user;
-        }
-        voteSettings.setIsCanPreviewResult(swtPreResult.isChecked());
-        voteSettings.setStartTime(System.currentTimeMillis());
-
-        voteSettings.setIsNeedPassword(swtNeedPwd.isChecked());
+        finalVoteSettings.setIsUserCanAddOption(swtUserAdd.isChecked());
+        finalVoteSettings.setIsCanPreviewResult(swtPreResult.isChecked());
+        finalVoteSettings.setIsNeedPassword(swtNeedPwd.isChecked());
         if (swtNeedPwd.isChecked()) {
-            voteSettings.password = edtPwd.getText().toString();
+            finalVoteSettings.password = edtPwd.getText().toString();
         }
-        return voteSettings;
+        return finalVoteSettings;
     }
 
     @Override
@@ -230,20 +192,7 @@ public class CreateVoteTabSettingFragment extends Fragment {
                             , int year, int monthOfYear, int dayOfMonth) {
                         Calendar endTime = Calendar.getInstance();
                         endTime.set(year, monthOfYear, dayOfMonth);
-                        if (endTime.getTimeInMillis() < System.currentTimeMillis()) {
-                            Toast.makeText(getContext(), getString(R.string.create_vote_toast_endtime_more_than_current)
-                                    , Toast.LENGTH_LONG).show();
-                            return;
-                        } else if (endTime.getTimeInMillis() - System.currentTimeMillis()
-                                > DEFAULT_END_TIME_MAX * 86400 * 1000) {
-                            Toast.makeText(getContext(), String.format(getString(
-                                    R.string.create_vote_error_hint_endtime_more_than_max), DEFAULT_END_TIME_MAX)
-                                    , Toast.LENGTH_LONG).show();
-                            return;
-                        } else {
-                            voteSettings.setEndTime(endTime.getTimeInMillis());
-                            txtEndTimeDetail.setText(Util.getDate(endTime.getTimeInMillis(), "yyyy/MM/dd"));
-                        }
+                        presenter.updateVoteEndTime(endTime.getTimeInMillis());
                     }
                 },
                 now.get(Calendar.YEAR),
@@ -269,10 +218,10 @@ public class CreateVoteTabSettingFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (SecurityType == 0) {
-                            voteSettings.setSecurity(VoteData.SECURITY_PUBLIC);
+                            presenter.updateVoteSecurity(VoteData.SECURITY_PUBLIC);
                             txtSecurityDetail.setText(R.string.create_vote_tab_settings_public);
                         } else {
-                            voteSettings.setSecurity(VoteData.SECURITY_PRIVATE);
+                            presenter.updateVoteSecurity(VoteData.SECURITY_PRIVATE);
                             txtSecurityDetail.setText(R.string.create_vote_tab_settings_private);
                         }
                         dialog.dismiss();
@@ -280,5 +229,10 @@ public class CreateVoteTabSettingFragment extends Fragment {
                 });
         builder.setTitle(getString(R.string.vote_detail_dialog_security));
         builder.show();
+    }
+
+    @Override
+    public void setPresenter(CreateVoteContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 }

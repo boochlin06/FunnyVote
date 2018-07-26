@@ -53,28 +53,19 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.Util;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.VoteData.VoteDataManager;
-import com.heaton.funnyvote.data.user.UserManager;
+import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.retrofit.Server;
 import com.heaton.funnyvote.ui.HidingScrollListener;
 import com.heaton.funnyvote.ui.ShareDialogActivity;
 import com.heaton.funnyvote.ui.about.AboutFragment;
 import com.heaton.funnyvote.ui.main.VHVoteWallItem;
 import com.heaton.funnyvote.ui.personal.PersonalActivity;
+import com.heaton.funnyvote.utils.Util;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import at.grabner.circleprogress.CircleProgressView;
@@ -87,7 +78,7 @@ import butterknife.OnClick;
  * Created by heaton on 2016/8/21.
  */
 
-public class VoteDetailContentActivity extends AppCompatActivity {
+public class VoteDetailContentActivity extends AppCompatActivity implements VoteDetailContract.View {
 
     private static final int TITLE_EXTEND_MAX_LINE = 5;
     private static final String TAG = VoteDetailContentActivity.class.getSimpleName();
@@ -151,33 +142,12 @@ public class VoteDetailContentActivity extends AppCompatActivity {
     private OptionItemAdapter optionItemAdapter;
     private VoteData data;
     private Activity context;
-    private List<Option> optionList;
-    private int optionType = OptionItemAdapter.OPTION_UNPOLL;
-    private boolean isMultiChoice = false;
-    private boolean isUserPreResult = false;
-    private boolean isUserOnAddNewOption = false;
-    // all new option id is negative auto increment.
-    private long newOptionIdAuto = -1;
     private int sortType = 0;
-    private User user;
     private Tracker tracker;
     private ShowcaseView showcaseView;
 
-    private VoteDataManager voteDataManager;
-    private UserManager userManager;
-    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
-        @Override
-        public void onResponse(User user) {
-            VoteDetailContentActivity.this.user = user;
-            setUpAdmob();
-            voteDataManager.getVote(data.getVoteCode(), user);
-        }
-
-        @Override
-        public void onFailure() {
-            voteDataManager.getVote(data.getVoteCode(), user);
-        }
-    };
+    private VoteDetailContract.Presenter presenter;
+    private OptionItemListener optionItemListener;
 
     public static void sendShareIntent(Context context, VoteData data) {
         Intent shareDialog = new Intent(context, ShareDialogActivity.class);
@@ -204,11 +174,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_vote_detail);
         ButterKnife.bind(this);
 
+
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
         context = this;
         data = new VoteData();
-        optionList = new ArrayList<>();
 
         mainToolbar.setTitle(getString(R.string.vote_detail_title));
         mainToolbar.setTitleTextColor(Color.WHITE);
@@ -245,23 +215,54 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
 
         data.setVoteCode(voteCode);
+        optionItemListener = new OptionItemListener() {
+            @Override
+            public void onOptionExpand(String optionCode) {
+                presenter.resetOptionExpandStatus(optionCode);
+            }
+
+            @Override
+            public void onOptionQuickPoll(long optionId, String optionCode) {
+                presenter.resetOptionChoiceStatus(optionId, optionCode);
+                presenter.pollVote(null);
+            }
+
+            @Override
+            public void onOptionChoice(long optionId, String optionCode) {
+                presenter.resetOptionChoiceStatus(optionId, optionCode);
+            }
+
+            @Override
+            public void onOptionTextChange(long optionId, String newOptionText) {
+                presenter.addNewOptionContentRevise(optionId, newOptionText);
+            }
+
+            @Override
+            public void onOptionAddNew() {
+                presenter.addNewOptionStart();
+            }
+
+            @Override
+            public void onOptionAddNewCheck(String newOptionText) {
+                presenter.addNewOptionCompleted(null, newOptionText);
+            }
+
+            @Override
+            public void onOptionRemove(long optionId) {
+                presenter.removeOption(optionId);
+            }
+        };
 
         circleLoad.setText(getString(R.string.vote_detail_circle_loading));
         circleLoad.setTextMode(TextMode.TEXT);
         circleLoad.setShowTextWhileSpinning(true);
         circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
-
-        showLoadingCircle(getString(R.string.vote_detail_circle_loading));
-
         ENABLE_ADMOB = getResources().getBoolean(R.bool.enable_detail_admob);
-
-        checkCurrentOptionType();
-        setUpViews();
-        setUpSubmit();
-        setUpOptionAdapter(new ArrayList<Option>());
-        voteDataManager = VoteDataManager.getInstance(getApplicationContext());
-        userManager = UserManager.getInstance(getApplicationContext());
-        userManager.getUser(getUserCallback, false);
+        presenter = new VoteDetailPresenter(voteCode
+                , Injection.provideVoteDataRepository(context)
+                , Injection.provideUserRepository(context)
+                , this);
+        presenter.start();
 
     }
 
@@ -272,7 +273,271 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
-    private void setUpViews() {
+    @Override
+    public void setUpSubmit(int optionType) {
+        if (menu != null) {
+            MenuItem submit = menu.findItem(R.id.menu_submit);
+            if (submit != null && optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
+                submit.setVisible(false);
+            } else {
+                submit.setVisible(true);
+                Target homeTarget = new Target() {
+                    @Override
+                    public Point getPoint() {
+                        return new ViewTarget(mainToolbar.findViewById(R.id.menu_submit)).getPoint();
+                    }
+                };
+                final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext())
+                        .getPreferences();
+
+                if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
+                    showcaseView = new ShowcaseView.Builder(this)
+                            .setTarget(homeTarget)
+                            .withHoloShowcase()
+                            .setStyle(R.style.CustomShowcaseTheme)
+                            .setContentTitle(getString(R.string.vote_detail_case_view_title))
+                            .setContentText(getString(R.string.vote_detail_case_view_content))
+                            .setShowcaseEventListener(new OnShowcaseEventListener() {
+                                @Override
+                                public void onShowcaseViewHide(ShowcaseView showcaseView) {
+                                    firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, false).apply();
+                                }
+
+                                @Override
+                                public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
+
+                                }
+
+                                @Override
+                                public void onShowcaseViewShow(ShowcaseView showcaseView) {
+
+                                }
+
+                                @Override
+                                public void onShowcaseViewTouchBlocked(MotionEvent motionEvent) {
+
+                                }
+                            })
+                            .build();
+                    showcaseView.show();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void setUpOptionAdapter(VoteData data, int optionType, List<Option> optionList) {
+        optionItemAdapter = new OptionItemAdapter(optionType, optionList, data, optionItemListener);
+        ryOptionArea.setAdapter(optionItemAdapter);
+    }
+
+    @Override
+    public void showHintToast(int res) {
+        Toast.makeText(context, res, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showMultiChoiceToast(int max, int min) {
+        Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
+                , min, max), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showMultiChoiceAtLeast(int min) {
+        Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_at_least_min)
+                , min), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void showMultiChoiceOverMaxToast(int max) {
+        Toast.makeText(context
+                , String.format(this.getString(R.string.vote_detail_toast_option_over_max)
+                        , max), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void refreshOptions() {
+        optionItemAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void updateChoiceOptions(List<Long> choiceList) {
+        optionItemAdapter.setChoiceList(choiceList);
+        optionItemAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void updateExpandOptions(List<String> expandList) {
+        optionItemAdapter.setExpandOptionList(expandList);
+        optionItemAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showShareDialog(VoteData data) {
+        sendShareIntent(this, data);
+    }
+
+    @Override
+    public void showAuthorDetail(VoteData data) {
+        sendPersonalDetailIntent(this, data);
+    }
+
+    @Override
+    public void moveToTop() {
+        ryOptionArea.smoothScrollToPosition(0);
+        appBarMain.setExpanded(true, true);
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
+                .setAction(AnalyzticsTag.ACTION_MOVE_TOP)
+                .setLabel(data.getVoteCode()).build());
+    }
+
+    @Override
+    public void updateSearchView(List<Option> searchList, boolean isSearchMode) {
+        optionItemAdapter.setSearchMode(isSearchMode);
+        optionItemAdapter.setSearchList(searchList);
+        optionItemAdapter.notifyDataSetChanged();
+        if (isSearchMode) {
+            appBarMain.setExpanded(false);
+        } else {
+            appBarMain.setExpanded(true);
+        }
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @OnClick(R.id.imgTitleExtend)
+    public void onTitleExtendClick() {
+        presenter.showTitleDetail();
+    }
+
+    @Override
+    public void showTitleDetailDialog(VoteData data) {
+        final Dialog titleDetail = new Dialog(VoteDetailContentActivity.this
+                , android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+        titleDetail.requestWindowFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+        titleDetail.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT);
+
+        View content = LayoutInflater.from(getApplicationContext()).inflate(R.layout.dialog_title_detail, null);
+        TextView txtTitleDetail = (TextView) content.findViewById(R.id.txtTitleDetail);
+        TextView txtAuthorName = (TextView) content.findViewById(R.id.txtAuthorName);
+        TextView txtPubTime = (TextView) content.findViewById(R.id.txtPubTime);
+        ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
+        txtAuthorName.setText(data.getAuthorName());
+        txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
+                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
+        if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
+            if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
+                TextDrawable drawable = TextDrawable.builder().beginConfig()
+                        .width((int) getResources().getDimension(R.dimen.vote_image_author_size))
+                        .height((int) getResources().getDimension(R.dimen.vote_image_author_size)).endConfig()
+                        .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+                imgAuthorIcon.setImageDrawable(drawable);
+            } else {
+                imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
+            }
+        } else {
+            Glide.with(this)
+                    .load(data.getAuthorIcon())
+                    .override((int) getResources().getDimension(R.dimen.vote_image_author_size)
+                            , (int) getResources().getDimension(R.dimen.vote_image_author_size))
+                    .fitCenter()
+                    .crossFade()
+                    .into(imgAuthorIcon);
+        }
+        ImageView imgCross = (ImageView) content.findViewById(R.id.imgCross);
+        imgCross.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                titleDetail.dismiss();
+            }
+        });
+        txtTitleDetail.setText(data.getTitle());
+        titleDetail.setContentView(content);
+        titleDetail.show();
+    }
+
+    @Override
+    public void showCaseView() {
+        final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext())
+                .getPreferences();
+
+        if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
+            Target homeTarget = new Target() {
+                @Override
+                public Point getPoint() {
+                    return new ViewTarget(mainToolbar.findViewById(R.id.menu_submit)).getPoint();
+                }
+            };
+            showcaseView = new ShowcaseView.Builder(this)
+                    .setTarget(homeTarget)
+                    .withHoloShowcase()
+                    .setStyle(R.style.CustomShowcaseTheme)
+                    .setContentTitle(getString(R.string.vote_detail_case_view_title))
+                    .setContentText(getString(R.string.vote_detail_case_view_content))
+                    .setShowcaseEventListener(new OnShowcaseEventListener() {
+                        @Override
+                        public void onShowcaseViewHide(ShowcaseView showcaseView) {
+                            firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, false).apply();
+                        }
+
+                        @Override
+                        public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
+
+                        }
+
+                        @Override
+                        public void onShowcaseViewShow(ShowcaseView showcaseView) {
+
+                        }
+
+                        @Override
+                        public void onShowcaseViewTouchBlocked(MotionEvent motionEvent) {
+
+                        }
+                    })
+                    .build();
+            showcaseView.show();
+        }
+    }
+
+    @Override
+    public void updateFavoriteView(boolean isFavorite) {
+        imgBarFavorite.setImageResource(isFavorite ? R.drawable.ic_star_24dp :
+                R.drawable.ic_star_border_24dp);
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
+                .setAction(data.getIsFavorite() ? AnalyzticsTag.ACTION_ADD_FAVORITE
+                        : AnalyzticsTag.ACTION_REMOVE_FAVORITE)
+                .setLabel(data.getVoteCode())
+                .build());
+    }
+
+    @Override
+    public void setUpAdMob(User user) {
+        if (ENABLE_ADMOB) {
+            AdRequest adRequest = new AdRequest.Builder()
+                    .setGender(user != null && User.GENDER_MALE.equals(user.getGender()) ?
+                            AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
+                    .build();
+            adView.loadAd(adRequest);
+        } else {
+            adView.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void setUpViews(VoteData data, int optionType) {
         txtAuthorName.setText(data.getAuthorName());
         txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
                 + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm")
@@ -346,153 +611,9 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         });
     }
 
-    private void setUpSubmit() {
-        if (menu != null) {
-            MenuItem submit = menu.findItem(R.id.menu_submit);
-            if (submit != null && optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
-                submit.setVisible(false);
-            } else {
-                submit.setVisible(true);
-                Target homeTarget = new Target() {
-                    @Override
-                    public Point getPoint() {
-                        return new ViewTarget(mainToolbar.findViewById(R.id.menu_submit)).getPoint();
-                    }
-                };
-                final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext())
-                        .getPreferences();
-
-                if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
-                    showcaseView = new ShowcaseView.Builder(this)
-                            .setTarget(homeTarget)
-                            .withHoloShowcase()
-                            .setStyle(R.style.CustomShowcaseTheme)
-                            .setContentTitle(getString(R.string.vote_detail_case_view_title))
-                            .setContentText(getString(R.string.vote_detail_case_view_content))
-                            .setShowcaseEventListener(new OnShowcaseEventListener() {
-                                @Override
-                                public void onShowcaseViewHide(ShowcaseView showcaseView) {
-                                    firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, false).apply();
-                                }
-
-                                @Override
-                                public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
-
-                                }
-
-                                @Override
-                                public void onShowcaseViewShow(ShowcaseView showcaseView) {
-
-                                }
-
-                                @Override
-                                public void onShowcaseViewTouchBlocked(MotionEvent motionEvent) {
-
-                                }
-                            })
-                            .build();
-                    showcaseView.show();
-                }
-            }
-        }
-    }
-
-    private void setUpOptionAdapter(List<Option> optionList) {
-        optionItemAdapter = new OptionItemAdapter(optionType, optionList, data);
-        ryOptionArea.setAdapter(optionItemAdapter);
-    }
-
-    private void setUpAdmob() {
-        if (ENABLE_ADMOB) {
-            AdRequest adRequest = new AdRequest.Builder()
-                    .setGender(user != null && User.GENDER_MALE.equals(user.getGender()) ?
-                            AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
-                    .build();
-            adView.loadAd(adRequest);
-        } else {
-            adView.setVisibility(View.GONE);
-        }
-    }
-
-    private void checkCurrentOptionType() {
-        if (data.getEndTime() < System.currentTimeMillis() || data.getIsPolled() || isUserPreResult) {
-            optionType = OptionItemAdapter.OPTION_SHOW_RESULT;
-        } else {
-            optionType = OptionItemAdapter.OPTION_UNPOLL;
-        }
-        this.isMultiChoice = data.isMultiChoice();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-    }
-
-    @OnClick(R.id.imgTitleExtend)
-    public void onTitleExtendClick() {
-        showTitleDetailDialog();
-    }
-
-    private void showTitleDetailDialog() {
-        final Dialog titleDetail = new Dialog(VoteDetailContentActivity.this
-                , android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
-        titleDetail.requestWindowFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
-        titleDetail.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT);
-
-        View content = LayoutInflater.from(getApplicationContext()).inflate(R.layout.dialog_title_detail, null);
-        TextView txtTitleDetail = (TextView) content.findViewById(R.id.txtTitleDetail);
-        TextView txtAuthorName = (TextView) content.findViewById(R.id.txtAuthorName);
-        TextView txtPubTime = (TextView) content.findViewById(R.id.txtPubTime);
-        ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
-        txtAuthorName.setText(data.getAuthorName());
-        txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
-                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
-        if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
-            if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
-                TextDrawable drawable = TextDrawable.builder().beginConfig()
-                        .width((int) getResources().getDimension(R.dimen.vote_image_author_size))
-                        .height((int) getResources().getDimension(R.dimen.vote_image_author_size)).endConfig()
-                        .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
-                imgAuthorIcon.setImageDrawable(drawable);
-            } else {
-                imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
-            }
-        } else {
-            Glide.with(this)
-                    .load(data.getAuthorIcon())
-                    .override((int) getResources().getDimension(R.dimen.vote_image_author_size)
-                            , (int) getResources().getDimension(R.dimen.vote_image_author_size))
-                    .fitCenter()
-                    .crossFade()
-                    .into(imgAuthorIcon);
-        }
-        ImageView imgCross = (ImageView) content.findViewById(R.id.imgCross);
-        imgCross.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                titleDetail.dismiss();
-            }
-        });
-        txtTitleDetail.setText(data.getTitle());
-        titleDetail.setContentView(content);
-        titleDetail.show();
-    }
-
-
     @OnClick(R.id.relBarFavorite)
     public void onBarFavoriteClick() {
-        data.setIsFavorite(!data.getIsFavorite());
-        imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
-                R.drawable.ic_star_border_24dp);
-        voteDataManager.favoriteVote(data.getVoteCode(), data.getIsFavorite(), user);
+        presenter.favoriteVote();
         tracker.send(new HitBuilders.EventBuilder()
                 .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
                 .setAction(data.getIsFavorite() ? AnalyzticsTag.ACTION_ADD_FAVORITE
@@ -503,76 +624,68 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
     @OnClick(R.id.relBarShare)
     public void onBarShareClick() {
-        sendShareIntent(this, data);
+        presenter.IntentToShareDialog();
     }
 
     @OnClick({R.id.imgAuthorIcon, R.id.txtAuthorName})
     public void onAuthorClick() {
-        sendPersonalDetailIntent(this, data);
+        presenter.IntentToAuthorDetail();
     }
 
     @OnClick({R.id.fabOptionSort, R.id.fabTop, R.id.fabPreResult})
     public void onFabClick(FloatingActionButton button) {
         int id = button.getId();
         if (id == R.id.fabTop) {
-            ryOptionArea.smoothScrollToPosition(0);
-            appBarMain.setExpanded(true, true);
-            tracker.send(new HitBuilders.EventBuilder()
-                    .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
-                    .setAction(AnalyzticsTag.ACTION_MOVE_TOP)
-                    .setLabel(data.getVoteCode()).build());
+            moveToTop();
         } else if (id == R.id.fabPreResult) {
-            isUserPreResult = !isUserPreResult;
-            if (isUserPreResult) {
-                showResultOption();
-            } else {
-                showUnpollOption();
-            }
+            presenter.changeOptionType();
             tracker.send(new HitBuilders.EventBuilder()
                     .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
                     .setAction(AnalyzticsTag.ACTION_CHANGE_MODE)
                     .setLabel(data.getVoteCode()).build());
-            setUpSubmit();
         } else if (id == R.id.fabOptionSort) {
-            showSortOptionDialog();
+            presenter.CheckSortOptionType();
         }
         famOther.collapse();
     }
 
-    private void showResultOption() {
+    @Override
+    public void showResultOption(int optionType) {
         int currentFirstVisibleItem = ((LinearLayoutManager) ryOptionArea.getLayoutManager())
                 .findFirstVisibleItemPosition();
         fabPreResult.setTitle(getString(R.string.vote_detail_fab_return_poll));
-        optionType = OptionItemAdapter.OPTION_SHOW_RESULT;
         optionItemAdapter.setOptionType(optionType);
         ryOptionArea.setAdapter(this.optionItemAdapter);
         ryOptionArea.scrollToPosition(currentFirstVisibleItem);
         // Todo: set animation to make transfer funny and smooth.
     }
 
-    private void showUnpollOption() {
+    @Override
+    public void showUnPollOption(int optionType) {
         int currentFirstVisibleItem = ((LinearLayoutManager) ryOptionArea.getLayoutManager())
                 .findFirstVisibleItemPosition();
         fabPreResult.setTitle(getString(R.string.vote_detail_fab_pre_result));
-        optionType = OptionItemAdapter.OPTION_UNPOLL;
         optionItemAdapter.setOptionType(optionType);
         ryOptionArea.setAdapter(this.optionItemAdapter);
         ryOptionArea.scrollToPosition(currentFirstVisibleItem);
         // Todo: set animation to make transfer funny and smooth.
     }
 
-    private void showLoadingCircle(String content) {
+    @Override
+    public void showLoadingCircle() {
         circleLoad.setVisibility(View.VISIBLE);
-        circleLoad.setText(content);
+        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
         circleLoad.spin();
     }
 
-    private void hideLoadingCircle() {
+    @Override
+    public void hideLoadingCircle() {
         circleLoad.stopSpinning();
         circleLoad.setVisibility(View.GONE);
     }
 
-    private void showSortOptionDialog() {
+    @Override
+    public void showSortOptionDialog(VoteData data) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String[] allType = null;
         if (data.getIsCanPreviewResult()) {
@@ -595,7 +708,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        sortOptions();
+                        presenter.sortOptions(sortType);
+                        //sortOptions();
                         tracker.send(new HitBuilders.EventBuilder()
                                 .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
                                 .setAction(AnalyzticsTag.ACTION_SEARCH_OPTION)
@@ -606,7 +720,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void showPollPasswordDialog() {
+    @Override
+    public void showPollPasswordDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(R.layout.password_dialog);
         builder.setPositiveButton(getApplicationContext().getResources()
@@ -627,8 +742,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     public void onClick(View view) {
                         Log.d(TAG, "choice:" + optionItemAdapter.getChoiceCodeList().size() + " vc:" + data.getVoteCode()
                                 + " pw input:" + password.getText().toString());
-                        voteDataManager.pollVote(data.getVoteCode(), password.getText().toString()
-                                , optionItemAdapter.getChoiceCodeList(), user);
+                        presenter.pollVote(password.getText().toString());
                         tracker.send(new HitBuilders.EventBuilder()
                                 .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
                                 .setAction(AnalyzticsTag.ACTION_POLL_VOTE)
@@ -641,14 +755,52 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         pollPasswordDialog.show();
     }
 
-    private void showAddNewOptionPasswordDialog(final String newOptionText) {
+    @Override
+    public void hidePollPasswordDialog() {
+        if (pollPasswordDialog != null && pollPasswordDialog.isShowing()) {
+            pollPasswordDialog.dismiss();
+        }
+    }
+
+    @Override
+    public boolean isPasswordDialogShowing() {
+        if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {
+            return true;
+        } else if (pollPasswordDialog != null && pollPasswordDialog.isShowing()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void shakePollPasswordDialog() {
+        if (pollPasswordDialog != null && pollPasswordDialog.isShowing()) {
+            final EditText password = (EditText) pollPasswordDialog.findViewById(R.id.edtEnterPassword);
+            password.selectAll();
+            Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
+            password.startAnimation(shake);
+        }
+    }
+
+    @Override
+    public void shakeAddNewOptionPasswordDialog() {
+        if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {
+            final EditText password = (EditText) newOptionPasswordDialog.findViewById(R.id.edtEnterPassword);
+            password.selectAll();
+            Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
+            password.startAnimation(shake);
+        }
+    }
+
+    @Override
+    public void showAddNewOptionPasswordDialog(final String newOptionText) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(R.layout.password_dialog);
         builder.setPositiveButton(getApplicationContext().getResources()
                 .getString(R.string.vote_detail_dialog_password_input), null);
         builder.setNegativeButton(getApplicationContext().getResources()
                 .getString(R.string.account_dialog_cancel), null);
-        builder.setTitle(getApplicationContext().getString(R.string.vote_detail_dialog_password_title));
+        builder.setTitle(getApplicationContext().getString(R.string.vote_detail_dialog_password_title) + "test");
         newOptionPasswordDialog = builder.create();
 
         newOptionPasswordDialog.setOnShowListener(new DialogInterface.OnShowListener() {
@@ -662,9 +814,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
                     public void onClick(View view) {
                         Log.d(TAG, "New Option Text:" + newOptionText + " vc:" + data.getVoteCode()
                                 + " pw input:" + password.getText().toString());
-                        List<String> newOptions = new ArrayList<>();
-                        newOptions.add(newOptionText);
-                        voteDataManager.addNewOption(data.getVoteCode(), password.getText().toString(), newOptions, user);
+                        presenter.addNewOptionCompleted(password.getText().toString(), newOptionText);
                         tracker.send(new HitBuilders.EventBuilder()
                                 .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
                                 .setAction(AnalyzticsTag.ACTION_ADD_NEW_OPTION)
@@ -676,44 +826,10 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         newOptionPasswordDialog.show();
     }
 
-    private void sortOptions() {
-        Comparator<Option> comparator = null;
-        switch (sortType) {
-            case 0:
-                comparator = new Comparator<Option>() {
-                    @Override
-                    public int compare(Option option1, Option option2) {
-                        // TODO:Add user add new option case id compare.
-                        if (option1.getId() < 0 || option2.getId() < 0) {
-                            return ((Long) (Math.abs(option1.getId()) + 100000))
-                                    .compareTo(Math.abs(option2.getId()) + 100000);
-                        } else {
-                            return option1.getId().compareTo(option2.getId());
-                        }
-                    }
-                };
-                break;
-            case 1:
-                comparator = new Comparator<Option>() {
-                    @Override
-                    public int compare(Option option1, Option option2) {
-                        return option1.getTitle().compareTo(option2.getTitle());
-                    }
-                };
-                break;
-            case 2:
-                comparator = new Comparator<Option>() {
-                    @Override
-                    public int compare(Option option1, Option option2) {
-                        return option2.getCount().compareTo(option1.getCount());
-                    }
-                };
-                break;
-        }
-        Collections.sort(optionItemAdapter.getCurrentList(), comparator);
-        optionItemAdapter.notifyDataSetChanged();
-        if (!optionItemAdapter.isSearchMode()) {
-            Collections.sort(optionList, comparator);
+    @Override
+    public void hideAddNewOptionPasswordDialog() {
+        if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {
+            newOptionPasswordDialog.dismiss();
         }
     }
 
@@ -722,7 +838,6 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.menu_content_detail, menu);
         this.menu = menu;
-        setUpSubmit();
         searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
         searchView.setIconifiedByDefault(true);
         searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
@@ -735,27 +850,11 @@ public class VoteDetailContentActivity extends AppCompatActivity {
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
-
-                    if (newText.length() > 0) {
-                        List<Option> searchList = new ArrayList<>();
-                        for (int i = 0; i < optionList.size(); i++) {
-                            if (optionList.get(i).getTitle().contains(newText)) {
-                                searchList.add(optionList.get(i));
-                            }
-                        }
-                        tracker.send(new HitBuilders.EventBuilder()
-                                .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
-                                .setAction(AnalyzticsTag.ACTION_SEARCH_OPTION)
-                                .setLabel(newText).build());
-                        optionItemAdapter.setSearchList(searchList);
-                        appBarMain.setExpanded(false);
-                        return false;
-                    } else {
-                        optionItemAdapter.setSearchMode(false);
-                        optionItemAdapter.notifyDataSetChanged();
-                        appBarMain.setExpanded(true);
-                    }
-
+                    presenter.searchOption(newText);
+                    tracker.send(new HitBuilders.EventBuilder()
+                            .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
+                            .setAction(AnalyzticsTag.ACTION_SEARCH_OPTION)
+                            .setLabel(newText).build());
                     return false;
                 }
 
@@ -770,44 +869,19 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.menu_submit) {
+            //Log.d(TAG, "SHOWCASEVIEW:" + (showcaseView == null) + ", showing:" + showcaseView.isShowing());
             if (showcaseView != null && showcaseView.isShowing()) {
                 showcaseView.hide();
             } else {
-                submitPoll();
+                presenter.pollVote(null);
             }
             return true;
         } else if (id == R.id.menu_info) {
-            showVoteInfoDialog();
+            presenter.showVoteInfo();
         } else if (id == android.R.id.home) {
             finish();
         }
         return true;
-    }
-
-    private void submitPoll() {
-        if (optionItemAdapter.getChoiceList().size() < data.getMinOption()) {
-            Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_at_least_min)
-                    , data.getMinOption()), Toast.LENGTH_LONG).show();
-        } else if (optionItemAdapter.getChoiceCodeList().size() > data.getMaxOption()) {
-            Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_over_max)
-                    , data.getMaxOption()), Toast.LENGTH_LONG).show();
-        } else if (isUserOnAddNewOption) {
-            Toast.makeText(this, R.string.vote_detail_toast_fill_new_option, Toast.LENGTH_LONG).show();
-        } else {
-            if (data.getIsNeedPassword()) {
-                showPollPasswordDialog();
-            } else {
-                showLoadingCircle(getString(R.string.vote_detail_circle_updating));
-                Log.d(TAG, "choice:" + optionItemAdapter.getChoiceCodeList().size()
-                        + " vc:" + data.getVoteCode() + " user:" + user.getUserCode() + "  type:" + user.getType());
-                voteDataManager.pollVote(data.getVoteCode(), null, optionItemAdapter.getChoiceCodeList(), user);
-                tracker.send(new HitBuilders.EventBuilder()
-                        .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
-                        .setAction(AnalyzticsTag.ACTION_POLL_VOTE)
-                        .setLabel(data.getVoteCode())
-                        .build());
-            }
-        }
     }
 
     @Override
@@ -815,7 +889,7 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         if (famOther.isExpanded()) {
             famOther.collapse();
         } else {
-            if (optionItemAdapter.getChoiceList().size() > 0) {
+            if (optionItemAdapter == null || optionItemAdapter.getChoiceList().size() > 0) {
                 showExitCheckDialog();
             } else {
                 super.onBackPressed();
@@ -823,7 +897,8 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         }
     }
 
-    private void showExitCheckDialog() {
+    @Override
+    public void showExitCheckDialog() {
         final AlertDialog.Builder exitDialog = new AlertDialog.Builder(VoteDetailContentActivity.this);
         exitDialog.setTitle(R.string.vote_detail_dialog_exit_title);
         exitDialog.setMessage(R.string.vote_detail_dialog_exit_message);
@@ -844,12 +919,13 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         exitDialog.show();
     }
 
-    private void showVoteInfoDialog() {
+    @Override
+    public void showVoteInfoDialog(VoteData data) {
         View content = LayoutInflater.from(this).inflate(R.layout.dialog_vote_detail_info, null);
         TextView option = ButterKnife.findById(content, R.id.txtOptionInfo);
         TextView time = ButterKnife.findById(content, R.id.txtTime);
         TextView security = ButterKnife.findById(content, R.id.txtSecurity);
-        if (!isMultiChoice) {
+        if (!data.isMultiChoice()) {
             option.setText(getString(R.string.vote_detail_dialog_single_option));
         } else {
             String multi = String.format(getString(R.string.vote_detail_dialog_multi_option)
@@ -877,231 +953,24 @@ public class VoteDetailContentActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onOptionChoice(EventBusManager.OptionChoiceEvent event) {
-        long id = event.Id;
-        if (event.message.equals(EventBusManager.OptionChoiceEvent.OPTION_CHOICED)) {
-            Log.d(TAG, "onOptionChoice message:" + event.message + " id:" + id + " code:" + event.code);
-
-            if (optionType == OptionItemAdapter.OPTION_SHOW_RESULT) {
-                return;
-            }
-            if (!isMultiChoice) {
-                optionItemAdapter.getChoiceList().clear();
-                optionItemAdapter.getChoiceList().add(id);
-                optionItemAdapter.getChoiceCodeList().clear();
-                optionItemAdapter.getChoiceCodeList().add(event.code);
-                optionItemAdapter.notifyDataSetChanged();
-            } else {
-                if (optionItemAdapter.getChoiceList().contains(id)) {
-                    optionItemAdapter.getChoiceList().remove(optionItemAdapter.getChoiceList()
-                            .indexOf(id));
-                    optionItemAdapter.getChoiceCodeList().remove(event.code);
-                    optionItemAdapter.notifyDataSetChanged();
-                } else {
-                    if (optionItemAdapter.getChoiceList().size() < data.getMaxOption()) {
-                        optionItemAdapter.getChoiceList().add(id);
-                        optionItemAdapter.getChoiceCodeList().add(event.code);
-                        optionItemAdapter.notifyDataSetChanged();
-                    } else {
-                        Toast.makeText(this
-                                , String.format(this.getString(R.string.vote_detail_toast_option_over_max)
-                                        , data.getMaxOption()), Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        } else if (event.message.equals(EventBusManager.OptionChoiceEvent.OPTION_EXPAND)) {
-            if (optionItemAdapter.getExpandOptionlist().contains(event.code)) {
-                optionItemAdapter.getExpandOptionlist().remove(optionItemAdapter.getExpandOptionlist()
-                        .indexOf(event.code));
-            } else {
-                optionItemAdapter.getExpandOptionlist().add(event.code);
-            }
-        } else if (event.message.equals(EventBusManager.OptionChoiceEvent.OPTION_QUICK_POLL)) {
-            if (!isMultiChoice) {
-                optionItemAdapter.getChoiceList().clear();
-                optionItemAdapter.getChoiceList().add(id);
-                optionItemAdapter.getChoiceCodeList().clear();
-                optionItemAdapter.getChoiceCodeList().add(event.code);
-                optionItemAdapter.notifyDataSetChanged();
-                submitPoll();
-            }
-        }
+    @Override
+    public void setPresenter(VoteDetailContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onOptionControl(EventBusManager.OptionControlEvent event) {
-        long id = event.Id;
-        if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_ADD)) {
-            if (isUserOnAddNewOption) {
-                Toast.makeText(getApplicationContext(), R.string.vote_detail_toast_confirm_new_option, Toast.LENGTH_SHORT).show();
-            } else {
-                isUserOnAddNewOption = true;
-                Option option = new Option();
-                option.setCount(0);
-                option.setId(newOptionIdAuto--);
-                option.setCode("add" + newOptionIdAuto);
-                optionList.add(option);
-                optionItemAdapter.notifyDataSetChanged();
-            }
-        } else if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_REMOVE)) {
-            isUserOnAddNewOption = false;
-            int removePosition = -1;
-            for (int i = 0; i < optionList.size(); i++) {
-                if (optionList.get(i).getId() == id) {
-                    removePosition = i;
-                    break;
-                }
-            }
-            if (removePosition >= 0) {
-                optionList.remove(removePosition);
-                optionItemAdapter.notifyDataSetChanged();
-            }
-        } else if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_INPUT_TEXT)) {
-            int targetPosition = -1;
-            for (int i = 0; i < optionList.size(); i++) {
-                if (optionList.get(i).getId() == id) {
-                    targetPosition = i;
-                    break;
-                }
-            }
-            if (targetPosition >= 0) {
-                optionList.get(targetPosition).setTitle(event.inputText);
-            }
-        } else if (event.message.equals(EventBusManager.OptionControlEvent.OPTION_ADD_CHECK)) {
-            if (event.inputText != null && !TextUtils.isEmpty(event.inputText)) {
-                if (data.getIsNeedPassword()) {
-                    showAddNewOptionPasswordDialog(event.inputText);
-                } else {
-                    showLoadingCircle(getString(R.string.vote_detail_circle_updating));
-                    List<String> newOptions = new ArrayList<>();
-                    newOptions.add(event.inputText);
-                    voteDataManager.addNewOption(data.getVoteCode(), null, newOptions, user);
-                    tracker.send(new HitBuilders.EventBuilder()
-                            .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
-                            .setAction(AnalyzticsTag.ACTION_ADD_NEW_OPTION)
-                            .setLabel(data.getVoteCode()).build());
-                }
-            } else {
-                Toast.makeText(getApplicationContext(), R.string.vote_detail_toast_fill_new_option
-                        , Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
+    public interface OptionItemListener {
+        void onOptionExpand(String optionCode);
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteService(EventBusManager.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE)) {
-            this.optionList = event.optionList;
-            this.data = event.voteData;
-            hideLoadingCircle();
-            checkCurrentOptionType();
-            setUpViews();
-            setUpOptionAdapter(optionList);
-            setUpSubmit();
-            optionItemAdapter.notifyDataSetChanged();
-            if (event.success) {
-                if (data.getEndTime() > System.currentTimeMillis() && !data.getIsPolled() && isMultiChoice) {
-                    Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
-                            , data.getMinOption(), data.getMaxOption()), Toast.LENGTH_SHORT).show();
-                } else if (data.getEndTime() < System.currentTimeMillis()) {
-                    if (data.getIsPolled()) {
-                        Toast.makeText(context, getString(R.string.vote_detail_toast_vote_end_polled)
-                                , Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(context, getString(R.string.vote_detail_toast_vote_end_not_poll)
-                                , Toast.LENGTH_SHORT).show();
-                    }
-                }
-            } else {
-                Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
-            }
-        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.POLL_VOTE)) {
-            hideLoadingCircle();
-            if (event.success && this.data.getVoteCode().equals(event.voteData.getVoteCode())) {
-                this.data = event.voteData;
-                this.optionList = event.optionList;
-                Log.d(TAG, "Poll vote success:" + data.getVoteCode()
-                        + " image:" + data.getVoteImage() + " pw:" + data.getIsNeedPassword()
-                        + " option size:" + optionList.size());
-                if (pollPasswordDialog != null && pollPasswordDialog.isShowing()) {
-                    pollPasswordDialog.dismiss();
-                }
-                checkCurrentOptionType();
-                setUpViews();
-                setUpOptionAdapter(optionList);
-                setUpSubmit();
-                optionItemAdapter.notifyDataSetChanged();
-                EventBus.getDefault().post(new EventBusManager
-                        .VoteDataControlEvent(data, EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
-            } else {
-                if (!event.success && event.errorResponseMessage.equals("error_invalid_password")) {
-                    if (pollPasswordDialog != null && pollPasswordDialog.isShowing()) {
-                        final EditText password = (EditText) pollPasswordDialog.findViewById(R.id.edtEnterPassword);
-                        password.selectAll();
-                        Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
-                        password.startAnimation(shake);
-                        Toast.makeText(getApplicationContext(), getString(R.string.vote_detail_dialog_password_toast_retry)
-                                , Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    pollPasswordDialog.dismiss();
-                    Toast.makeText(this, R.string.toast_network_connect_error_quick_poll, Toast.LENGTH_LONG).show();
-                }
-            }
-        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.FAVORITE_VOTE)) {
-            if (event.voteData.getVoteCode().equals(data.getVoteCode())) {
-                if (event.success) {
-                    imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
-                            R.drawable.ic_star_border_24dp);
-                    if (data.getIsFavorite()) {
-                        Toast.makeText(this, R.string.vote_detail_toast_add_favorite, Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, R.string.vote_detail_toast_remove_favorite, Toast.LENGTH_SHORT).show();
-                    }
-                    EventBus.getDefault().post(new EventBusManager
-                            .VoteDataControlEvent(data, EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_FOR_FAVORITE));
-                } else {
-                    // fail, reverse to request status
-                    data.setIsFavorite(!event.voteData.getIsFavorite());
-                    imgBarFavorite.setImageResource(data.getIsFavorite() ? R.drawable.ic_star_24dp :
-                            R.drawable.ic_star_border_24dp);
-                    Toast.makeText(this, R.string.toast_network_connect_error, Toast.LENGTH_SHORT).show();
-                }
-            }
-        } else if (event.message.equals(EventBusManager.RemoteServiceEvent.ADD_NEW_OPTION)) {
-            hideLoadingCircle();
-            if (event.success && this.data.getVoteCode().equals(event.voteData.getVoteCode())) {
-                this.data = event.voteData;
-                this.optionList = event.optionList;
-                isUserOnAddNewOption = false;
-                Log.d(TAG, "Add new Option vote success:" + data.getVoteCode()
-                        + " image:" + data.getVoteImage() + " pw:" + data.getIsNeedPassword()
-                        + " option size:" + optionList.size());
-                hideLoadingCircle();
-                checkCurrentOptionType();
-                setUpOptionAdapter(optionList);
-                if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {
-                    newOptionPasswordDialog.dismiss();
-                }
-                optionItemAdapter.notifyDataSetChanged();
-                EventBus.getDefault().post(new EventBusManager
-                        .VoteDataControlEvent(data, EventBusManager.VoteDataControlEvent.VOTE_SYNC_WALL_AND_CONTENT));
-            } else {
-                if (!event.success && event.errorResponseMessage.equals("error_invalid_password")) {
-                    if (newOptionPasswordDialog != null && newOptionPasswordDialog.isShowing()) {
-                        final EditText password = (EditText) newOptionPasswordDialog.findViewById(R.id.edtEnterPassword);
-                        password.selectAll();
-                        Animation shake = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.edittext_shake);
-                        password.startAnimation(shake);
-                        Toast.makeText(getApplicationContext(), getString(R.string.vote_detail_dialog_password_toast_retry)
-                                , Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    newOptionPasswordDialog.dismiss();
-                    Toast.makeText(this, R.string.create_vote_toast_create_fail, Toast.LENGTH_LONG).show();
-                }
-            }
-        }
+        void onOptionQuickPoll(long optionId, String optionCode);
+
+        void onOptionChoice(long optionId, String optionCode);
+
+        void onOptionTextChange(long optionId, String newOptionText);
+
+        void onOptionAddNew();
+
+        void onOptionAddNewCheck(String newOptionText);
+
+        void onOptionRemove(long optionId);
     }
 }

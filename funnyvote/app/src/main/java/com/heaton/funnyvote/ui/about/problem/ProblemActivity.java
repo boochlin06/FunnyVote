@@ -1,4 +1,4 @@
-package com.heaton.funnyvote.ui.about;
+package com.heaton.funnyvote.ui.about.problem;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -18,19 +18,21 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
  * Created by heaton on 2017/3/2.
  */
 
-public class AuthorInfoActivity extends AppCompatActivity {
+public class ProblemActivity extends AppCompatActivity implements ProblemContract.View{
     private Toolbar mainToolbar;
     private Tracker tracker;
+    private ProblemContract.Presenter presenter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_author_info);
+        setContentView(R.layout.activity_common_problem);
+
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
 
-        mainToolbar.setTitle(getString(R.string.about_author_info));
+        mainToolbar.setTitle(getString(R.string.about_common_problem));
         mainToolbar.setTitleTextColor(Color.WHITE);
         mainToolbar.setElevation(10);
 
@@ -44,12 +46,14 @@ public class AuthorInfoActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        presenter = new ProblemPresenter(this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_AUTHOR);
+        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_PROBLEM);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
@@ -63,5 +67,9 @@ public class AuthorInfoActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-}
 
+    @Override
+    public void setPresenter(ProblemContract.Presenter presenter) {
+        this.presenter = presenter;
+    }
+}

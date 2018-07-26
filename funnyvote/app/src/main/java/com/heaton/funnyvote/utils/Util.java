@@ -1,4 +1,4 @@
-package com.heaton.funnyvote;
+package com.heaton.funnyvote.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -9,6 +9,8 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.DisplayMetrics;
+
+import com.heaton.funnyvote.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

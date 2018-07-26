@@ -14,6 +14,7 @@ import org.greenrobot.greendao.annotation.OrderBy;
 import org.greenrobot.greendao.annotation.ToMany;
 import org.greenrobot.greendao.annotation.Transient;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -93,7 +94,7 @@ public class VoteData {
     private String category;
     //Only save hot order
     private int displayOrder;
-    // TODO: OPTION TYPE
+    //TODO: OPTION TYPE
     private String pollType;
 
     /**
@@ -137,6 +138,14 @@ public class VoteData {
 
     public Option getUserOption() {
         return this.userOption;
+    }
+
+    @Transient
+    private File image;
+
+    public File getImageFile() { return this.image;}
+    public void setImageFile(File file) {
+        this.image = file;
     }
 
 

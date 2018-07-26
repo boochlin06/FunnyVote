@@ -2,9 +2,17 @@ package com.heaton.funnyvote.data.user;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.data.VoteData.LocalVoteDataSource;
+import com.heaton.funnyvote.database.OptionDao;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.database.VoteDataDao;
+import com.heaton.funnyvote.retrofit.Server;
+
+import okhttp3.ResponseBody;
+import retrofit2.Callback;
 
 /**
  * Created by chiu_mac on 2016/12/6.
@@ -25,6 +33,18 @@ public class SPUserDataSource implements UserDataSource {
     private final String defaultGuestName;
     private SharedPreferences userSharedPref;
     private User user;
+    private static SPUserDataSource INSTANCE;
+
+    public static SPUserDataSource getInstance(@NonNull Context context) {
+        if (INSTANCE == null) {
+            synchronized (SPUserDataSource.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new SPUserDataSource(context);
+                }
+            }
+        }
+        return INSTANCE;
+    }
 
     public SPUserDataSource(Context context) {
         userSharedPref = context.getSharedPreferences(SHARED_PREF_USER, Context.MODE_PRIVATE);
@@ -78,4 +98,51 @@ public class SPUserDataSource implements UserDataSource {
         userSharedPref.edit().clear().commit();
         this.user = null;
     }
+
+    @Override
+    public void getGuestUserCode(GetUserCodeCallback callback, String name) {
+        // Not required for the local data source
+    }
+
+    @Override
+    public void getUserInfo(Callback<Server.UserDataQuery> callback, User user) {
+        // Not required for the local data source
+    }
+
+    @Override
+    public void getUser(GetUserCallback callback, boolean forceUpdateUserCode) {
+        callback.onResponse(getUser());
+    }
+
+    @Override
+    public void registerUser(User user, boolean mergeGuest, RegisterUserCallback callback) {
+
+    }
+
+
+    @Override
+    public void unregisterUser() {
+
+    }
+
+    @Override
+    public void getUserCode(String userType, String appId, User user, GetUserCodeCallback callback) {
+
+    }
+
+    @Override
+    public void linkGuestToLoginUser(String otp, String guest, Callback<ResponseBody> callback) {
+
+    }
+
+    @Override
+    public void changeUserName(Callback<ResponseBody> callback, String tokenType, String token, String name) {
+
+    }
+
+    @Override
+    public void changeCurrentUserName(String name, ChangeUserNameCallback callback) {
+
+    }
+
 }

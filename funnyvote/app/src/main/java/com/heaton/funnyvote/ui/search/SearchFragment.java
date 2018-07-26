@@ -3,11 +3,14 @@ package com.heaton.funnyvote.ui.search;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -18,16 +21,10 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.VoteData.VoteDataManager;
-import com.heaton.funnyvote.data.user.UserManager;
-import com.heaton.funnyvote.database.DataLoader;
-import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.data.Injection;
+import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusManager;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import com.heaton.funnyvote.ui.main.VHVoteWallItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,37 +36,69 @@ import at.grabner.circleprogress.TextMode;
  * Created by heaton on 2017/1/22.
  */
 
-public class SearchFragment extends Fragment implements SearchItemAdapter.OnReloadClickListener {
+public class SearchFragment extends Fragment implements SearchContract.View {
 
     private static final String TAG = SearchFragment.class.getSimpleName();
-    private static final int LIMIT = VoteDataManager.PAGE_COUNT;
+    private static final int LIMIT = VoteDataRepository.PAGE_COUNT;
     public static final String KEY_SEARCH_KEYWORD = "key_search_keyword";
     private RecyclerView ryMain;
     private RelativeLayout RootView;
     private SearchItemAdapter adapter;
+    private SearchView searchView;
 
-    private VoteDataManager voteDataManager;
-    private UserManager userManager;
-    private User user;
     private String keyword = "";
     private Tracker tracker;
 
     CircleProgressView circleLoad;
 
-    private List<VoteData> voteDataList;
+    private SearchContract.Presenter presenter;
 
-    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
-        @Override
-        public void onResponse(User user) {
-            SearchFragment.this.user = user;
-            initRecyclerView();
-        }
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
-        @Override
-        public void onFailure() {
-            initRecyclerView();
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
+        if (searchView != null) {
+            searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
+            searchView.setSubmitButtonEnabled(true);
+            searchView.setOnQueryTextListener(queryListener);
         }
-    };
+    }
+
+    final private SearchView.OnQueryTextListener queryListener =
+            new SearchView.OnQueryTextListener() {
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    if (newText.length() > 1) {
+                        tracker.send(new HitBuilders.EventBuilder()
+                                .setCategory(AnalyzticsTag.CATEGORY_SEARCH_VOTE)
+                                .setAction(AnalyzticsTag.ACTION_SEARCH_VOTE)
+                                .setLabel(keyword).build());
+
+                        Log.d(TAG, "Search page onQueryTextChange:" + newText);
+                        presenter.searchVote(newText);
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+
+                    tracker.send(new HitBuilders.EventBuilder()
+                            .setCategory(AnalyzticsTag.CATEGORY_SEARCH_VOTE)
+                            .setAction(AnalyzticsTag.ACTION_SEARCH_VOTE)
+                            .setLabel(query).build());
+                    Log.d(TAG, "Search page onQueryTextSubmit:" + query);
+                    presenter.searchVote(query);
+                    return false;
+                }
+            };
 
     @Nullable
     @Override
@@ -93,111 +122,137 @@ public class SearchFragment extends Fragment implements SearchItemAdapter.OnRelo
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         hideLoadingCircle();
-        voteDataManager = VoteDataManager.getInstance(getContext().getApplicationContext());
+        initRecyclerView();
 
-        if (user == null) {
-            userManager = UserManager.getInstance(getContext().getApplicationContext());
-            userManager.getUser(getUserCallback, false);
-        } else {
-            initRecyclerView();
-        }
-        if (getArguments().getString(KEY_SEARCH_KEYWORD) != null) {
-            setQueryText(getArguments().getString(KEY_SEARCH_KEYWORD));
-        }
+        presenter = new SearchPresenter(Injection.provideVoteDataRepository(getContext())
+                , Injection.provideUserRepository(getContext()), this);
+        presenter.start();
+
     }
 
     private void initRecyclerView() {
-        voteDataList = DataLoader.getInstance(getContext()).querySearchVotes(keyword, 0, LIMIT);
-        adapter = new SearchItemAdapter(getContext(), voteDataList);
-        adapter.setOnReloadClickListener(this);
+        adapter = new SearchItemAdapter(getContext(), new ArrayList<VoteData>(), new VoteSearchItemListener() {
+            @Override
+            public void onVoteItemClick(VoteData voteData) {
+                presenter.IntentToVoteDetail(voteData);
+            }
+
+            @Override
+            public void onReloadVote() {
+                presenter.refreshSearchList();
+            }
+        });
         ryMain.setAdapter(adapter);
-        if (!TextUtils.isEmpty(keyword)) {
-            showLoadingCircle(this.getString(R.string.vote_detail_circle_loading));
-            voteDataManager.getSearchVoteList(keyword, 0, user);
-        }
+
     }
 
-    private void setQueryText(String queryText) {
-        this.keyword = queryText;
-        if (user != null) {
-            this.showLoadingCircle(getString(R.string.vote_detail_circle_loading));
-            voteDataManager.getSearchVoteList(keyword, 0, user);
-            tracker.send(new HitBuilders.EventBuilder()
-                    .setCategory(AnalyzticsTag.CATEGORY_SEARCH_VOTE)
-                    .setAction(AnalyzticsTag.ACTION_SEARCH_VOTE)
-                    .setLabel(keyword).build());
-        }
-    }
+//    private void setQueryText(String queryText) {
+//        this.keyword = queryText;
+//        if (user != null) {
+//            this.showLoadingCircle();
+//            voteDataManager.getSearchVoteList(keyword, 0, user);
+//        }
+//    }
 
-    private void showLoadingCircle(String content) {
+    @Override
+    public void showLoadingCircle() {
         circleLoad.setVisibility(View.VISIBLE);
-        circleLoad.setText(content);
+        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
         circleLoad.spin();
     }
 
-    private void hideLoadingCircle() {
+    @Override
+    public void hideLoadingCircle() {
         circleLoad.stopSpinning();
-        circleLoad.setVisibility(View.INVISIBLE);
+        circleLoad.setVisibility(View.GONE);
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        EventBus.getDefault().register(this);
+        //EventBus.getDefault().register(this);
         super.onCreate(savedInstanceState);
     }
 
     @Override
     public void onDestroy() {
-        EventBus.getDefault().unregister(this);
+        //EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onRemoteEvent(EventBusManager.RemoteServiceEvent event) {
+//        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_SEARCH)) {
+//            refreshData(event.voteDataList, event.offset);
+//            hideLoadingCircle();
+//        }
+//    }
+//
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onUIChange(EventBusManager.UIControlEvent event) {
+//        if (event.message.equals(EventBusManager.UIControlEvent.SEARCH_KEYWORD)) {
+//            setQueryText(event.keyword);
+//        }
+//    }
+
+    @Override
+    public void showHintToast(int res, long arg) {
+        Toast.makeText(getContext(), getString(res, arg), Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onReloadClicked() {
-        final int offset = voteDataList.size();
-        voteDataManager.getSearchVoteList(keyword, offset, user);
+    public void showVoteDetail(VoteData data) {
+        VHVoteWallItem.startActivityToVoteDetail(getContext(), data.getVoteCode());
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteEvent(EventBusManager.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_SEARCH)) {
-            refreshData(event.voteDataList, event.offset);
-            hideLoadingCircle();
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onUIChange(EventBusManager.UIControlEvent event) {
-        if (event.message.equals(EventBusManager.UIControlEvent.SEARCH_KEYWORD)) {
-            setQueryText(event.keyword);
+    @Override
+    public void setMaxCount(int max) {
+        if (adapter != null) {
+            adapter.setMaxCount(max);
         }
     }
 
-    private void refreshData(List<VoteData> voteDataList, int offset) {
-        if (voteDataList == null) {
-            voteDataList = new ArrayList<>();
-
-            voteDataList = DataLoader.getInstance(getContext()).querySearchVotes(keyword
-                    , offset, LIMIT);
-        }
-        Log.d(TAG, "Network Refresh wall item : Search");
-        int pageNumber = offset / LIMIT;
-
-        if (offset == 0) {
-            this.voteDataList = voteDataList;
-            adapter.setVoteList(this.voteDataList);
-        } else if (offset >= this.voteDataList.size()) {
-            this.voteDataList.addAll(voteDataList);
-        }
-
-        if (this.voteDataList.size() < LIMIT * (pageNumber + 1)) {
-            adapter.setMaxCount(this.voteDataList.size());
-            if (offset != 0) {
-                Toast.makeText(getContext(), R.string.wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            adapter.setMaxCount(LIMIT * (pageNumber + 2));
-        }
+    @Override
+    public void refreshFragment(List<VoteData> voteDataList) {
+        adapter.setVoteList(voteDataList);
         adapter.notifyDataSetChanged();
+    }
+//    private void refreshData(List<VoteData> voteDataList, int offset) {
+//        if (voteDataList == null) {
+//            voteDataList = new ArrayList<>();
+//
+//            voteDataList = DataLoader.getInstance(getContext()).querySearchVotes(keyword
+//                    , offset, LIMIT);
+//        }
+//        Log.d(TAG, "Network Refresh wall item : Search");
+//        int pageNumber = offset / LIMIT;
+//
+//        if (offset == 0) {
+//            this.voteDataList = voteDataList;
+//            adapter.setVoteList(this.voteDataList);
+//        } else if (offset >= this.voteDataList.size()) {
+//            this.voteDataList.addAll(voteDataList);
+//        }
+//
+//        if (this.voteDataList.size() < LIMIT * (pageNumber + 1)) {
+//            adapter.setMaxCount(this.voteDataList.size());
+//            if (offset != 0) {
+//                Toast.makeText(getContext(), R.string.wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
+//            }
+//        } else {
+//            adapter.setMaxCount(LIMIT * (pageNumber + 2));
+//        }
+//        adapter.notifyDataSetChanged();
+//    }
+
+    @Override
+    public void setPresenter(SearchContract.Presenter presenter) {
+        this.presenter = presenter;
+    }
+
+    public interface VoteSearchItemListener {
+
+        void onVoteItemClick(VoteData voteData);
+
+        void onReloadVote();
     }
 }

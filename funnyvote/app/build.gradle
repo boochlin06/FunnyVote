@@ -20,7 +20,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 12
-        versionName "170515"
+        versionName "180608"
         multiDexEnabled true
     }
     buildTypes {
@@ -78,6 +78,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:10.2.0'
     implementation 'com.google.android.gms:play-services-analytics:10.2.0'
     implementation 'com.google.firebase:firebase-appindexing:10.2.0'
+    implementation "com.google.guava:guava:$rootProject.guavaVersion"
 }
 greendao {
     schemaVersion 1

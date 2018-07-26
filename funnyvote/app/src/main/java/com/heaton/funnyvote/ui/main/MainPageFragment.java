@@ -17,6 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
@@ -25,6 +26,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,20 +44,15 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.Util;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.promotion.PromotionManager;
-import com.heaton.funnyvote.data.user.UserManager;
-import com.heaton.funnyvote.database.DataLoader;
+import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.ui.CirclePageIndicator;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
+import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
+import com.heaton.funnyvote.utils.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,23 +64,27 @@ import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
 /**
  * Created by heaton on 16/4/1.
  */
-public class MainPageFragment extends android.support.v4.app.Fragment {
+public class MainPageFragment extends android.support.v4.app.Fragment
+        implements MainPageContract.MainPageView {
 
     public static String TAG = MainPageFragment.class.getSimpleName();
     public static boolean ENABLE_PROMOTION_ADMOB = true;
     private AutoScrollViewPager vpHeader;
     private AppBarLayout appBarMain;
-    private List<Promotion> promotionList;
-    private List<PromotionType> promotionTypeList;
     private View promotionADMOB;
-    private PromotionManager promotionManager;
     private TabsAdapter tabsAdapter;
     private ViewPager vpMainPage;
-    private UserManager userManager;
-    private User user;
     private Activity context;
     private CircleProgressView circleLoad;
     private Tracker tracker;
+    private MainPageContract.Presenter pagePresenter;
+    private MainPageTabFragment hotsFragment, newsFragment;
+    private AlertDialog passwordDialog;
+
+    @Override
+    public void setPresenter(MainPageContract.Presenter presenter) {
+        this.pagePresenter = pagePresenter;
+    }
 
     private class PromotionType {
         public static final int PROM0TION_TYPE_ADMOB = 0;
@@ -102,43 +106,45 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         }
     }
 
-    private UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
-        @Override
-        public void onResponse(User user) {
-            MainPageFragment.this.user = user;
-            Log.d(TAG, "getUserCallback user:" + user.getType());
-            promotionManager.getPromotionList(user);
-            tabsAdapter = new TabsAdapter(getChildFragmentManager());
-            int currentItem = vpMainPage.getCurrentItem();
-            vpMainPage.setAdapter(tabsAdapter);
-            vpMainPage.setCurrentItem(currentItem);
-        }
-
-        @Override
-        public void onFailure() {
-            promotionManager.getPromotionList(user);
-            tabsAdapter = new TabsAdapter(getChildFragmentManager());
-            int currentItem = vpMainPage.getCurrentItem();
-            vpMainPage.setAdapter(tabsAdapter);
-            vpMainPage.setCurrentItem(currentItem);
-            hideLoadingCircle();
-            Log.d(TAG, "getUserCallback user failure:" + user);
-        }
-    };
-
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        showLoadingCircle(getString(R.string.vote_detail_circle_loading));
-        promotionManager = PromotionManager.getInstance(getContext().getApplicationContext());
-        userManager = UserManager.getInstance(getContext().getApplicationContext());
-        if (user == null) {
-            userManager.getUser(getUserCallback, true);
-        } else {
-            tabsAdapter = new TabsAdapter(getChildFragmentManager());
-            vpMainPage.setAdapter(tabsAdapter);
-        }
-        vpHeader.startAutoScroll();
+        pagePresenter = new MainPagePresenter(Injection.provideVoteDataRepository(context)
+                , Injection.provideUserRepository(context)
+                , Injection.providePromotionRepository(context), this);
+
+        pagePresenter.start();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_main_page_top, null);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
+        tracker = application.getDefaultTracker();
+        context = this.getActivity();
+
+        circleLoad = (CircleProgressView) view.findViewById(R.id.circleLoad);
+        circleLoad.setTextMode(TextMode.TEXT);
+        circleLoad.setShowTextWhileSpinning(true);
+        circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
+
+        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
+        vpHeader = (AutoScrollViewPager) view.findViewById(R.id.vpHeader);
+        vpHeader.setAdapter(new HeaderAdapter(new ArrayList<PromotionType>(), null));
+        vpHeader.setCurrentItem(0);
+        appBarMain = (AppBarLayout) view.findViewById(R.id.appBarMain);
+        vpMainPage = (ViewPager) view.findViewById(R.id.vpMainPage);
+
+        TabLayout tabMainPage = (TabLayout) view.findViewById(R.id.tabLayoutMainPage);
+        tabMainPage.setupWithViewPager(vpMainPage);
+
+        CirclePageIndicator titleIndicator = (CirclePageIndicator) view.findViewById(R.id.vpIndicator);
+        titleIndicator.setViewPager(vpHeader);
+        vpHeader.setInterval(100000);
+        vpHeader.setScrollDurationFactor(5);
+
         appBarMain.addOnOffsetChangedListener(new AppBarStateChangeListener() {
             @Override
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
@@ -149,11 +155,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
                 }
             }
         });
-        SharedPreferences firstTimePref = FirstTimePref.getInstance(getContext()).getPreferences();
-        if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, true)) {
-            firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, false).apply();
-            showIntroductionDialog();
-        }
         tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN_HOT);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
         vpMainPage.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -177,228 +178,186 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
             }
         });
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_main_page_top, null);
-
-        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
-        tracker = application.getDefaultTracker();
-        initPromotionData();
-        context = this.getActivity();
-
-        circleLoad = (CircleProgressView) view.findViewById(R.id.circleLoad);
-        circleLoad.setTextMode(TextMode.TEXT);
-        circleLoad.setShowTextWhileSpinning(true);
-        circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
-
-        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
-        vpHeader = (AutoScrollViewPager) view.findViewById(R.id.vpHeader);
-        vpHeader.setAdapter(new HeaderAdapter());
-        vpHeader.setCurrentItem(0);
-        appBarMain = (AppBarLayout) view.findViewById(R.id.appBarMain);
-        vpMainPage = (ViewPager) view.findViewById(R.id.vpMainPage);
-
-        TabLayout tabMainPage = (TabLayout) view.findViewById(R.id.tabLayoutMainPage);
-        tabMainPage.setupWithViewPager(vpMainPage);
-
-        CirclePageIndicator titleIndicator = (CirclePageIndicator) view.findViewById(R.id.vpIndicator);
-        titleIndicator.setViewPager(vpHeader);
-        vpHeader.setInterval(100000);
-        vpHeader.setScrollDurationFactor(5);
 
         ENABLE_PROMOTION_ADMOB = getResources().getBoolean(R.bool.enable_promotion_admob);
 
         return view;
     }
 
-    private void showIntroductionDialog() {
-        final Dialog introductionDialog = new Dialog(getActivity());
-        introductionDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        introductionDialog.requestWindowFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
-        introductionDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT);
-        introductionDialog.setCanceledOnTouchOutside(false);
+    @Override
+    public void showShareDialog(VoteData data) {
+        VoteDetailContentActivity.sendShareIntent(getContext(), data);
+    }
 
-        final VoteData data = new VoteData();
-        data.setAuthorName(getString(R.string.intro_vote_item_author_name));
-        data.setTitle(getString(R.string.intro_vote_item_title));
-        data.setOption1Title(getString(R.string.intro_vote_item_option1));
-        data.setOption2Title(getString(R.string.intro_vote_item_option2));
-        data.setPollCount(30);
-        data.setOption1Count(15);
-        data.setOption2Count(15);
-        data.setStartTime(System.currentTimeMillis() - 86400000);
-        data.setEndTime(System.currentTimeMillis() + 864000000);
+    @Override
+    public void showAuthorDetail(VoteData data) {
+        VoteDetailContentActivity.sendPersonalDetailIntent(getContext(), data);
+    }
 
-        View content = LayoutInflater.from(getActivity()).inflate(R.layout.card_view_wall_item_intro, null);
-        TextView txtAuthorName = (TextView) content.findViewById(R.id.txtAuthorName);
-        TextView txtTitle = (TextView) content.findViewById(R.id.txtTitle);
-        TextView txtOption1 = (TextView) content.findViewById(R.id.txtFirstOptionTitle);
-        TextView txtOption2 = (TextView) content.findViewById(R.id.txtSecondOptionTitle);
-        TextView txtPubTime = (TextView) content.findViewById(R.id.txtPubTime);
-        final TextView txtPollCount = (TextView) content.findViewById(R.id.txtBarPollCount);
-        final TextView txtFirstPollCountPercent = (TextView) content.findViewById(R.id.txtFirstPollCountPercent);
-        final TextView txtSecondPollCountPercent = (TextView) content.findViewById(R.id.txtSecondPollCountPercent);
-        final RoundCornerProgressBar progressFirstOption = (RoundCornerProgressBar) content.findViewById(R.id.progressFirstOption);
-        final RoundCornerProgressBar progressSecondOption = (RoundCornerProgressBar) content.findViewById(R.id.progressSecondOption);
-        CardView btnThirdOption = (CardView) content.findViewById(R.id.btnThirdOption);
-        final CardView btnSecondOption = (CardView) content.findViewById(R.id.btnSecondOption);
-        final CardView btnFirstOption = (CardView) content.findViewById(R.id.btnFirstOption);
-        final ImageView imgChampion1 = (ImageView) content.findViewById(R.id.imgChampion1);
-        final ImageView imgChampion2 = (ImageView) content.findViewById(R.id.imgChampion2);
+    @Override
+    public void showCreateVote() {
+        getActivity().startActivity(new Intent(getContext(), CreateVoteActivity.class));
+    }
 
-        ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
+    @Override
+    public void showVoteDetail(VoteData data) {
+        VHVoteWallItem.startActivityToVoteDetail(getContext(), data.getVoteCode());
+    }
 
-        TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
-                .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
-        imgAuthorIcon.setImageDrawable(drawable);
+    @Override
+    public void showIntroductionDialog() {
+        SharedPreferences firstTimePref = FirstTimePref.getInstance(getContext()).getPreferences();
+        if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, true)) {
+            firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, false).apply();
+            final Dialog introductionDialog = new Dialog(getActivity());
+            introductionDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            introductionDialog.requestWindowFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+            introductionDialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT);
+            introductionDialog.setCanceledOnTouchOutside(false);
 
-        btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
-        btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
-        btnThirdOption.setVisibility(View.GONE);
+            final VoteData data = new VoteData();
+            data.setAuthorName(getString(R.string.intro_vote_item_author_name));
+            data.setTitle(getString(R.string.intro_vote_item_title));
+            data.setOption1Title(getString(R.string.intro_vote_item_option1));
+            data.setOption2Title(getString(R.string.intro_vote_item_option2));
+            data.setPollCount(30);
+            data.setOption1Count(15);
+            data.setOption2Count(15);
+            data.setStartTime(System.currentTimeMillis() - 86400000);
+            data.setEndTime(System.currentTimeMillis() + 864000000);
 
-        txtFirstPollCountPercent.setVisibility(View.GONE);
-        txtSecondPollCountPercent.setVisibility(View.GONE);
+            View content = LayoutInflater.from(getActivity()).inflate(R.layout.card_view_wall_item_intro, null);
+            TextView txtAuthorName = (TextView) content.findViewById(R.id.txtAuthorName);
+            TextView txtTitle = (TextView) content.findViewById(R.id.txtTitle);
+            TextView txtOption1 = (TextView) content.findViewById(R.id.txtFirstOptionTitle);
+            TextView txtOption2 = (TextView) content.findViewById(R.id.txtSecondOptionTitle);
+            TextView txtPubTime = (TextView) content.findViewById(R.id.txtPubTime);
+            final TextView txtPollCount = (TextView) content.findViewById(R.id.txtBarPollCount);
+            final TextView txtFirstPollCountPercent = (TextView) content.findViewById(R.id.txtFirstPollCountPercent);
+            final TextView txtSecondPollCountPercent = (TextView) content.findViewById(R.id.txtSecondPollCountPercent);
+            final RoundCornerProgressBar progressFirstOption = (RoundCornerProgressBar) content.findViewById(R.id.progressFirstOption);
+            final RoundCornerProgressBar progressSecondOption = (RoundCornerProgressBar) content.findViewById(R.id.progressSecondOption);
+            CardView btnThirdOption = (CardView) content.findViewById(R.id.btnThirdOption);
+            final CardView btnSecondOption = (CardView) content.findViewById(R.id.btnSecondOption);
+            final CardView btnFirstOption = (CardView) content.findViewById(R.id.btnFirstOption);
+            final ImageView imgChampion1 = (ImageView) content.findViewById(R.id.imgChampion1);
+            final ImageView imgChampion2 = (ImageView) content.findViewById(R.id.imgChampion2);
 
-        progressFirstOption.setVisibility(View.GONE);
-        progressSecondOption.setVisibility(View.GONE);
+            ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
 
-        imgChampion1.setVisibility(View.GONE);
-        imgChampion2.setVisibility(View.GONE);
+            TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
+                    .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+            imgAuthorIcon.setImageDrawable(drawable);
 
-        txtAuthorName.setText(data.getAuthorName());
-        txtTitle.setText(data.getTitle());
-        txtOption1.setText(data.getOption1Title());
-        txtOption2.setText(data.getOption2Title());
-        txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
-                + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
-        txtPollCount.setText(Integer.toString(data.getPollCount()));
-        progressFirstOption.setProgressColor(getResources().getColor(R.color.md_blue_600));
-        progressFirstOption.setProgressBackgroundColor(getResources().getColor(R.color.md_blue_200));
-        btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
-        progressSecondOption.setProgressColor(getResources().getColor(R.color.md_blue_600));
-        progressSecondOption.setProgressBackgroundColor(getResources().getColor(R.color.md_blue_200));
-        btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
+            btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
+            btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
+            btnThirdOption.setVisibility(View.GONE);
 
-        View.OnLongClickListener dialogLongClick = new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View optionButton) {
-                if (optionButton.getId() == R.id.btnFirstOption) {
-                    progressFirstOption.setProgressColor(getResources().getColor(R.color.md_red_600));
-                    progressFirstOption.setProgressBackgroundColor(getResources().getColor(R.color.md_red_200));
-                    btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_red_100));
-                    imgChampion1.setVisibility(View.VISIBLE);
-                    imgChampion2.setVisibility(View.INVISIBLE);
-                    data.setOption1Count(data.getOption1Count() + 1);
-                } else {
-                    progressSecondOption.setProgressColor(getResources().getColor(R.color.md_red_600));
-                    progressSecondOption.setProgressBackgroundColor(getResources().getColor(R.color.md_red_200));
-                    btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_red_100));
-                    imgChampion2.setVisibility(View.VISIBLE);
-                    imgChampion1.setVisibility(View.INVISIBLE);
-                    data.setOption2Count(data.getOption2Count() + 1);
-                }
+            txtFirstPollCountPercent.setVisibility(View.GONE);
+            txtSecondPollCountPercent.setVisibility(View.GONE);
 
-                progressFirstOption.setVisibility(View.VISIBLE);
-                progressFirstOption.setProgress(data.getOption1Count());
+            progressFirstOption.setVisibility(View.GONE);
+            progressSecondOption.setVisibility(View.GONE);
 
-                progressSecondOption.setVisibility(View.VISIBLE);
-                progressSecondOption.setProgress(data.getOption2Count());
+            imgChampion1.setVisibility(View.GONE);
+            imgChampion2.setVisibility(View.GONE);
 
-                txtFirstPollCountPercent.setVisibility(View.VISIBLE);
-                txtSecondPollCountPercent.setVisibility(View.VISIBLE);
-                data.setPollCount(data.getPollCount() + 1);
-                progressFirstOption.setMax(data.getPollCount());
-                progressSecondOption.setMax(data.getPollCount());
-                txtPollCount.setText(Integer.toString(data.getPollCount()));
+            txtAuthorName.setText(data.getAuthorName());
+            txtTitle.setText(data.getTitle());
+            txtOption1.setText(data.getOption1Title());
+            txtOption2.setText(data.getOption2Title());
+            txtPubTime.setText(Util.getDate(data.getStartTime(), "yyyy/MM/dd hh:mm")
+                    + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
+            txtPollCount.setText(Integer.toString(data.getPollCount()));
+            progressFirstOption.setProgressColor(getResources().getColor(R.color.md_blue_600));
+            progressFirstOption.setProgressBackgroundColor(getResources().getColor(R.color.md_blue_200));
+            btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
+            progressSecondOption.setProgressColor(getResources().getColor(R.color.md_blue_600));
+            progressSecondOption.setProgressBackgroundColor(getResources().getColor(R.color.md_blue_200));
+            btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
 
-                double percent1 = data.getPollCount() == 0 ? 0
-                        : (double) data.getOption1Count() / data.getPollCount() * 100;
-                double percent2 = data.getPollCount() == 0 ? 0
-                        : (double) data.getOption2Count() / data.getPollCount() * 100;
-                txtFirstPollCountPercent.setText(String.format("%3.1f%%", percent1));
-                txtSecondPollCountPercent.setText(String.format("%3.1f%%", percent2));
-                Toast.makeText(getActivity(), R.string.toast_network_connect_success_poll
-                        , Toast.LENGTH_SHORT).show();
-                btnFirstOption.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        introductionDialog.dismiss();
+            View.OnLongClickListener dialogLongClick = new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View optionButton) {
+                    if (optionButton.getId() == R.id.btnFirstOption) {
+                        progressFirstOption.setProgressColor(getResources().getColor(R.color.md_red_600));
+                        progressFirstOption.setProgressBackgroundColor(getResources().getColor(R.color.md_red_200));
+                        btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_red_100));
+                        imgChampion1.setVisibility(View.VISIBLE);
+                        imgChampion2.setVisibility(View.INVISIBLE);
+                        data.setOption1Count(data.getOption1Count() + 1);
+                    } else {
+                        progressSecondOption.setProgressColor(getResources().getColor(R.color.md_red_600));
+                        progressSecondOption.setProgressBackgroundColor(getResources().getColor(R.color.md_red_200));
+                        btnSecondOption.setCardBackgroundColor(getResources().getColor(R.color.md_red_100));
+                        imgChampion2.setVisibility(View.VISIBLE);
+                        imgChampion1.setVisibility(View.INVISIBLE);
+                        data.setOption2Count(data.getOption2Count() + 1);
                     }
-                }, 3000);
-                return false;
-            }
-        };
-        introductionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                EventBus.getDefault().post(new EventBusManager.UIControlEvent(EventBusManager.UIControlEvent.INTRO_TO_ACCOUNT));
-            }
-        });
-        btnFirstOption.setOnLongClickListener(dialogLongClick);
-        btnSecondOption.setOnLongClickListener(dialogLongClick);
 
-        introductionDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-        introductionDialog.setContentView(content, new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-        introductionDialog.setCancelable(false);
-        introductionDialog.show();
+                    progressFirstOption.setVisibility(View.VISIBLE);
+                    progressFirstOption.setProgress(data.getOption1Count());
+
+                    progressSecondOption.setVisibility(View.VISIBLE);
+                    progressSecondOption.setProgress(data.getOption2Count());
+
+                    txtFirstPollCountPercent.setVisibility(View.VISIBLE);
+                    txtSecondPollCountPercent.setVisibility(View.VISIBLE);
+                    data.setPollCount(data.getPollCount() + 1);
+                    progressFirstOption.setMax(data.getPollCount());
+                    progressSecondOption.setMax(data.getPollCount());
+                    txtPollCount.setText(Integer.toString(data.getPollCount()));
+
+                    double percent1 = data.getPollCount() == 0 ? 0
+                            : (double) data.getOption1Count() / data.getPollCount() * 100;
+                    double percent2 = data.getPollCount() == 0 ? 0
+                            : (double) data.getOption2Count() / data.getPollCount() * 100;
+                    txtFirstPollCountPercent.setText(String.format("%3.1f%%", percent1));
+                    txtSecondPollCountPercent.setText(String.format("%3.1f%%", percent2));
+                    Toast.makeText(getActivity(), R.string.toast_network_connect_success_poll
+                            , Toast.LENGTH_SHORT).show();
+                    btnFirstOption.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            introductionDialog.dismiss();
+                        }
+                    }, 3000);
+                    return false;
+                }
+            };
+            btnFirstOption.setOnLongClickListener(dialogLongClick);
+            btnSecondOption.setOnLongClickListener(dialogLongClick);
+
+            introductionDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            introductionDialog.setContentView(content, new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            introductionDialog.setCancelable(false);
+            introductionDialog.show();
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
         vpHeader.stopAutoScroll();
-        EventBus.getDefault().unregister(this);
+        //EventBus.getDefault().unregister(this);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        if (user != null) {
-            promotionManager.getPromotionList(user);
-        }
+        pagePresenter.resetPromotion();
         vpHeader.startAutoScroll();
-        EventBus.getDefault().register(this);
+        //EventBus.getDefault().register(this);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onUIChange(EventBusManager.UIControlEvent event) {
-        if (event.message.equals(EventBusManager.UIControlEvent.SCROLL_TO_TOP)) {
-            appBarMain.setExpanded(true);
-        } else if (event.message.equals(EventBusManager.UIControlEvent.HIDE_CIRCLE)) {
-            hideLoadingCircle();
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNetworkChange(EventBusManager.NetworkEvent event) {
-        if (event.message.equals(EventBusManager.NetworkEvent.RELOAD_USER)
-                && (event.tab.equals(MainPageTabFragment.TAB_HOT)
-                || event.tab.equals(MainPageTabFragment.TAB_NEW))) {
-            if (user == null) {
-                showLoadingCircle(getString(R.string.vote_detail_circle_loading));
-                userManager.getUser(getUserCallback, true);
-            } else {
-                tabsAdapter = new TabsAdapter(getChildFragmentManager());
-                vpMainPage.setAdapter(tabsAdapter);
-            }
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRemoteEvent(EventBusManager.RemoteServiceEvent event) {
-        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_PROMOTION_LIST)) {
-            if (event.success) {
-                promotionList = event.promotionList;
-                setupPromotionAdmob();
-                vpHeader.getAdapter().notifyDataSetChanged();
-                Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size() + ",type list size:" + promotionTypeList.size());
-            }
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
+        //TODO,WHY NO RESPONSE ON HERE
+        pagePresenter.refreshAllFragment();
+        //pagePresenter.start();
     }
 
     @Override
@@ -406,35 +365,119 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         super.onDestroyView();
     }
 
-    private void initPromotionData() {
-        promotionList = DataLoader.getInstance(getContext()).queryAllPromotion();
-        setupPromotionAdmob();
-    }
-
-    private void showLoadingCircle(String content) {
+    @Override
+    public void showLoadingCircle() {
         circleLoad.setVisibility(View.VISIBLE);
-        circleLoad.setText(content);
+        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
         circleLoad.spin();
     }
 
-    private void hideLoadingCircle() {
+    @Override
+    public void hideLoadingCircle() {
         circleLoad.stopSpinning();
         circleLoad.setVisibility(View.GONE);
     }
 
-    private void setupPromotionAdmob() {
-        promotionTypeList = new ArrayList<>();
+    @Override
+    public void setupPromotionAdmob(List<Promotion> promotionList, User user) {
+        List<PromotionType> promotionTypeList = new ArrayList<>();
         for (int i = 0; i < promotionList.size(); i++) {
             if (i == 0 && ENABLE_PROMOTION_ADMOB && Util.isNetworkConnected(getContext())) {
-                promotionTypeList.add(new PromotionType(PromotionType.PROM0TION_TYPE_ADMOB, null));
+                promotionTypeList.add(new PromotionType(PromotionType.PROM0TION_TYPE_ADMOB
+                        , null));
             }
             promotionTypeList.add(new PromotionType(PromotionType.PROMOTION_TYPE_FUNNY_VOTE
                     , promotionList.get(i)));
         }
+        vpHeader.setAdapter(new HeaderAdapter(promotionTypeList, user));
+        vpHeader.getAdapter().notifyDataSetChanged();
+        vpHeader.startAutoScroll();
+    }
+
+    @Override
+    public void setUpTabsAdapter(User user) {
+        tabsAdapter = new TabsAdapter(getChildFragmentManager(), user);
+        int currentItem = vpMainPage.getCurrentItem();
+        vpMainPage.setAdapter(tabsAdapter);
+        vpMainPage.setCurrentItem(currentItem);
+    }
+
+    @Override
+    public void setUpTabsAdapter(User user, User targetUser) {
+        setUpTabsAdapter(user);
+    }
+
+    @Override
+    public void showHintToast(int res, long arg) {
+        Toast.makeText(context, getString(res, arg), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showPollPasswordDialog(final VoteData data, final String optionCode) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(R.layout.password_dialog);
+        builder.setPositiveButton(getActivity().getResources()
+                .getString(R.string.vote_detail_dialog_password_input), null);
+        builder.setNegativeButton(getContext().getApplicationContext().getResources()
+                .getString(R.string.account_dialog_cancel), null);
+        builder.setTitle(getActivity().getString(R.string.vote_detail_dialog_password_title));
+        passwordDialog = builder.create();
+
+        passwordDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                final EditText password = (EditText) ((AlertDialog) dialogInterface).findViewById(R.id.edtEnterPassword);
+                Button ok = ((AlertDialog) dialogInterface).getButton(AlertDialog.BUTTON_POSITIVE);
+                ok.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+
+                        Log.d(TAG, "showPollPasswordDialog PW:");
+                        pagePresenter.pollVote(data, optionCode, password.getText().toString());
+//                        tracker.send(new HitBuilders.EventBuilder()
+//                                .setCategory(tab)
+//                                .setAction(AnalyzticsTag.ACTION_QUICK_POLL_VOTE)
+//                                .setLabel(data.getVoteCode())
+//                                .build());
+                    }
+                });
+            }
+        });
+        passwordDialog.show();
+    }
+
+    @Override
+    public void hidePollPasswordDialog() {
+        if (passwordDialog != null && passwordDialog.isShowing()) {
+            passwordDialog.dismiss();
+        }
+    }
+
+    @Override
+    public void shakePollPasswordDialog() {
+        if (passwordDialog != null && passwordDialog.isShowing()) {
+            final EditText password = (EditText) passwordDialog.findViewById(R.id.edtEnterPassword);
+            password.selectAll();
+            Animation shake = AnimationUtils.loadAnimation(getActivity(), R.anim.edittext_shake);
+            password.startAnimation(shake);
+        }
+    }
+
+    @Override
+    public boolean isPasswordDialogShowing() {
+        return passwordDialog != null && passwordDialog.isShowing();
     }
 
 
     private class HeaderAdapter extends PagerAdapter {
+        private List<PromotionType> promotionTypeList;
+        private User user;
+
+        public HeaderAdapter(List<PromotionType> promotionTypeList, User user) {
+            this.promotionTypeList = promotionTypeList;
+            this.user = user;
+        }
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
@@ -524,6 +567,13 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
     }
 
     private class TabsAdapter extends FragmentStatePagerAdapter {
+        private User user;
+
+        public TabsAdapter(FragmentManager fm, User user) {
+            super(fm);
+            this.user = user;
+        }
+
         public TabsAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -543,9 +593,19 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_HOT, user);
+                    if (hotsFragment == null) {
+                        hotsFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_HOT, user);
+                        hotsFragment.setPresenter(pagePresenter);
+                        //pagePresenter.setHotsFragmentView(hotsFragment);
+                    }
+                    return hotsFragment;
                 case 1:
-                    return MainPageTabFragment.newInstance(MainPageTabFragment.TAB_NEW, user);
+                    if (newsFragment == null) {
+                        newsFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_NEW, user);
+                        newsFragment.setPresenter(pagePresenter);
+                        //pagePresenter.setNewsFragmentView(newsFragment);
+                    }
+                    return newsFragment;
             }
             return null;
         }
@@ -595,4 +655,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment {
 
         public abstract void onStateChanged(AppBarLayout appBarLayout, State state);
     }
+
+
 }
