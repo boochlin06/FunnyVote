@@ -26,6 +26,27 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     private MainPageContract.TabPageFragment hotsFragment, newsFragment;
 
     private List<VoteData> hotVoteDataList, newVoteDataList;
+
+    public List<VoteData> getHotVoteDataList() {
+        return hotVoteDataList;
+    }
+
+    public void setHotVoteDataList(List<VoteData> hotVoteDataList) {
+        this.hotVoteDataList = hotVoteDataList;
+    }
+
+    public List<VoteData> getNewVoteDataList() {
+        return newVoteDataList;
+    }
+
+    public void setNewVoteDataList(List<VoteData> newVoteDataList) {
+        this.newVoteDataList = newVoteDataList;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     private User user;
 
     private List<Promotion> promotionList;
@@ -40,6 +61,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         this.voteDataRepository = voteDataRepository;
         hotVoteDataList = new ArrayList<>();
         newVoteDataList = new ArrayList<>();
+        mainPageView.setPresenter(this);
     }
 
     @Override
@@ -148,8 +170,6 @@ public class MainPagePresenter implements MainPageContract.Presenter {
             mainPageView.showLoadingCircle();
             List<String> choiceCodeList = new ArrayList<>();
             choiceCodeList.add(optionCode);
-            Log.d(TAG, "choice:" + choiceCodeList.size()
-                    + " vc:" + voteData.getVoteCode() + " user:" + user.getUserCode() + "  type:" + user.getType());
             voteDataRepository.pollVote(voteData.getVoteCode(), password, choiceCodeList, user, new VoteDataSource.PollVoteCallback() {
                 @Override
                 public void onSuccess(VoteData voteData) {
@@ -188,8 +208,10 @@ public class MainPagePresenter implements MainPageContract.Presenter {
             public void onVoteListLoaded(List<VoteData> voteDataList) {
                 //hotVoteDataList = voteDataList;
                 updateHotList(voteDataList, offset);
-                hotsFragment.refreshFragment(hotVoteDataList);
-                hotsFragment.hideSwipeLoadView();
+                if (hotsFragment != null) {
+                    hotsFragment.refreshFragment(hotVoteDataList);
+                    hotsFragment.hideSwipeLoadView();
+                }
                 mainPageView.hideLoadingCircle();
             }
 
@@ -197,7 +219,9 @@ public class MainPagePresenter implements MainPageContract.Presenter {
             public void onVoteListNotAvailable() {
                 mainPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
                 mainPageView.hideLoadingCircle();
-                hotsFragment.hideSwipeLoadView();
+                if (hotsFragment != null) {
+                    hotsFragment.hideSwipeLoadView();
+                }
             }
         });
     }
@@ -214,15 +238,19 @@ public class MainPagePresenter implements MainPageContract.Presenter {
                 //newVoteDataList = voteDataList;
                 updateNewList(voteDataList, offset);
                 Log.d(TAG, "2NEW LIST offset:" + offset + " , size;" + newVoteDataList.size());
-                newsFragment.hideSwipeLoadView();
-                newsFragment.refreshFragment(newVoteDataList);
+                if (newsFragment != null) {
+                    newsFragment.hideSwipeLoadView();
+                    newsFragment.refreshFragment(newVoteDataList);
+                }
                 mainPageView.hideLoadingCircle();
             }
 
             @Override
             public void onVoteListNotAvailable() {
                 mainPageView.hideLoadingCircle();
-                newsFragment.hideSwipeLoadView();
+                if (newsFragment != null) {
+                    newsFragment.hideSwipeLoadView();
+                }
                 mainPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
             }
         });
@@ -237,12 +265,16 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         }
         Log.d(TAG, "hotVoteDataList:" + hotVoteDataList.size() + ",offset :" + offset);
         if (this.hotVoteDataList.size() < LIMIT * (pageNumber + 1)) {
-            hotsFragment.setMaxCount(this.hotVoteDataList.size());
+            if (hotsFragment != null) {
+                hotsFragment.setMaxCount(this.hotVoteDataList.size());
+            }
             if (offset != 0) {
                 mainPageView.showHintToast(R.string.wall_item_toast_no_vote_refresh, 0);
             }
         } else {
-            hotsFragment.setMaxCount(LIMIT * (pageNumber + 2));
+            if (hotsFragment != null) {
+                hotsFragment.setMaxCount(LIMIT * (pageNumber + 2));
+            }
         }
     }
 
@@ -255,12 +287,16 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         }
         Log.d(TAG, "newVoteDataList:" + newVoteDataList.size() + ",offset :" + offset);
         if (this.newVoteDataList.size() < LIMIT * (pageNumber + 1)) {
-            newsFragment.setMaxCount(this.newVoteDataList.size());
+            if (newsFragment != null) {
+                newsFragment.setMaxCount(this.newVoteDataList.size());
+            }
             if (offset != 0) {
                 mainPageView.showHintToast(R.string.wall_item_toast_no_vote_refresh, 0);
             }
         } else {
-            newsFragment.setMaxCount(LIMIT * (pageNumber + 2));
+            if (newsFragment != null) {
+                newsFragment.setMaxCount(LIMIT * (pageNumber + 2));
+            }
         }
     }
 

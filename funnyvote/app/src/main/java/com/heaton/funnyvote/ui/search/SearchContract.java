@@ -15,6 +15,8 @@ public interface SearchContract {
         void refreshSearchList();
 
         void IntentToVoteDetail(VoteData voteData);
+
+        void start(String keyword);
     }
 
     interface View extends BaseView<Presenter> {

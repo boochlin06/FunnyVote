@@ -25,13 +25,17 @@ public class PromotionRepository implements PromotionDataSource {
         this.remotePromotionSource = remotePromotionSource;
     }
 
+    public static void destroyInstance() {
+        INSTANCE = null;
+    }
+
     @Override
     public void getPromotionList(final User user, final GetPromotionsCallback callback) {
         remotePromotionSource.getPromotionList(user, new GetPromotionsCallback() {
             @Override
             public void onPromotionsLoaded(List<Promotion> promotionList) {
                 callback.onPromotionsLoaded(promotionList);
-                localPromotionSource.savePromotions(promotionList);
+                localPromotionSource.savePromotionList(promotionList);
             }
 
             @Override
@@ -52,7 +56,7 @@ public class PromotionRepository implements PromotionDataSource {
     }
 
     @Override
-    public void savePromotions(List<Promotion> promotionList) {
-        localPromotionSource.savePromotions(promotionList);
+    public void savePromotionList(List<Promotion> promotionList) {
+        localPromotionSource.savePromotionList(promotionList);
     }
 }

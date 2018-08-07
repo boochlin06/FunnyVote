@@ -1,8 +1,5 @@
 package com.heaton.funnyvote.ui.search;
 
-import android.text.TextUtils;
-import android.util.Log;
-
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
 import com.heaton.funnyvote.data.VoteData.VoteDataSource;
@@ -19,9 +16,27 @@ public class SearchPresenter implements SearchContract.Presenter {
     private static final String TAG = SearchPresenter.class.getSimpleName();
     private VoteDataRepository voteDataRepository;
     private UserDataRepository userDataRepository;
+
+    public List<VoteData> getSearchVoteDataList() {
+        return searchVoteDataList;
+    }
+
+    public void setSearchVoteDataList(List<VoteData> searchVoteDataList) {
+        this.searchVoteDataList = searchVoteDataList;
+    }
+
     private List<VoteData> searchVoteDataList;
     private User user;
     private SearchContract.View view;
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
+    }
+
     private String keyword;
 
 
@@ -32,12 +47,13 @@ public class SearchPresenter implements SearchContract.Presenter {
         this.userDataRepository = userDataRepository;
         this.voteDataRepository = voteDataRepository;
         this.searchVoteDataList = new ArrayList<>();
+        this.view.setPresenter(this);
     }
 
     @Override
     public void searchVote(String keyword) {
         this.keyword = keyword;
-        reloadSearchList(9);
+        reloadSearchList(0);
     }
 
 
@@ -48,12 +64,10 @@ public class SearchPresenter implements SearchContract.Presenter {
             public void onVoteListLoaded(List<VoteData> voteDataList) {
                 updateSearchList(voteDataList, offset);
                 view.refreshFragment(searchVoteDataList);
-                view.hideLoadingCircle();
             }
 
             @Override
             public void onVoteListNotAvailable() {
-                view.hideLoadingCircle();
                 view.showHintToast(R.string.toast_network_connect_error, 0);
             }
         });
@@ -76,7 +90,7 @@ public class SearchPresenter implements SearchContract.Presenter {
         } else if (offset >= this.searchVoteDataList.size()) {
             this.searchVoteDataList.addAll(voteDataList);
         }
-        Log.d(TAG, "searchVoteDataList:" + searchVoteDataList.size() + ",offset :" + offset);
+        //Log.d(TAG, "searchVoteDataList:" + searchVoteDataList.size() + ",offset :" + offset);
         if (this.searchVoteDataList.size() < VoteDataRepository.PAGE_COUNT * (pageNumber + 1)) {
             view.setMaxCount(this.searchVoteDataList.size());
             if (offset != 0) {
@@ -88,13 +102,14 @@ public class SearchPresenter implements SearchContract.Presenter {
     }
 
     @Override
-    public void start() {
-        keyword = "";
+    public void start(final String keyword) {
+        this.keyword = keyword;
         userDataRepository.getUser(new UserDataSource.GetUserCallback() {
             @Override
             public void onResponse(User user) {
                 SearchPresenter.this.user = user;
-                if (!TextUtils.isEmpty(keyword)) {
+                if (!(keyword == null || keyword.length() == 0)) {
+                    System.out.println("1keyword:" + keyword);
                     searchVote(keyword);
                 }
             }
@@ -104,5 +119,10 @@ public class SearchPresenter implements SearchContract.Presenter {
 
             }
         }, false);
+    }
+
+    @Override
+    public void start() {
+        start("");
     }
 }

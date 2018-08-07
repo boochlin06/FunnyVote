@@ -1,12 +1,8 @@
 package com.heaton.funnyvote.ui.personal;
 
-import com.heaton.funnyvote.BasePresenter;
-import com.heaton.funnyvote.BaseView;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.ui.main.MainPageContract;
-
-import java.util.List;
 
 public interface PersonalContract {
     interface Presenter extends MainPageContract.Presenter {

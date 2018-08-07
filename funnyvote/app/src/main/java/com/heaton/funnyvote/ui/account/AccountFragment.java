@@ -109,7 +109,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 user.setMinAge(min);
                 user.setMaxAge(max);
                 user.setType(User.TYPE_FACEBOOK);
-                presenter.registerUser(user);
+                presenter.registerUser(user, getString(R.string.facebook_app_id));
                 //userManager.registerUser(user, mergeGuest, registerUserCallback);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -156,7 +156,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                         newUser.setEmail(user.email);
                         newUser.setUserIcon(user.profileImageUrl.replace("normal", "bigger"));
                         newUser.setType(User.TYPE_TWITTER);
-                        presenter.registerUser(newUser);
+                        presenter.registerUser(newUser, getString(R.string.twitter_api_id));
                         //userManager.registerUser(newUser, mergeGuest, registerUserCallback);
                     } else {
                         Toast.makeText(getContext(), R.string.account_toast_login_fail, Toast.LENGTH_SHORT).show();
@@ -187,7 +187,6 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 .enableAutoManage(getActivity(), this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        //userManager = UserManager.getInstance(getContext().getApplicationContext());
     }
 
     @Nullable
@@ -251,7 +250,6 @@ public class AccountFragment extends android.support.v4.app.Fragment
 
         presenter = new AccountPresenter(Injection.provideUserRepository(getContext()), this);
         presenter.start();
-        //updateUI();
 
         return view;
     }
@@ -320,7 +318,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
                 user.setUserIcon(picLink.toString());
             }
             user.setType(User.TYPE_GOOGLE);
-            presenter.registerUser(user);
+            presenter.registerUser(user, getString(R.string.google_app_id));
             //userManager.registerUser(user, mergeGuest, registerUserCallback);
         } else {
             Toast.makeText(getContext(), R.string.account_toast_login_fail, Toast.LENGTH_SHORT).show();
@@ -442,13 +440,13 @@ public class AccountFragment extends android.support.v4.app.Fragment
         builder.setPositiveButton(R.string.account_dialog_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                presenter.login(loginType,true);
+                presenter.login(loginType, true);
             }
         });
         builder.setNegativeButton(R.string.account_dialog_no, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                presenter.login(loginType,false);
+                presenter.login(loginType, false);
             }
         });
         builder.show();

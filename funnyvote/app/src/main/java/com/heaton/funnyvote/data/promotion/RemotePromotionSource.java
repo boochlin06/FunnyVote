@@ -49,7 +49,7 @@ public class RemotePromotionSource implements PromotionDataSource {
     }
 
     @Override
-    public void savePromotions(List<Promotion> promotionList) {
+    public void savePromotionList(List<Promotion> promotionList) {
         // Nothing to do
     }
 

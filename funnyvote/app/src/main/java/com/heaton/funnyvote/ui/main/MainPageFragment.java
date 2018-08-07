@@ -51,7 +51,6 @@ import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.ui.CirclePageIndicator;
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
-import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 import com.heaton.funnyvote.utils.Util;
 
 import java.util.ArrayList;
@@ -186,12 +185,12 @@ public class MainPageFragment extends android.support.v4.app.Fragment
 
     @Override
     public void showShareDialog(VoteData data) {
-        VoteDetailContentActivity.sendShareIntent(getContext(), data);
+        Util.sendShareIntent(getContext(), data);
     }
 
     @Override
     public void showAuthorDetail(VoteData data) {
-        VoteDetailContentActivity.sendPersonalDetailIntent(getContext(), data);
+        Util.sendPersonalDetailIntent(getContext(), data);
     }
 
     @Override
@@ -201,12 +200,12 @@ public class MainPageFragment extends android.support.v4.app.Fragment
 
     @Override
     public void showVoteDetail(VoteData data) {
-        VHVoteWallItem.startActivityToVoteDetail(getContext(), data.getVoteCode());
+        Util.startActivityToVoteDetail(getContext(), data.getVoteCode());
     }
 
     @Override
     public void showIntroductionDialog() {
-        SharedPreferences firstTimePref = FirstTimePref.getInstance(getContext()).getPreferences();
+        SharedPreferences firstTimePref = Injection.provideFirstTimePref(getActivity());
         if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, true)) {
             firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, false).apply();
             final Dialog introductionDialog = new Dialog(getActivity());

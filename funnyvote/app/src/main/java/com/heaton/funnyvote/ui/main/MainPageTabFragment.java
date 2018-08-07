@@ -166,6 +166,7 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
             // TODO:AUTO UPDATE .
             //refreshData();
         }
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -224,9 +225,11 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
 
     @Override
     public void refreshFragment(List<VoteData> voteDataList) {
-        adapter.setVoteList(voteDataList);
-        adapter.resetItemTypeList();
-        adapter.notifyDataSetChanged();
+        if (adapter != null) {
+            adapter.setVoteList(voteDataList);
+            adapter.resetItemTypeList();
+            adapter.notifyDataSetChanged();
+        }
     }
 
 

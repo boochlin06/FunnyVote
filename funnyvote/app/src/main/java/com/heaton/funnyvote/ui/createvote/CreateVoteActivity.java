@@ -33,8 +33,6 @@ import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.ui.main.VHVoteWallItem;
-import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 import com.heaton.funnyvote.utils.FileUtils;
 import com.heaton.funnyvote.utils.Util;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -129,8 +127,8 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
                 , Injection.provideUserRepository(getApplicationContext())
                 , this
                 , optionFragment, settingFragment);
+        this.setPresenter(presenter);
         presenter.start();
-
     }
 
     @Override
@@ -150,11 +148,11 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
 
     @Override
     public void IntentToVoteDetail(final VoteData voteData) {
-        VHVoteWallItem.startActivityToVoteDetail(getApplicationContext(), voteData.getVoteCode());
+        Util.startActivityToVoteDetail(getApplicationContext(), voteData.getVoteCode());
         circleLoad.postDelayed(new Runnable() {
             @Override
             public void run() {
-                VoteDetailContentActivity.sendShareIntent(getApplicationContext(), voteData);
+                Util.sendShareIntent(getApplicationContext(), voteData);
             }
         }, 1000);
         tracker.send(new HitBuilders.EventBuilder()

@@ -27,6 +27,10 @@ public class VoteDataRepository implements VoteDataSource {
         return INSTANCE;
     }
 
+    public static void destroyInstance() {
+        INSTANCE = null;
+    }
+
     public VoteDataRepository(VoteDataSource voteDataLocalSource
             , VoteDataSource voteDataRemoteSource) {
         this.voteDataRemoteSource = voteDataRemoteSource;
@@ -109,42 +113,6 @@ public class VoteDataRepository implements VoteDataSource {
         voteDataRemoteSource.pollVote(voteCode, password, pollOptions, user, new PollVoteCallback() {
             @Override
             public void onSuccess(VoteData voteDataNetwork) {
-                List<Option> optionList = voteDataNetwork.getNetOptions();
-                voteDataNetwork.setOptionCount(optionList.size());
-                int maxOption = 0;
-                for (int i = 0; i < optionList.size(); i++) {
-                    Option option = optionList.get(i);
-                    option.setVoteCode(voteDataNetwork.getVoteCode());
-                    if (option.getCount() == null) {
-                        option.setCount(0);
-                    }
-                    option.setId(null);
-                    if (i == 0) {
-                        voteDataNetwork.setOption1Title(option.getTitle());
-                        voteDataNetwork.setOption1Code(option.getCode());
-                        voteDataNetwork.setOption1Count(option.getCount());
-                        voteDataNetwork.setOption1Polled(option.getIsUserChoiced());
-                    } else if (i == 1) {
-                        voteDataNetwork.setOption2Title(option.getTitle());
-                        voteDataNetwork.setOption2Code(option.getCode());
-                        voteDataNetwork.setOption2Count(option.getCount());
-                        voteDataNetwork.setOption2Polled(option.getIsUserChoiced());
-                    }
-                    if (option.getCount() > maxOption && option.getCount() >= 1) {
-                        maxOption = option.getCount();
-                        voteDataNetwork.setOptionTopCount(option.getCount());
-                        voteDataNetwork.setOptionTopCode(option.getCode());
-                        voteDataNetwork.setOptionTopTitle(option.getTitle());
-                        voteDataNetwork.setOptionTopPolled(option.getIsUserChoiced());
-                    }
-                    if (option.getIsUserChoiced()) {
-                        voteDataNetwork.setOptionUserChoiceCode(option.getCode());
-                        voteDataNetwork.setOptionUserChoiceTitle(option.getTitle());
-                        voteDataNetwork.setOptionUserChoiceCount(option.getCount());
-                    }
-
-                    option.dumpDetail();
-                }
                 voteDataLocalSource.saveVoteData(voteDataNetwork);
                 callback.onSuccess(voteDataNetwork);
             }
@@ -164,7 +132,7 @@ public class VoteDataRepository implements VoteDataSource {
     @Override
     public void favoriteVote(final String voteCode, final boolean isFavorite, final User user, final FavoriteVoteCallback callback) {
 
-        Log.d("favoriteVoteRE","favoriteVote favoriteVote");
+        Log.d("favoriteVoteRE", "favoriteVote favoriteVote");
         voteDataRemoteSource.favoriteVote(voteCode, isFavorite, user, new FavoriteVoteCallback() {
             @Override
             public void onSuccess(boolean isFavorite) {
@@ -268,11 +236,7 @@ public class VoteDataRepository implements VoteDataSource {
             @Override
             public void onVoteListLoaded(List<VoteData> voteDataList) {
                 voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_PARTICIPATE);
-                if (voteDataList.size() == 0) {
-                    onVoteListNotAvailable();
-                } else {
-                    callback.onVoteListLoaded(voteDataList);
-                }
+                callback.onVoteListLoaded(voteDataList);
             }
 
             @Override
@@ -329,7 +293,7 @@ public class VoteDataRepository implements VoteDataSource {
 
             @Override
             public void onVoteListNotAvailable() {
-                voteDataRemoteSource.getSearchVoteList(keyword, offset, user, new GetVoteListCallback() {
+                voteDataLocalSource.getSearchVoteList(keyword, offset, user, new GetVoteListCallback() {
                     @Override
                     public void onVoteListLoaded(List<VoteData> voteDataList) {
                         callback.onVoteListLoaded(voteDataList);

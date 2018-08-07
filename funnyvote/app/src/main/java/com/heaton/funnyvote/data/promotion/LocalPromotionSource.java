@@ -1,6 +1,7 @@
 package com.heaton.funnyvote.data.promotion;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
 
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.PromotionDao;
@@ -52,12 +53,17 @@ public class LocalPromotionSource implements PromotionDataSource {
     }
 
     @Override
-    public void savePromotions(final List<Promotion> promotionList) {
+    public void savePromotionList(final List<Promotion> promotionList) {
         mAppExecutors.diskIO().execute(new Runnable() {
             @Override
             public void run() {
                 promotionDao.insertOrReplaceInTx(promotionList);
             }
         });
+    }
+
+    @VisibleForTesting
+    public static void clearInstance() {
+        INSTANCE = null;
     }
 }

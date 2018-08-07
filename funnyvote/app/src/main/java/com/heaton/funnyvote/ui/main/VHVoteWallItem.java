@@ -30,7 +30,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
-    public static String BUNDLE_KEY_VOTE_CODE = "VOTE_ID";
     public VoteData data;
     private View.OnClickListener MoveToVoteDetailOnClickListener = new View.OnClickListener() {
         @Override
@@ -441,14 +440,6 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         }
     }
 
-    public static void startActivityToVoteDetail(Context context, String voteCode) {
-        Intent intent = new Intent(context, VoteDetailContentActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        Bundle bundle = new Bundle();
-        bundle.putString(BUNDLE_KEY_VOTE_CODE, voteCode);
-        intent.putExtras(bundle);
-        context.startActivity(intent);
-    }
 
     @OnClick(R.id.relBarFavorite)
     public void onBarFavoriteClick() {

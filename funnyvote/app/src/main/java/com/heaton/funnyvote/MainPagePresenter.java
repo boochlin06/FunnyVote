@@ -13,11 +13,12 @@ public class MainPagePresenter implements MainPageContract.Presenter {
             , MainPageContract.View view) {
         this.userDataRepository = userDataRepository;
         this.view = view;
+        this.view.setPresenter(this);
     }
 
     @Override
-    public void IntentToSearchPage() {
-        view.showSearchPage();
+    public void IntentToSearchPage(String searchKeyword) {
+        view.showSearchPage(searchKeyword);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void loadUser() {
         userDataRepository.getUser(new UserDataSource.GetUserCallback() {
             @Override
             public void onResponse(User user) {
@@ -57,5 +58,11 @@ public class MainPagePresenter implements MainPageContract.Presenter {
             public void onFailure() {
             }
         }, false);
+    }
+
+    @Override
+    public void start() {
+        IntentToMainPage();
+        loadUser();
     }
 }

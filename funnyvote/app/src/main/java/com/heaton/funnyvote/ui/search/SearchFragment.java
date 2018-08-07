@@ -24,7 +24,7 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.ui.main.VHVoteWallItem;
+import com.heaton.funnyvote.utils.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,10 +123,15 @@ public class SearchFragment extends Fragment implements SearchContract.View {
         super.onViewCreated(view, savedInstanceState);
         hideLoadingCircle();
         initRecyclerView();
+        Bundle searchArgument = getArguments();
+        String keyword = "";
+        if (searchArgument != null) {
+            keyword = searchArgument.getString(KEY_SEARCH_KEYWORD, "");
+        }
 
         presenter = new SearchPresenter(Injection.provideVoteDataRepository(getContext())
                 , Injection.provideUserRepository(getContext()), this);
-        presenter.start();
+        presenter.start(keyword);
 
     }
 
@@ -145,14 +150,6 @@ public class SearchFragment extends Fragment implements SearchContract.View {
         ryMain.setAdapter(adapter);
 
     }
-
-//    private void setQueryText(String queryText) {
-//        this.keyword = queryText;
-//        if (user != null) {
-//            this.showLoadingCircle();
-//            voteDataManager.getSearchVoteList(keyword, 0, user);
-//        }
-//    }
 
     @Override
     public void showLoadingCircle() {
@@ -178,30 +175,16 @@ public class SearchFragment extends Fragment implements SearchContract.View {
         //EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
-//
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onRemoteEvent(EventBusManager.RemoteServiceEvent event) {
-//        if (event.message.equals(EventBusManager.RemoteServiceEvent.GET_VOTE_LIST_SEARCH)) {
-//            refreshData(event.voteDataList, event.offset);
-//            hideLoadingCircle();
-//        }
-//    }
-//
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    public void onUIChange(EventBusManager.UIControlEvent event) {
-//        if (event.message.equals(EventBusManager.UIControlEvent.SEARCH_KEYWORD)) {
-//            setQueryText(event.keyword);
-//        }
-//    }
 
     @Override
     public void showHintToast(int res, long arg) {
-        Toast.makeText(getContext(), getString(res, arg), Toast.LENGTH_SHORT).show();
+        if(isAdded())
+            Toast.makeText(getActivity(), getString(res, arg), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void showVoteDetail(VoteData data) {
-        VHVoteWallItem.startActivityToVoteDetail(getContext(), data.getVoteCode());
+        Util.startActivityToVoteDetail(getContext(), data.getVoteCode());
     }
 
     @Override
@@ -216,33 +199,6 @@ public class SearchFragment extends Fragment implements SearchContract.View {
         adapter.setVoteList(voteDataList);
         adapter.notifyDataSetChanged();
     }
-//    private void refreshData(List<VoteData> voteDataList, int offset) {
-//        if (voteDataList == null) {
-//            voteDataList = new ArrayList<>();
-//
-//            voteDataList = DataLoader.getInstance(getContext()).querySearchVotes(keyword
-//                    , offset, LIMIT);
-//        }
-//        Log.d(TAG, "Network Refresh wall item : Search");
-//        int pageNumber = offset / LIMIT;
-//
-//        if (offset == 0) {
-//            this.voteDataList = voteDataList;
-//            adapter.setVoteList(this.voteDataList);
-//        } else if (offset >= this.voteDataList.size()) {
-//            this.voteDataList.addAll(voteDataList);
-//        }
-//
-//        if (this.voteDataList.size() < LIMIT * (pageNumber + 1)) {
-//            adapter.setMaxCount(this.voteDataList.size());
-//            if (offset != 0) {
-//                Toast.makeText(getContext(), R.string.wall_item_toast_no_vote_refresh, Toast.LENGTH_SHORT).show();
-//            }
-//        } else {
-//            adapter.setMaxCount(LIMIT * (pageNumber + 2));
-//        }
-//        adapter.notifyDataSetChanged();
-//    }
 
     @Override
     public void setPresenter(SearchContract.Presenter presenter) {

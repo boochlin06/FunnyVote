@@ -68,8 +68,8 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
 
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
-        getSupportFragmentManager().beginTransaction().replace(R.id.frame_content
-                , new MainPageFragment()).commit();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.frame_content
+//                , new MainPageFragment()).commit();
         toolbar = (Toolbar) findViewById(R.id.toolbarMain);
         adView = (AdView) findViewById(R.id.adView);
         toolbar.setTitle(getString(R.string.drawer_home));
@@ -158,6 +158,10 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
     }
 
     private void switchFragment(final MenuItem menuItem) {
+        switchFragment(menuItem, "");
+    }
+
+    private void switchFragment(final MenuItem menuItem, final String searchKeyword) {
         final int menuId = menuItem.getItemId();
         drawerLayout.postDelayed(new Runnable() {
             @Override
@@ -179,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
                         presenter.IntentToUserPage();
                         break;
                     case R.id.navigation_item_search:
-                        presenter.IntentToSearchPage();
+                        presenter.IntentToSearchPage(searchKeyword);
                         break;
                     case R.id.navigation_item_account:
                         presenter.IntentToAccountPage();
@@ -248,11 +252,12 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
                 public boolean onQueryTextSubmit(String query) {
                     Log.d(TAG, "onQueryTextSubmit:" + query + "  page:" + currentPage
                             + " search page:" + navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
+
                     if (currentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
-                        switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
+                        switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search), query);
                         navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
                     }
-                    return false;
+                    return true;
                 }
             };
 
@@ -278,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
     }
 
     @Override
-    public void showSearchPage() {
+    public void showSearchPage(String searchKeyword) {
         Fragment fragment;
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Slide slide = new Slide();
@@ -286,6 +291,9 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
         slide.setSlideEdge(Gravity.RIGHT);
         tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
         fragment = new SearchFragment();
+        Bundle searchArgument = new Bundle();
+        searchArgument.putString(SearchFragment.KEY_SEARCH_KEYWORD,searchKeyword);
+        fragment.setArguments(searchArgument);
         fragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, fragment).commit();
         toolbar.setTitle(R.string.drawer_search);

@@ -1,13 +1,10 @@
 package com.heaton.funnyvote.data.user;
 
-import android.content.Context;
 import android.util.Log;
 
-import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.RemoteServiceApi;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.retrofit.Server;
-import com.heaton.funnyvote.utils.Util;
 
 import java.io.IOException;
 
@@ -21,16 +18,15 @@ public class UserDataRepository implements UserDataSource {
     private static final String TAG = UserDataRepository.class.getSimpleName();
     private static UserDataRepository INSTANCE = null;
 
-    private Context context;
     private UserDataSource localUserDataSource;
     private UserDataSource remoteUserSource;
 
-    public static UserDataRepository getInstance(Context context, UserDataSource localuserDataSource
+    public static UserDataRepository getInstance(UserDataSource localuserDataSource
             , UserDataSource remoteUserSource) {
         if (INSTANCE == null) {
             synchronized (UserDataRepository.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new UserDataRepository(context, localuserDataSource
+                    INSTANCE = new UserDataRepository(localuserDataSource
                             , remoteUserSource);
                 }
             }
@@ -38,8 +34,11 @@ public class UserDataRepository implements UserDataSource {
         return INSTANCE;
     }
 
-    public UserDataRepository(Context context, UserDataSource userDataSource, UserDataSource remoteUserSource) {
-        this.context = context;
+    public static void destroyInstance() {
+        INSTANCE = null;
+    }
+
+    public UserDataRepository(UserDataSource userDataSource, UserDataSource remoteUserSource) {
         this.localUserDataSource = userDataSource;
         this.remoteUserSource = remoteUserSource;
     }
@@ -48,7 +47,7 @@ public class UserDataRepository implements UserDataSource {
     public void getUser(final GetUserCallback callback, boolean forceUpdateUserCode) {
         final User user = localUserDataSource.getUser();
         if (user.getType() == User.TYPE_GUEST && user.getUserCode().isEmpty()) {
-            final String guestName = Util.randomUserName(context);
+            final String guestName = "Guest" + (int) (Math.random() * 1000);//Util.randomUserName(context);
             Log.d(TAG, "Guest!" + user.getUserCode() + " name:" + guestName);
             remoteUserSource.getGuestUserCode(new GetUserCodeCallback() {
                 @Override
@@ -68,7 +67,8 @@ public class UserDataRepository implements UserDataSource {
             if (forceUpdateUserCode) {
                 remoteUserSource.getUserInfo(new Callback<Server.UserDataQuery>() {
                     @Override
-                    public void onResponse(Call<Server.UserDataQuery> call, Response<Server.UserDataQuery> response) {
+                    public void onResponse(Call<Server.UserDataQuery> call
+                            , Response<Server.UserDataQuery> response) {
                         String userCode = null;
                         if (response.isSuccessful()) {
                             if (user.getType() == User.TYPE_GUEST) {
@@ -105,22 +105,17 @@ public class UserDataRepository implements UserDataSource {
     }
 
 
-    @Override
-    public void registerUser(final User user, final boolean mergeGuest, final RegisterUserCallback callback) {
+    public void registerUser(final String appId, final User user, final boolean mergeGuest, final RegisterUserCallback callback) {
         String userType = "";
-        String appId = "";
         switch (user.getType()) {
             case User.TYPE_FACEBOOK:
                 userType = RemoteServiceApi.USER_TYPE_FACEBOOK;
-                appId = context.getString(R.string.facebook_app_id);
                 break;
             case User.TYPE_GOOGLE:
                 userType = RemoteServiceApi.USER_TYPE_GOOGLE;
-                appId = context.getString(R.string.google_app_id);
                 break;
             case User.TYPE_TWITTER:
                 userType = RemoteServiceApi.USER_TYPE_TWITTER;
-                appId = context.getString(R.string.twitter_api_id);
             default:
         }
         if (!userType.isEmpty()) {
@@ -258,5 +253,10 @@ public class UserDataRepository implements UserDataSource {
     @Override
     public void getUserInfo(Callback<Server.UserDataQuery> callback, User user) {
         remoteUserSource.getUserInfo(callback, user);
+    }
+
+    @Override
+    public void setGuestName(String guestName) {
+
     }
 }

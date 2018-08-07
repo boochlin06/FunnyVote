@@ -32,13 +32,17 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
     public static final String ERROR_ENDTIME_MORE_THAN_NOW = "ERROR_ENDTIME_MORE_THAN_NOW";
     public static final String ERROR_ENDTIME_MORE_THAN_MAX = "ERROR_ENDTIME_MORE_THAN_MAX";
     public Map<String, Boolean> errorCheckMap;
-    private static final long DEFAULT_END_TIME = 30;
-    private static final long DEFAULT_END_TIME_MAX = 90;
+    public static final long DEFAULT_END_TIME = 30;
+    public static final long DEFAULT_END_TIME_MAX = 90;
     private static final String TAG = CreateVoteActivityPresenter.class.getSimpleName();
     private CreateVoteContract.ActivityView activityView;
     private CreateVoteContract.OptionFragmentView optionFragmentView;
     private CreateVoteContract.SettingFragmentView settingFragmentView;
+
+
     private List<Option> optionList;
+
+
     private VoteData voteSettings;
     private User user;
     private VoteDataRepository voteDataRepository;
@@ -58,11 +62,30 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
         this.voteSettings = new VoteData();
         this.voteDataRepository = voteDataRepository;
         this.userDataRepository = userDataRepository;
+        this.activityView.setPresenter(this);
+        //this.settingFragmentView.setPresenter(this);
+        //this.optionFragmentView.setPresenter(this);
     }
 
     public CreateVoteActivityPresenter(CreateVoteContract.ActivityView activityView
             , VoteDataRepository voteDataRepository, UserDataRepository userDataRepository) {
         this(voteDataRepository, userDataRepository, activityView, null, null);
+    }
+
+    public VoteData getVoteSettings() {
+        return voteSettings;
+    }
+
+    public void setVoteSettings(VoteData voteSettings) {
+        this.voteSettings = voteSettings;
+    }
+
+    public List<Option> getOptionList() {
+        return optionList;
+    }
+
+    public void setOptionList(List<Option> optionList) {
+        this.optionList = optionList;
     }
 
     @Override
@@ -71,18 +94,18 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
             Option option = new Option();
             option.setId(newOptionIdAuto);
             option.setCount(0);
-            optionList.add(option);
+            getOptionList().add(option);
             newOptionIdAuto++;
         }
 
         voteSettings = new VoteData();
-        voteSettings.setMaxOption(1);
-        voteSettings.setMinOption(1);
-        voteSettings.setIsUserCanAddOption(false);
-        voteSettings.setIsCanPreviewResult(false);
-        voteSettings.setIsNeedPassword(false);
-        voteSettings.setSecurity(VoteData.SECURITY_PUBLIC);
-        voteSettings.setEndTime(System.currentTimeMillis() + DEFAULT_END_TIME * 86400 * 1000);
+        getVoteSettings().setMaxOption(1);
+        getVoteSettings().setMinOption(1);
+        getVoteSettings().setIsUserCanAddOption(false);
+        getVoteSettings().setIsCanPreviewResult(false);
+        getVoteSettings().setIsNeedPassword(false);
+        getVoteSettings().setSecurity(VoteData.SECURITY_PUBLIC);
+        getVoteSettings().setEndTime(System.currentTimeMillis() + DEFAULT_END_TIME * 86400 * 1000);
         userDataRepository.getUser(new UserDataSource.GetUserCallback() {
             @Override
             public void onResponse(User user) {
@@ -91,9 +114,9 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
                 String name = user.getUserName();
                 String code = user.getUserCode();
                 String icon = user.getUserIcon();
-                voteSettings.setAuthorName(name);
-                voteSettings.setAuthorCode(code);
-                voteSettings.setAuthorIcon(icon);
+                getVoteSettings().setAuthorName(name);
+                getVoteSettings().setAuthorCode(code);
+                getVoteSettings().setAuthorIcon(icon);
             }
 
             @Override
@@ -108,63 +131,63 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
     public void submitCreateVote() {
         activityView.showLoadingCircle();
         errorCheckMap = new HashMap<>();
-        voteSettings = settingFragmentView.getFinalVoteSettings(voteSettings);
-        voteSettings.setStartTime(System.currentTimeMillis());
+        voteSettings = settingFragmentView.getFinalVoteSettings(getVoteSettings());
+        getVoteSettings().setStartTime(System.currentTimeMillis());
         List<String> optionTitles = new ArrayList<>();
         int errorNumber = 0;
-        int optionCount = optionList.size();
-        for (int i = 0; i < optionList.size(); i++) {
-            if (optionList.get(i).getTitle() == null || optionList.get(i).getTitle().length() == 0) {
+        int optionCount = getOptionList().size();
+        for (int i = 0; i < getOptionList().size(); i++) {
+            if (getOptionList().get(i).getTitle() == null || getOptionList().get(i).getTitle().length() == 0) {
                 errorNumber++;
                 errorCheckMap.put(ERROR_FILL_ALL_OPTION, true);
                 break;
             }
         }
-        for (int i = 0; i < optionList.size(); i++) {
-            if (optionTitles.contains(optionList.get(i).getTitle())) {
+        for (int i = 0; i < getOptionList().size(); i++) {
+            if (optionTitles.contains(getOptionList().get(i).getTitle())) {
                 errorNumber++;
                 errorCheckMap.put(ERROR_OPTION_DUPLICATE, true);
                 break;
             } else {
-                optionTitles.add(optionList.get(i).getTitle());
+                optionTitles.add(getOptionList().get(i).getTitle());
                 Log.d(TAG, "option " + i + " title:" + optionTitles.get(i));
             }
         }
-        if (voteSettings.getTitle() == null || voteSettings.getTitle().isEmpty()) {
+        if (getVoteSettings().getTitle() == null || getVoteSettings().getTitle().isEmpty()) {
             errorNumber++;
             errorCheckMap.put(ERROR_TITLE_EMPTY, true);
         }
-
-        if (voteSettings.getAuthorCode() == null || TextUtils.isEmpty(voteSettings.getAuthorCode())) {
+        if (getVoteSettings().getAuthorCode() == null || TextUtils.isEmpty(getVoteSettings().getAuthorCode())) {
             errorNumber++;
             errorCheckMap.put(ERROR_USER_CODE_ERROR, true);
         }
-        if (voteSettings.getMaxOption() == 0) {
+        if (getVoteSettings().getMaxOption() == 0) {
             errorNumber++;
             errorCheckMap.put(ERROR_OPTION_MAX_0, true);
         }
-        if (voteSettings.getMinOption() == 0) {
+        if (getVoteSettings().getMinOption() == 0) {
             errorNumber++;
             errorCheckMap.put(ERROR_OPTION_MIN_0, true);
         }
-        if (voteSettings.getMaxOption() < voteSettings.getMinOption()) {
+        if (getVoteSettings().getMaxOption() < getVoteSettings().getMinOption()) {
             errorNumber++;
             errorCheckMap.put(ERROR_OPTION_MAX_SAMLL_THAN_MIN, true);
         }
-        if (voteSettings.getMaxOption() > optionCount) {
+        if (getVoteSettings().getMaxOption() > optionCount) {
             errorNumber++;
             errorCheckMap.put(ERROR_OPTION_MAX_SMALL_THAN_TOTAL, true);
         }
-        if (voteSettings.getEndTime() < System.currentTimeMillis()) {
+        if (getVoteSettings().getEndTime() < System.currentTimeMillis()) {
             errorNumber++;
             errorCheckMap.put(ERROR_ENDTIME_MORE_THAN_NOW, true);
         }
-        if (voteSettings.getIsNeedPassword() && voteSettings.password.length() <= 0) {
+        if (getVoteSettings().getIsNeedPassword() && getVoteSettings().password.length() <= 0) {
             errorNumber++;
             errorCheckMap.put(ERROR_PASSWORD_EMPTY, true);
         }
+        Log.d(TAG, "ERROR NUMBER:" + errorNumber);
         if (errorNumber == 0) {
-            voteDataRepository.createVote(voteSettings, optionTitles, voteSettings.getImageFile()
+            voteDataRepository.createVote(getVoteSettings(), optionTitles, getVoteSettings().getImageFile()
                     , new VoteDataSource.GetVoteDataCallback() {
                         @Override
                         public void onVoteDataLoaded(VoteData voteData) {
@@ -172,7 +195,7 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
                             activityView.hideLoadingCircle();
                             activityView.IntentToVoteDetail(voteData);
                             Log.d(TAG, "create vote success:" + voteData.getVoteCode()
-                                    + " image:" + voteSettings.getVoteImage());
+                                    + " image:" + getVoteSettings().getVoteImage());
                         }
 
                         @Override
@@ -189,44 +212,45 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
     }
 
     @Override
-    public void addNewOption() {
+    public long addNewOption() {
         Option option = new Option();
         option.setCount(0);
         option.setId(newOptionIdAuto++);
-        optionList.add(option);
+        getOptionList().add(option);
         optionFragmentView.refreshOptions();
+        return option.getId();
     }
 
     @Override
     public void removeOption(long optionId) {
-        if (optionList.size() <= 2) {
+        if (getOptionList().size() <= 2) {
             activityView.showHintToast(R.string.create_vote_toast_less_than_2_option);
             return;
         }
         int removePosition = -1;
-        for (int i = 0; i < optionList.size(); i++) {
-            if (optionList.get(i).getId() == optionId) {
+        for (int i = 0; i < getOptionList().size(); i++) {
+            if (getOptionList().get(i).getId() == optionId) {
                 removePosition = i;
                 break;
             }
         }
         if (removePosition >= 0) {
-            optionList.remove(removePosition);
-            optionFragmentView.refreshOptions();
+            getOptionList().remove(removePosition);
         }
+        optionFragmentView.refreshOptions();
     }
 
     @Override
     public void reviseOption(long optionId, String optionText) {
         int targetPosition = -1;
-        for (int i = 0; i < optionList.size(); i++) {
-            if (optionList.get(i).getId() == optionId) {
+        for (int i = 0; i < getOptionList().size(); i++) {
+            if (getOptionList().get(i).getId() == optionId) {
                 targetPosition = i;
                 break;
             }
         }
         if (targetPosition >= 0) {
-            optionList.get(targetPosition).setTitle(optionText);
+            getOptionList().get(targetPosition).setTitle(optionText);
         }
     }
 
@@ -238,19 +262,19 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
     @Override
     public void setOptionFragmentView(CreateVoteContract.OptionFragmentView view) {
         this.optionFragmentView = view;
-        optionFragmentView.setUpOptionAdapter(optionList);
+        optionFragmentView.setUpOptionAdapter(getOptionList());
     }
 
     @Override
     public void setSettingFragmentView(CreateVoteContract.SettingFragmentView view) {
         this.settingFragmentView = view;
-        settingFragmentView.setUpVoteSettings(voteSettings);
+        settingFragmentView.setUpVoteSettings(getVoteSettings());
         settingFragmentView.updateUserSetting(user);
     }
 
     @Override
     public void updateVoteSecurity(String security) {
-        voteSettings.setSecurity(security);
+        getVoteSettings().setSecurity(security);
     }
 
     @Override
@@ -263,18 +287,18 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
             activityView.showHintToast(R.string.create_vote_error_hint_endtime_more_than_max, DEFAULT_END_TIME_MAX);
             return;
         } else {
-            voteSettings.setEndTime(timeInMill);
-            settingFragmentView.setUpVoteSettings(voteSettings);
+            getVoteSettings().setEndTime(timeInMill);
+            settingFragmentView.setUpVoteSettings(getVoteSettings());
         }
     }
 
     @Override
     public void updateVoteImage(File image) {
-        voteSettings.setImageFile(image);
+        getVoteSettings().setImageFile(image);
     }
 
     @Override
     public void updateVoteTitle(String title) {
-        voteSettings.setTitle(title);
+        getVoteSettings().setTitle(title);
     }
 }

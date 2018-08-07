@@ -29,7 +29,12 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
     private final VoteDataRepository voteDataRepository;
     private final UserDataRepository userDataRepository;
     private User user;
-    private VoteData data = new VoteData();
+
+    public VoteData getVoteData() {
+        return voteData;
+    }
+
+    private VoteData voteData = new VoteData();
 
     private List<Option> optionList;
     private List<Option> searchList;
@@ -38,10 +43,10 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
     private List<String> expandOptionList;
 
     private boolean isMultiChoice = false;
-    private boolean isUserPreResult = false;
+    public boolean isUserPreResult = false;
     private boolean isUserOnAddNewOption = false;
     private boolean isSearchMode = false;
-    private int optionType = OptionItemAdapter.OPTION_UNPOLL;
+    public int optionType = OptionItemAdapter.OPTION_UNPOLL;
     // all new option id is negative auto increment.
     private long newOptionIdAuto = -1;
 
@@ -79,13 +84,13 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
 
     @Override
     public void favoriteVote() {
-        voteDataRepository.favoriteVote(data.getVoteCode(), !data.getIsFavorite()
+        voteDataRepository.favoriteVote(getVoteData().getVoteCode(), !getVoteData().getIsFavorite()
                 , user, new VoteDataSource.FavoriteVoteCallback() {
                     @Override
                     public void onSuccess(boolean isFavorite) {
-                        data.setIsFavorite(isFavorite);
+                        getVoteData().setIsFavorite(isFavorite);
                         view.updateFavoriteView(isFavorite);
-                        if (data.getIsFavorite()) {
+                        if (getVoteData().getIsFavorite()) {
                             view.showHintToast(R.string.vote_detail_toast_add_favorite);
                         } else {
                             view.showHintToast(R.string.vote_detail_toast_remove_favorite);
@@ -101,32 +106,29 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
 
     @Override
     public void pollVote(String password) {
-        if (choiceCodeList.size() < data.getMinOption()) {
-            view.showMultiChoiceAtLeast(data.getMinOption());
-        } else if (choiceCodeList.size() > data.getMaxOption()) {
-            view.showMultiChoiceOverMaxToast(data.getMaxOption());
+        if (choiceCodeList.size() < getVoteData().getMinOption()) {
+            view.showMultiChoiceAtLeast(getVoteData().getMinOption());
+        } else if (choiceCodeList.size() > getVoteData().getMaxOption()) {
+            view.showMultiChoiceOverMaxToast(getVoteData().getMaxOption());
         } else if (isUserOnAddNewOption) {
             view.showHintToast(R.string.vote_detail_toast_fill_new_option);
         } else {
-            if (data.getIsNeedPassword() && !view.isPasswordDialogShowing()) {
+            if (getVoteData().getIsNeedPassword() && !view.isPasswordDialogShowing()) {
                 view.showPollPasswordDialog();
             } else {
                 view.showLoadingCircle();
-                Log.d(TAG, "choice:" + choiceCodeList.size()
-                        + " vc:" + data.getVoteCode() + " user:" + user.getUserCode() + "  type:" + user.getType());
-                voteDataRepository.pollVote(data.getVoteCode(), password, choiceCodeList, user, new VoteDataSource.PollVoteCallback() {
+                voteDataRepository.pollVote(getVoteData().getVoteCode(), password, choiceCodeList, user, new VoteDataSource.PollVoteCallback() {
                     @Override
                     public void onSuccess(VoteData voteData) {
                         view.hideLoadingCircle();
-                        VoteDetailPresenter.this.data = voteData;
-                        VoteDetailPresenter.this.optionList = voteData.getNetOptions();
+                        VoteDetailPresenter.this.voteData = voteData;
+                        VoteDetailPresenter.this.optionList = getVoteData().getNetOptions();
                         checkCurrentOptionType();
-                        view.setUpViews(data,optionType);
-                        view.setUpOptionAdapter(data, optionType, optionList);
+                        view.setUpViews(VoteDetailPresenter.this.getVoteData(), optionType);
+                        view.setUpOptionAdapter(VoteDetailPresenter.this.getVoteData(), optionType, optionList);
                         view.setUpSubmit(optionType);
                         view.refreshOptions();
                         view.hidePollPasswordDialog();
-                        view.refreshOptions();
                     }
 
                     @Override
@@ -165,12 +167,12 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
                 choiceCodeList.remove(optionCode);
                 view.updateChoiceOptions(choiceList);
             } else {
-                if (choiceList.size() < data.getMaxOption()) {
+                if (choiceList.size() < getVoteData().getMaxOption()) {
                     choiceList.add(optionId);
                     choiceCodeList.add(optionCode);
                     view.updateChoiceOptions(choiceList);
                 } else {
-                    view.showMultiChoiceOverMaxToast(data.getMaxOption());
+                    view.showMultiChoiceOverMaxToast(getVoteData().getMaxOption());
                 }
             }
         }
@@ -219,24 +221,24 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
     @Override
     public void addNewOptionCompleted(String password, String newOptionText) {
         if (newOptionText != null && !TextUtils.isEmpty(newOptionText)) {
-            if (data.getIsNeedPassword() && !view.isPasswordDialogShowing()) {
+            if (getVoteData().getIsNeedPassword() && !view.isPasswordDialogShowing()) {
                 view.showAddNewOptionPasswordDialog(newOptionText);
             } else {
                 view.showLoadingCircle();
                 List<String> newOptions = new ArrayList<>();
                 newOptions.add(newOptionText);
-                voteDataRepository.addNewOption(data.getVoteCode(), password, newOptions, user
+                voteDataRepository.addNewOption(getVoteData().getVoteCode(), password, newOptions, user
                         , new VoteDataSource.AddNewOptionCallback() {
                             @Override
                             public void onSuccess(VoteData voteData) {
                                 Log.e(TAG, "onSuccess");
                                 isUserOnAddNewOption = false;
                                 view.hideLoadingCircle();
-                                VoteDetailPresenter.this.data = voteData;
+                                VoteDetailPresenter.this.voteData = voteData;
                                 VoteDetailPresenter.this.optionList = voteData.getNetOptions();
                                 checkCurrentOptionType();
-                                view.setUpViews(data, optionType);
-                                view.setUpOptionAdapter(data, optionType, optionList);
+                                view.setUpViews(VoteDetailPresenter.this.voteData, optionType);
+                                view.setUpOptionAdapter(VoteDetailPresenter.this.voteData, optionType, optionList);
                                 view.setUpSubmit(optionType);
                                 view.refreshOptions();
                                 view.hideAddNewOptionPasswordDialog();
@@ -276,28 +278,28 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
         }
         if (removePosition >= 0) {
             optionList.remove(removePosition);
-            view.refreshOptions();
         }
+        view.refreshOptions();
     }
 
     @Override
-    public void showVoteInfo() {
-        view.showVoteInfoDialog(data);
+    public void IntentToVoteInfo() {
+        view.showVoteInfoDialog(getVoteData());
     }
 
     @Override
-    public void showTitleDetail() {
-        view.showTitleDetailDialog(data);
+    public void IntentToTitleDetail() {
+        view.showTitleDetailDialog(getVoteData());
     }
 
     @Override
     public void IntentToShareDialog() {
-        view.showShareDialog(data);
+        view.showShareDialog(getVoteData());
     }
 
     @Override
     public void IntentToAuthorDetail() {
-        view.showAuthorDetail(data);
+        view.showAuthorDetail(getVoteData());
     }
 
     @Override
@@ -361,7 +363,7 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
 
     @Override
     public void CheckSortOptionType() {
-        view.showSortOptionDialog(data);
+        view.showSortOptionDialog(getVoteData());
     }
 
     @Override
@@ -383,24 +385,24 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
                 voteDataRepository.getVoteData(voteId, user, new VoteDataSource.GetVoteDataCallback() {
                     @Override
                     public void onVoteDataLoaded(VoteData voteData) {
-                        VoteDetailPresenter.this.data = voteData;
-                        VoteDetailPresenter.this.optionList = voteData.getNetOptions();
+                        VoteDetailPresenter.this.voteData = voteData;
+                        VoteDetailPresenter.this.optionList = getVoteData().getNetOptions();
                         checkCurrentOptionType();
-                        view.setUpViews(voteData, optionType);
+                        view.setUpViews(getVoteData(), optionType);
                         view.setUpSubmit(optionType);
-                        if(optionType == OptionItemAdapter.OPTION_UNPOLL) {
+                        if (optionType == OptionItemAdapter.OPTION_UNPOLL) {
                             view.showCaseView();
                         }
                         view.hideLoadingCircle();
-                        voteDataRepository.getOptions(voteData, new VoteDataSource.GetVoteOptionsCallback() {
+                        voteDataRepository.getOptions(getVoteData(), new VoteDataSource.GetVoteOptionsCallback() {
                             @Override
                             public void onVoteOptionsLoaded(List<Option> optionList) {
                                 VoteDetailPresenter.this.optionList = optionList;
-                                view.setUpOptionAdapter(data, optionType, optionList);
-                                if (data.getEndTime() > System.currentTimeMillis() && !data.getIsPolled() && data.isMultiChoice()) {
-                                    view.showMultiChoiceToast(data.getMaxOption(), data.getMinOption());
-                                } else if (data.getEndTime() < System.currentTimeMillis()) {
-                                    if (data.getIsPolled()) {
+                                view.setUpOptionAdapter(VoteDetailPresenter.this.getVoteData(), optionType, optionList);
+                                if (VoteDetailPresenter.this.getVoteData().getEndTime() > System.currentTimeMillis() && !VoteDetailPresenter.this.getVoteData().getIsPolled() && VoteDetailPresenter.this.getVoteData().isMultiChoice()) {
+                                    view.showMultiChoiceToast(VoteDetailPresenter.this.getVoteData().getMaxOption(), VoteDetailPresenter.this.getVoteData().getMinOption());
+                                } else if (VoteDetailPresenter.this.getVoteData().getEndTime() < System.currentTimeMillis()) {
+                                    if (VoteDetailPresenter.this.getVoteData().getIsPolled()) {
                                         view.showHintToast(R.string.vote_detail_toast_vote_end_polled);
                                     } else {
                                         view.showHintToast(R.string.vote_detail_toast_vote_end_not_poll);
@@ -432,12 +434,12 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
     }
 
     private void checkCurrentOptionType() {
-        if (data.getEndTime() < System.currentTimeMillis() || data.getIsPolled() || isUserPreResult) {
+        if (getVoteData().getEndTime() < System.currentTimeMillis() || getVoteData().getIsPolled() || isUserPreResult) {
             optionType = OptionItemAdapter.OPTION_SHOW_RESULT;
         } else {
             optionType = OptionItemAdapter.OPTION_UNPOLL;
         }
-        this.isMultiChoice = data.isMultiChoice();
+        this.isMultiChoice = getVoteData().isMultiChoice();
     }
 
 }

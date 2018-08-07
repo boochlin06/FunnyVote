@@ -69,7 +69,12 @@ public class RemoteUserDataSource implements UserDataSource {
     }
 
     @Override
-    public void registerUser(User user, boolean mergeGuest, RegisterUserCallback callback) {
+    public void setGuestName(String guestName) {
+
+    }
+
+    @Override
+    public void registerUser(String appId, User user, boolean mergeGuest, RegisterUserCallback callback) {
 
         //Not required for the network data source
     }

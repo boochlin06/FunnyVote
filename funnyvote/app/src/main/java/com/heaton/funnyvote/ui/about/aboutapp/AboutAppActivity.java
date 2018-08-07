@@ -18,6 +18,7 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.ui.about.AboutFragment;
 import com.heaton.funnyvote.ui.about.aboutapp.AboutAppContract;
 import com.heaton.funnyvote.ui.about.aboutapp.AboutAppPresenter;
+import com.heaton.funnyvote.utils.Util;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -88,7 +89,7 @@ public class AboutAppActivity extends AppCompatActivity implements AboutAppContr
 
     @Override
     public void showShareApp() {
-        AboutFragment.sendShareAppIntent(getApplicationContext());
+        Util.sendShareAppIntent(getApplicationContext());
     }
 
     @Override

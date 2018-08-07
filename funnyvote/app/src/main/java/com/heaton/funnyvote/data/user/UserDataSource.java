@@ -53,7 +53,9 @@ public interface UserDataSource {
 
     void getUser(GetUserCallback callback, boolean forceUpdateUserCode);
 
-    void registerUser(final User user, final boolean mergeGuest
+    void setGuestName(String guestName);
+
+    void registerUser(final String appId, final User user, final boolean mergeGuest
             , final RegisterUserCallback callback);
 
     void unregisterUser();

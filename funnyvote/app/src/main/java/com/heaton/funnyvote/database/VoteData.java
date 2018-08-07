@@ -120,6 +120,10 @@ public class VoteData {
     @SerializedName("user")
     private Option userOption;
 
+    public void setNetOptions(List<Option> netOptions) {
+        this.netOptions = netOptions;
+    }
+
     public List<Option> getNetOptions() {
         return this.netOptions;
     }

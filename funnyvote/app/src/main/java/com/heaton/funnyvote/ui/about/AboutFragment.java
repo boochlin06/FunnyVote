@@ -1,7 +1,6 @@
 package com.heaton.funnyvote.ui.about;
 
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -20,12 +19,12 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.ui.ShareDialogActivity;
 import com.heaton.funnyvote.ui.about.aboutapp.AboutAppActivity;
 import com.heaton.funnyvote.ui.about.authorinfo.AuthorInfoActivity;
 import com.heaton.funnyvote.ui.about.licence.LicenceActivity;
 import com.heaton.funnyvote.ui.about.problem.ProblemActivity;
 import com.heaton.funnyvote.ui.introduction.IntroductionActivity;
+import com.heaton.funnyvote.utils.Util;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -35,7 +34,7 @@ import butterknife.OnClick;
  * Created by heaton on 2017/3/2.
  */
 
-public class AboutFragment extends Fragment {
+public class AboutFragment extends Fragment implements AboutContract.View {
     @BindView(R.id.txtTutorial)
     TextView txtTutorial;
     @BindView(R.id.txtAuthorInfo)
@@ -52,6 +51,7 @@ public class AboutFragment extends Fragment {
     CardView btnShareApp;
 
     private Tracker tracker;
+    private AboutContract.Presenter presenter;
 
     @Nullable
     @Override
@@ -75,6 +75,7 @@ public class AboutFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        presenter = new AboutPresenter(this);
     }
 
     @OnClick({R.id.txtTutorial, R.id.txtAuthorInfo, R.id.txtLicence, R.id.txtProblem, R.id.txtAppIntroduction
@@ -83,50 +84,80 @@ public class AboutFragment extends Fragment {
         int id = v.getId();
         switch (id) {
             case R.id.txtTutorial:
-                startActivity(new Intent(getActivity(), IntroductionActivity.class));
+                presenter.IntentToIntroduction();
                 break;
             case R.id.txtAuthorInfo:
-                startActivity(new Intent(getActivity(), AuthorInfoActivity.class));
+                presenter.IntentToAuthorInfo();
                 break;
             case R.id.txtLicence:
-                startActivity(new Intent(getActivity(), LicenceActivity.class));
+                presenter.IntentToLicence();
                 break;
             case R.id.txtProblem:
-                startActivity(new Intent(getActivity(), ProblemActivity.class));
+                presenter.IntentToProblem();
                 break;
             case R.id.txtUpdate:
-                tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_UPDATE_APP);
-                tracker.send(new HitBuilders.ScreenViewBuilder().build());
-                final String appPackageName = getActivity().getPackageName();
-
-                try {
-                    Intent intent = new Intent(new Intent(Intent.ACTION_VIEW
-                            , Uri.parse("market://details?id=" + appPackageName)));
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                } catch (ActivityNotFoundException anfe) {
-                    Intent intent = new Intent(new Intent(Intent.ACTION_VIEW
-                            , Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                }
+                presenter.IntentToAppStore();
                 break;
             case R.id.txtAppIntroduction:
-                startActivity(new Intent(getActivity(), AboutAppActivity.class));
+                presenter.IntentToAbout();
                 break;
             case R.id.btnShareApp:
-                sendShareAppIntent(getActivity());
+                presenter.IntentToShareApp();
                 break;
         }
     }
 
-    public static void sendShareAppIntent(Context context) {
-        final String appPackageName = context.getApplicationContext().getPackageName();
-        String appURL = "https://play.google.com/store/apps/details?id=" + appPackageName;
-        Intent shareDialog = new Intent(context, ShareDialogActivity.class);
-        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, appURL);
-        shareDialog.putExtra(ShareDialogActivity.EXTRA_IS_SHARE_APP, true);
-        shareDialog.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(shareDialog);
+    @Override
+    public void showIntroduction() {
+        startActivity(new Intent(getActivity(), IntroductionActivity.class));
+    }
+
+    @Override
+    public void showAuthorInfo() {
+        startActivity(new Intent(getActivity(), AuthorInfoActivity.class));
+    }
+
+    @Override
+    public void showLicence() {
+        startActivity(new Intent(getActivity(), LicenceActivity.class));
+    }
+
+    @Override
+    public void showProblem() {
+        startActivity(new Intent(getActivity(), ProblemActivity.class));
+    }
+
+    @Override
+    public void showAppStore() {
+        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_UPDATE_APP);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+        final String appPackageName = getActivity().getPackageName();
+
+        try {
+            Intent intent = new Intent(new Intent(Intent.ACTION_VIEW
+                    , Uri.parse("market://details?id=" + appPackageName)));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (ActivityNotFoundException anfe) {
+            Intent intent = new Intent(new Intent(Intent.ACTION_VIEW
+                    , Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void showAbout() {
+        startActivity(new Intent(getActivity(), AboutAppActivity.class));
+    }
+
+    @Override
+    public void showShareApp() {
+        Util.sendShareAppIntent(getActivity());
+    }
+
+    @Override
+    public void setPresenter(AboutContract.Presenter presenter) {
+
     }
 }

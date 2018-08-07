@@ -1,6 +1,7 @@
 package com.heaton.funnyvote.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -8,9 +9,15 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.util.DisplayMetrics;
 
 import com.heaton.funnyvote.R;
+import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.retrofit.Server;
+import com.heaton.funnyvote.ui.ShareDialogActivity;
+import com.heaton.funnyvote.ui.personal.PersonalActivity;
+import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -104,5 +111,46 @@ public class Util {
         String randomArea = area[(int) (Math.random() * area.length)];
         String randomName = name[(int) (Math.random() * name.length)];
         return randomArea + randomName + Integer.toString((int) (Math.random() * 1000));
+    }
+
+    public static String BUNDLE_KEY_VOTE_CODE = "VOTE_ID";
+
+    public static void startActivityToVoteDetail(Context context, String voteCode) {
+        Intent intent = new Intent(context, VoteDetailContentActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Bundle bundle = new Bundle();
+        bundle.putString(BUNDLE_KEY_VOTE_CODE, voteCode);
+        intent.putExtras(bundle);
+        context.startActivity(intent);
+    }
+
+
+    public static void sendShareIntent(Context context, VoteData data) {
+        Intent shareDialog = new Intent(context, ShareDialogActivity.class);
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_TITLE, data.getTitle());
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_IMG_URL, data.getVoteImage());
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, Server.WEB_URL + data.getVoteCode());
+        shareDialog.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(shareDialog);
+    }
+
+    public static void sendPersonalDetailIntent(Context context, VoteData data) {
+        Intent personalActivity = new Intent(context, PersonalActivity.class);
+        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_CODE, data.getAuthorCode());
+        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_CODE_TYPE, data.getAuthorCodeType());
+        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_NAME, data.getAuthorName());
+        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_ICON, data.getAuthorIcon());
+        personalActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(personalActivity);
+    }
+
+    public static void sendShareAppIntent(Context context) {
+        final String appPackageName = context.getApplicationContext().getPackageName();
+        String appURL = "https://play.google.com/store/apps/details?id=" + appPackageName;
+        Intent shareDialog = new Intent(context, ShareDialogActivity.class);
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, appURL);
+        shareDialog.putExtra(ShareDialogActivity.EXTRA_IS_SHARE_APP, true);
+        shareDialog.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(shareDialog);
     }
 }

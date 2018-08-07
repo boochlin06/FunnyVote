@@ -15,6 +15,7 @@ import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.MainActivity;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
+import com.heaton.funnyvote.data.Injection;
 
 /**
  * Created by heaton on 2017/2/25.
@@ -63,7 +64,7 @@ public class IntroductionActivity extends AppIntro2 {
     @Override
     public void onSkipPressed(Fragment currentFragment) {
         super.onSkipPressed(currentFragment);
-        SharedPreferences firstTime = FirstTimePref.getInstance(this).getPreferences();
+        SharedPreferences firstTime = Injection.provideFirstTimePref(this);
         if (firstTime.getBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, true)) {
             firstTime.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, false).apply();
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
@@ -74,7 +75,7 @@ public class IntroductionActivity extends AppIntro2 {
     @Override
     public void onDonePressed(Fragment currentFragment) {
         super.onDonePressed(currentFragment);
-        SharedPreferences firstTime = FirstTimePref.getInstance(this).getPreferences();
+        SharedPreferences firstTime = Injection.provideFirstTimePref(this);
         if (firstTime.getBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, true)) {
             firstTime.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUCTION_PAGE, false).apply();
             startActivity(new Intent(getApplicationContext(), MainActivity.class));

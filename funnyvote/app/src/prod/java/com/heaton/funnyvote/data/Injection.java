@@ -1,8 +1,10 @@
 package com.heaton.funnyvote.data;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
+import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.data.VoteData.LocalVoteDataSource;
 import com.heaton.funnyvote.data.VoteData.RemoteVoteDataSource;
@@ -30,7 +32,7 @@ public class Injection {
 
     public static UserDataRepository provideUserRepository(@NonNull Context context) {
         checkNotNull(context);
-        return UserDataRepository.getInstance(context, SPUserDataSource.getInstance(context)
+        return UserDataRepository.getInstance(SPUserDataSource.getInstance(context)
                 , RemoteUserDataSource.getInstance());
     }
 
@@ -39,5 +41,9 @@ public class Injection {
         return PromotionRepository.getInstance(RemotePromotionSource.getInstance()
                 , LocalPromotionSource.getInstance(((FunnyVoteApplication) (context.getApplicationContext()))
                         .getDaoSession().getPromotionDao(), AppExecutors.getInstance()));
+    }
+    public static SharedPreferences provideFirstTimePref(@NonNull Context context) {
+        checkNotNull(context);
+        return FirstTimePref.getInstance(context).getPreferences();
     }
 }

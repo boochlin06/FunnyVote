@@ -16,7 +16,7 @@ public interface CreateVoteContract {
     interface Presenter extends BasePresenter {
         void submitCreateVote();
 
-        void addNewOption();
+        long addNewOption();
 
         void removeOption(long optionId);
 

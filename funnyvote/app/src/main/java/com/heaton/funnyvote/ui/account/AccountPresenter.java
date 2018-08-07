@@ -9,12 +9,21 @@ import com.heaton.funnyvote.database.User;
 public class AccountPresenter implements AccountContract.Presenter {
 
     private static final int RC_GOOGLE_SIGN_IN = 101;
-    private static final int LOGIN_FB = 111;
-    private static final int LOGIN_GOOGLE = 112;
-    private static final int LOGIN_TWITTER = 113;
+    public static final int LOGIN_FB = 111;
+    public static final int LOGIN_GOOGLE = 112;
+    public static final int LOGIN_TWITTER = 113;
     private static final String TAG = AccountPresenter.class.getSimpleName();
     private UserDataRepository userDataRepository;
     private AccountContract.View view;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     private User user;
     private boolean mergeGuest;
 
@@ -22,6 +31,7 @@ public class AccountPresenter implements AccountContract.Presenter {
             , AccountContract.View view) {
         this.userDataRepository = userDataRepository;
         this.view = view;
+        this.view.setPresenter(this);
     }
 
     @Override
@@ -30,8 +40,8 @@ public class AccountPresenter implements AccountContract.Presenter {
     }
 
     @Override
-    public void registerUser(User newUser) {
-        userDataRepository.registerUser(newUser, mergeGuest, new UserDataSource.RegisterUserCallback() {
+    public void registerUser(User newUser, String appId) {
+        userDataRepository.registerUser(appId, newUser, mergeGuest, new UserDataSource.RegisterUserCallback() {
             @Override
             public void onSuccess() {
                 updateUser();
@@ -55,7 +65,7 @@ public class AccountPresenter implements AccountContract.Presenter {
             @Override
             public void onResponse(User user) {
                 AccountPresenter.this.user = user;
-                if (user.getType() != User.TYPE_GUEST) {
+                if (AccountPresenter.this.user.getType() != User.TYPE_GUEST) {
                     view.showUser(user);
                 } else {
                     view.showLoginView(user.getUserName());

@@ -6,7 +6,7 @@ import com.heaton.funnyvote.database.User;
 
 public interface AccountContract {
     interface Presenter extends BasePresenter {
-        void registerUser(User newUser);
+        void registerUser(User newUser,String appId);
         void unregisterUser();
         void updateUser();
         void changeCurrentUserName(String userName);

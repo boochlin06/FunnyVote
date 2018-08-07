@@ -41,7 +41,7 @@ public class FunnyVoteApplication extends Application {
         AppEventsLogger.activateApp(this);
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "votes-db-encrypted" : "votes-db");
         Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
-        daoSession = new DaoMaster(db).newSession(IdentityScopeType.None);
+        daoSession = new DaoMaster(db).newSession(IdentityScopeType.Session);
 
         MobileAds.initialize(getApplicationContext(), "ca-app-pub-3940256099942544~3347511713");
     }

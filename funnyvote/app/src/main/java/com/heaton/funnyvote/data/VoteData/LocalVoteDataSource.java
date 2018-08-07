@@ -1,6 +1,7 @@
 package com.heaton.funnyvote.data.VoteData;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -74,6 +75,42 @@ public class LocalVoteDataSource implements VoteDataSource {
 
     @Override
     public void saveVoteData(VoteData voteDataNetwork) {
+        List<Option> optionList = voteDataNetwork.getNetOptions();
+        voteDataNetwork.setOptionCount(optionList.size());
+        int maxOption = 0;
+        for (int i = 0; i < optionList.size(); i++) {
+            Option option = optionList.get(i);
+            option.setVoteCode(voteDataNetwork.getVoteCode());
+            if (option.getCount() == null) {
+                option.setCount(0);
+            }
+            option.setId(null);
+            if (i == 0) {
+                voteDataNetwork.setOption1Title(option.getTitle());
+                voteDataNetwork.setOption1Code(option.getCode());
+                voteDataNetwork.setOption1Count(option.getCount());
+                voteDataNetwork.setOption1Polled(option.getIsUserChoiced());
+            } else if (i == 1) {
+                voteDataNetwork.setOption2Title(option.getTitle());
+                voteDataNetwork.setOption2Code(option.getCode());
+                voteDataNetwork.setOption2Count(option.getCount());
+                voteDataNetwork.setOption2Polled(option.getIsUserChoiced());
+            }
+            if (option.getCount() > maxOption && option.getCount() >= 1) {
+                maxOption = option.getCount();
+                voteDataNetwork.setOptionTopCount(option.getCount());
+                voteDataNetwork.setOptionTopCode(option.getCode());
+                voteDataNetwork.setOptionTopTitle(option.getTitle());
+                voteDataNetwork.setOptionTopPolled(option.getIsUserChoiced());
+            }
+            if (option.getIsUserChoiced()) {
+                voteDataNetwork.setOptionUserChoiceCode(option.getCode());
+                voteDataNetwork.setOptionUserChoiceTitle(option.getTitle());
+                voteDataNetwork.setOptionUserChoiceCount(option.getCount());
+            }
+
+            option.dumpDetail();
+        }
         mAppExecutors.diskIO().execute(new SaveDBRunnable(voteDataNetwork));
     }
 
@@ -82,7 +119,8 @@ public class LocalVoteDataSource implements VoteDataSource {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                final List<Option> optionList = voteData.getOptions();
+                final List<Option> optionList = optionDao.queryBuilder()
+                        .where(OptionDao.Properties.VoteCode.eq(voteData.getVoteCode())).list();
                 mAppExecutors.mainThread().execute(new Runnable() {
                     @Override
                     public void run() {
@@ -442,5 +480,10 @@ public class LocalVoteDataSource implements VoteDataSource {
             queryBuilder.buildDelete().executeDeleteWithoutDetachingEntities();
             voteDataDao.insertOrReplaceInTx(voteDataList);
         }
+    }
+
+    @VisibleForTesting
+    static void clearInstance() {
+        INSTANCE = null;
     }
 }

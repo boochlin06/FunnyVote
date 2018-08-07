@@ -36,8 +36,7 @@ import com.heaton.funnyvote.notification.VoteNotificationManager;
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.heaton.funnyvote.ui.main.MainPageContract;
 import com.heaton.funnyvote.ui.main.MainPageTabFragment;
-import com.heaton.funnyvote.ui.main.VHVoteWallItem;
-import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
+import com.heaton.funnyvote.utils.Util;
 
 import java.util.List;
 
@@ -202,12 +201,12 @@ public class UserActivity extends AppCompatActivity
 
     @Override
     public void showShareDialog(VoteData data) {
-        VoteDetailContentActivity.sendShareIntent(this, data);
+        Util.sendShareIntent(this, data);
     }
 
     @Override
     public void showAuthorDetail(VoteData data) {
-        VoteDetailContentActivity.sendPersonalDetailIntent(this, data);
+        Util.sendPersonalDetailIntent(this, data);
     }
 
     @Override
@@ -217,7 +216,7 @@ public class UserActivity extends AppCompatActivity
 
     @Override
     public void showVoteDetail(VoteData data) {
-        VHVoteWallItem.startActivityToVoteDetail(this, data.getVoteCode());
+        Util.startActivityToVoteDetail(this, data.getVoteCode());
     }
 
 

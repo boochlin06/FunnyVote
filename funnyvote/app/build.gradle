@@ -3,10 +3,17 @@ apply plugin: 'com.google.firebase.firebase-crash'
 apply plugin: 'io.fabric'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'jacoco-android'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
 }
+
+jacoco {
+    toolVersion = "0.8.1"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
 
 apply plugin: 'org.greenrobot.greendao'
 android {
@@ -22,6 +29,7 @@ android {
         versionCode 12
         versionName "180608"
         multiDexEnabled true
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
     buildTypes {
         release {
@@ -31,11 +39,51 @@ android {
             aaptOptions.useNewCruncher = false;
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            testCoverageEnabled = true
+        }
     }
+    flavorDimensions "default"
+
+
     lintOptions {
         abortOnError false
     }
+    // If you need to add more flavors, consider using flavor dimensions.
+    productFlavors {
+        mock {
+            dimension "default"
+            applicationIdSuffix = ".mock"
+        }
+        prod {
+            dimension "default"
+        }
+    }
+
+    // Remove mockRelease as it's not needed.
+    android.variantFilter { variant ->
+        if (variant.buildType.name == 'release'
+                && variant.getFlavors().get(0).name == 'mock') {
+            variant.setIgnore(true)
+        }
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+    // Always show the result of every unit test, even if it passes.
+    testOptions.unitTests.all {
+        jacoco {
+            includeNoLocationClasses = true
+        }
+        testLogging {
+            events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+        }
+    }
 }
+configurations.all {
+    resolutionStrategy.force 'com.android.support:support-annotations:27.1.1'
+}
+
 dependencies {
     implementation 'com.jakewharton:butterknife:8.8.1'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
@@ -79,6 +127,28 @@ dependencies {
     implementation 'com.google.android.gms:play-services-analytics:10.2.0'
     implementation 'com.google.firebase:firebase-appindexing:10.2.0'
     implementation "com.google.guava:guava:$rootProject.guavaVersion"
+    // Dependencies for local unit tests
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
+    testImplementation "org.mockito:mockito-all:$rootProject.ext.mockitoVersion"
+    testImplementation "org.hamcrest:hamcrest-all:$rootProject.ext.hamcrestVersion"
+
+    // Android Testing Support Library's runner and rules
+    androidTestImplementation "com.android.support.test:runner:$rootProject.ext.runnerVersion"
+    androidTestImplementation "com.android.support.test:rules:$rootProject.ext.rulesVersion"
+    androidTestImplementation 'com.android.support:support-annotations:27.1.1'
+
+    // Dependencies for Android unit tests
+    androidTestImplementation "junit:junit:$rootProject.ext.junitVersion"
+    androidTestImplementation "org.mockito:mockito-core:$rootProject.ext.mockitoVersion"
+    androidTestImplementation 'com.google.dexmaker:dexmaker:1.2'
+    androidTestImplementation 'com.google.dexmaker:dexmaker-mockito:1.2'
+
+    // Espresso UI Testing
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$rootProject.espressoVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-contrib:$rootProject.espressoVersion"
+    androidTestImplementation "com.android.support.test.espresso:espresso-intents:$rootProject.espressoVersion"
+    androidTestImplementation "com.android.support.test.espresso.idling:idling-concurrent:$rootProject.espressoVersion"
+    implementation "com.android.support.test.espresso:espresso-idling-resource:$rootProject.espressoVersion"
 }
 greendao {
     schemaVersion 1
@@ -86,3 +156,37 @@ greendao {
     targetGenDir 'src/main/java'
 }
 apply plugin: 'com.google.gms.google-services'
+
+
+//def coverageSourceDirs = [
+//        '../app/src/main/java'
+//]
+//task jacocoTestReport(type: JacocoReport) {
+//    group = "Reporting"
+//    description = "Generate Jacoco coverage reports after running tests."
+//    reports {
+//        xml.enabled = true
+//        html.enabled = true
+//    }
+//    classDirectories = fileTree(
+//            dir: './build/intermediates/classes/debug',
+//            excludes: ['**/R*.class',
+//                       '**/*$InjectAdapter.class',
+//                       '**/*$ModuleAdapter.class',
+//                       '**/*$ViewInjector*.class',
+//                       '**/*$ViewBinder*.*',
+//                       '**/BuildConfig.*',
+//                       '**/Manifest*.*',
+//            ])
+//    sourceDirectories = files(coverageSourceDirs)
+//    executionData = files("$buildDir/outputs/code-coverage/connected/coverage.ec")
+//
+//    doFirst {
+//        new File("$buildDir/intermediates/classes/").eachFileRecurse { file ->
+//            if (file.name.contains('$$')) {
+//                file.renameTo(file.path.replace('$$', '$'))
+//            }
+//        }
+//    }
+//
+//}

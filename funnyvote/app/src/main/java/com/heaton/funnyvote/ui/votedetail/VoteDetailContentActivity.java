@@ -2,7 +2,6 @@ package com.heaton.funnyvote.ui.votedetail;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -58,12 +57,7 @@ import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.retrofit.Server;
 import com.heaton.funnyvote.ui.HidingScrollListener;
-import com.heaton.funnyvote.ui.ShareDialogActivity;
-import com.heaton.funnyvote.ui.about.AboutFragment;
-import com.heaton.funnyvote.ui.main.VHVoteWallItem;
-import com.heaton.funnyvote.ui.personal.PersonalActivity;
 import com.heaton.funnyvote.utils.Util;
 
 import java.util.List;
@@ -149,24 +143,6 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
     private VoteDetailContract.Presenter presenter;
     private OptionItemListener optionItemListener;
 
-    public static void sendShareIntent(Context context, VoteData data) {
-        Intent shareDialog = new Intent(context, ShareDialogActivity.class);
-        shareDialog.putExtra(ShareDialogActivity.EXTRA_TITLE, data.getTitle());
-        shareDialog.putExtra(ShareDialogActivity.EXTRA_IMG_URL, data.getVoteImage());
-        shareDialog.putExtra(ShareDialogActivity.EXTRA_VOTE_URL, Server.WEB_URL + data.getVoteCode());
-        shareDialog.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(shareDialog);
-    }
-
-    public static void sendPersonalDetailIntent(Context context, VoteData data) {
-        Intent personalActivity = new Intent(context, PersonalActivity.class);
-        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_CODE, data.getAuthorCode());
-        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_CODE_TYPE, data.getAuthorCodeType());
-        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_NAME, data.getAuthorName());
-        personalActivity.putExtra(PersonalActivity.EXTRA_PERSONAL_ICON, data.getAuthorIcon());
-        personalActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(personalActivity);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,7 +168,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             voteCode = intent.getData().getLastPathSegment();
             if (TextUtils.isEmpty(voteCode)) {
-                AboutFragment.sendShareAppIntent(getApplicationContext());
+                Util.sendShareAppIntent(getApplicationContext());
                 finish();
             } else {
                 Log.d(TAG, "Link:" + intent.getData().toString()
@@ -204,7 +180,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
                         .build());
             }
         } else {
-            voteCode = intent.getExtras().getString(VHVoteWallItem.BUNDLE_KEY_VOTE_CODE);
+            voteCode = intent.getExtras().getString(Util.BUNDLE_KEY_VOTE_CODE);
             Log.d(TAG, "Start activity vote code:" + voteCode);
             tracker.send(new HitBuilders.EventBuilder()
                     .setCategory("VOTE_DETAIL")
@@ -287,8 +263,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
                         return new ViewTarget(mainToolbar.findViewById(R.id.menu_submit)).getPoint();
                     }
                 };
-                final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext())
-                        .getPreferences();
+                final SharedPreferences firstTimePref = Injection.provideFirstTimePref(this);
 
                 if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
                     showcaseView = new ShowcaseView.Builder(this)
@@ -374,12 +349,12 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
 
     @Override
     public void showShareDialog(VoteData data) {
-        sendShareIntent(this, data);
+        Util.sendShareIntent(this, data);
     }
 
     @Override
     public void showAuthorDetail(VoteData data) {
-        sendPersonalDetailIntent(this, data);
+        Util.sendPersonalDetailIntent(this, data);
     }
 
     @Override
@@ -417,7 +392,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
 
     @OnClick(R.id.imgTitleExtend)
     public void onTitleExtendClick() {
-        presenter.showTitleDetail();
+        presenter.IntentToTitleDetail();
     }
 
     @Override
@@ -469,8 +444,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
 
     @Override
     public void showCaseView() {
-        final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext())
-                .getPreferences();
+        final SharedPreferences firstTimePref = Injection.provideFirstTimePref(this);
 
         if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
             Target homeTarget = new Target() {
@@ -877,7 +851,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
             }
             return true;
         } else if (id == R.id.menu_info) {
-            presenter.showVoteInfo();
+            presenter.IntentToVoteInfo();
         } else if (id == android.R.id.home) {
             finish();
         }

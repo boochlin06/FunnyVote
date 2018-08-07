@@ -16,5 +16,5 @@ public interface PromotionDataSource {
 
     void getPromotionList(User user, GetPromotionsCallback callback);
 
-    void savePromotions(List<Promotion> promotionList);
+    void savePromotionList(List<Promotion> promotionList);
 }

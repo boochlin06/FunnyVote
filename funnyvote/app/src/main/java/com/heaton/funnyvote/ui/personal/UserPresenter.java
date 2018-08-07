@@ -24,7 +24,47 @@ public class UserPresenter implements PersonalContract.Presenter {
     private PersonalContract.UserPageView userPageView;
     private MainPageContract.TabPageFragment createFragment, participateFragment, favoriteFragment;
 
-    private List<VoteData> createVoteDataList, participateVoteDataList, favoriteVoteDataList;
+    private List<VoteData> createVoteDataList;
+    private List<VoteData> participateVoteDataList;
+
+    public List<VoteData> getCreateVoteDataList() {
+        return createVoteDataList;
+    }
+
+    public void setCreateVoteDataList(List<VoteData> createVoteDataList) {
+        this.createVoteDataList = createVoteDataList;
+    }
+
+    public List<VoteData> getParticipateVoteDataList() {
+        return participateVoteDataList;
+    }
+
+    public void setParticipateVoteDataList(List<VoteData> participateVoteDataList) {
+        this.participateVoteDataList = participateVoteDataList;
+    }
+
+    public List<VoteData> getFavoriteVoteDataList() {
+        return favoriteVoteDataList;
+    }
+
+    public void setFavoriteVoteDataList(List<VoteData> favoriteVoteDataList) {
+        this.favoriteVoteDataList = favoriteVoteDataList;
+    }
+
+    private List<VoteData> favoriteVoteDataList;
+
+    public User getLoginUser() {
+        return loginUser;
+    }
+
+    public void setLoginUser(User loginUser) {
+        this.loginUser = loginUser;
+    }
+
+    public User getTargetUser() {
+        return targetUser;
+    }
+
     private User loginUser, targetUser;
 
     public UserPresenter(VoteDataRepository voteDataRepository
@@ -36,6 +76,7 @@ public class UserPresenter implements PersonalContract.Presenter {
         createVoteDataList = new ArrayList<>();
         participateVoteDataList = new ArrayList<>();
         favoriteVoteDataList = new ArrayList<>();
+        this.userPageView.setPresenter(this);
     }
 
     @Override
@@ -129,8 +170,6 @@ public class UserPresenter implements PersonalContract.Presenter {
             userPageView.showLoadingCircle();
             List<String> choiceCodeList = new ArrayList<>();
             choiceCodeList.add(optionCode);
-            Log.d(TAG, "choice:" + choiceCodeList.size()
-                    + " vc:" + voteData.getVoteCode() + " loginUser:" + loginUser.getUserCode() + "  type:" + loginUser.getType());
             voteDataRepository.pollVote(voteData.getVoteCode(), password, choiceCodeList, loginUser, new VoteDataSource.PollVoteCallback() {
                 @Override
                 public void onSuccess(VoteData voteData) {

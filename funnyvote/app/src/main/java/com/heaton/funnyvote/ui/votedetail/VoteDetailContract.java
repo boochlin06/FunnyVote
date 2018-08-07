@@ -95,9 +95,9 @@ public interface VoteDetailContract {
 
         void removeOption(long optionId);
 
-        void showVoteInfo();
+        void IntentToVoteInfo();
 
-        void showTitleDetail();
+        void IntentToTitleDetail();
 
         void IntentToShareDialog();
 

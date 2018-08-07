@@ -29,14 +29,13 @@ import java.util.List;
 
 public class WelcomeActivity extends AppCompatActivity {
     private SharedPreferences firstTimePref;
-    private AsyncTask syncTask ;
+    private AsyncTask syncTask;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-        firstTimePref = FirstTimePref.getInstance(getApplicationContext())
-                .getPreferences();
+        firstTimePref = Injection.provideFirstTimePref(getApplicationContext());
         syncData();
 
     }

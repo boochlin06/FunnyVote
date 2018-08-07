@@ -5,10 +5,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.data.VoteData.LocalVoteDataSource;
-import com.heaton.funnyvote.database.OptionDao;
 import com.heaton.funnyvote.database.User;
-import com.heaton.funnyvote.database.VoteDataDao;
 import com.heaton.funnyvote.retrofit.Server;
 
 import okhttp3.ResponseBody;
@@ -115,7 +112,12 @@ public class SPUserDataSource implements UserDataSource {
     }
 
     @Override
-    public void registerUser(User user, boolean mergeGuest, RegisterUserCallback callback) {
+    public void setGuestName(String guestName) {
+
+    }
+
+    @Override
+    public void registerUser(String appId, User user, boolean mergeGuest, RegisterUserCallback callback) {
 
     }
 
