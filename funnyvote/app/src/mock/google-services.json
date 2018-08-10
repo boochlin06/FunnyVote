@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "444957524197",
+    "firebase_url": "https://funny-vote-2e6be.firebaseio.com",
+    "project_id": "funny-vote-2e6be",
+    "storage_bucket": "funny-vote-2e6be.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:444957524197:android:8be72deabbfed427",
+        "android_client_info": {
+          "package_name": "com.heaton.funnyvote.mock"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "4x.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.heaton.funnyvote",
+            "certificate_hash": "fc192bc6e6af4341119b10fd6c6da8ad1481161d"
+          }
+        },
+        {
+          "client_id": "444957524197-l1en4gq9quhhtu8hee8plcnss5kd146h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkuQ2w4RV7nCHPtCJhk2J2rLQph6TQMOk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "444957524197-l1en4gq9quhhtu8hee8plcnss5kd146h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

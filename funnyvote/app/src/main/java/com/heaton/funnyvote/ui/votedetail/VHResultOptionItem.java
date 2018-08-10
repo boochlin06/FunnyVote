@@ -11,9 +11,6 @@ import android.widget.TextView;
 import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
-import com.heaton.funnyvote.eventbus.EventBusManager;
-
-import org.greenrobot.eventbus.EventBus;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,10 +41,13 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
     private boolean isExpand = false;
     private int totalPollCount;
     private Option option;
+    private VoteDetailContentActivity.OptionItemListener itemListener;
 
-    public VHResultOptionItem(View itemView, int totalPollCount) {
+    public VHResultOptionItem(View itemView, int totalPollCount
+            , VoteDetailContentActivity.OptionItemListener itemListener) {
         super(itemView);
         this.totalPollCount = totalPollCount;
+        this.itemListener = itemListener;
         ButterKnife.bind(this, itemView);
         progressPollCount.setMax(totalPollCount);
     }
@@ -106,9 +106,10 @@ public class VHResultOptionItem extends RecyclerView.ViewHolder implements View.
 
     @Override
     public void onClick(View v) {
-        EventBus.getDefault().post(new EventBusManager
-                .OptionChoiceEvent(option.getId(), EventBusManager.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
-        isExpand = !isExpand;
-        setUpOptionExpandLayout();
+        itemListener.onOptionExpand(option.getCode());
+//        EventBus.getDefault().post(new EventBusManager
+//                .OptionChoiceEvent(option.getId(), EventBusManager.OptionChoiceEvent.OPTION_EXPAND, option.getCode()));
+        //isExpand = !isExpand;
+        //setUpOptionExpandLayout();
     }
 }

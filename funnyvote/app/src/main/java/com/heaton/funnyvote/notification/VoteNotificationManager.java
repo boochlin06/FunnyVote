@@ -7,11 +7,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
+import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.MainActivity;
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.data.user.UserManager;
-import com.heaton.funnyvote.database.DataLoader;
+import com.heaton.funnyvote.data.Injection;
+import com.heaton.funnyvote.data.user.UserDataRepository;
+import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.database.VoteDataDao;
 import com.heaton.funnyvote.ui.personal.UserActivity;
 
 import java.util.Calendar;
@@ -64,7 +67,8 @@ public class VoteNotificationManager {
     }
 
     public void sendNotification() {
-        UserManager.GetUserCallback getUserCallback = new UserManager.GetUserCallback() {
+        UserDataRepository userDataRepository = Injection.provideUserRepository(context);
+        userDataRepository.getUser(new UserDataSource.GetUserCallback() {
             @Override
             public void onResponse(User user) {
                 if (((int) (Math.random() * 4)) % 4 == 1) {
@@ -78,12 +82,16 @@ public class VoteNotificationManager {
             public void onFailure() {
                 sendMainNotification();
             }
-        };
-        UserManager.getInstance(context.getApplicationContext()).getUser(getUserCallback, false);
+        }, false);
     }
 
     public void sendUserVoteChange(String authorCode) {
-        if (DataLoader.getInstance(context).countUserCreateOrParticipate(authorCode) > 0) {
+        VoteDataDao voteDataDao = ((FunnyVoteApplication) (context.getApplicationContext()))
+                .getDaoSession().getVoteDataDao();
+        long count = voteDataDao.queryBuilder().whereOr(VoteDataDao.Properties.IsPolled.eq(true)
+                , VoteDataDao.Properties.AuthorCode.eq(authorCode))
+                .where(VoteDataDao.Properties.StartTime.le(System.currentTimeMillis())).count();
+        if (count > 0) {
 
             Intent resultIntent = new Intent(context, UserActivity.class);
             resultIntent.setAction(ACTION_NOTIFICATION_USER_ACTIVITY_START);

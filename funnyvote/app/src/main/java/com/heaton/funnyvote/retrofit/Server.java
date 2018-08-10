@@ -29,7 +29,7 @@ import retrofit2.http.Query;
 
 public class Server {
     public static final String BASE_URL = "https://funny-vote.com/";
-    public static final String API_KEY = "xxxxxxxxxxxxxxxxxx";
+    public static final String API_KEY = "8c6d7c7a6bfbd60a4c9f65d664f1f6ae";
     public static final String APP_CODE = "com.funnyvote";
     public static final String WEB_URL = "https://funny-vote.com/link/";
 

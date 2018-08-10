@@ -1,6 +1,7 @@
 package com.heaton.funnyvote.ui.createvote;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,29 +21,28 @@ public class OptionCreateItemAdapter extends RecyclerView.Adapter<VHCreateOption
     public static int VIEW_TYPE_NORMAL_OPTION = 1;
     public static int VIEW_TYPE_ADD_OPTION = 2;
     private List<Option> optionList;
+    private CreateVoteTabOptionFragment.OptionItemListener itemListener;
 
-    public OptionCreateItemAdapter(List<Option> optionList) {
+    public OptionCreateItemAdapter(List<Option> optionList
+            , CreateVoteTabOptionFragment.OptionItemListener itemListener) {
         this.optionList = optionList;
-    }
-
-    public List<Option> getOptionList() {
-        return optionList;
+        this.itemListener = itemListener;
     }
 
     @Override
     public VHCreateOptionItem onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_create_vote_option
                 , parent, false);
-        VHCreateOptionItem vh = new VHCreateOptionItem(v);
+        VHCreateOptionItem vh = new VHCreateOptionItem(v, itemListener);
         return vh;
     }
 
     @Override
     public void onBindViewHolder(VHCreateOptionItem holder, int position) {
         if (position == optionList.size()) {
-            holder.setLayout(VIEW_TYPE_ADD_OPTION, 0, null);
+            holder.setLayout(VIEW_TYPE_ADD_OPTION, null);
         } else {
-            holder.setLayout(VIEW_TYPE_NORMAL_OPTION, position, optionList.get(position));
+            holder.setLayout(VIEW_TYPE_NORMAL_OPTION, optionList.get(position));
         }
     }
 
