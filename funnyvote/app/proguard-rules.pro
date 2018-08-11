@@ -73,3 +73,4 @@ public static java.lang.String TABLENAME;
 -keep class android.support.v4.** { *; }
 
 -keep class com.heaton.funnyvote.** { *; }
+ -ignorewarnings
