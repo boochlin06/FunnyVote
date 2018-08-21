@@ -23,7 +23,7 @@ public class UserRepositoryModule {
     @Provides
     @Local
     UserDataSource provideUserLocalDataSource(Context context) {
-        return new SPUserDataSource(context);
+        return new LocalUserDataSource(context);
     }
 
     @Singleton
