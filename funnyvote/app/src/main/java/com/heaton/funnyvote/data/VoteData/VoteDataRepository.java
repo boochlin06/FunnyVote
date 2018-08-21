@@ -3,20 +3,32 @@ package com.heaton.funnyvote.data.VoteData;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.heaton.funnyvote.data.Local;
+import com.heaton.funnyvote.data.Remote;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 
 import java.io.File;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class VoteDataRepository implements VoteDataSource {
     private static VoteDataRepository INSTANCE = null;
     private final VoteDataSource voteDataRemoteSource;
     private final VoteDataSource voteDataLocalSource;
+
+    public static final String TAB_HOT = "HOT";
+    public static final String TAB_NEW = "NEW";
+
+    public static final String TAB_CREATE = "CREATE";
+    public static final String TAB_PARTICIPATE = "PARTICIPATE";
+    public static final String TAB_FAVORITE = "FAVORITE";
+
     public static final int PAGE_COUNT = 20;
 
     public static VoteDataRepository getInstance(VoteDataSource voteDataLocalSource
@@ -31,8 +43,9 @@ public class VoteDataRepository implements VoteDataSource {
         INSTANCE = null;
     }
 
-    public VoteDataRepository(VoteDataSource voteDataLocalSource
-            , VoteDataSource voteDataRemoteSource) {
+    @Inject
+    public VoteDataRepository(@Local VoteDataSource voteDataLocalSource
+            , @Remote VoteDataSource voteDataRemoteSource) {
         this.voteDataRemoteSource = voteDataRemoteSource;
         this.voteDataLocalSource = voteDataLocalSource;
     }
@@ -178,7 +191,7 @@ public class VoteDataRepository implements VoteDataSource {
         voteDataRemoteSource.getHotVoteList(offset, user, new GetVoteListCallback() {
             @Override
             public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_HOT);
+                voteDataLocalSource.saveVoteDataList(voteDataList, offset, TAB_HOT);
                 callback.onVoteListLoaded(voteDataList);
             }
 
@@ -205,7 +218,7 @@ public class VoteDataRepository implements VoteDataSource {
         voteDataRemoteSource.getCreateVoteList(offset, user, targetUser, new GetVoteListCallback() {
             @Override
             public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_CREATE);
+                voteDataLocalSource.saveVoteDataList(voteDataList, offset, TAB_CREATE);
                 callback.onVoteListLoaded(voteDataList);
             }
 
@@ -235,7 +248,7 @@ public class VoteDataRepository implements VoteDataSource {
         voteDataRemoteSource.getParticipateVoteList(offset, user, targetUser, new GetVoteListCallback() {
             @Override
             public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_PARTICIPATE);
+                voteDataLocalSource.saveVoteDataList(voteDataList, offset, TAB_PARTICIPATE);
                 callback.onVoteListLoaded(voteDataList);
             }
 
@@ -261,7 +274,7 @@ public class VoteDataRepository implements VoteDataSource {
         voteDataRemoteSource.getFavoriteVoteList(offset, user, targetUser, new GetVoteListCallback() {
             @Override
             public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_FAVORITE);
+                voteDataLocalSource.saveVoteDataList(voteDataList, offset, TAB_FAVORITE);
                 callback.onVoteListLoaded(voteDataList);
             }
 
@@ -313,7 +326,7 @@ public class VoteDataRepository implements VoteDataSource {
         voteDataRemoteSource.getNewVoteList(offset, user, new GetVoteListCallback() {
             @Override
             public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_NEW);
+                voteDataLocalSource.saveVoteDataList(voteDataList, offset, TAB_NEW);
                 callback.onVoteListLoaded(voteDataList);
             }
 

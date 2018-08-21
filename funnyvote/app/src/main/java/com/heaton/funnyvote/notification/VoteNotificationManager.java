@@ -8,16 +8,18 @@ import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
 import com.heaton.funnyvote.FunnyVoteApplication;
-import com.heaton.funnyvote.MainActivity;
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.data.Injection;
+import com.heaton.funnyvote.data.user.LocalUserDataSource;
 import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteDataDao;
+import com.heaton.funnyvote.ui.mainactivity.MainActivity;
 import com.heaton.funnyvote.ui.personal.UserActivity;
 
 import java.util.Calendar;
+
+import javax.inject.Inject;
 
 /**
  * Created by heaton on 2017/4/29.
@@ -29,6 +31,8 @@ public class VoteNotificationManager {
     public static String ACTION_NOTIFICATION_USER_ACTIVITY_START = "com.heaton.notification.send";
     private Context context;
     private static VoteNotificationManager INSTANCE = null;
+    @Inject
+    public UserDataRepository userDataRepository;
 
     public static VoteNotificationManager getInstance(Context context) {
         if (INSTANCE == null) {
@@ -67,7 +71,7 @@ public class VoteNotificationManager {
     }
 
     public void sendNotification() {
-        UserDataRepository userDataRepository = Injection.provideUserRepository(context);
+        LocalUserDataSource userDataRepository = LocalUserDataSource.getInstance(context);
         userDataRepository.getUser(new UserDataSource.GetUserCallback() {
             @Override
             public void onResponse(User user) {

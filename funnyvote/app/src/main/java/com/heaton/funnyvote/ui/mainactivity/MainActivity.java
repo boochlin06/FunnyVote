@@ -1,4 +1,4 @@
-package com.heaton.funnyvote;
+package com.heaton.funnyvote.ui.mainactivity;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -13,7 +13,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.transition.Slide;
@@ -30,36 +29,71 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.FunnyVoteApplication;
+import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.notification.VoteNotificationManager;
 import com.heaton.funnyvote.ui.about.AboutFragment;
 import com.heaton.funnyvote.ui.account.AccountFragment;
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.heaton.funnyvote.ui.main.MainPageFragment;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.heaton.funnyvote.ui.personal.UserActivity;
 import com.heaton.funnyvote.ui.search.SearchFragment;
 
+import javax.inject.Inject;
+
+import dagger.Lazy;
+import dagger.android.support.DaggerAppCompatActivity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class MainActivity extends AppCompatActivity implements MainPageContract.View {
+@ActivityScoped
+public class MainActivity extends DaggerAppCompatActivity implements MainActivityContract.View {
 
-    public static String TAG = MainPageTabFragment.class.getSimpleName();
     private static final int ANIM_DURATION_TOOLBAR = 300;
+    public static String TAG = MainActivity.class.getSimpleName();
+    public static boolean ENABLE_ADMOB = true;
+    @Inject
+    public MainActivityPresenter presenter;
+    boolean doubleBackToExitPressedOnce = false;
+    @Inject
+    Lazy<SearchFragment> searchFragmentProvider;
+    @Inject
+    Lazy<AboutFragment> aboutFragmentProvider;
+    @Inject
+    Lazy<AccountFragment> accountFragmentProvider;
+    @Inject
+    Lazy<MainPageFragment> mainPageFragmentProvider;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private Toolbar toolbar;
     private NavigationView navigationView;
 
     private static int currentPage;
-    boolean doubleBackToExitPressedOnce = false;
     private SearchView searchView;
-    public static boolean ENABLE_ADMOB = true;
     private AdView adView;
     private Tracker tracker;
-    private MainPageContract.Presenter presenter;
+    final private SearchView.OnQueryTextListener queryListener =
+            new SearchView.OnQueryTextListener() {
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    Log.d(TAG, "onQueryTextSubmit:" + query + "  page:" + currentPage
+                            + " search page:" + navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
+
+                    if (currentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
+                        switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search), query);
+                        navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
+                    }
+                    return true;
+                }
+            };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,9 +132,13 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
         setUpAdmob();
 
         VoteNotificationManager.getInstance(getApplicationContext()).startNotificationAlarm();
-        presenter = new MainPagePresenter(Injection.provideUserRepository(getApplicationContext())
-                , this);
-        presenter.start();
+        presenter.takeView(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        presenter.dropView();
     }
 
     private void setUpAdmob() {
@@ -199,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
         }, 500);
     }
 
-
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -241,27 +278,6 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
         return true;
     }
 
-    final private SearchView.OnQueryTextListener queryListener =
-            new SearchView.OnQueryTextListener() {
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    return false;
-                }
-
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    Log.d(TAG, "onQueryTextSubmit:" + query + "  page:" + currentPage
-                            + " search page:" + navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
-
-                    if (currentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
-                        switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search), query);
-                        navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
-                    }
-                    return true;
-                }
-            };
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -285,15 +301,14 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
 
     @Override
     public void showSearchPage(String searchKeyword) {
-        Fragment fragment;
+        SearchFragment fragment = searchFragmentProvider.get();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Slide slide = new Slide();
         slide.setDuration(400);
         slide.setSlideEdge(Gravity.RIGHT);
         tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
-        fragment = new SearchFragment();
         Bundle searchArgument = new Bundle();
-        searchArgument.putString(SearchFragment.KEY_SEARCH_KEYWORD,searchKeyword);
+        searchArgument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
         fragment.setArguments(searchArgument);
         fragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, fragment).commit();
@@ -312,12 +327,12 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
 
     @Override
     public void showMainPage() {
-        Fragment fragment;
+        Fragment fragment = mainPageFragmentProvider.get();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Slide slide = new Slide();
         slide.setDuration(400);
         slide.setSlideEdge(Gravity.RIGHT);
-        fragment = new MainPageFragment();
+        //fragment = new MainPageFragment();
         fragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, fragment).commit();
         toolbar.setTitle(getString(R.string.drawer_home));
@@ -326,15 +341,14 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
 
     @Override
     public void showAboutPage() {
-        Fragment fragment;
+        Fragment fragment = aboutFragmentProvider.get();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Slide slide = new Slide();
         slide.setDuration(400);
         slide.setSlideEdge(Gravity.RIGHT);
         tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT);
-        AboutFragment aboutFragment = new AboutFragment();
-        aboutFragment.setEnterTransition(slide);
-        ft.replace(R.id.frame_content, aboutFragment).commit();
+        fragment.setEnterTransition(slide);
+        ft.replace(R.id.frame_content, fragment).commit();
         toolbar.setTitle(R.string.drawer_about);
     }
 
@@ -344,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
         Slide slide = new Slide();
         slide.setDuration(400);
         tracker.setScreenName(AnalyzticsTag.SCREEN_ACCOUNT);
-        AccountFragment accountFragment = new AccountFragment();
+        Fragment accountFragment = accountFragmentProvider.get();
         accountFragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, accountFragment).commit();
         int bgColor = ContextCompat.getColor(getApplicationContext(), R.color.md_light_blue_100);
@@ -362,10 +376,5 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
                 .override((int) getResources().getDimension(R.dimen.drawer_image_width)
                         , (int) getResources().getDimension(R.dimen.drawer_image_high))
                 .placeholder(R.drawable.ic_action_account_circle).into(icon);
-    }
-
-    @Override
-    public void setPresenter(MainPageContract.Presenter presenter) {
-        this.presenter = presenter;
     }
 }

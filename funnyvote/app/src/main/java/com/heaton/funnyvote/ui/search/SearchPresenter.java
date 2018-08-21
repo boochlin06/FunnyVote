@@ -11,11 +11,24 @@ import com.heaton.funnyvote.database.VoteData;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class SearchPresenter implements SearchContract.Presenter {
 
     private static final String TAG = SearchPresenter.class.getSimpleName();
+    String keyword;
     private VoteDataRepository voteDataRepository;
     private UserDataRepository userDataRepository;
+    private List<VoteData> searchVoteDataList;
+    private User user;
+    private SearchContract.View view;
+    @Inject
+    public SearchPresenter(VoteDataRepository voteDataRepository
+            , UserDataRepository userDataRepository) {
+        this.userDataRepository = userDataRepository;
+        this.voteDataRepository = voteDataRepository;
+        this.searchVoteDataList = new ArrayList<>();
+    }
 
     public List<VoteData> getSearchVoteDataList() {
         return searchVoteDataList;
@@ -25,29 +38,12 @@ public class SearchPresenter implements SearchContract.Presenter {
         this.searchVoteDataList = searchVoteDataList;
     }
 
-    private List<VoteData> searchVoteDataList;
-    private User user;
-    private SearchContract.View view;
-
     public String getKeyword() {
         return keyword;
     }
 
     public void setKeyword(String keyword) {
         this.keyword = keyword;
-    }
-
-    private String keyword;
-
-
-    public SearchPresenter(VoteDataRepository voteDataRepository
-            , UserDataRepository userDataRepository
-            , SearchContract.View mainPageView) {
-        this.view = mainPageView;
-        this.userDataRepository = userDataRepository;
-        this.voteDataRepository = voteDataRepository;
-        this.searchVoteDataList = new ArrayList<>();
-        this.view.setPresenter(this);
     }
 
     @Override
@@ -102,8 +98,8 @@ public class SearchPresenter implements SearchContract.Presenter {
     }
 
     @Override
-    public void start(final String keyword) {
-        this.keyword = keyword;
+    public void startwithSearch(final String keyword) {
+        //this.keyword = keyword;
         userDataRepository.getUser(new UserDataSource.GetUserCallback() {
             @Override
             public void onResponse(User user) {
@@ -122,7 +118,14 @@ public class SearchPresenter implements SearchContract.Presenter {
     }
 
     @Override
-    public void start() {
-        start("");
+    public void takeView(SearchContract.View view) {
+        this.view = view;
+        startwithSearch(this.keyword);
+    }
+
+
+    @Override
+    public void dropView() {
+        this.view = null;
     }
 }

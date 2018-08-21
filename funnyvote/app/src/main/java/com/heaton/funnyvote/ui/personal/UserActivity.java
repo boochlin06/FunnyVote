@@ -10,7 +10,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -25,30 +24,38 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
-import com.heaton.funnyvote.MainActivity;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.notification.VoteNotificationManager;
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
-import com.heaton.funnyvote.ui.main.MainPageContract;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
+import com.heaton.funnyvote.ui.mainactivity.MainActivity;
 import com.heaton.funnyvote.utils.Util;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.Lazy;
+import dagger.android.support.DaggerAppCompatActivity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class UserActivity extends AppCompatActivity
+public class UserActivity extends DaggerAppCompatActivity
         implements AppBarLayout.OnOffsetChangedListener, PersonalContract.UserPageView {
     private static final String TAG = UserActivity.class.getSimpleName();
 
     private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 20;
+    @Inject
+    public UserPresenter presenter;
+    @Inject
+    Lazy<CreateTabFragment> createTabFragmentProvider;
+    @Inject
+    Lazy<ParticipateTabFragment> participateTabFragmentProvider;
+    @Inject
+    Lazy<FavoriteTabFragment> favoriteTabFragmentProvider;
     private boolean isAvatarShown = true;
-
     private CircleImageView imgUserIcon;
     private TextView txtUserName;
     private TextView txtSubTitle;
@@ -58,8 +65,6 @@ public class UserActivity extends AppCompatActivity
     private Tracker tracker;
     private boolean isMainActivityNeedRestart = false;
     private AlertDialog passwordDialog;
-    private MainPageContract.Presenter presenter;
-    private MainPageTabFragment createFragment,participateFragment,favoriteFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,9 +92,7 @@ public class UserActivity extends AppCompatActivity
         maxScrollSize = appbarLayout.getTotalScrollRange();
 
         tabsAdapter = new TabsAdapter(getSupportFragmentManager(), null);
-        //viewPager.setAdapter(tabsAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        //UserManager.getInstance(getApplicationContext()).getUser(getUserCallback, false);
         tracker.setScreenName(AnalyzticsTag.SCREEN_BOX_CREATE);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -121,10 +124,8 @@ public class UserActivity extends AppCompatActivity
         } else {
             isMainActivityNeedRestart = false;
         }
-        presenter = new UserPresenter(Injection.provideVoteDataRepository(getApplicationContext())
-                , Injection.provideUserRepository(getApplicationContext()), this);
         presenter.setTargetUser(null);
-        presenter.start();
+        presenter.takeView(this);
     }
 
     @Override
@@ -141,7 +142,7 @@ public class UserActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        //presenter.start();
+        //presenter.startwithSearch();
         presenter.refreshAllFragment();
         tracker.setScreenName(AnalyzticsTag.SCREEN_BOX);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
@@ -227,15 +228,10 @@ public class UserActivity extends AppCompatActivity
 
     @Override
     public void showLoadingCircle() {
-//        circleLoad.setVisibility(View.VISIBLE);
-//        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
-//        circleLoad.spin();
     }
 
     @Override
     public void hideLoadingCircle() {
-//        circleLoad.stopSpinning();
-//        circleLoad.setVisibility(View.GONE);
     }
 
     @Override
@@ -318,11 +314,6 @@ public class UserActivity extends AppCompatActivity
         return passwordDialog != null && passwordDialog.isShowing();
     }
 
-    @Override
-    public void setPresenter(MainPageContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
-
     private class TabsAdapter extends FragmentStatePagerAdapter {
         private User user;
 
@@ -338,27 +329,18 @@ public class UserActivity extends AppCompatActivity
 
         @Override
         public Fragment getItem(int i) {
-            Bundle argument = new Bundle();
-            argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, user);
+            //Bundle argument = new Bundle();
+            //argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, user);
             switch (i) {
                 case 0:
-                    if(createFragment == null) {
-                        createFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, user);
-                        createFragment.setPresenter(presenter);
-                    }
-                    return createFragment;
+                    CreateTabFragment createTabFragment = createTabFragmentProvider.get();
+                    return createTabFragment;
                 case 1:
-                    if (participateFragment == null) {
-                        participateFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_PARTICIPATE, user);
-                        participateFragment.setPresenter(presenter);
-                    }
-                    return participateFragment;
+                    ParticipateTabFragment participateTabFragment = participateTabFragmentProvider.get();
+                    return participateTabFragment;
                 case 2:
-                    if (favoriteFragment == null) {
-                        favoriteFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, user);
-                        favoriteFragment.setPresenter(presenter);
-                    }
-                    return favoriteFragment;
+                    FavoriteTabFragment favoriteTabFragment = favoriteTabFragmentProvider.get();
+                    return favoriteTabFragment;
             }
             return null;
         }

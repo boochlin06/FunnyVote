@@ -6,15 +6,24 @@ import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
 
+import javax.inject.Inject;
+
 public class AccountPresenter implements AccountContract.Presenter {
 
-    private static final int RC_GOOGLE_SIGN_IN = 101;
     public static final int LOGIN_FB = 111;
     public static final int LOGIN_GOOGLE = 112;
     public static final int LOGIN_TWITTER = 113;
+    private static final int RC_GOOGLE_SIGN_IN = 101;
     private static final String TAG = AccountPresenter.class.getSimpleName();
     private UserDataRepository userDataRepository;
     private AccountContract.View view;
+    private User user;
+    private boolean mergeGuest;
+
+    @Inject
+    public AccountPresenter(UserDataRepository userDataRepository) {
+        this.userDataRepository = userDataRepository;
+    }
 
     public User getUser() {
         return user;
@@ -24,19 +33,15 @@ public class AccountPresenter implements AccountContract.Presenter {
         this.user = user;
     }
 
-    private User user;
-    private boolean mergeGuest;
-
-    public AccountPresenter(UserDataRepository userDataRepository
-            , AccountContract.View view) {
-        this.userDataRepository = userDataRepository;
+    @Override
+    public void takeView(AccountContract.View view) {
         this.view = view;
-        this.view.setPresenter(this);
+        updateUser();
     }
 
     @Override
-    public void start() {
-        updateUser();
+    public void dropView() {
+        view = null;
     }
 
     @Override

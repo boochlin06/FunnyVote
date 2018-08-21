@@ -2,9 +2,7 @@ package com.heaton.funnyvote.ui.about.aboutapp;
 
 import android.support.annotation.NonNull;
 
-import com.heaton.funnyvote.ui.about.aboutapp.AboutAppContract;
-
-public class AboutAppPresenter implements AboutAppContract.Presenter{
+public class AboutAppPresenter implements AboutAppContract.Presenter {
     private final AboutAppContract.View aboutAppView;
 
     public AboutAppPresenter(@NonNull AboutAppContract.View view) {
@@ -17,7 +15,12 @@ public class AboutAppPresenter implements AboutAppContract.Presenter{
     }
 
     @Override
-    public void start() {
+    public void takeView(Object view) {
+
+    }
+
+    @Override
+    public void dropView() {
 
     }
 }

@@ -80,9 +80,11 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
     private final class optionEditTextListener implements TextWatcher {
 
         CreateVoteTabOptionFragment.OptionItemListener itemListener;
+
         public optionEditTextListener(CreateVoteTabOptionFragment.OptionItemListener itemListener) {
             this.itemListener = itemListener;
         }
+
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -90,7 +92,7 @@ public class VHCreateOptionItem extends RecyclerView.ViewHolder {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            itemListener.onOptionTextChange(option.getId(),s.toString());
+            itemListener.onOptionTextChange(option.getId(), s.toString());
         }
 
         @Override

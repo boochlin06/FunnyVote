@@ -5,22 +5,25 @@ import com.heaton.funnyvote.BaseView;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.ui.personal.CreateTabFragment;
+import com.heaton.funnyvote.ui.personal.FavoriteTabFragment;
+import com.heaton.funnyvote.ui.personal.ParticipateTabFragment;
 
 import java.util.List;
 
 public interface MainPageContract {
-    interface Presenter extends BasePresenter {
+    interface Presenter extends BasePresenter<MainPageView> {
         void resetPromotion();
 
-        void setHotsFragmentView(TabPageFragment hotsFragmentView);
+        void setHotsFragmentView(HotTabFragment hotsFragmentView);
 
-        void setNewsFragmentView(TabPageFragment newsFragmentView);
+        void setNewsFragmentView(NewsTabFragment newsFragmentView);
 
-        void setCreateFragmentView(MainPageContract.TabPageFragment fragmentView);
+        void setCreateFragmentView(CreateTabFragment fragmentView);
 
-        void setParticipateFragmentView(MainPageContract.TabPageFragment fragmentView);
+        void setParticipateFragmentView(ParticipateTabFragment fragmentView);
 
-        void setFavoriteFragmentView(MainPageContract.TabPageFragment fragmentView);
+        void setFavoriteFragmentView(FavoriteTabFragment fragmentView);
 
         void favoriteVote(VoteData voteData);
 
@@ -78,7 +81,7 @@ public interface MainPageContract {
 
         void setUpTabsAdapter(User user);
 
-        void setUpTabsAdapter(User user,User targetUser);
+        void setUpTabsAdapter(User user, User targetUser);
 
         void showHintToast(int res, long arg);
 

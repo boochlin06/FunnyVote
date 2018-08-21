@@ -10,7 +10,6 @@ import com.heaton.funnyvote.database.OptionDao;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.database.VoteDataDao;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.heaton.funnyvote.utils.AppExecutors;
 
 import org.greenrobot.greendao.query.QueryBuilder;
@@ -22,7 +21,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class LocalVoteDataSource implements VoteDataSource {
     private static final String TAG = LocalVoteDataSource.class.getSimpleName();
     private VoteDataDao voteDataDao;
@@ -30,7 +32,8 @@ public class LocalVoteDataSource implements VoteDataSource {
     private static volatile LocalVoteDataSource INSTANCE;
     private AppExecutors mAppExecutors;
 
-    private LocalVoteDataSource(@NonNull VoteDataDao voteDataDao, OptionDao optionDao, AppExecutors appExecutors) {
+    @Inject
+    public LocalVoteDataSource(@NonNull VoteDataDao voteDataDao, OptionDao optionDao, AppExecutors appExecutors) {
         this.voteDataDao = voteDataDao;
         this.optionDao = optionDao;
         this.mAppExecutors = appExecutors;
@@ -173,7 +176,7 @@ public class LocalVoteDataSource implements VoteDataSource {
                 voteData.setOptionUserChoiceTitle(voteData.getUserOption().getTitle());
                 voteData.setOptionUserChoiceCount(voteData.getUserOption().getCount());
             }
-            if (tab != null && tab.equals(MainPageTabFragment.TAB_HOT)) {
+            if (tab != null && tab.equals(VoteDataRepository.TAB_HOT)) {
                 voteData.setDisplayOrder((offset) * VoteDataRepository.PAGE_COUNT + i);
                 voteData.setCategory("hot");
             } else {
@@ -290,7 +293,6 @@ public class LocalVoteDataSource implements VoteDataSource {
                                     .limit(VoteDataRepository.PAGE_COUNT)
                                     .offset(offset).orderDesc(VoteDataDao.Properties.StartTime).list();
 
-                    Log.d(TAG, "PARTICIPATE LOCAL SIZE:" + list.size());
                     mAppExecutors.mainThread().execute(new Runnable() {
                         @Override
                         public void run() {
@@ -451,13 +453,12 @@ public class LocalVoteDataSource implements VoteDataSource {
                     voteData.setOptionUserChoiceTitle(voteData.getUserOption().getTitle());
                     voteData.setOptionUserChoiceCount(voteData.getUserOption().getCount());
                 }
-                if (tab != null && tab.equals(MainPageTabFragment.TAB_HOT)) {
+                if (tab != null && tab.equals(VoteDataRepository.TAB_HOT)) {
                     voteData.setDisplayOrder((offset) * VoteDataRepository.PAGE_COUNT + i);
                     voteData.setCategory("hot");
                 } else {
                     voteData.setCategory(null);
                 }
-                Log.d(TAG, tab + "," + i + ",save item polled:" + voteData.getIsPolled());
 //                if (!isLoginUser) {
 //                    //todo: temp reset fav for login user
 //                    voteData.setIsFavorite(favVoteCodeList.contains(voteData.getVoteCode()));

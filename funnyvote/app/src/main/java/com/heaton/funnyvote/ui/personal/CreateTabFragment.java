@@ -1,13 +1,7 @@
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
-package com.heaton.funnyvote.ui.main;
+package com.heaton.funnyvote.ui.personal;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,71 +14,47 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.RelativeLayout;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.google.android.gms.analytics.Tracker;
-import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
-import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.ui.HidingScrollListener;
+import com.heaton.funnyvote.ui.main.MainPageContract;
+import com.heaton.funnyvote.ui.main.VoteWallItemAdapter;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 
-public class MainPageTabFragment extends Fragment implements MainPageContract.TabPageFragment {
+@ActivityScoped
+public class CreateTabFragment extends dagger.android.support.DaggerFragment implements MainPageContract.TabPageFragment {
     private static final int LIMIT = VoteDataRepository.PAGE_COUNT;
-    public static String TAG = MainPageTabFragment.class.getSimpleName();
-
-    public static final String KEY_TAB = "tab";
-    public static final String KEY_LOGIN_USER = "key_login_user";
-    public static final String KEY_TARGET_USER = "key_target_user";
-
-    public static final String TAB_HOT = "HOT";
-    public static final String TAB_NEW = "NEW";
-
-    public static final String TAB_CREATE = "CREATE";
-    public static final String TAB_PARTICIPATE = "PARTICIPATE";
-    public static final String TAB_FAVORITE = "FAVORITE";
-
+    public static String TAG = CreateTabFragment.class.getSimpleName();
+    @Inject
+    public PersonalContract.Presenter presenter;
     private RecyclerView ryMain;
     private RelativeLayout RootView;
-    private String tab = TAB_HOT;
-    private List<VoteData> voteDataList;
     private VoteWallItemAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabTop;
-    private Tracker tracker;
-    private MainPageContract.Presenter presenter;
-    private VoteWallItemListener wallItemListener;
+    private VoteWallItemAdapter.VoteWallItemListener wallItemListener;
 
-    public static MainPageTabFragment newInstance(String tab, User loginUser) {
-        return newInstance(tab, loginUser, null);
-    }
-
-    public static MainPageTabFragment newInstance(String tab, User loginUser, User targetUser) {
-        MainPageTabFragment fragment = new MainPageTabFragment();
-        Bundle argument = new Bundle();
-        argument.putString(MainPageTabFragment.KEY_TAB, tab);
-        argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, loginUser);
-        argument.putParcelable(MainPageTabFragment.KEY_TARGET_USER, targetUser);
-        fragment.setArguments(argument);
-        fragment.setRetainInstance(false);
-        return fragment;
+    @Inject
+    public CreateTabFragment() {
+        Log.d("test", "CreateTabFragment init");
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Bundle argument = getArguments();
-        this.tab = argument.getString(KEY_TAB);
-        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
-        tracker = application.getDefaultTracker();
         RootView = (RelativeLayout) inflater.inflate(R.layout.fragment_main_page_tab, container, false);
         fabTop = (FloatingActionButton) RootView.findViewById(R.id.fabTop);
         fabTop.setVisibility(View.GONE);
         ryMain = (RecyclerView) RootView.findViewById(R.id.ryMainPage);
-        wallItemListener = new VoteWallItemListener() {
+        Log.d(TAG, "onCreateView");
+        wallItemListener = new VoteWallItemAdapter.VoteWallItemListener() {
             @Override
             public void onVoteFavoriteChange(VoteData voteData) {
                 Log.d(TAG, "onVoteFavoriteChange");
@@ -118,17 +88,7 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
 
             @Override
             public void onReloadVote() {
-                if (tab.equals(TAB_HOT)) {
-                    presenter.refreshHotList();
-                } else if (tab.equals(TAB_NEW)) {
-                    presenter.refreshNewList();
-                } else if (tab.equals(TAB_CREATE)) {
-                    presenter.refreshCreateList();
-                } else if (tab.equals(TAB_PARTICIPATE)) {
-                    presenter.refreshParticipateList();
-                } else if (tab.equals(TAB_FAVORITE)) {
-                    presenter.refreshFavoriteList();
-                }
+                presenter.refreshCreateList();
             }
         };
         swipeRefreshLayout = (SwipeRefreshLayout) RootView.findViewById(R.id.swipeLayout);
@@ -140,21 +100,10 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        this.setPresenter(presenter);
         if (presenter == null) {
             return;
         }
-        if (tab.equals(TAB_HOT)) {
-            presenter.setHotsFragmentView(this);
-        } else if (tab.equals(TAB_NEW)) {
-            presenter.setNewsFragmentView(this);
-        } else if (tab.equals(TAB_CREATE)) {
-            presenter.setCreateFragmentView(this);
-        } else if (tab.equals(TAB_PARTICIPATE)) {
-            presenter.setParticipateFragmentView(this);
-        } else if (tab.equals(TAB_FAVORITE)) {
-            presenter.setFavoriteFragmentView(this);
-        }
+        presenter.setCreateFragmentView(this);
     }
 
     @Override
@@ -166,7 +115,8 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
             // TODO:AUTO UPDATE .
             //refreshData();
         }
-        adapter.notifyDataSetChanged();
+        if (adapter != null)
+            adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -181,17 +131,7 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
                 , voteDataList);
         // if max count is -1 , the list is init.
         adapter.setMaxCount(-1);
-        if (tab.equals(TAB_HOT)) {
-            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
-        } else if (tab.equals(TAB_NEW)) {
-            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
-        } else if (tab.equals(TAB_CREATE)) {
-            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_CREATE_NEW);
-        } else if (tab.equals(TAB_PARTICIPATE)) {
-            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_PARTICIPATE);
-        } else if (tab.equals(TAB_FAVORITE)) {
-            adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_FAVORITE);
-        }
+        adapter.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH);
         adapter.resetItemTypeList();
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
         scaleInAnimationAdapter.setDuration(1000);
@@ -249,31 +189,6 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
     }
 
     @Override
-    public void setPresenter(MainPageContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
-
-    private class WallItemOnRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
-
-        @Override
-        public void onRefresh() {
-
-            if (tab.equals(TAB_HOT)) {
-                presenter.reloadHotList(0);
-            } else if (tab.equals(TAB_NEW)) {
-                presenter.reloadNewList(0);
-            } else if (tab.equals(TAB_CREATE)) {
-                presenter.reloadCreateList(0);
-            } else if (tab.equals(TAB_PARTICIPATE)) {
-                presenter.reloadParticipateList(0);
-            } else if (tab.equals(TAB_FAVORITE)) {
-                presenter.reloadFavoriteList(0);
-            }
-        }
-    }
-
-
-    @Override
     public void setMaxCount(int max) {
         if (adapter != null) {
             adapter.setMaxCount(max);
@@ -282,7 +197,7 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
 
     @Override
     public void setTab(String tab) {
-        this.tab = tab;
+        //this.tab = tab;
     }
 
     @Override
@@ -292,19 +207,13 @@ public class MainPageTabFragment extends Fragment implements MainPageContract.Ta
         }
     }
 
-    public interface VoteWallItemListener {
-        void onVoteFavoriteChange(VoteData voteData);
+    private class WallItemOnRefreshListener implements SwipeRefreshLayout.OnRefreshListener {
 
-        void onVoteItemClick(VoteData voteData);
-
-        void onVoteAuthorClick(VoteData voteData);
-
-        void onVoteShare(VoteData voteData);
-
-        void onVoteQuickPoll(VoteData voteData, String optionCode);
-
-        void onNoVoteCreateNew();
-
-        void onReloadVote();
+        @Override
+        public void onRefresh() {
+            presenter.reloadCreateList(0);
+        }
     }
+
+
 }

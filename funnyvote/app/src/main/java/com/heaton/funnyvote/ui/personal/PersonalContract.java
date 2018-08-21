@@ -6,11 +6,6 @@ import com.heaton.funnyvote.ui.main.MainPageContract;
 
 public interface PersonalContract {
     interface Presenter extends MainPageContract.Presenter {
-        void setCreateFragmentView(MainPageContract.TabPageFragment fragmentView);
-
-        void setParticipateFragmentView(MainPageContract.TabPageFragment fragmentView);
-
-        void setFavoriteFragmentView(MainPageContract.TabPageFragment fragmentView);
 
         void favoriteVote(VoteData voteData);
 

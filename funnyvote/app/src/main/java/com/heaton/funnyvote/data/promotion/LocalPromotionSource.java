@@ -1,6 +1,5 @@
 package com.heaton.funnyvote.data.promotion;
 
-import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 
 import com.heaton.funnyvote.database.Promotion;
@@ -10,17 +9,20 @@ import com.heaton.funnyvote.utils.AppExecutors;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 public class LocalPromotionSource implements PromotionDataSource {
     private PromotionDao promotionDao;
     private static volatile LocalPromotionSource INSTANCE;
     private AppExecutors mAppExecutors;
 
-    private LocalPromotionSource(@NonNull PromotionDao promotionDao, AppExecutors appExecutors) {
+    @Inject
+    public LocalPromotionSource(PromotionDao promotionDao, AppExecutors appExecutors) {
         this.promotionDao = promotionDao;
         this.mAppExecutors = appExecutors;
     }
 
-    public static LocalPromotionSource getInstance(@NonNull PromotionDao promotionDao
+    public static LocalPromotionSource getInstance(PromotionDao promotionDao
             , AppExecutors appExecutors) {
         if (INSTANCE == null) {
             synchronized (LocalPromotionSource.class) {

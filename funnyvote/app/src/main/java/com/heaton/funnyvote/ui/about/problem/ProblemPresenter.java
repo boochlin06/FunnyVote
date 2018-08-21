@@ -8,7 +8,12 @@ public class ProblemPresenter implements ProblemContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void takeView(Object view) {
+
+    }
+
+    @Override
+    public void dropView() {
 
     }
 }

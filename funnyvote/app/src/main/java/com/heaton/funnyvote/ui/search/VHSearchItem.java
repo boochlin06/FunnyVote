@@ -6,10 +6,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.ui.main.VHVoteWallItem;
-import com.bumptech.glide.Glide;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

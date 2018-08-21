@@ -7,8 +7,14 @@ public class LicencePresenter implements LicenceContract.Presenter {
         this.view = view;
     }
 
+
     @Override
-    public void start() {
+    public void takeView(Object view) {
+
+    }
+
+    @Override
+    public void dropView() {
 
     }
 }

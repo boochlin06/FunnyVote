@@ -74,13 +74,13 @@ public class VoteDetailPresenterTest {
         presenter = new VoteDetailPresenter(voteCode, voteDataRepository, userDataRepository, view);
 
         // Then the presenter is set to the view
-        verify(view).setPresenter(presenter);
+        //verify(view).setPresenter(presenter);
     }
 
     @Test
     public void getVoteDataFromRepositoryAndLoadIntoView() {
         presenter = new VoteDetailPresenter(voteCode, voteDataRepository, userDataRepository, view);
-        presenter.start();
+        presenter.takeView(view);
         verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
         InOrder inOrder = Mockito.inOrder(view);
         inOrder.verify(view).showLoadingCircle();

@@ -4,7 +4,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,23 +13,30 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.android.support.DaggerFragment;
+
 /**
  * Created by heaton on 2016/9/1.
  */
-
-public class CreateVoteTabOptionFragment extends Fragment implements CreateVoteContract.OptionFragmentView {
+@ActivityScoped
+public class CreateVoteTabOptionFragment extends DaggerFragment implements CreateVoteContract.OptionFragmentView {
+    @Inject
+    CreateVoteContract.Presenter presenter;
+    ImageView imgMain;
+    ImageView imgPick;
     private RecyclerView ryOptions;
     private View rootView;
     private OptionCreateItemAdapter optionItemAdapter;
     private OptionItemListener itemListener;
-    private CreateVoteContract.Presenter presenter;
-    ImageView imgMain;
-    ImageView imgPick;
 
+    @Inject
     public CreateVoteTabOptionFragment() {
     }
 
@@ -98,11 +104,6 @@ public class CreateVoteTabOptionFragment extends Fragment implements CreateVoteC
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-    }
-
-    @Override
-    public void setPresenter(CreateVoteContract.Presenter presenter) {
-        this.presenter = presenter;
     }
 
     @Override

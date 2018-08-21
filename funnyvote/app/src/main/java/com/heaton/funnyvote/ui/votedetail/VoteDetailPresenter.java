@@ -19,37 +19,31 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 public class VoteDetailPresenter implements VoteDetailContract.Presenter {
 
     private static final String TAG = VoteDetailPresenter.class.getSimpleName();
-    private final VoteDetailContract.View view;
-    @Nullable
-    private String voteId;
     private final VoteDataRepository voteDataRepository;
     private final UserDataRepository userDataRepository;
+    public String voteId;
+    public boolean isUserPreResult = false;
+    public int optionType = OptionItemAdapter.OPTION_UNPOLL;
+    @Nullable
+    private VoteDetailContract.View view;
     private User user;
-
-    public VoteData getVoteData() {
-        return voteData;
-    }
-
     private VoteData voteData = new VoteData();
-
     private List<Option> optionList;
     private List<Option> searchList;
     private List<Long> choiceList;
     private List<String> choiceCodeList;
     private List<String> expandOptionList;
-
     private boolean isMultiChoice = false;
-    public boolean isUserPreResult = false;
     private boolean isUserOnAddNewOption = false;
     private boolean isSearchMode = false;
-    public int optionType = OptionItemAdapter.OPTION_UNPOLL;
     // all new option id is negative auto increment.
     private long newOptionIdAuto = -1;
-
+    @Inject
     public VoteDetailPresenter(@Nullable String voteId,
                                @Nullable VoteDataRepository voteDataRepository,
                                @Nullable UserDataRepository userDataRepository,
@@ -63,7 +57,10 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
         this.choiceCodeList = new ArrayList<>();
         this.expandOptionList = new ArrayList<>();
         this.searchList = new ArrayList<>();
-        this.view.setPresenter(this);
+    }
+
+    public VoteData getVoteData() {
+        return voteData;
     }
 
     @Override
@@ -367,8 +364,14 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void takeView(VoteDetailContract.View view) {
+        this.view = view;
         openVoteData();
+    }
+
+    @Override
+    public void dropView() {
+        this.view = null;
     }
 
     private void openVoteData() {

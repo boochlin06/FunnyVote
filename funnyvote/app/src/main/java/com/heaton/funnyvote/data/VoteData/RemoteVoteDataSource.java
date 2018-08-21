@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -26,6 +28,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+@Singleton
 public class RemoteVoteDataSource implements VoteDataSource {
     private static final String TAG = RemoteVoteDataSource.class.getSimpleName();
     private static RemoteVoteDataSource INSTANCE = null;
@@ -43,6 +46,7 @@ public class RemoteVoteDataSource implements VoteDataSource {
         return INSTANCE;
     }
 
+    @Inject
     public RemoteVoteDataSource() {
         this.voteService = RemoteServiceApi.getInstance().getVoteService();
     }
@@ -157,7 +161,7 @@ public class RemoteVoteDataSource implements VoteDataSource {
             parameter.put("p", password);
         }
         Log.d(TAG, "Need pw:" + voteSetting.getIsNeedPassword() + " pw:" + voteSetting.password
-                + "start time:" + voteSetting.getStartTime() + " ,end:" + voteSetting.getEndTime());
+                + "startwithSearch time:" + voteSetting.getStartTime() + " ,end:" + voteSetting.getEndTime());
 
         RequestBody requestFile = null;
         MultipartBody.Part body = null;

@@ -10,7 +10,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -27,49 +26,50 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
-import com.heaton.funnyvote.ui.main.MainPageContract;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.heaton.funnyvote.utils.Util;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.Lazy;
+import dagger.android.support.DaggerAppCompatActivity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by heaton on 2017/1/24.
  */
 
-public class PersonalActivity extends AppCompatActivity
+public class PersonalActivity extends DaggerAppCompatActivity
         implements AppBarLayout.OnOffsetChangedListener, PersonalContract.UserPageView {
-    private static final String TAG = PersonalActivity.class.getSimpleName();
-
-    private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 20;
     public static final String EXTRA_PERSONAL_CODE = "personal_code";
     public static final String EXTRA_PERSONAL_CODE_TYPE = "personal_code_type";
     public static final String EXTRA_PERSONAL_NAME = "personal_name";
     public static final String EXTRA_PERSONAL_ICON = "personal_icon";
-
+    private static final String TAG = PersonalActivity.class.getSimpleName();
+    private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 20;
+    @Inject
+    UserPresenter presenter;
+    @Inject
+    Lazy<CreateTabFragment> createTabFragmentProvider;
+    @Inject
+    Lazy<FavoriteTabFragment> favoriteTabFragmentProvider;
     private String personalCode;
     private String personalCodeType;
     private String personalName;
     private String personalIcon;
     private boolean isAvatarShown = true;
-
     private CircleImageView imgUserIcon;
     private TextView txtUserName;
     private TextView txtSubTitle;
     private int maxScrollSize;
     private TabsAdapter tabsAdapter;
     private ViewPager viewPager;
-
-    private MainPageContract.Presenter presenter;
-    private MainPageTabFragment createFragment, favoriteFragment;
-
+    //private MainPageTabFragment createFragment, favoriteFragment;
     private Tracker tracker;
     private AlertDialog passwordDialog;
 
@@ -142,10 +142,11 @@ public class PersonalActivity extends AppCompatActivity
             }
         });
 
-        presenter = new UserPresenter(Injection.provideVoteDataRepository(getApplicationContext())
-                , Injection.provideUserRepository(getApplicationContext()), this);
+//        presenter = new UserPresenter(Injection.provideVoteDataRepository(getApplicationContext())
+//                , Injection.provideUserRepository(getApplicationContext()), this);
+
         presenter.setTargetUser(targetUser);
-        presenter.start();
+        presenter.takeView(this);
     }
 
     private void setUpUser(User user) {
@@ -210,6 +211,7 @@ public class PersonalActivity extends AppCompatActivity
                     .into(imgUserIcon);
         }
     }
+
 
     @Override
     public void showShareDialog(VoteData data) {
@@ -330,11 +332,6 @@ public class PersonalActivity extends AppCompatActivity
         return passwordDialog != null && passwordDialog.isShowing();
     }
 
-    @Override
-    public void setPresenter(MainPageContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
-
     private class TabsAdapter extends FragmentStatePagerAdapter {
         private User loginUser, targetUser;
 
@@ -353,18 +350,10 @@ public class PersonalActivity extends AppCompatActivity
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    if (createFragment == null) {
-                        createFragment
-                                = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, loginUser, targetUser);
-                        createFragment.setPresenter(presenter);
-                    }
-                    return createFragment;
+                    CreateTabFragment fragment = createTabFragmentProvider.get();
+                    return fragment;
                 case 1:
-                    if (favoriteFragment == null) {
-                        favoriteFragment
-                                = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, loginUser, targetUser);
-                        favoriteFragment.setPresenter(presenter);
-                    }
+                    FavoriteTabFragment favoriteFragment = favoriteTabFragmentProvider.get();
                     return favoriteFragment;
             }
             return null;

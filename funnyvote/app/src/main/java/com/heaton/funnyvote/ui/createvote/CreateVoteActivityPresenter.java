@@ -11,6 +11,7 @@ import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,6 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
+@ActivityScoped
 public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter {
 
     public static final String ERROR_FILL_ALL_OPTION = "ERROR_FILL_ALL_OPTION";
@@ -31,17 +35,15 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
     public static final String ERROR_PASSWORD_EMPTY = "ERROR_PASSWORD_EMPTY";
     public static final String ERROR_ENDTIME_MORE_THAN_NOW = "ERROR_ENDTIME_MORE_THAN_NOW";
     public static final String ERROR_ENDTIME_MORE_THAN_MAX = "ERROR_ENDTIME_MORE_THAN_MAX";
-    public Map<String, Boolean> errorCheckMap;
     public static final long DEFAULT_END_TIME = 30;
     public static final long DEFAULT_END_TIME_MAX = 90;
     private static final String TAG = CreateVoteActivityPresenter.class.getSimpleName();
+    public Map<String, Boolean> errorCheckMap;
     private CreateVoteContract.ActivityView activityView;
     private CreateVoteContract.OptionFragmentView optionFragmentView;
     private CreateVoteContract.SettingFragmentView settingFragmentView;
 
-
     private List<Option> optionList;
-
 
     private VoteData voteSettings;
     private User user;
@@ -50,27 +52,15 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
 
     private long newOptionIdAuto = 2;
 
+    @Inject
     public CreateVoteActivityPresenter(VoteDataRepository voteDataRepository
-            , UserDataRepository userDataRepository
-            , CreateVoteContract.ActivityView activityView
-            , CreateVoteContract.OptionFragmentView optionFragmentView
-            , CreateVoteContract.SettingFragmentView settingFragmentView) {
-        this.activityView = activityView;
-        this.optionFragmentView = optionFragmentView;
-        this.settingFragmentView = settingFragmentView;
+            , UserDataRepository userDataRepository) {
         this.optionList = new ArrayList<>();
         this.voteSettings = new VoteData();
         this.voteDataRepository = voteDataRepository;
         this.userDataRepository = userDataRepository;
-        this.activityView.setPresenter(this);
-        //this.settingFragmentView.setPresenter(this);
-        //this.optionFragmentView.setPresenter(this);
     }
 
-    public CreateVoteActivityPresenter(CreateVoteContract.ActivityView activityView
-            , VoteDataRepository voteDataRepository, UserDataRepository userDataRepository) {
-        this(voteDataRepository, userDataRepository, activityView, null, null);
-    }
 
     public VoteData getVoteSettings() {
         return voteSettings;
@@ -89,7 +79,8 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
     }
 
     @Override
-    public void start() {
+    public void takeView(CreateVoteContract.ActivityView view) {
+        this.activityView = view;
         for (long i = 0; i < 2; i++) {
             Option option = new Option();
             option.setId(newOptionIdAuto);
@@ -124,6 +115,11 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
 
             }
         }, false);
+    }
+
+    @Override
+    public void dropView() {
+        this.activityView = null;
     }
 
 

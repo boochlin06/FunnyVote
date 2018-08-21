@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 public class FakeRemoteVoteDataRepository implements VoteDataSource {
 
@@ -24,7 +26,8 @@ public class FakeRemoteVoteDataRepository implements VoteDataSource {
     private static final Map<String, VoteData> VOTES_SERVICE_DATA = new LinkedHashMap<>();
 
     // Prevent direct instantiation.
-    private FakeRemoteVoteDataRepository() {
+    @Inject
+    public FakeRemoteVoteDataRepository() {
     }
 
     public static FakeRemoteVoteDataRepository getInstance() {
@@ -36,14 +39,14 @@ public class FakeRemoteVoteDataRepository implements VoteDataSource {
 
     @Override
     public void getVoteData(String voteCode, User user, @Nullable GetVoteDataCallback callback) {
-        Log.d(TAG,"getVoteData");
+        Log.d(TAG, "getVoteData");
         VoteData voteData = VOTES_SERVICE_DATA.get(voteCode);
         callback.onVoteDataLoaded(voteData);
     }
 
     @Override
     public void saveVoteData(VoteData voteData) {
-        VOTES_SERVICE_DATA.put(voteData.getVoteCode(),voteData);
+        VOTES_SERVICE_DATA.put(voteData.getVoteCode(), voteData);
     }
 
     @Override

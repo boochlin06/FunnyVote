@@ -7,7 +7,7 @@ import com.heaton.funnyvote.database.VoteData;
 import java.util.List;
 
 public interface SearchContract {
-    interface Presenter extends BasePresenter {
+    interface Presenter extends BasePresenter<SearchContract.View> {
         void searchVote(String keyword);
 
         void reloadSearchList(int offset);
@@ -16,7 +16,7 @@ public interface SearchContract {
 
         void IntentToVoteDetail(VoteData voteData);
 
-        void start(String keyword);
+        void startwithSearch(String keyword);
     }
 
     interface View extends BaseView<Presenter> {

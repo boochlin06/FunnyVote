@@ -4,22 +4,35 @@ import com.heaton.funnyvote.BasePresenter;
 import com.heaton.funnyvote.BaseView;
 
 public interface AboutContract {
-    interface Presenter extends BasePresenter{
+    interface Presenter extends BasePresenter<View> {
         void IntentToIntroduction();
+
         void IntentToAuthorInfo();
+
         void IntentToLicence();
+
         void IntentToProblem();
+
         void IntentToAppStore();
+
         void IntentToAbout();
+
         void IntentToShareApp();
     }
+
     interface View extends BaseView<Presenter> {
         void showIntroduction();
+
         void showAuthorInfo();
+
         void showLicence();
+
         void showProblem();
+
         void showAppStore();
+
         void showAbout();
+
         void showShareApp();
     }
 }

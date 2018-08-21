@@ -2,11 +2,15 @@ package com.heaton.funnyvote.data.user;
 
 import android.util.Log;
 
+import com.heaton.funnyvote.data.Local;
+import com.heaton.funnyvote.data.Remote;
 import com.heaton.funnyvote.data.RemoteServiceApi;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.retrofit.Server;
 
 import java.io.IOException;
+
+import javax.inject.Inject;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -21,12 +25,12 @@ public class UserDataRepository implements UserDataSource {
     private UserDataSource localUserDataSource;
     private UserDataSource remoteUserSource;
 
-    public static UserDataRepository getInstance(UserDataSource localuserDataSource
+    public static UserDataRepository getInstance(UserDataSource localUserDataSource
             , UserDataSource remoteUserSource) {
         if (INSTANCE == null) {
             synchronized (UserDataRepository.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new UserDataRepository(localuserDataSource
+                    INSTANCE = new UserDataRepository(localUserDataSource
                             , remoteUserSource);
                 }
             }
@@ -38,7 +42,8 @@ public class UserDataRepository implements UserDataSource {
         INSTANCE = null;
     }
 
-    public UserDataRepository(UserDataSource userDataSource, UserDataSource remoteUserSource) {
+    @Inject
+    public UserDataRepository(@Local UserDataSource userDataSource, @Remote UserDataSource remoteUserSource) {
         this.localUserDataSource = userDataSource;
         this.remoteUserSource = remoteUserSource;
     }

@@ -1,6 +1,5 @@
 package com.heaton.funnyvote.ui.votedetail;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -53,26 +51,30 @@ import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.ui.HidingScrollListener;
 import com.heaton.funnyvote.utils.Util;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 import at.grabner.circleprogress.CircleProgressView;
 import at.grabner.circleprogress.TextMode;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import dagger.android.support.DaggerAppCompatActivity;
 
 /**
  * Created by heaton on 2016/8/21.
  */
 
-public class VoteDetailContentActivity extends AppCompatActivity implements VoteDetailContract.View {
+@ActivityScoped
+public class VoteDetailContentActivity extends DaggerAppCompatActivity implements VoteDetailContract.View {
 
     private static final int TITLE_EXTEND_MAX_LINE = 5;
     private static final String TAG = VoteDetailContentActivity.class.getSimpleName();
@@ -129,20 +131,39 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
     AdView adView;
     @BindView(R.id.imgLock)
     ImageView imgLock;
+    //@Inject
+    String voteCode = "";
+    @Inject
+    VoteDetailContract.Presenter presenter;
     private Menu menu;
     private SearchView searchView;
     private AlertDialog newOptionPasswordDialog;
     private AlertDialog pollPasswordDialog;
     private OptionItemAdapter optionItemAdapter;
     private VoteData data;
-    private Activity context;
+    //private Activity context;
     private int sortType = 0;
     private Tracker tracker;
+    final private SearchView.OnQueryTextListener queryListener =
+            new SearchView.OnQueryTextListener() {
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    presenter.searchOption(newText);
+                    tracker.send(new HitBuilders.EventBuilder()
+                            .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
+                            .setAction(AnalyzticsTag.ACTION_SEARCH_OPTION)
+                            .setLabel(newText).build());
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+            };
     private ShowcaseView showcaseView;
-
-    private VoteDetailContract.Presenter presenter;
     private OptionItemListener optionItemListener;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +174,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
 
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
-        context = this;
+        //context = this;
         data = new VoteData();
 
         mainToolbar.setTitle(getString(R.string.vote_detail_title));
@@ -163,10 +184,9 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        String voteCode = "";
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-            voteCode = intent.getData().getLastPathSegment();
+            //voteCode = intent.getData().getLastPathSegment();
             if (TextUtils.isEmpty(voteCode)) {
                 Util.sendShareAppIntent(getApplicationContext());
                 finish();
@@ -180,7 +200,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
                         .build());
             }
         } else {
-            voteCode = intent.getExtras().getString(Util.BUNDLE_KEY_VOTE_CODE);
+            //voteCode = intent.getExtras().getString(Util.BUNDLE_KEY_VOTE_CODE);
             Log.d(TAG, "Start activity vote code:" + voteCode);
             tracker.send(new HitBuilders.EventBuilder()
                     .setCategory("VOTE_DETAIL")
@@ -234,12 +254,8 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
         circleLoad.setShowTextWhileSpinning(true);
         circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
         ENABLE_ADMOB = getResources().getBoolean(R.bool.enable_detail_admob);
-        presenter = new VoteDetailPresenter(voteCode
-                , Injection.provideVoteDataRepository(context)
-                , Injection.provideUserRepository(context)
-                , this);
-        presenter.start();
-
+        Log.d("test", "123VOTE CODE:" + voteCode);
+        presenter.takeView(this);
     }
 
     @Override
@@ -263,7 +279,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
                         return new ViewTarget(mainToolbar.findViewById(R.id.menu_submit)).getPoint();
                     }
                 };
-                final SharedPreferences firstTimePref = Injection.provideFirstTimePref(this);
+                final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext()).getPreferences();
 
                 if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
                     showcaseView = new ShowcaseView.Builder(this)
@@ -308,24 +324,24 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
 
     @Override
     public void showHintToast(int res) {
-        Toast.makeText(context, res, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), res, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void showMultiChoiceToast(int max, int min) {
-        Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
+        Toast.makeText(getApplicationContext(), String.format(getString(R.string.vote_detail_dialog_multi_option)
                 , min, max), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void showMultiChoiceAtLeast(int min) {
-        Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_at_least_min)
+        Toast.makeText(getApplicationContext(), String.format(getString(R.string.vote_detail_toast_option_at_least_min)
                 , min), Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void showMultiChoiceOverMaxToast(int max) {
-        Toast.makeText(context
+        Toast.makeText(getApplicationContext()
                 , String.format(this.getString(R.string.vote_detail_toast_option_over_max)
                         , max), Toast.LENGTH_SHORT).show();
     }
@@ -378,7 +394,6 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
             appBarMain.setExpanded(true);
         }
     }
-
 
     @Override
     protected void onStart() {
@@ -444,7 +459,7 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
 
     @Override
     public void showCaseView() {
-        final SharedPreferences firstTimePref = Injection.provideFirstTimePref(this);
+        final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext()).getPreferences();
 
         if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
             Target homeTarget = new Target() {
@@ -819,25 +834,6 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
         return super.onCreateOptionsMenu(menu);
     }
 
-    final private SearchView.OnQueryTextListener queryListener =
-            new SearchView.OnQueryTextListener() {
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    presenter.searchOption(newText);
-                    tracker.send(new HitBuilders.EventBuilder()
-                            .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
-                            .setAction(AnalyzticsTag.ACTION_SEARCH_OPTION)
-                            .setLabel(newText).build());
-                    return false;
-                }
-
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    return false;
-                }
-            };
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -925,11 +921,6 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
                     }
                 });
         dialog.show();
-    }
-
-    @Override
-    public void setPresenter(VoteDetailContract.Presenter presenter) {
-        this.presenter = presenter;
     }
 
     public interface OptionItemListener {

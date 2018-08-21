@@ -25,7 +25,7 @@ import butterknife.ButterKnife;
  * Created by heaton on 2017/3/2.
  */
 
-public class LicenceActivity extends AppCompatActivity implements LicenceContract.View{
+public class LicenceActivity extends AppCompatActivity implements LicenceContract.View {
     @BindView(R.id.ryLicence)
     RecyclerView ryLicence;
     @BindView(R.id.main_toolbar)
@@ -83,11 +83,6 @@ public class LicenceActivity extends AppCompatActivity implements LicenceContrac
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void setPresenter(LicenceContract.Presenter presenter) {
-        this.presenter = presenter;
     }
 
     public class LicenceItem {

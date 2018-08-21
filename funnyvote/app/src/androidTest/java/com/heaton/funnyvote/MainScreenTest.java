@@ -1,41 +1,16 @@
 package com.heaton.funnyvote;
 
-import android.app.Activity;
-import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
-import android.support.test.espresso.IdlingRegistry;
-import android.support.test.espresso.IdlingResource;
-import android.support.test.espresso.NoActivityResumedException;
-import android.support.test.espresso.contrib.DrawerActions;
-import android.support.test.espresso.contrib.NavigationViewActions;
 import android.support.test.filters.LargeTest;
-import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
-import android.view.KeyEvent;
 
-import com.heaton.funnyvote.data.Injection;
-
-import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
-import at.grabner.circleprogress.CircleProgressView;
-
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.pressKey;
-import static android.support.test.espresso.action.ViewActions.typeText;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.DrawerMatchers.isClosed;
 import static android.support.test.espresso.contrib.DrawerMatchers.isOpen;
-import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;

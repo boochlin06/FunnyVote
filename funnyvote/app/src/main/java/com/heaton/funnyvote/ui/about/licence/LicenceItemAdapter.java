@@ -21,11 +21,11 @@ import butterknife.ButterKnife;
 public class LicenceItemAdapter extends RecyclerView.Adapter<LicenceItemAdapter.VHLicenceItem> {
     private List<LicenceActivity.LicenceItem> licenceList;
 
-    private void setLicenceList(List<LicenceActivity.LicenceItem> licenceList) {
+    public LicenceItemAdapter(List<LicenceActivity.LicenceItem> licenceList) {
         this.licenceList = licenceList;
     }
 
-    public LicenceItemAdapter(List<LicenceActivity.LicenceItem> licenceList) {
+    private void setLicenceList(List<LicenceActivity.LicenceItem> licenceList) {
         this.licenceList = licenceList;
     }
 

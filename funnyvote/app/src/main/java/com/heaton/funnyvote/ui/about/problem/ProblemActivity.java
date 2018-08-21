@@ -18,7 +18,7 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
  * Created by heaton on 2017/3/2.
  */
 
-public class ProblemActivity extends AppCompatActivity implements ProblemContract.View{
+public class ProblemActivity extends AppCompatActivity implements ProblemContract.View {
     private Toolbar mainToolbar;
     private Tracker tracker;
     private ProblemContract.Presenter presenter;
@@ -68,8 +68,4 @@ public class ProblemActivity extends AppCompatActivity implements ProblemContrac
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void setPresenter(ProblemContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
 }

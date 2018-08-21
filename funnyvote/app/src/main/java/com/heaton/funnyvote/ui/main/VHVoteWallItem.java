@@ -1,9 +1,6 @@
 package com.heaton.funnyvote.ui.main;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -19,7 +16,6 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 import com.heaton.funnyvote.utils.Util;
 
 import butterknife.BindView;
@@ -31,12 +27,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
     public VoteData data;
-    private View.OnClickListener MoveToVoteDetailOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            wallItemListener.onVoteItemClick(data);
-        }
-    };
     @BindView(R.id.imgAuthorIcon)
     CircleImageView imgAuthorIcon;
     @BindView(R.id.txtAuthorName)
@@ -99,9 +89,15 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     CardView btnThirdOption;
     @BindView(R.id.imgLock)
     ImageView imgLock;
-    private MainPageTabFragment.VoteWallItemListener wallItemListener;
+    private VoteWallItemAdapter.VoteWallItemListener wallItemListener;
+    private View.OnClickListener MoveToVoteDetailOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            wallItemListener.onVoteItemClick(data);
+        }
+    };
 
-    public VHVoteWallItem(View v, MainPageTabFragment.VoteWallItemListener wallItemListener) {
+    public VHVoteWallItem(View v, VoteWallItemAdapter.VoteWallItemListener wallItemListener) {
         super(v);
         ButterKnife.bind(this, v);
         this.wallItemListener = wallItemListener;

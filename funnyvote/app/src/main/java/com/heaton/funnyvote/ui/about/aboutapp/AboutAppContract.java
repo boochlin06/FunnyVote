@@ -7,7 +7,8 @@ public interface AboutAppContract {
     interface View extends BaseView<Presenter> {
         void showShareApp();
     }
-    interface Presenter extends BasePresenter{
+
+    interface Presenter extends BasePresenter {
         void shareApp();
     }
 }

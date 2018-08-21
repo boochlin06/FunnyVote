@@ -12,20 +12,39 @@ import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
+import com.heaton.funnyvote.ui.personal.CreateTabFragment;
+import com.heaton.funnyvote.ui.personal.FavoriteTabFragment;
+import com.heaton.funnyvote.ui.personal.ParticipateTabFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+@ActivityScoped
 public class MainPagePresenter implements MainPageContract.Presenter {
-    public static String TAG = MainPagePresenter.class.getSimpleName();
     private static final int LIMIT = VoteDataRepository.PAGE_COUNT;
+    public static String TAG = MainPagePresenter.class.getSimpleName();
+    HotTabFragment hotsFragment;
+    NewsTabFragment newsFragment;
     private VoteDataRepository voteDataRepository;
     private UserDataRepository userDataRepository;
     private PromotionRepository promotionRepository;
     private MainPageContract.MainPageView mainPageView;
-    private MainPageContract.TabPageFragment hotsFragment, newsFragment;
-
     private List<VoteData> hotVoteDataList, newVoteDataList;
+    private User user;
+
+    @Inject
+    public MainPagePresenter(VoteDataRepository voteDataRepository
+            , UserDataRepository userDataRepository, PromotionRepository promotionRepository) {
+        //this.mainPageView = mainPageView;
+        this.promotionRepository = promotionRepository;
+        this.userDataRepository = userDataRepository;
+        this.voteDataRepository = voteDataRepository;
+        hotVoteDataList = new ArrayList<>();
+        newVoteDataList = new ArrayList<>();
+    }
 
     public List<VoteData> getHotVoteDataList() {
         return hotVoteDataList;
@@ -47,30 +66,12 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         this.user = user;
     }
 
-    private User user;
-
-    private List<Promotion> promotionList;
-    //private List<MainPageFragment.PromotionType> promotionTypeList;
-
-    public MainPagePresenter(VoteDataRepository voteDataRepository
-            , UserDataRepository userDataRepository, PromotionRepository promotionRepository
-            , MainPageContract.MainPageView mainPageView) {
-        this.mainPageView = mainPageView;
-        this.promotionRepository = promotionRepository;
-        this.userDataRepository = userDataRepository;
-        this.voteDataRepository = voteDataRepository;
-        hotVoteDataList = new ArrayList<>();
-        newVoteDataList = new ArrayList<>();
-        mainPageView.setPresenter(this);
-    }
-
     @Override
     public void resetPromotion() {
         if (user != null) {
             promotionRepository.getPromotionList(user, new PromotionDataSource.GetPromotionsCallback() {
                 @Override
                 public void onPromotionsLoaded(List<Promotion> promotionList) {
-                    MainPagePresenter.this.promotionList = promotionList;
                     mainPageView.setupPromotionAdmob(promotionList, user);
                     Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size()
                             + ",type list size:");
@@ -85,33 +86,32 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     }
 
     @Override
-    public void setHotsFragmentView(MainPageContract.TabPageFragment hotsFragmentView) {
+    public void setHotsFragmentView(HotTabFragment hotsFragmentView) {
         this.hotsFragment = hotsFragmentView;
-        hotsFragment.setTab(MainPageTabFragment.TAB_HOT);
         hotsFragment.setUpRecycleView(hotVoteDataList);
     }
 
     @Override
-    public void setNewsFragmentView(MainPageContract.TabPageFragment newsFragmentView) {
+    public void setNewsFragmentView(NewsTabFragment newsFragmentView) {
         this.newsFragment = newsFragmentView;
-        newsFragment.setTab(MainPageTabFragment.TAB_NEW);
         newsFragment.setUpRecycleView(newVoteDataList);
     }
 
     @Override
-    public void setCreateFragmentView(MainPageContract.TabPageFragment fragmentView) {
+    public void setCreateFragmentView(CreateTabFragment fragmentView) {
 
     }
 
     @Override
-    public void setParticipateFragmentView(MainPageContract.TabPageFragment fragmentView) {
+    public void setParticipateFragmentView(ParticipateTabFragment fragmentView) {
 
     }
 
     @Override
-    public void setFavoriteFragmentView(MainPageContract.TabPageFragment fragmentView) {
+    public void setFavoriteFragmentView(FavoriteTabFragment fragmentView) {
 
     }
+
 
     @Override
     public void favoriteVote(final VoteData voteData) {
@@ -200,7 +200,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     @Override
     public void reloadHotList(final int offset) {
         if (user == null) {
-            start();
+            loadDataList();
             return;
         }
         voteDataRepository.getHotVoteList(offset, user, new VoteDataSource.GetVoteListCallback() {
@@ -229,7 +229,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     @Override
     public void reloadNewList(final int offset) {
         if (user == null) {
-            start();
+            loadDataList();
             return;
         }
         voteDataRepository.getNewVoteList(offset, user, new VoteDataSource.GetVoteListCallback() {
@@ -364,7 +364,12 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void takeView(MainPageContract.MainPageView view) {
+        this.mainPageView = view;
+        loadDataList();
+    }
+
+    private void loadDataList() {
         mainPageView.showLoadingCircle();
         mainPageView.showIntroductionDialog();
         userDataRepository.getUser(new UserDataSource.GetUserCallback() {
@@ -376,7 +381,6 @@ public class MainPagePresenter implements MainPageContract.Presenter {
                 promotionRepository.getPromotionList(user, new PromotionDataSource.GetPromotionsCallback() {
                     @Override
                     public void onPromotionsLoaded(List<Promotion> promotionList) {
-                        MainPagePresenter.this.promotionList = promotionList;
                         mainPageView.setupPromotionAdmob(promotionList, user);
                         Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size());
                     }
@@ -398,5 +402,11 @@ public class MainPagePresenter implements MainPageContract.Presenter {
                 Log.d(TAG, "getUserCallback user failure:" + user);
             }
         }, false);
+    }
+
+
+    @Override
+    public void dropView() {
+        this.mainPageView = null;
     }
 }

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface CreateVoteContract {
-    interface Presenter extends BasePresenter {
+    interface Presenter extends BasePresenter<ActivityView> {
         void submitCreateVote();
 
         long addNewOption();

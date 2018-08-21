@@ -68,31 +68,32 @@ public class CreateVoteActivityPresenterTest {
     @Test
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
-        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository);
 
         // Then the presenter is set to the view
-        verify(activityView).setPresenter(presenter);
+        //verify(activityView).setPresenter(presenter);
         presenter.setOptionFragmentView(optionFragmentView);
         presenter.setSettingFragmentView(settingFragmentView);
     }
 
     @Test
     public void getUserAndInitialDefaultView() {
-        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
-        presenter.start();
+        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(activityView);
+
+        //presenter.startwithSearch();
         verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
         getUserCallbackArgumentCaptor.getValue().onResponse(user);
     }
 
     @Test
     public void submitCreateVoteSuccessAndShowVoteDetail() {
-        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(activityView);
         presenter.setVoteSettings(voteData);
 
         optionList.clear();
+        presenter.setVoteSettings(voteData);
         for (long i = 0; i < 2; i++) {
             Option option = new Option();
             option.setTitle("OPTION_CODE_" + i);
@@ -111,6 +112,7 @@ public class CreateVoteActivityPresenterTest {
         presenter.getVoteSettings().setSecurity(VoteData.SECURITY_PUBLIC);
         presenter.getVoteSettings().setEndTime(System.currentTimeMillis() + 3000 * 86400 * 1000);
         when(settingFragmentView.getFinalVoteSettings(voteData)).thenReturn(voteData);
+        presenter.setSettingFragmentView(settingFragmentView);
 
         presenter.submitCreateVote();
         verify(activityView).showLoadingCircle();
@@ -124,8 +126,7 @@ public class CreateVoteActivityPresenterTest {
 
     @Test
     public void submitCreateVoteRemoteFailureAndShowErrorToast() {
-        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository);
         presenter.setVoteSettings(voteData);
 
         optionList.clear();
@@ -136,7 +137,9 @@ public class CreateVoteActivityPresenterTest {
             option.setCount(0);
             optionList.add(option);
         }
+        presenter.takeView(activityView);
         presenter.setOptionList(optionList);
+        presenter.setVoteSettings(voteData);
         presenter.getVoteSettings().setTitle("TITLE_1");
         presenter.getVoteSettings().setAuthorCode("AUTHOR_1");
         presenter.getVoteSettings().setMaxOption(1);
@@ -146,6 +149,7 @@ public class CreateVoteActivityPresenterTest {
         presenter.getVoteSettings().setIsNeedPassword(false);
         presenter.getVoteSettings().setSecurity(VoteData.SECURITY_PUBLIC);
         presenter.getVoteSettings().setEndTime(System.currentTimeMillis() + 3000 * 86400 * 1000);
+        presenter.setSettingFragmentView(settingFragmentView);
         when(settingFragmentView.getFinalVoteSettings(voteData)).thenReturn(voteData);
 
         presenter.submitCreateVote();
@@ -160,8 +164,7 @@ public class CreateVoteActivityPresenterTest {
 
     @Test
     public void submitCreateVoteLocalFailureAndShowErrorDialog() {
-        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository);
         presenter.setVoteSettings(voteData);
 
         for (long i = 0; i < 2; i++) {
@@ -182,6 +185,9 @@ public class CreateVoteActivityPresenterTest {
         presenter.getVoteSettings().setIsNeedPassword(false);
         presenter.getVoteSettings().setSecurity(VoteData.SECURITY_PUBLIC);
         presenter.getVoteSettings().setEndTime(System.currentTimeMillis() + 3000 * 86400 * 1000);
+        presenter.takeView(activityView);
+        presenter.setSettingFragmentView(settingFragmentView);
+        presenter.setVoteSettings(voteData);
         when(settingFragmentView.getFinalVoteSettings(voteData)).thenReturn(voteData);
 
         presenter.submitCreateVote();
@@ -194,8 +200,10 @@ public class CreateVoteActivityPresenterTest {
 
     @Test
     public void addAndReviseAndRemoveOptionUpdateToView() {
-        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository);
+        presenter.setSettingFragmentView(settingFragmentView);
+        presenter.setOptionFragmentView(optionFragmentView);
+        presenter.takeView(activityView);
         long optionId = presenter.addNewOption();
         presenter.addNewOption();
         presenter.addNewOption();
@@ -216,8 +224,9 @@ public class CreateVoteActivityPresenterTest {
 
     @Test
     public void updateVoteSecurityAndEndTimeAndTitleAndUpdateToView() {
-        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+        presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository);
+        presenter.setSettingFragmentView(settingFragmentView);
+        presenter.takeView(activityView);
         presenter.updateVoteSecurity(VoteData.SECURITY_PRIVATE);
         Assert.assertEquals(presenter.getVoteSettings().getSecurity(), VoteData.SECURITY_PRIVATE);
         presenter.updateVoteEndTime(System.currentTimeMillis()
@@ -228,10 +237,10 @@ public class CreateVoteActivityPresenterTest {
         verify(activityView).showHintToast(anyInt());
         presenter.updateVoteEndTime(System.currentTimeMillis()
                 + CreateVoteActivityPresenter.DEFAULT_END_TIME_MAX * 1000 * 86400);
-        verify(settingFragmentView).setUpVoteSettings(any(VoteData.class));
+        verify(settingFragmentView, times(2)).setUpVoteSettings(any(VoteData.class));
         presenter.updateVoteImage(new File("test"));
         Assert.assertNotNull(presenter.getVoteSettings().getImageFile());
         presenter.updateVoteTitle("title");
-        Assert.assertEquals(presenter.getVoteSettings().getTitle(),"title");
+        Assert.assertEquals(presenter.getVoteSettings().getTitle(), "title");
     }
 }

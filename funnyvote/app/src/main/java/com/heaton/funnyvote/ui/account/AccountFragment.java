@@ -42,8 +42,8 @@ import com.google.android.gms.common.api.Status;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.twitter.CustomTwitterApiClient;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
@@ -58,6 +58,9 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
+import javax.inject.Inject;
+
+import dagger.android.support.DaggerFragment;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -65,15 +68,16 @@ import retrofit2.Response;
 /**
  * Created by chiu_mac on 2016/10/28.
  */
-
-public class AccountFragment extends android.support.v4.app.Fragment
+@ActivityScoped
+public class AccountFragment extends DaggerFragment
         implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener, AccountContract.View {
     private static final String TAG = AccountFragment.class.getSimpleName();
     private static final int RC_GOOGLE_SIGN_IN = 101;
     private static final int LOGIN_FB = 111;
     private static final int LOGIN_GOOGLE = 112;
     private static final int LOGIN_TWITTER = 113;
-
+    @Inject
+    AccountPresenter presenter;
     //Facebook API
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
@@ -116,15 +120,9 @@ public class AccountFragment extends android.support.v4.app.Fragment
             }
         }
     };
-
-
     private Tracker tracker;
     //Google Sign in API
     private GoogleApiClient googleApiClient;
-
-    //UserManager
-    private AccountContract.Presenter presenter;
-
     //Views
     private ImageView picImageView;
     private ImageView editNameImageView;
@@ -176,6 +174,11 @@ public class AccountFragment extends android.support.v4.app.Fragment
             exception.printStackTrace();
         }
     };
+
+    @Inject
+    public AccountFragment() {
+
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -248,8 +251,8 @@ public class AccountFragment extends android.support.v4.app.Fragment
         twitterLoginBtn.setOnClickListener(this);
 
 
-        presenter = new AccountPresenter(Injection.provideUserRepository(getContext()), this);
-        presenter.start();
+        //presenter = new AccountPresenter(Injection.provideUserRepository(getContext()), this);
+        presenter.takeView(this);
 
         return view;
     }
@@ -515,8 +518,4 @@ public class AccountFragment extends android.support.v4.app.Fragment
         return authClient;
     }
 
-    @Override
-    public void setPresenter(AccountContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
 }

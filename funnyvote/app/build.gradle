@@ -16,7 +16,6 @@ jacoco {
     reportsDir = file("$buildDir/customJacocoReportDir")
 }
 
-
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
@@ -150,6 +149,17 @@ dependencies {
     androidTestImplementation "com.android.support.test.espresso:espresso-intents:$rootProject.espressoVersion"
     androidTestImplementation "com.android.support.test.espresso.idling:idling-concurrent:$rootProject.espressoVersion"
     implementation "com.android.support.test.espresso:espresso-idling-resource:$rootProject.espressoVersion"
+
+    // Dagger dependencies
+    annotationProcessor "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
+    provided 'org.glassfish:javax.annotation:10.0-b28'
+    compile "com.google.dagger:dagger:$rootProject.daggerVersion"
+    compile "com.google.dagger:dagger-android:$rootProject.daggerVersion"
+    compile "com.google.dagger:dagger-android-support:$rootProject.daggerVersion"
+    annotationProcessor "com.google.dagger:dagger-android-processor:$rootProject.daggerVersion"
+    kapt "com.google.dagger:dagger-android-processor:$rootProject.daggerVersion"
+    kapt "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
+
 }
 greendao {
     schemaVersion 1

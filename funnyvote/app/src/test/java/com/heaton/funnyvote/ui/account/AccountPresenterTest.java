@@ -20,6 +20,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,18 +56,16 @@ public class AccountPresenterTest {
     @Test
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
-        presenter = new AccountPresenter(userDataRepository
-                , view);
+        presenter = new AccountPresenter(userDataRepository);
 
         // Then the presenter is set to the userPageView
-        verify(view).setPresenter(presenter);
+        //verify(view).setPresenter(presenter);
     }
 
     @Test
     public void getUserFromRepositoryAndUpdateToView() {
-        presenter = new AccountPresenter(userDataRepository
-                , view);
-        presenter.start();
+        presenter = new AccountPresenter(userDataRepository);
+        presenter.takeView(view);
         verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
         getUserCallbackArgumentCaptor.getValue().onResponse(user);
         verify(view).showUser(any(User.class));
@@ -74,8 +73,8 @@ public class AccountPresenterTest {
 
     @Test
     public void logoutUserAndUpdateToView() {
-        presenter = new AccountPresenter(userDataRepository
-                , view);
+        presenter = new AccountPresenter(userDataRepository);
+        presenter.takeView(view);
 
         when(user.getType()).thenReturn(User.TYPE_FACEBOOK);
         presenter.setUser(user);
@@ -95,8 +94,8 @@ public class AccountPresenterTest {
 
     @Test
     public void loginUserAndUpdateToView() {
-        presenter = new AccountPresenter(userDataRepository
-                , view);
+        presenter = new AccountPresenter(userDataRepository);
+        presenter.takeView(view);
         presenter.login(AccountPresenter.LOGIN_FB, true);
         verify(view).facebookLogin();
 
@@ -109,46 +108,45 @@ public class AccountPresenterTest {
 
     @Test
     public void registerUserAndUpdateToView() {
-        presenter = new AccountPresenter(userDataRepository
-                , view);
+        presenter = new AccountPresenter(userDataRepository);
+        presenter.takeView(view);
         presenter.registerUser(user, "appId");
         verify(userDataRepository).registerUser(anyString(), any(User.class)
                 , anyBoolean(), registerUserCallbackArgumentCaptor.capture());
         registerUserCallbackArgumentCaptor.getValue().onSuccess();
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
+        verify(userDataRepository, times(2)).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
         getUserCallbackArgumentCaptor.getValue().onResponse(user);
         verify(view).showUser(any(User.class));
     }
 
     @Test
     public void registerUserFailureAndUpdateToView() {
-        presenter = new AccountPresenter(userDataRepository
-                , view);
+        presenter = new AccountPresenter(userDataRepository);
+        presenter.takeView(view);
         presenter.registerUser(user, "appId");
         verify(userDataRepository).registerUser(anyString(), any(User.class)
                 , anyBoolean(), registerUserCallbackArgumentCaptor.capture());
         registerUserCallbackArgumentCaptor.getValue().onFailure();
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
+        verify(userDataRepository, times(2)).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
         getUserCallbackArgumentCaptor.getValue().onFailure();
         verify(view).showLoginView(anyString());
     }
 
     @Test
     public void changeUserNameFailureAndUpdateToView() {
-        presenter = new AccountPresenter(userDataRepository
-                , view);
+        presenter = new AccountPresenter(userDataRepository);
+        presenter.takeView(view);
         presenter.changeCurrentUserName("new name");
         verify(userDataRepository).changeCurrentUserName(anyString(), changeUserNameCallbackArgumentCaptor.capture());
         changeUserNameCallbackArgumentCaptor.getValue().onSuccess();
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
+        verify(userDataRepository, times(2)).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
         getUserCallbackArgumentCaptor.getValue().onFailure();
         verify(view).showLoginView(anyString());
     }
 
     @Test
     public void unregisterUser() {
-        presenter = new AccountPresenter(userDataRepository
-                , view);
+        presenter = new AccountPresenter(userDataRepository);
         presenter.unregisterUser();
         verify(userDataRepository).unregisterUser();
     }

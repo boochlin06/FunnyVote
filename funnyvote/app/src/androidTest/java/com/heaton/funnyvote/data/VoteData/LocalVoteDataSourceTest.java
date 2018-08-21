@@ -12,7 +12,6 @@ import com.heaton.funnyvote.database.OptionDao;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.database.VoteDataDao;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 import com.heaton.funnyvote.utils.AppExecutors;
 
 import org.greenrobot.greendao.database.Database;
@@ -111,7 +110,7 @@ public class LocalVoteDataSourceTest {
         final VoteData voteData1 = newVoteData(0);
         final VoteData voteData2 = newVoteData(10);
         localVoteDataSource.saveVoteDataList(Lists.newArrayList(voteData1, voteData2), 0
-                , MainPageTabFragment.TAB_NEW);
+                , VoteDataRepository.TAB_NEW);
         localVoteDataSource.getNewVoteList(0, user, new VoteDataSource.GetVoteListCallback() {
             @Override
             public void onVoteListLoaded(List<VoteData> voteDataList) {

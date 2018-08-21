@@ -76,7 +76,7 @@ public interface VoteDetailContract {
 
     }
 
-    interface Presenter extends BasePresenter {
+    interface Presenter extends BasePresenter<View> {
         void searchOption(String newText);
 
         void favoriteVote();

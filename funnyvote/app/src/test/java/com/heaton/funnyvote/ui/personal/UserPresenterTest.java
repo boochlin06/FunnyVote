@@ -6,7 +6,6 @@ import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class UserPresenterTest {
@@ -50,11 +50,11 @@ public class UserPresenterTest {
     @Mock
     private PersonalContract.UserPageView userPageView;
     @Mock
-    private MainPageTabFragment createFragment;
+    private CreateTabFragment createFragment;
     @Mock
-    private MainPageTabFragment partFragment;
+    private ParticipateTabFragment partFragment;
     @Mock
-    private MainPageTabFragment favoriteFragment;
+    private FavoriteTabFragment favoriteFragment;
 
     @Captor
     private ArgumentCaptor<UserDataSource.GetUserCallback> getUserCallbackArgumentCaptor;
@@ -78,17 +78,16 @@ public class UserPresenterTest {
     @Test
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
-
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(userPageView);
         // Then the presenter is set to the userPageView
-        verify(userPageView).setPresenter(presenter);
+        //verify(userPageView).setPresenter(presenter);
     }
 
     @Test
     public void getVotesFromRepositoryAndLoadIntoView() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+
         presenter.setLoginUser(user);
         presenter.setTargetUser(user);
         presenter.setCreateFragmentView(createFragment);
@@ -97,7 +96,7 @@ public class UserPresenterTest {
         presenter.setCreateVoteDataList(voteDataList);
         presenter.setParticipateVoteDataList(voteDataList);
         presenter.setFavoriteVoteDataList(voteDataList);
-        presenter.start();
+        presenter.takeView(userPageView);
 
         verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
         InOrder inOrder = Mockito.inOrder(userPageView);
@@ -136,9 +135,8 @@ public class UserPresenterTest {
 
     @Test
     public void pollVoteAndUpdateToView() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
-
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(userPageView);
         presenter.setCreateFragmentView(createFragment);
         presenter.setParticipateFragmentView(partFragment);
         presenter.setFavoriteFragmentView(favoriteFragment);
@@ -162,8 +160,8 @@ public class UserPresenterTest {
 
     @Test
     public void pollVoteNeedPWAndShakeDialogAfterShowPWDialog() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(userPageView);
 
         presenter.setCreateFragmentView(createFragment);
         presenter.setParticipateFragmentView(partFragment);
@@ -189,12 +187,12 @@ public class UserPresenterTest {
     @Test
     public void pollVoteFailureAndShowPWDialog() {
 
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
         VoteData voteData = new VoteData();
         voteData.setVoteCode("CODE_123");
         voteData.setIsNeedPassword(false);
         InOrder inOrder = Mockito.inOrder(userPageView);
+        presenter.takeView(userPageView);
         presenter.pollVote(voteData, "OPTION_CODE_123", "password");
         verify(voteDataRepository).pollVote(anyString(), eq("password"), anyList(), any(User.class)
                 , pollVoteCallbackArgumentCaptor.capture());
@@ -205,9 +203,9 @@ public class UserPresenterTest {
 
     @Test
     public void favoriteVoteAndUpdateToView() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
-        
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+
+        presenter.takeView(userPageView);
         presenter.setCreateFragmentView(createFragment);
         presenter.setParticipateFragmentView(partFragment);
         presenter.setFavoriteFragmentView(favoriteFragment);
@@ -229,40 +227,40 @@ public class UserPresenterTest {
 
     @Test
     public void clickOnMainBar_IntentToShareDialogTest() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(userPageView);
         presenter.IntentToShareDialog(voteData);
         verify(userPageView).showShareDialog(any(VoteData.class));
     }
 
     @Test
     public void clickOnMainBar_IntentToAuthorDetailTest() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(userPageView);
         presenter.IntentToAuthorDetail(voteData);
         verify(userPageView).showAuthorDetail(any(VoteData.class));
     }
 
     @Test
     public void clickOnVoteItem_IntentToVoteDetailTest() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(userPageView);
         presenter.IntentToVoteDetail(voteData);
         verify(userPageView).showVoteDetail(any(VoteData.class));
     }
 
     @Test
     public void clickOnNoVoteItem_IntentToCreateVoteTest() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(userPageView);
         presenter.IntentToCreateVote();
         verify(userPageView).showCreateVote();
     }
 
     @Test
     public void refreshAllFragment_refreshSubFragment() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(userPageView);
 
         presenter.setCreateFragmentView(createFragment);
         presenter.setParticipateFragmentView(partFragment);
@@ -277,8 +275,7 @@ public class UserPresenterTest {
 
     @Test
     public void notToAddOtherFragment() {
-        presenter = new UserPresenter(voteDataRepository, userDataRepository
-                , userPageView);
+        presenter = new UserPresenter(voteDataRepository, userDataRepository);
 
         presenter.reloadHotList(0);
         presenter.reloadNewList(0);

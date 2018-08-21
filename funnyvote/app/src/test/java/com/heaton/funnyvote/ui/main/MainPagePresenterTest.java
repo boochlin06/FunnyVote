@@ -54,9 +54,9 @@ public class MainPagePresenterTest {
     @Mock
     private MainPageContract.MainPageView mainPageView;
     @Mock
-    private MainPageTabFragment hotFragment;
+    private HotTabFragment hotFragment;
     @Mock
-    private MainPageTabFragment newFragment;
+    private NewsTabFragment newFragment;
 
     @Captor
     private ArgumentCaptor<UserDataSource.GetUserCallback> getUserCallbackArgumentCaptor;
@@ -82,18 +82,19 @@ public class MainPagePresenterTest {
     @Test
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
+
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
 
         // Then the presenter is set to the mainPageView
-        verify(mainPageView).setPresenter(presenter);
+        //verify(mainPageView).setPresenter(presenter);
     }
 
     @Test
     public void getVotesAndPromotionFromRepositoryAndLoadIntoView() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
-        presenter.start();
+                , promotionRepository);
+        presenter.takeView(mainPageView);
         presenter.setNewsFragmentView(newFragment);
         presenter.setHotsFragmentView(hotFragment);
         presenter.setHotVoteDataList(voteDataList);
@@ -128,12 +129,13 @@ public class MainPagePresenterTest {
     @Test
     public void refreshHotFragmentAndUpdateToView() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
         presenter.setNewsFragmentView(newFragment);
         presenter.setHotsFragmentView(hotFragment);
         presenter.setHotVoteDataList(voteDataList);
         presenter.setNewVoteDataList(voteDataList);
         presenter.setUser(user);
+        presenter.takeView(mainPageView);
         presenter.refreshHotList();
         verify(voteDataRepository).getHotVoteList(eq(0), eq(user)
                 , getVoteListCallbackArgumentCaptor.capture());
@@ -146,12 +148,13 @@ public class MainPagePresenterTest {
     @Test
     public void refreshNewFragmentAndUpdateToView() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
         presenter.setUser(user);
         presenter.setNewsFragmentView(newFragment);
         presenter.setHotsFragmentView(hotFragment);
         presenter.setHotVoteDataList(voteDataList);
         presenter.setNewVoteDataList(voteDataList);
+        presenter.takeView(mainPageView);
         presenter.refreshNewList();
         verify(voteDataRepository).getNewVoteList(eq(0), eq(user)
                 , getVoteListCallbackArgumentCaptor.capture());
@@ -164,9 +167,10 @@ public class MainPagePresenterTest {
     @Test
     public void refreshNewFragmentFailureUpdateToView() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
         presenter.setUser(user);
         presenter.setNewsFragmentView(newFragment);
+        presenter.takeView(mainPageView);
         presenter.reloadNewList(0);
         verify(voteDataRepository).getNewVoteList(anyInt(), any(User.class)
                 , getVoteListCallbackArgumentCaptor.capture());
@@ -179,9 +183,10 @@ public class MainPagePresenterTest {
     @Test
     public void refreshHotFragmentFailureUpdateToView() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
         presenter.setUser(user);
         presenter.setHotsFragmentView(hotFragment);
+        presenter.takeView(mainPageView);
         presenter.reloadHotList(0);
         verify(voteDataRepository).getHotVoteList(anyInt(), any(User.class)
                 , getVoteListCallbackArgumentCaptor.capture());
@@ -194,12 +199,13 @@ public class MainPagePresenterTest {
     @Test
     public void pollVoteAndUpdateToView() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
         presenter.setHotsFragmentView(hotFragment);
         presenter.setNewsFragmentView(newFragment);
         VoteData voteData = new VoteData();
         voteData.setVoteCode("CODE_123");
         voteData.setIsNeedPassword(false);
+        presenter.takeView(mainPageView);
         presenter.pollVote(voteData, "OPTION_CODE_123", "password");
 
         InOrder inOrder = Mockito.inOrder(mainPageView);
@@ -217,11 +223,12 @@ public class MainPagePresenterTest {
     @Test
     public void pollVoteNeedPWAndShakeDialogAfterShowPWDialog() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
 
         VoteData voteData = new VoteData();
         voteData.setVoteCode("CODE_123");
         voteData.setIsNeedPassword(true);
+        presenter.takeView(mainPageView);
         presenter.pollVote(voteData, "OPTION_CODE_123", "password");
 
         InOrder inOrder = Mockito.inOrder(mainPageView);
@@ -240,12 +247,13 @@ public class MainPagePresenterTest {
     public void pollVoteFailureAndShowPWDialog() {
 
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
 
         VoteData voteData = new VoteData();
         voteData.setVoteCode("CODE_123");
         voteData.setIsNeedPassword(false);
         InOrder inOrder = Mockito.inOrder(mainPageView);
+        presenter.takeView(mainPageView);
         presenter.pollVote(voteData, "OPTION_CODE_123", "password");
         verify(voteDataRepository).pollVote(anyString(), eq("password"), anyList(), any(User.class)
                 , pollVoteCallbackArgumentCaptor.capture());
@@ -257,13 +265,14 @@ public class MainPagePresenterTest {
     @Test
     public void favoriteVoteAndUpdateToView() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
 
         presenter.setNewsFragmentView(newFragment);
         presenter.setHotsFragmentView(hotFragment);
         presenter.setHotVoteDataList(voteDataList);
         presenter.setNewVoteDataList(voteDataList);
         voteData.setVoteCode("CODE_123");
+        presenter.takeView(mainPageView);
         presenter.favoriteVote(voteData);
         verify(voteDataRepository).favoriteVote(anyString(), anyBoolean(), any(User.class)
                 , favoriteVoteCallbackArgumentCaptor.capture());
@@ -277,7 +286,8 @@ public class MainPagePresenterTest {
     @Test
     public void clickOnMainBar_IntentToShareDialogTest() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
+        presenter.takeView(mainPageView);
         presenter.IntentToShareDialog(voteData);
         verify(mainPageView).showShareDialog(any(VoteData.class));
     }
@@ -285,7 +295,8 @@ public class MainPagePresenterTest {
     @Test
     public void clickOnMainBar_IntentToAuthorDetailTest() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
+        presenter.takeView(mainPageView);
         presenter.IntentToAuthorDetail(voteData);
         verify(mainPageView).showAuthorDetail(any(VoteData.class));
     }
@@ -293,7 +304,8 @@ public class MainPagePresenterTest {
     @Test
     public void clickOnVoteItem_IntentToVoteDetailTest() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
+        presenter.takeView(mainPageView);
         presenter.IntentToVoteDetail(voteData);
         verify(mainPageView).showVoteDetail(any(VoteData.class));
     }
@@ -301,7 +313,8 @@ public class MainPagePresenterTest {
     @Test
     public void clickOnNoVoteItem_IntentToCreateVoteTest() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
+        presenter.takeView(mainPageView);
         presenter.IntentToCreateVote();
         verify(mainPageView).showCreateVote();
     }
@@ -309,9 +322,10 @@ public class MainPagePresenterTest {
     @Test
     public void refreshAllFragment_refreshSubFragment() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
         presenter.setNewsFragmentView(newFragment);
         presenter.setHotsFragmentView(hotFragment);
+        presenter.takeView(mainPageView);
         presenter.refreshAllFragment();
         verify(hotFragment).refreshFragment(anyList());
         verify(newFragment).refreshFragment(anyList());
@@ -320,8 +334,9 @@ public class MainPagePresenterTest {
     @Test
     public void refreshPromotion_resetPromotion() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
         presenter.setUser(user);
+        presenter.takeView(mainPageView);
         presenter.resetPromotion();
         verify(promotionRepository).getPromotionList(any(User.class), getPromotionsCallbackArgumentCaptor.capture());
         getPromotionsCallbackArgumentCaptor.getValue().onPromotionsLoaded(new ArrayList<Promotion>());
@@ -331,7 +346,7 @@ public class MainPagePresenterTest {
     @Test
     public void notToAddOtherFragment() {
         presenter = new MainPagePresenter(voteDataRepository, userDataRepository
-                , promotionRepository, mainPageView);
+                , promotionRepository);
         presenter.reloadCreateList(0);
         presenter.reloadParticipateList(0);
         presenter.reloadFavoriteList(0);

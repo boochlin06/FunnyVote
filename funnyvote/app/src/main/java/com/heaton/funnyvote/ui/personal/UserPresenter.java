@@ -9,23 +9,42 @@ import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
+import com.heaton.funnyvote.ui.main.HotTabFragment;
 import com.heaton.funnyvote.ui.main.MainPageContract;
 import com.heaton.funnyvote.ui.main.MainPagePresenter;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
+import com.heaton.funnyvote.ui.main.NewsTabFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+@ActivityScoped
 public class UserPresenter implements PersonalContract.Presenter {
-    public static String TAG = MainPagePresenter.class.getSimpleName();
     private static final int LIMIT = VoteDataRepository.PAGE_COUNT;
+    public static String TAG = MainPagePresenter.class.getSimpleName();
     private VoteDataRepository voteDataRepository;
     private UserDataRepository userDataRepository;
     private PersonalContract.UserPageView userPageView;
-    private MainPageContract.TabPageFragment createFragment, participateFragment, favoriteFragment;
+    private CreateTabFragment createFragment;
+    private ParticipateTabFragment participateFragment;
+    private FavoriteTabFragment favoriteFragment;
 
     private List<VoteData> createVoteDataList;
     private List<VoteData> participateVoteDataList;
+    private List<VoteData> favoriteVoteDataList;
+    private User loginUser, targetUser;
+
+    @Inject
+    public UserPresenter(VoteDataRepository voteDataRepository
+            , UserDataRepository userDataRepository) {
+        this.userDataRepository = userDataRepository;
+        this.voteDataRepository = voteDataRepository;
+        createVoteDataList = new ArrayList<>();
+        participateVoteDataList = new ArrayList<>();
+        favoriteVoteDataList = new ArrayList<>();
+    }
 
     public List<VoteData> getCreateVoteDataList() {
         return createVoteDataList;
@@ -51,8 +70,6 @@ public class UserPresenter implements PersonalContract.Presenter {
         this.favoriteVoteDataList = favoriteVoteDataList;
     }
 
-    private List<VoteData> favoriteVoteDataList;
-
     public User getLoginUser() {
         return loginUser;
     }
@@ -65,18 +82,9 @@ public class UserPresenter implements PersonalContract.Presenter {
         return targetUser;
     }
 
-    private User loginUser, targetUser;
-
-    public UserPresenter(VoteDataRepository voteDataRepository
-            , UserDataRepository userDataRepository
-            , PersonalContract.UserPageView userPageView) {
-        this.userPageView = userPageView;
-        this.userDataRepository = userDataRepository;
-        this.voteDataRepository = voteDataRepository;
-        createVoteDataList = new ArrayList<>();
-        participateVoteDataList = new ArrayList<>();
-        favoriteVoteDataList = new ArrayList<>();
-        this.userPageView.setPresenter(this);
+    @Override
+    public void setTargetUser(User targetUser) {
+        this.targetUser = targetUser;
     }
 
     @Override
@@ -85,36 +93,36 @@ public class UserPresenter implements PersonalContract.Presenter {
     }
 
     @Override
-    public void setHotsFragmentView(MainPageContract.TabPageFragment hotsFragmentView) {
+    public void setHotsFragmentView(HotTabFragment hotsFragmentView) {
 
     }
 
     @Override
-    public void setNewsFragmentView(MainPageContract.TabPageFragment newsFragmentView) {
+    public void setNewsFragmentView(NewsTabFragment newsFragmentView) {
 
     }
 
     @Override
-    public void setCreateFragmentView(MainPageContract.TabPageFragment fragmentView) {
+    public void setCreateFragmentView(CreateTabFragment fragmentView) {
         this.createFragment = fragmentView;
         reloadCreateList(0);
-        createFragment.setTab(MainPageTabFragment.TAB_CREATE);
+        createFragment.setTab(VoteDataRepository.TAB_CREATE);
         createFragment.setUpRecycleView(createVoteDataList);
     }
 
     @Override
-    public void setParticipateFragmentView(MainPageContract.TabPageFragment fragmentView) {
+    public void setParticipateFragmentView(ParticipateTabFragment fragmentView) {
         this.participateFragment = fragmentView;
         reloadParticipateList(0);
-        participateFragment.setTab(MainPageTabFragment.TAB_PARTICIPATE);
+        participateFragment.setTab(VoteDataRepository.TAB_PARTICIPATE);
         participateFragment.setUpRecycleView(participateVoteDataList);
     }
 
     @Override
-    public void setFavoriteFragmentView(MainPageContract.TabPageFragment fragmentView) {
+    public void setFavoriteFragmentView(FavoriteTabFragment fragmentView) {
         this.favoriteFragment = fragmentView;
         reloadFavoriteList(0);
-        favoriteFragment.setTab(MainPageTabFragment.TAB_FAVORITE);
+        favoriteFragment.setTab(VoteDataRepository.TAB_FAVORITE);
         favoriteFragment.setUpRecycleView(favoriteVoteDataList);
     }
 
@@ -140,7 +148,6 @@ public class UserPresenter implements PersonalContract.Presenter {
                     }
                 });
     }
-
 
     @Override
     public void IntentToShareDialog(VoteData voteData) {
@@ -243,7 +250,7 @@ public class UserPresenter implements PersonalContract.Presenter {
     @Override
     public void reloadCreateList(final int offset) {
         if (loginUser == null) {
-            start();
+            loadUser();
             return;
         }
         voteDataRepository.getCreateVoteList(offset, loginUser, targetUser, new VoteDataSource.GetVoteListCallback() {
@@ -267,7 +274,7 @@ public class UserPresenter implements PersonalContract.Presenter {
     @Override
     public void reloadParticipateList(final int offset) {
         if (loginUser == null) {
-            start();
+            loadUser();
             return;
         }
         voteDataRepository.getParticipateVoteList(offset, loginUser, targetUser, new VoteDataSource.GetVoteListCallback() {
@@ -291,7 +298,7 @@ public class UserPresenter implements PersonalContract.Presenter {
     @Override
     public void reloadFavoriteList(final int offset) {
         if (loginUser == null) {
-            start();
+            loadUser();
             return;
         }
         voteDataRepository.getFavoriteVoteList(offset, loginUser, targetUser, new VoteDataSource.GetVoteListCallback() {
@@ -382,12 +389,12 @@ public class UserPresenter implements PersonalContract.Presenter {
     }
 
     @Override
-    public void setTargetUser(User targetUser) {
-        this.targetUser = targetUser;
+    public void takeView(MainPageContract.MainPageView view) {
+        this.userPageView = (PersonalContract.UserPageView) view;
+        loadUser();
     }
 
-    @Override
-    public void start() {
+    private void loadUser() {
         userPageView.showLoadingCircle();
         userPageView.showIntroductionDialog();
         userDataRepository.getUser(new UserDataSource.GetUserCallback() {
@@ -408,6 +415,12 @@ public class UserPresenter implements PersonalContract.Presenter {
                 Log.d(TAG, "getUserCallback loginUser failure:" + loginUser);
             }
         }, false);
+    }
+
+
+    @Override
+    public void dropView() {
+        this.userPageView = null;
     }
 
     private void reloadAllList(int offset) {

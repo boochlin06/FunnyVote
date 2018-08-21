@@ -45,10 +45,10 @@ import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.ui.CirclePageIndicator;
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity;
 import com.heaton.funnyvote.utils.Util;
@@ -56,18 +56,28 @@ import com.heaton.funnyvote.utils.Util;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import at.grabner.circleprogress.CircleProgressView;
 import at.grabner.circleprogress.TextMode;
 import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
+import dagger.Lazy;
 
 /**
  * Created by heaton on 16/4/1.
  */
-public class MainPageFragment extends android.support.v4.app.Fragment
+@ActivityScoped
+public class MainPageFragment extends dagger.android.support.DaggerFragment
         implements MainPageContract.MainPageView {
 
     public static String TAG = MainPageFragment.class.getSimpleName();
     public static boolean ENABLE_PROMOTION_ADMOB = true;
+    @Inject
+    public MainPagePresenter pagePresenter;
+    @Inject
+    Lazy<HotTabFragment> hotTabFragmentProvider;
+    @Inject
+    Lazy<NewsTabFragment> newsTabFragmentProvider;
     private AutoScrollViewPager vpHeader;
     private AppBarLayout appBarMain;
     private View promotionADMOB;
@@ -76,43 +86,22 @@ public class MainPageFragment extends android.support.v4.app.Fragment
     private Activity context;
     private CircleProgressView circleLoad;
     private Tracker tracker;
-    private MainPageContract.Presenter pagePresenter;
-    private MainPageTabFragment hotsFragment, newsFragment;
+    //private MainPageTabFragment hotsFragment, newsFragment;
     private AlertDialog passwordDialog;
 
-    @Override
-    public void setPresenter(MainPageContract.Presenter presenter) {
-        this.pagePresenter = pagePresenter;
-    }
-
-    private class PromotionType {
-        public static final int PROM0TION_TYPE_ADMOB = 0;
-        public static final int PROMOTION_TYPE_FUNNY_VOTE = 1;
-        private int promotionType;
-        private Promotion promotion;
-
-        public PromotionType(int promotionType, Promotion promotion) {
-            this.promotion = promotion;
-            this.promotionType = promotionType;
-        }
-
-        public int getPromotionType() {
-            return this.promotionType;
-        }
-
-        public Promotion getPromotion() {
-            return this.promotion;
-        }
+    @Inject
+    public MainPageFragment() {
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        pagePresenter = new MainPagePresenter(Injection.provideVoteDataRepository(context)
-                , Injection.provideUserRepository(context)
-                , Injection.providePromotionRepository(context), this);
+//        pagePresenter = new MainPagePresenter(Injection.provideVoteDataRepository(context)
+//                , Injection.provideUserRepository(context)
+//                , Injection.providePromotionRepository(context), this);
 
-        pagePresenter.start();
+        pagePresenter.takeView(this);
+        //pagePresenter.startwithSearch();
     }
 
     @Nullable
@@ -185,27 +174,27 @@ public class MainPageFragment extends android.support.v4.app.Fragment
 
     @Override
     public void showShareDialog(VoteData data) {
-        Util.sendShareIntent(getContext(), data);
+        Util.sendShareIntent(getActivity(), data);
     }
 
     @Override
     public void showAuthorDetail(VoteData data) {
-        Util.sendPersonalDetailIntent(getContext(), data);
+        Util.sendPersonalDetailIntent(getActivity(), data);
     }
 
     @Override
     public void showCreateVote() {
-        getActivity().startActivity(new Intent(getContext(), CreateVoteActivity.class));
+        getActivity().startActivity(new Intent(getActivity(), CreateVoteActivity.class));
     }
 
     @Override
     public void showVoteDetail(VoteData data) {
-        Util.startActivityToVoteDetail(getContext(), data.getVoteCode());
+        Util.startActivityToVoteDetail(getActivity(), data.getVoteCode());
     }
 
     @Override
     public void showIntroductionDialog() {
-        SharedPreferences firstTimePref = Injection.provideFirstTimePref(getActivity());
+        SharedPreferences firstTimePref = FirstTimePref.getInstance(getContext()).getPreferences();
         if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, true)) {
             firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_INTRODUTCION_QUICK_POLL, false).apply();
             final Dialog introductionDialog = new Dialog(getActivity());
@@ -356,7 +345,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         super.onResume();
         //TODO,WHY NO RESPONSE ON HERE
         pagePresenter.refreshAllFragment();
-        //pagePresenter.start();
+        //pagePresenter.startwithSearch();
     }
 
     @Override
@@ -399,6 +388,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         int currentItem = vpMainPage.getCurrentItem();
         vpMainPage.setAdapter(tabsAdapter);
         vpMainPage.setCurrentItem(currentItem);
+        Log.d("test", "setUpTabsAdapter");
     }
 
     @Override
@@ -408,7 +398,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
 
     @Override
     public void showHintToast(int res, long arg) {
-        Toast.makeText(context, getString(res, arg), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), getString(res, arg), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -468,6 +458,58 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         return passwordDialog != null && passwordDialog.isShowing();
     }
 
+    public abstract static class AppBarStateChangeListener implements AppBarLayout.OnOffsetChangedListener {
+
+        private State mCurrentState = State.IDLE;
+
+        @Override
+        public final void onOffsetChanged(AppBarLayout appBarLayout, int i) {
+            if (i == 0) {
+                if (mCurrentState != State.EXPANDED) {
+                    onStateChanged(appBarLayout, State.EXPANDED);
+                }
+                mCurrentState = State.EXPANDED;
+            } else if (Math.abs(i) >= appBarLayout.getTotalScrollRange()) {
+                if (mCurrentState != State.COLLAPSED) {
+                    onStateChanged(appBarLayout, State.COLLAPSED);
+                }
+                mCurrentState = State.COLLAPSED;
+            } else {
+                if (mCurrentState != State.IDLE) {
+                    onStateChanged(appBarLayout, State.IDLE);
+                }
+                mCurrentState = State.IDLE;
+            }
+        }
+
+        public abstract void onStateChanged(AppBarLayout appBarLayout, State state);
+
+        public enum State {
+            EXPANDED,
+            COLLAPSED,
+            IDLE
+        }
+    }
+
+    private class PromotionType {
+        public static final int PROM0TION_TYPE_ADMOB = 0;
+        public static final int PROMOTION_TYPE_FUNNY_VOTE = 1;
+        private int promotionType;
+        private Promotion promotion;
+
+        public PromotionType(int promotionType, Promotion promotion) {
+            this.promotion = promotion;
+            this.promotionType = promotionType;
+        }
+
+        public int getPromotionType() {
+            return this.promotionType;
+        }
+
+        public Promotion getPromotion() {
+            return this.promotion;
+        }
+    }
 
     private class HeaderAdapter extends PagerAdapter {
         private List<PromotionType> promotionTypeList;
@@ -534,6 +576,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
                         }
                     });
                 }
+                //container.removeView(headerItem);
                 container.addView(headerItem);
                 return headerItem;
             } else if (promotionTypeList.get(position).getPromotionType() == PromotionType.PROM0TION_TYPE_ADMOB) {
@@ -545,6 +588,11 @@ public class MainPageFragment extends android.support.v4.app.Fragment
                                     AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
                             .build();
                     adview.loadAd(adRequest);
+                }
+                //container.removeView(promotionADMOB);
+
+                if (promotionADMOB.getParent() != null) {
+                    ((ViewGroup) promotionADMOB.getParent()).removeView(promotionADMOB);
                 }
                 container.addView(promotionADMOB);
                 return promotionADMOB;
@@ -577,6 +625,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
             super(fm);
         }
 
+
         @Override
         public void restoreState(Parcelable state, ClassLoader loader) {
             // todo: work around : NullPointerException in FragmentStatePagerAdapter
@@ -592,19 +641,11 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         public Fragment getItem(int i) {
             switch (i) {
                 case 0:
-                    if (hotsFragment == null) {
-                        hotsFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_HOT, user);
-                        hotsFragment.setPresenter(pagePresenter);
-                        //pagePresenter.setHotsFragmentView(hotsFragment);
-                    }
-                    return hotsFragment;
+                    HotTabFragment hotTabFragment = hotTabFragmentProvider.get();
+                    return hotTabFragment;
                 case 1:
-                    if (newsFragment == null) {
-                        newsFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_NEW, user);
-                        newsFragment.setPresenter(pagePresenter);
-                        //pagePresenter.setNewsFragmentView(newsFragment);
-                    }
-                    return newsFragment;
+                    NewsTabFragment newsTabFragment = newsTabFragmentProvider.get();
+                    return newsTabFragment;
             }
             return null;
         }
@@ -620,39 +661,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment
             return "";
         }
 
-    }
-
-    public abstract static class AppBarStateChangeListener implements AppBarLayout.OnOffsetChangedListener {
-
-        public enum State {
-            EXPANDED,
-            COLLAPSED,
-            IDLE
-        }
-
-        private State mCurrentState = State.IDLE;
-
-        @Override
-        public final void onOffsetChanged(AppBarLayout appBarLayout, int i) {
-            if (i == 0) {
-                if (mCurrentState != State.EXPANDED) {
-                    onStateChanged(appBarLayout, State.EXPANDED);
-                }
-                mCurrentState = State.EXPANDED;
-            } else if (Math.abs(i) >= appBarLayout.getTotalScrollRange()) {
-                if (mCurrentState != State.COLLAPSED) {
-                    onStateChanged(appBarLayout, State.COLLAPSED);
-                }
-                mCurrentState = State.COLLAPSED;
-            } else {
-                if (mCurrentState != State.IDLE) {
-                    onStateChanged(appBarLayout, State.IDLE);
-                }
-                mCurrentState = State.IDLE;
-            }
-        }
-
-        public abstract void onStateChanged(AppBarLayout appBarLayout, State state);
     }
 
 

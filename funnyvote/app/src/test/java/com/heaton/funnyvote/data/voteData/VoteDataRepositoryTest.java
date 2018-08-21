@@ -5,7 +5,6 @@ import com.heaton.funnyvote.data.VoteData.VoteDataSource;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.ui.main.MainPageTabFragment;
 
 import org.junit.After;
 import org.junit.Before;
@@ -116,8 +115,8 @@ public class VoteDataRepositoryTest {
 
     @Test
     public void saveHotVoteDataList_saveVoteDataListToLocal() {
-        voteDataRepository.saveVoteDataList(voteDataList, OFFSET, MainPageTabFragment.TAB_HOT);
-        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, MainPageTabFragment.TAB_HOT);
+        voteDataRepository.saveVoteDataList(voteDataList, OFFSET, VoteDataRepository.TAB_HOT);
+        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, VoteDataRepository.TAB_HOT);
     }
 
     @Test
@@ -144,7 +143,7 @@ public class VoteDataRepositoryTest {
         verify(voteDataRemoteDataSource).getCreateVoteList(eq(OFFSET), eq(user), any(User.class)
                 , getVoteListCallbackArgumentCaptor.capture());
         getVoteListCallbackArgumentCaptor.getValue().onVoteListLoaded(voteDataList);
-        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, MainPageTabFragment.TAB_CREATE);
+        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, VoteDataRepository.TAB_CREATE);
         verify(voteDataLocalDataSource, never()).getCreateVoteList(OFFSET, user, null, getVoteListCallback);
         verify(getVoteListCallback).onVoteListLoaded(voteDataList);
     }
@@ -155,7 +154,7 @@ public class VoteDataRepositoryTest {
         verify(voteDataRemoteDataSource).getParticipateVoteList(eq(OFFSET), eq(user), any(User.class)
                 , getVoteListCallbackArgumentCaptor.capture());
         getVoteListCallbackArgumentCaptor.getValue().onVoteListLoaded(voteDataList);
-        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, MainPageTabFragment.TAB_PARTICIPATE);
+        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, VoteDataRepository.TAB_PARTICIPATE);
         verify(voteDataLocalDataSource, never()).getParticipateVoteList(OFFSET, user, null, getVoteListCallback);
         verify(getVoteListCallback).onVoteListLoaded(voteDataList);
     }
@@ -166,7 +165,7 @@ public class VoteDataRepositoryTest {
         verify(voteDataRemoteDataSource).getFavoriteVoteList(eq(OFFSET), eq(user), any(User.class)
                 , getVoteListCallbackArgumentCaptor.capture());
         getVoteListCallbackArgumentCaptor.getValue().onVoteListLoaded(voteDataList);
-        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, MainPageTabFragment.TAB_FAVORITE);
+        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, VoteDataRepository.TAB_FAVORITE);
         verify(voteDataLocalDataSource, never()).getFavoriteVoteList(OFFSET, user, null, getVoteListCallback);
         verify(getVoteListCallback).onVoteListLoaded(voteDataList);
     }
@@ -186,7 +185,7 @@ public class VoteDataRepositoryTest {
     public void getHotVoteDataList_getFromRemoteAndSaveToLocal() {
         voteDataRepository.getHotVoteList(OFFSET, user, getVoteListCallback);
         setHotVoteDataListAvailable(voteDataRemoteDataSource, voteDataList);
-        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, MainPageTabFragment.TAB_HOT);
+        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, VoteDataRepository.TAB_HOT);
         verify(voteDataLocalDataSource, never()).getHotVoteList(OFFSET, user, getVoteListCallback);
         verify(getVoteListCallback).onVoteListLoaded(voteDataList);
     }
@@ -197,7 +196,7 @@ public class VoteDataRepositoryTest {
         verify(voteDataRemoteDataSource).getNewVoteList(eq(OFFSET), eq(user)
                 , getVoteListCallbackArgumentCaptor.capture());
         getVoteListCallbackArgumentCaptor.getValue().onVoteListLoaded(voteDataList);
-        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, MainPageTabFragment.TAB_NEW);
+        verify(voteDataLocalDataSource).saveVoteDataList(voteDataList, OFFSET, VoteDataRepository.TAB_NEW);
         verify(voteDataLocalDataSource, never()).getNewVoteList(OFFSET, user, getVoteListCallback);
         verify(getVoteListCallback).onVoteListLoaded(voteDataList);
     }

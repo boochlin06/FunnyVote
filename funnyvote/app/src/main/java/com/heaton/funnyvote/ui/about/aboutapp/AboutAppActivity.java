@@ -15,9 +15,6 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.ui.about.AboutFragment;
-import com.heaton.funnyvote.ui.about.aboutapp.AboutAppContract;
-import com.heaton.funnyvote.ui.about.aboutapp.AboutAppPresenter;
 import com.heaton.funnyvote.utils.Util;
 
 import butterknife.BindView;
@@ -29,11 +26,11 @@ import butterknife.OnClick;
  */
 
 public class AboutAppActivity extends AppCompatActivity implements AboutAppContract.View {
+    protected AboutAppContract.Presenter presenter;
     @BindView(R.id.txtAppDesc)
     TextView txtAppDesc;
     private Toolbar mainToolbar;
     private Tracker tracker;
-    protected AboutAppContract.Presenter presenter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,8 +89,4 @@ public class AboutAppActivity extends AppCompatActivity implements AboutAppContr
         Util.sendShareAppIntent(getApplicationContext());
     }
 
-    @Override
-    public void setPresenter(AboutAppContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
 }

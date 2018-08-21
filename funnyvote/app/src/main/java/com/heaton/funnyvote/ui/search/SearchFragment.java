@@ -2,7 +2,6 @@ package com.heaton.funnyvote.ui.search;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
@@ -21,13 +20,15 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.utils.Util;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import at.grabner.circleprogress.CircleProgressView;
 import at.grabner.circleprogress.TextMode;
@@ -36,40 +37,21 @@ import at.grabner.circleprogress.TextMode;
  * Created by heaton on 2017/1/22.
  */
 
-public class SearchFragment extends Fragment implements SearchContract.View {
+@ActivityScoped
+public class SearchFragment extends dagger.android.support.DaggerFragment implements SearchContract.View {
 
+    public static final String KEY_SEARCH_KEYWORD = "key_search_keyword";
     private static final String TAG = SearchFragment.class.getSimpleName();
     private static final int LIMIT = VoteDataRepository.PAGE_COUNT;
-    public static final String KEY_SEARCH_KEYWORD = "key_search_keyword";
+    String keyword;
+    CircleProgressView circleLoad;
+    @Inject
+    SearchPresenter presenter;
     private RecyclerView ryMain;
     private RelativeLayout RootView;
     private SearchItemAdapter adapter;
     private SearchView searchView;
-
-    private String keyword = "";
     private Tracker tracker;
-
-    CircleProgressView circleLoad;
-
-    private SearchContract.Presenter presenter;
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
-        if (searchView != null) {
-            searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
-            searchView.setSubmitButtonEnabled(true);
-            searchView.setOnQueryTextListener(queryListener);
-        }
-    }
-
     final private SearchView.OnQueryTextListener queryListener =
             new SearchView.OnQueryTextListener() {
 
@@ -100,6 +82,28 @@ public class SearchFragment extends Fragment implements SearchContract.View {
                 }
             };
 
+    @Inject
+    public SearchFragment() {
+
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
+        if (searchView != null) {
+            searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
+            searchView.setSubmitButtonEnabled(true);
+            searchView.setOnQueryTextListener(queryListener);
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -129,10 +133,11 @@ public class SearchFragment extends Fragment implements SearchContract.View {
             keyword = searchArgument.getString(KEY_SEARCH_KEYWORD, "");
         }
 
-        presenter = new SearchPresenter(Injection.provideVoteDataRepository(getContext())
-                , Injection.provideUserRepository(getContext()), this);
-        presenter.start(keyword);
-
+//        presenter = new SearchPresenter(Injection.provideVoteDataRepository(getContext())
+//                , Injection.provideUserRepository(getContext()), this);
+        //presenter.startwithSearch(keyword);
+        presenter.setKeyword(keyword);
+        presenter.takeView(this);
     }
 
     private void initRecyclerView() {
@@ -178,7 +183,7 @@ public class SearchFragment extends Fragment implements SearchContract.View {
 
     @Override
     public void showHintToast(int res, long arg) {
-        if(isAdded())
+        if (isAdded())
             Toast.makeText(getActivity(), getString(res, arg), Toast.LENGTH_SHORT).show();
     }
 
@@ -198,11 +203,6 @@ public class SearchFragment extends Fragment implements SearchContract.View {
     public void refreshFragment(List<VoteData> voteDataList) {
         adapter.setVoteList(voteDataList);
         adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void setPresenter(SearchContract.Presenter presenter) {
-        this.presenter = presenter;
     }
 
     public interface VoteSearchItemListener {

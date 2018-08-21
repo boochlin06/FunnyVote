@@ -16,7 +16,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -31,8 +30,8 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.utils.FileUtils;
 import com.heaton.funnyvote.utils.Util;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -40,16 +39,22 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import java.io.File;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import at.grabner.circleprogress.CircleProgressView;
 import at.grabner.circleprogress.TextMode;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.Lazy;
+import dagger.android.support.DaggerAppCompatActivity;
 
 /**
  * Created by heaton on 16/1/10.
  */
-public class CreateVoteActivity extends AppCompatActivity implements CreateVoteContract.ActivityView {
+@ActivityScoped
+public class CreateVoteActivity extends DaggerAppCompatActivity implements CreateVoteContract.ActivityView {
 
+    public static String TAG = CreateVoteActivity.class.getSimpleName();
     @BindView(R.id.txtTitle)
     TextView txtTitle;
     @BindView(R.id.edtTitle)
@@ -61,13 +66,14 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
     @BindView(R.id.circleLoad)
     CircleProgressView circleLoad;
     Toolbar mainToolbar;
-
-    public static String TAG = CreateVoteActivity.class.getSimpleName();
-    private CreateVoteTabSettingFragment settingFragment;
-    private CreateVoteTabOptionFragment optionFragment;
+    @Inject
+    Lazy<CreateVoteTabSettingFragment> settingFragmentProvider;
+    @Inject
+    Lazy<CreateVoteTabOptionFragment> optionFragmentProvider;
+    @Inject
+    CreateVoteContract.Presenter presenter;
     private Uri cropImageUri;
     private Tracker tracker;
-    private CreateVoteContract.Presenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,18 +128,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         tabLayoutCreateVote.setupWithViewPager(vpSubArea);
-        presenter = new CreateVoteActivityPresenter(
-                Injection.provideVoteDataRepository(getApplicationContext())
-                , Injection.provideUserRepository(getApplicationContext())
-                , this
-                , optionFragment, settingFragment);
-        this.setPresenter(presenter);
-        presenter.start();
-    }
-
-    @Override
-    public void setPresenter(CreateVoteContract.Presenter presenter) {
-        this.presenter = presenter;
+        presenter.takeView(this);
     }
 
     @Override
@@ -161,47 +156,6 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
                 .setLabel(voteData.getVoteCode())
                 .build());
         finish();
-    }
-
-    private class TabsAdapter extends FragmentPagerAdapter {
-        public TabsAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public int getCount() {
-            return 2;
-        }
-
-        @Override
-        public Fragment getItem(int i) {
-            switch (i) {
-                case 0:
-                    if (optionFragment == null) {
-                        optionFragment = CreateVoteTabOptionFragment.newTabFragment();
-                        optionFragment.setPresenter(presenter);
-                    }
-                    return optionFragment;
-                case 1:
-                    if (settingFragment == null) {
-                        settingFragment = CreateVoteTabSettingFragment.newTabFragment();
-                        settingFragment.setPresenter(presenter);
-                    }
-                    return settingFragment;
-            }
-            return null;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getString(R.string.create_vote_tab_options);
-                case 1:
-                    return getString(R.string.create_vote_tab_settings);
-            }
-            return "";
-        }
     }
 
     @Override
@@ -247,7 +201,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
                 Log.d(TAG, "onActivityResult PICK_IMAGE_CHOOSER_REQUEST_CODE:" + cropImageUri);
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
             } else {
-                // no permissions required or already grunted, can start crop image activity
+                // no permissions required or already grunted, can startwithSearch crop image activity
                 Log.d(TAG, "onActivityResult PICK_IMAGE_CHOOSER_REQUEST_CODE no permission:" + imageUri);
                 startCropImageActivity(imageUri);
 
@@ -258,12 +212,12 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
                 Uri resultUri = result.getUri();
                 Log.d(TAG, "CROP_IMAGE_ACTIVITY_REQUEST_CODE ok:" + resultUri);
                 cropImageUri = resultUri;
-                if (optionFragment == null) {
+                if (optionFragmentProvider.get() == null) {
                     vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
                 }
                 File file = cropImageUri == null ? null : FileUtils.getFile(this, cropImageUri);
                 presenter.updateVoteImage(file);
-                optionFragment.setVoteImage(resultUri);
+                optionFragmentProvider.get().setVoteImage(resultUri);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
@@ -280,7 +234,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
         }
         if (requestCode == CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE) {
             if (cropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // required permissions granted, start crop image activity
+                // required permissions granted, startwithSearch crop image activity
                 startCropImageActivity(cropImageUri);
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_image_permission, Toast.LENGTH_LONG).show();
@@ -395,5 +349,38 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
         builder.setMessage(sb.toString());
         builder.setPositiveButton(R.string.create_vote_dialog_error_done, null);
         builder.show();
+    }
+
+    private class TabsAdapter extends FragmentPagerAdapter {
+        public TabsAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Override
+        public Fragment getItem(int i) {
+            switch (i) {
+                case 0:
+                    return optionFragmentProvider.get();
+                case 1:
+                    return settingFragmentProvider.get();
+            }
+            return null;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return getString(R.string.create_vote_tab_options);
+                case 1:
+                    return getString(R.string.create_vote_tab_settings);
+            }
+            return "";
+        }
     }
 }

@@ -54,8 +54,7 @@ public class AppExecutors {
         return INSTANCE;
     }
 
-    @VisibleForTesting
-    AppExecutors(Executor diskIO, Executor networkIO, Executor mainThread) {
+    public AppExecutors(Executor diskIO, Executor networkIO, Executor mainThread) {
         this.diskIO = diskIO;
         this.networkIO = networkIO;
         this.mainThread = mainThread;
@@ -79,7 +78,7 @@ public class AppExecutors {
         return mainThread;
     }
 
-    private static class MainThreadExecutor implements Executor {
+    public static class MainThreadExecutor implements Executor {
         private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
         @Override

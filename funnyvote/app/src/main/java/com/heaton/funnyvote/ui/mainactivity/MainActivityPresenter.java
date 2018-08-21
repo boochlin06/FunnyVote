@@ -1,20 +1,23 @@
-package com.heaton.funnyvote;
+package com.heaton.funnyvote.ui.mainactivity;
 
 import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.di.ActivityScoped;
 
-public class MainPagePresenter implements MainPageContract.Presenter {
+import javax.inject.Inject;
 
-    private MainPageContract.View view;
+@ActivityScoped
+public class MainActivityPresenter implements MainActivityContract.Presenter {
+
+    private MainActivityContract.View view;
     private UserDataRepository userDataRepository;
 
-    public MainPagePresenter(UserDataRepository userDataRepository
-            , MainPageContract.View view) {
+    @Inject
+    public MainActivityPresenter(UserDataRepository userDataRepository) {
         this.userDataRepository = userDataRepository;
-        this.view = view;
-        this.view.setPresenter(this);
     }
+
 
     @Override
     public void IntentToSearchPage(String searchKeyword) {
@@ -61,8 +64,14 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void takeView(MainActivityContract.View view) {
+        this.view = view;
         IntentToMainPage();
         loadUser();
+    }
+
+    @Override
+    public void dropView() {
+        view = null;
     }
 }

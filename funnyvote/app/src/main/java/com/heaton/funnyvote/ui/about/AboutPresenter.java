@@ -1,12 +1,13 @@
 package com.heaton.funnyvote.ui.about;
 
+import javax.inject.Inject;
+
 public class AboutPresenter implements AboutContract.Presenter {
 
     private AboutContract.View view;
 
-    public AboutPresenter(AboutContract.View view) {
-        this.view = view;
-        this.view.setPresenter(this);
+    @Inject
+    public AboutPresenter() {
     }
 
     @Override
@@ -45,7 +46,13 @@ public class AboutPresenter implements AboutContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void takeView(AboutContract.View view) {
+        this.view = view;
+    }
+
+
+    @Override
+    public void dropView() {
 
     }
 }

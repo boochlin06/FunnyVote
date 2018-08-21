@@ -10,6 +10,8 @@ import com.heaton.funnyvote.retrofit.Server;
 import java.io.IOException;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

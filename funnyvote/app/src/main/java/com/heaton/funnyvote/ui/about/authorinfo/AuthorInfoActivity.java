@@ -67,8 +67,4 @@ public class AuthorInfoActivity extends AppCompatActivity implements AuthorInfoC
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void setPresenter(AuthorInfoContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
 }

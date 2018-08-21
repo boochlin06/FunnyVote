@@ -10,15 +10,14 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.FunnyVoteApplication;
-import com.heaton.funnyvote.MainActivity;
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.PromotionDao;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.ui.introduction.IntroductionActivity;
+import com.heaton.funnyvote.ui.mainactivity.MainActivity;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -50,7 +49,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
         public InitTask(Activity context) {
             contextWeakReference = new WeakReference<Activity>(context);
-            firstTimePref = Injection.provideFirstTimePref(contextWeakReference.get());
+            firstTimePref = FirstTimePref.getInstance(contextWeakReference.get()).getPreferences();
         }
 
 
@@ -63,7 +62,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 contextWeakReference.get().startActivity(
                         new Intent(contextWeakReference.get(), MainActivity.class));
             }
-            UserDataRepository userDataRepository = Injection.provideUserRepository(contextWeakReference.get());
+            UserDataRepository userDataRepository = ((FunnyVoteApplication) (contextWeakReference.get().getApplication())).userDataRepository;
             userDataRepository.getUser(new UserDataSource.GetUserCallback() {
                 @Override
                 public void onResponse(User user) {

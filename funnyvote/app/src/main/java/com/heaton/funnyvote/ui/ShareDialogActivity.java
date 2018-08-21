@@ -32,6 +32,10 @@ import butterknife.ButterKnife;
  */
 
 public class ShareDialogActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final String EXTRA_VOTE_URL = "vote_url";
+    public static final String EXTRA_TITLE = "title";
+    public static final String EXTRA_IMG_URL = "image_url";
+    public static final String EXTRA_IS_SHARE_APP = "is_share_app";
     private static final String TAG = ShareDialogActivity.class.getSimpleName();
     private static final String[][] APPS = {
             {"com.facebook.katana", "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias"},
@@ -39,12 +43,6 @@ public class ShareDialogActivity extends AppCompatActivity implements View.OnCli
             {"com.twitter.android", "com.twitter.android.composer.ComposerActivity"},
             {"com.google.android.apps.plus", "com.google.android.libraries.social.gateway.GatewayActivity"}
     };
-
-    public static final String EXTRA_VOTE_URL = "vote_url";
-    public static final String EXTRA_TITLE = "title";
-    public static final String EXTRA_IMG_URL = "image_url";
-    public static final String EXTRA_IS_SHARE_APP = "is_share_app";
-
     @BindView(R.id.share_options)
     FlowLayout shareOptions;
     @BindView(R.id.share_to)

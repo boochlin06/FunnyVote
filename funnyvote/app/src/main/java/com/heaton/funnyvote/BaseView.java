@@ -1,5 +1,5 @@
 package com.heaton.funnyvote;
 
-public interface BaseView<T extends BasePresenter> {
-    void setPresenter(T presenter);
+public interface BaseView<T> {
+    //void setPresenter(T presenter);
 }

@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,21 +17,25 @@ import android.widget.TextView;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.utils.Util;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.Calendar;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import dagger.android.support.DaggerFragment;
 
 
 /**
  * Created by heaton on 2016/9/1.
  */
-
-public class CreateVoteTabSettingFragment extends Fragment implements CreateVoteContract.SettingFragmentView {
+@ActivityScoped
+public class CreateVoteTabSettingFragment extends DaggerFragment implements CreateVoteContract.SettingFragmentView {
 
     private static final long DEFAULT_END_TIME = 30;
 
@@ -93,9 +96,11 @@ public class CreateVoteTabSettingFragment extends Fragment implements CreateVote
     @BindView(R.id.imgSecurity)
     ImageView imgSecurity;
 
-    private CreateVoteContract.Presenter presenter;
+    @Inject
+    CreateVoteContract.Presenter presenter;
     private int SecurityType = 0;
 
+    @Inject
     public CreateVoteTabSettingFragment() {
     }
 
@@ -231,8 +236,4 @@ public class CreateVoteTabSettingFragment extends Fragment implements CreateVote
         builder.show();
     }
 
-    @Override
-    public void setPresenter(CreateVoteContract.Presenter presenter) {
-        this.presenter = presenter;
-    }
 }

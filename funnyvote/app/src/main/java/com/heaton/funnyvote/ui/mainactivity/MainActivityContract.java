@@ -1,9 +1,11 @@
-package com.heaton.funnyvote;
+package com.heaton.funnyvote.ui.mainactivity;
 
+import com.heaton.funnyvote.BasePresenter;
+import com.heaton.funnyvote.BaseView;
 import com.heaton.funnyvote.database.User;
 
-public interface MainPageContract {
-    interface Presenter extends BasePresenter {
+public interface MainActivityContract {
+    interface Presenter extends BasePresenter<View> {
         void IntentToSearchPage(String searchKeyword);
 
         void IntentToCreatePage();
@@ -17,6 +19,8 @@ public interface MainPageContract {
         void IntentToAccountPage();
 
         void loadUser();
+
+        void takeView(View view);
     }
 
     interface View extends BaseView<Presenter> {

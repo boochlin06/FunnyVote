@@ -90,6 +90,7 @@ public class VHUnPollCreateOptionItem extends RecyclerView.ViewHolder {
 
     private final class optionEditTextListener implements TextWatcher {
         VoteDetailContentActivity.OptionItemListener itemListener;
+
         public optionEditTextListener(VoteDetailContentActivity.OptionItemListener itemListener) {
             this.itemListener = itemListener;
         }
@@ -101,7 +102,7 @@ public class VHUnPollCreateOptionItem extends RecyclerView.ViewHolder {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            itemListener.onOptionTextChange(option.getId(),s.toString());
+            itemListener.onOptionTextChange(option.getId(), s.toString());
         }
 
         @Override

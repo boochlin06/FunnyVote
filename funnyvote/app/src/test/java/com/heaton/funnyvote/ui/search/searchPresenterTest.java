@@ -24,6 +24,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -59,18 +60,16 @@ public class searchPresenterTest {
     @Test
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
-        presenter = new SearchPresenter(voteDataRepository, userDataRepository
-                , view);
-
-        // Then the presenter is set to the userPageView
-        verify(view).setPresenter(presenter);
+        presenter = new SearchPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(view);
     }
 
     @Test
     public void getSearchVotesFromRepositoryAndLoadIntoView() {
-        presenter = new SearchPresenter(voteDataRepository, userDataRepository, view);
-        presenter.start("keyword");
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
+        presenter = new SearchPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(view);
+        presenter.startwithSearch("keyword");
+        verify(userDataRepository,times(2)).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
         getUserCallbackArgumentCaptor.getValue().onResponse(user);
         verify(voteDataRepository).getSearchVoteList(anyString(), eq(0), eq(user)
                 , getVoteListCallbackArgumentCaptor.capture());
@@ -81,8 +80,8 @@ public class searchPresenterTest {
 
     @Test
     public void getEmptySearchKeywordVotesFromRepositoryAndLoadIntoView() {
-        presenter = new SearchPresenter(voteDataRepository, userDataRepository, view);
-        presenter.start();
+        presenter = new SearchPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(view);
         verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
         getUserCallbackArgumentCaptor.getValue().onResponse(user);
         verify(voteDataRepository, never()).getSearchVoteList(anyString(), anyInt(), any(User.class)
@@ -91,14 +90,16 @@ public class searchPresenterTest {
 
     @Test
     public void clickOnVoteItem_IntentToVoteDetailTest() {
-        presenter = new SearchPresenter(voteDataRepository, userDataRepository, view);
+        presenter = new SearchPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(view);
         presenter.IntentToVoteDetail(voteData);
         verify(view).showVoteDetail(any(VoteData.class));
     }
 
     @Test
     public void refreshSearchVotesFromRepositoryAndLoadIntoView() {
-        presenter = new SearchPresenter(voteDataRepository, userDataRepository, view);
+        presenter = new SearchPresenter(voteDataRepository, userDataRepository);
+        presenter.takeView(view);
         List<VoteData> fullList = Lists.newArrayList();
         for (int i = 0; i < VoteDataRepository.PAGE_COUNT; i++) {
             fullList.add(voteData);

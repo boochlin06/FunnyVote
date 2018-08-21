@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,12 +18,15 @@ import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
+import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.ui.about.aboutapp.AboutAppActivity;
 import com.heaton.funnyvote.ui.about.authorinfo.AuthorInfoActivity;
 import com.heaton.funnyvote.ui.about.licence.LicenceActivity;
 import com.heaton.funnyvote.ui.about.problem.ProblemActivity;
 import com.heaton.funnyvote.ui.introduction.IntroductionActivity;
 import com.heaton.funnyvote.utils.Util;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,7 +36,8 @@ import butterknife.OnClick;
  * Created by heaton on 2017/3/2.
  */
 
-public class AboutFragment extends Fragment implements AboutContract.View {
+@ActivityScoped
+public class AboutFragment extends dagger.android.support.DaggerFragment implements AboutContract.View {
     @BindView(R.id.txtTutorial)
     TextView txtTutorial;
     @BindView(R.id.txtAuthorInfo)
@@ -49,9 +52,14 @@ public class AboutFragment extends Fragment implements AboutContract.View {
     TextView txtUpdate;
     @BindView(R.id.btnShareApp)
     CardView btnShareApp;
-
+    @Inject
+    AboutPresenter presenter;
     private Tracker tracker;
-    private AboutContract.Presenter presenter;
+
+    @Inject
+    public AboutFragment() {
+
+    }
 
     @Nullable
     @Override
@@ -75,7 +83,8 @@ public class AboutFragment extends Fragment implements AboutContract.View {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        presenter = new AboutPresenter(this);
+        presenter.takeView(this);
+        //presenter = new AboutPresenter(this);
     }
 
     @OnClick({R.id.txtTutorial, R.id.txtAuthorInfo, R.id.txtLicence, R.id.txtProblem, R.id.txtAppIntroduction
@@ -156,8 +165,4 @@ public class AboutFragment extends Fragment implements AboutContract.View {
         Util.sendShareAppIntent(getActivity());
     }
 
-    @Override
-    public void setPresenter(AboutContract.Presenter presenter) {
-
-    }
 }

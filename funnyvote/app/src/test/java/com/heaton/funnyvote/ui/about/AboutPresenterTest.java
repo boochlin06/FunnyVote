@@ -20,16 +20,17 @@ public class AboutPresenterTest {
     @Test
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
-        presenter = new AboutPresenter(view);
+        presenter = new AboutPresenter();
 
-        // Then the presenter is set to the userPageView
-        verify(view).setPresenter(presenter);
-        presenter.start();
+//        // Then the presenter is set to the userPageView
+//        verify(view).setPresenter(presenter);
+        presenter.takeView(view);
     }
 
     @Test
     public void intentToAllSubItem() {
-        presenter = new AboutPresenter(view);
+        presenter = new AboutPresenter();
+        presenter.takeView(view);
         presenter.IntentToAbout();
         verify(view).showAbout();
         presenter.IntentToAppStore();
