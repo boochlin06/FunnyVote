@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
     private Toolbar toolbar;
     private NavigationView navigationView;
 
-    private int currentPage;
+    private static int currentPage;
     boolean doubleBackToExitPressedOnce = false;
     private SearchView searchView;
     public static boolean ENABLE_ADMOB = true;
@@ -68,8 +68,6 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
 
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.frame_content
-//                , new MainPageFragment()).commit();
         toolbar = (Toolbar) findViewById(R.id.toolbarMain);
         adView = (AdView) findViewById(R.id.adView);
         toolbar.setTitle(getString(R.string.drawer_home));
@@ -166,7 +164,6 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
         drawerLayout.postDelayed(new Runnable() {
             @Override
             public void run() {
-                currentPage = menuItem.getItemId();
                 if (Build.VERSION.SDK_INT > 21) {
                     toolbar.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.color_primary));
                 } else {
@@ -175,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
                 switch (menuId) {
                     case R.id.navigation_item_main:
                         presenter.IntentToMainPage();
+                        currentPage = menuItem.getItemId();
                         break;
                     case R.id.navigation_item_create_vote:
                         presenter.IntentToCreatePage();
@@ -184,12 +182,15 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
                         break;
                     case R.id.navigation_item_search:
                         presenter.IntentToSearchPage(searchKeyword);
+                        currentPage = menuItem.getItemId();
                         break;
                     case R.id.navigation_item_account:
                         presenter.IntentToAccountPage();
+                        currentPage = menuItem.getItemId();
                         break;
                     case R.id.navigation_item_about:
                         presenter.IntentToAboutPage();
+                        currentPage = menuItem.getItemId();
                         break;
                 }
                 navigationView.setCheckedItem(currentPage);

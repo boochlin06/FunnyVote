@@ -9,10 +9,10 @@ buildscript {
         maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+        classpath 'com.android.tools.build:gradle:3.1.4'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
         classpath 'org.greenrobot:greendao-gradle-plugin:3.2.0'
-        classpath 'com.google.gms:google-services:3.0.0'
+        classpath 'com.google.gms:google-services:4.1.0'
         classpath 'com.jakewharton:butterknife-gradle-plugin:8.5.1'
         classpath ('com.google.firebase:firebase-plugins:1.0.5') {
             exclude group: 'com.google.guava', module: 'guava-jdk5'

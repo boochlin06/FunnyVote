@@ -4,6 +4,8 @@ apply plugin: 'io.fabric'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'jacoco-android'
+apply plugin: 'org.greenrobot.greendao'
+apply plugin: 'com.google.gms.google-services'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
@@ -15,7 +17,6 @@ jacoco {
 }
 
 
-apply plugin: 'org.greenrobot.greendao'
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
@@ -155,38 +156,3 @@ greendao {
     daoPackage 'com.heaton.funnyvote.database'
     targetGenDir 'src/main/java'
 }
-apply plugin: 'com.google.gms.google-services'
-
-
-//def coverageSourceDirs = [
-//        '../app/src/main/java'
-//]
-//task jacocoTestReport(type: JacocoReport) {
-//    group = "Reporting"
-//    description = "Generate Jacoco coverage reports after running tests."
-//    reports {
-//        xml.enabled = true
-//        html.enabled = true
-//    }
-//    classDirectories = fileTree(
-//            dir: './build/intermediates/classes/debug',
-//            excludes: ['**/R*.class',
-//                       '**/*$InjectAdapter.class',
-//                       '**/*$ModuleAdapter.class',
-//                       '**/*$ViewInjector*.class',
-//                       '**/*$ViewBinder*.*',
-//                       '**/BuildConfig.*',
-//                       '**/Manifest*.*',
-//            ])
-//    sourceDirectories = files(coverageSourceDirs)
-//    executionData = files("$buildDir/outputs/code-coverage/connected/coverage.ec")
-//
-//    doFirst {
-//        new File("$buildDir/intermediates/classes/").eachFileRecurse { file ->
-//            if (file.name.contains('$$')) {
-//                file.renameTo(file.path.replace('$$', '$'))
-//            }
-//        }
-//    }
-//
-//}
