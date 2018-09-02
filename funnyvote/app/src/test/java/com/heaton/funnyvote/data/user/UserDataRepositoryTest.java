@@ -64,13 +64,13 @@ public class UserDataRepositoryTest {
     @Before
     public void setUpUserRepository() {
         MockitoAnnotations.initMocks(this);
-        userDataRepository = UserDataRepository.getInstance(localUserDataSource, remoteUserDataSource);
+        userDataRepository = UserDataRepository.Companion.getInstance(localUserDataSource, remoteUserDataSource);
         user = mock(User.class);
     }
 
     @After
     public void destroyRepositoryInstance() {
-        UserDataRepository.destroyInstance();
+        UserDataRepository.Companion.destroyInstance();
     }
 
     @Test
@@ -111,8 +111,8 @@ public class UserDataRepositoryTest {
         userDataRepository.getUser(getUserCallback, true);
         verify(remoteUserDataSource).getUserInfo(callbackArgumentCaptor.capture(), any(User.class));
         UserDataQuery userDataQuery = new UserDataQuery();
-        userDataQuery.guestCode = "guestCode";
-        userDataQuery.otp = "otp";
+        userDataQuery.setGuestCode("guestCode");
+        userDataQuery.setOtp("otp");
         response = Response.success(userDataQuery);
         callbackArgumentCaptor.getValue().onResponse(null, response);
         verify(localUserDataSource).setUser(any(User.class));
@@ -128,8 +128,8 @@ public class UserDataRepositoryTest {
         userDataRepository.getUser(getUserCallback, true);
         verify(remoteUserDataSource).getUserInfo(callbackArgumentCaptor.capture(), any(User.class));
         UserDataQuery userDataQuery = new UserDataQuery();
-        userDataQuery.guestCode = "guestCode";
-        userDataQuery.otp = "otp";
+        userDataQuery.setGuestCode("guestCode");
+        userDataQuery.setOtp("otp");
         response = Response.error(500, ResponseBody.create(null, "123"));
         callbackArgumentCaptor.getValue().onResponse(null, response);
         verify(getUserCallback).onFailure();
@@ -211,8 +211,8 @@ public class UserDataRepositoryTest {
         userDataRepository.changeCurrentUserName("name", changeUserNameCallback);
         verify(remoteUserDataSource).getUserInfo(callbackArgumentCaptor.capture(), any(User.class));
         UserDataQuery userDataQuery = new UserDataQuery();
-        userDataQuery.guestCode = "guestCode";
-        userDataQuery.otp = "otp";
+        userDataQuery.setGuestCode("guestCode");
+        userDataQuery.setOtp("otp");
         response = Response.success(userDataQuery);
         callbackArgumentCaptor.getValue().onResponse(null, response);
         verify(localUserDataSource, times(1)).setUser(any(User.class));

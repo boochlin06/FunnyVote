@@ -16,7 +16,6 @@
         android:orientation="vertical">
 
         <include
-            android:id="@+id/main_toolbar"
             layout="@layout/include_toolbar" />
 
         <include
@@ -55,7 +54,7 @@
                 android:layout_height="wrap_content">
 
                 <android.support.design.widget.CollapsingToolbarLayout
-                    android:id="@+id/collapsing_toolbar"
+                    android:id="@+id/collapsingToolbar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:fitsSystemWindows="true"

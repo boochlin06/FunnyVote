@@ -84,12 +84,12 @@ public class VoteDataRepositoryTest {
             optionList.add(newOption(i));
         }
         voteData = newVoteData(0);
-        voteDataRepository = VoteDataRepository.getInstance(voteDataLocalDataSource, voteDataRemoteDataSource);
+        voteDataRepository = VoteDataRepository.Companion.getInstance(voteDataLocalDataSource, voteDataRemoteDataSource);
     }
 
     @After
     public void destroyRepositoryInstance() {
-        voteDataRepository.destroyInstance();
+        voteDataRepository.Companion.destroyInstance();
     }
 
 

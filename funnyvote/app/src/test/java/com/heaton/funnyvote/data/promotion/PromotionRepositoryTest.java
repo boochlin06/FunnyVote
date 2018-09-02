@@ -39,12 +39,12 @@ public class PromotionRepositoryTest {
     @Before
     public void setUpPromotionRepository() {
         MockitoAnnotations.initMocks(this);
-        promotionRepository = PromotionRepository.getInstance(remotePromotionDataSource, localPromotionDataSource);
+        promotionRepository = PromotionRepository.Companion.getInstance(remotePromotionDataSource, localPromotionDataSource);
     }
 
     @After
     public void destroyRepositoryInstance() {
-        PromotionRepository.destroyInstance();
+        PromotionRepository.Companion.destroyInstance();
     }
 
     @Test

@@ -39,18 +39,18 @@ public class LocalPromotionSourceTest {
     @Before
     public void setUp() {
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(InstrumentationRegistry.getTargetContext()
-                , ENCRYPTED ? "votes-db-encrypted" : "votes-db");
-        Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
+                , Companion.getENCRYPTED() ? "votes-db-encrypted" : "votes-db");
+        Database db = Companion.getENCRYPTED() ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
         daoSession = new DaoMaster(db).newSession(IdentityScopeType.Session);
         promotionDao = daoSession.getPromotionDao();
-        LocalPromotionSource.clearInstance();
-        localPromotionSource = LocalPromotionSource.getInstance(promotionDao, AppExecutors.getInstance());
+        LocalPromotionSource.Companion.clearInstance();
+        localPromotionSource = LocalPromotionSource.Companion.getInstance(promotionDao, AppExecutors.Companion.getInstance());
         user = new User();
     }
 
     @After
     public void cleanUp() {
-        LocalPromotionSource.clearInstance();
+        LocalPromotionSource.Companion.clearInstance();
     }
 
     @Test

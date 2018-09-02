@@ -4,31 +4,31 @@
     android:layout_height="wrap_content"
     android:padding="10dp">
     <ImageView
-        android:id="@+id/funny_vote_logo"
+        android:id="@+id/imgFunnyVoteLogo"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"
         android:src="@mipmap/ic_launcher"/>
     <TextView
-        android:id="@+id/share_to"
+        android:id="@+id/txtShareTo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:layout_below="@+id/funny_vote_logo"
+        android:layout_below="@+id/imgFunnyVoteLogo"
         android:layout_centerHorizontal="true"
         android:textSize="16sp"
         android:text="@string/vote_share_vote_via"/>
     <org.apmem.tools.layouts.FlowLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/share_options"
+        android:id="@+id/flowShareOptions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:layout_marginEnd="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="10dp"
-        android:layout_below="@+id/share_to"
+        android:layout_below="@+id/txtShareTo"
         android:layout_centerHorizontal="true"
         android:orientation="horizontal"
         >

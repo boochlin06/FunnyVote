@@ -97,13 +97,13 @@ public class AccountPresenterTest {
     public void loginUserAndUpdateToView() {
         presenter = new AccountPresenter(userDataRepository
                 , view);
-        presenter.login(AccountPresenter.LOGIN_FB, true);
+        presenter.login(AccountPresenter.Companion.getLOGIN_FB(), true);
         verify(view).facebookLogin();
 
-        presenter.login(AccountPresenter.LOGIN_GOOGLE, true);
+        presenter.login(AccountPresenter.Companion.getLOGIN_GOOGLE(), true);
         verify(view).googleSignIn();
 
-        presenter.login(AccountPresenter.LOGIN_TWITTER, true);
+        presenter.login(AccountPresenter.Companion.getLOGIN_TWITTER(), true);
         verify(view).twitterLogin();
     }
 

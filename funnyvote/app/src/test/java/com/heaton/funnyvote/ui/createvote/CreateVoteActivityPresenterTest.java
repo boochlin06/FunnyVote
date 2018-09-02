@@ -221,13 +221,13 @@ public class CreateVoteActivityPresenterTest {
         presenter.updateVoteSecurity(VoteData.SECURITY_PRIVATE);
         Assert.assertEquals(presenter.getVoteSettings().getSecurity(), VoteData.SECURITY_PRIVATE);
         presenter.updateVoteEndTime(System.currentTimeMillis()
-                - CreateVoteActivityPresenter.DEFAULT_END_TIME * 1000 * 86400);
+                - CreateVoteActivityPresenter.Companion.getDEFAULT_END_TIME() * 1000 * 86400);
         verify(activityView).showHintToast(anyInt());
         presenter.updateVoteEndTime(System.currentTimeMillis()
-                + (CreateVoteActivityPresenter.DEFAULT_END_TIME_MAX + 10) * 1000 * 86400);
+                + (CreateVoteActivityPresenter.Companion.getDEFAULT_END_TIME_MAX() + 10) * 1000 * 86400);
         verify(activityView).showHintToast(anyInt());
         presenter.updateVoteEndTime(System.currentTimeMillis()
-                + CreateVoteActivityPresenter.DEFAULT_END_TIME_MAX * 1000 * 86400);
+                + CreateVoteActivityPresenter.Companion.getDEFAULT_END_TIME_MAX() * 1000 * 86400);
         verify(settingFragmentView).setUpVoteSettings(any(VoteData.class));
         presenter.updateVoteImage(new File("test"));
         Assert.assertNotNull(presenter.getVoteSettings().getImageFile());

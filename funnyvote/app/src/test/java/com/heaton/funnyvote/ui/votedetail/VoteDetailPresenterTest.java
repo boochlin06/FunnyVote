@@ -244,10 +244,10 @@ public class VoteDetailPresenterTest {
     @Test
     public void clickOnFab_changeOptionTypeTest() {
         presenter = new VoteDetailPresenter(voteCode, voteDataRepository, userDataRepository, view);
-        presenter.isUserPreResult = false;
+        presenter.setUserPreResult(false);
         presenter.changeOptionType();
         verify(view).showResultOption(anyInt());
-        presenter.isUserPreResult = true;
+        presenter.setUserPreResult(true);
         presenter.changeOptionType();
         verify(view).showUnPollOption(anyInt());
     }

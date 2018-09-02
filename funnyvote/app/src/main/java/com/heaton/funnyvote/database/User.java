@@ -68,22 +68,6 @@ public class User implements Parcelable {
     public User() {
     }
 
-    @Generated(hash = 1947222936)
-    public User(Long id, String userName, String email, String userID,
-                String userCode, String userIcon, int type, String gender, int minAge,
-                int maxAge) {
-        this.id = id;
-        this.userName = userName;
-        this.email = email;
-        this.userID = userID;
-        this.userCode = userCode;
-        this.userIcon = userIcon;
-        this.type = type;
-        this.gender = gender;
-        this.minAge = minAge;
-        this.maxAge = maxAge;
-    }
-
     public String getTokenType() {
         return getType() == User.TYPE_GUEST ? User.TYPE_TOKEN_GUEST : User.TYPE_TOKEN_OTP;
     }
@@ -200,6 +184,21 @@ public class User implements Parcelable {
         this.gender = in.readString();
         this.minAge = in.readInt();
         this.maxAge = in.readInt();
+    }
+
+    @Generated(hash = 1947222936)
+    public User(Long id, String userName, String email, String userID, String userCode,
+            String userIcon, int type, String gender, int minAge, int maxAge) {
+        this.id = id;
+        this.userName = userName;
+        this.email = email;
+        this.userID = userID;
+        this.userCode = userCode;
+        this.userIcon = userIcon;
+        this.type = type;
+        this.gender = gender;
+        this.minAge = minAge;
+        this.maxAge = maxAge;
     }
 
     public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {

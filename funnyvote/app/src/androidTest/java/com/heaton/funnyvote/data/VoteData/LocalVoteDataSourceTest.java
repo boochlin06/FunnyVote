@@ -44,19 +44,19 @@ public class LocalVoteDataSourceTest {
     @Before
     public void setup() {
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(InstrumentationRegistry.getTargetContext()
-                , ENCRYPTED ? "votes-db-encrypted" : "votes-db");
-        Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
+                , Companion.getENCRYPTED() ? "votes-db-encrypted" : "votes-db");
+        Database db = Companion.getENCRYPTED() ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
         daoSession = new DaoMaster(db).newSession(IdentityScopeType.Session);
         voteDataDao = daoSession.getVoteDataDao();
         OptionDao optionDao = daoSession.getOptionDao();
-        LocalVoteDataSource.clearInstance();
-        localVoteDataSource = LocalVoteDataSource.getInstance(voteDataDao, optionDao, AppExecutors.getInstance());
+        LocalVoteDataSource.Companion.clearInstance();
+        localVoteDataSource = LocalVoteDataSource.Companion.getInstance(voteDataDao, optionDao, AppExecutors.Companion.getInstance());
         user = new User();
     }
 
     @After
     public void cleanUp() {
-        LocalVoteDataSource.clearInstance();
+        LocalVoteDataSource.Companion.clearInstance();
         daoSession.clear();
     }
 
