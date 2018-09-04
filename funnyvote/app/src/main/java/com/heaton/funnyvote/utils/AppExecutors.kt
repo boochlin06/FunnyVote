@@ -56,6 +56,7 @@ open class AppExecutors constructor(
         private val TAG = AppExecutors::class.java.simpleName
         private var INSTANCE: AppExecutors? = null
 
+        @JvmStatic
         fun getInstance(): AppExecutors? {
             if (INSTANCE == null) {
                 synchronized(AppExecutors::class.java) {
@@ -67,6 +68,7 @@ open class AppExecutors constructor(
             return INSTANCE!!
         }
 
+        @JvmStatic
         @VisibleForTesting
         internal fun clearInstance() {
             INSTANCE = null

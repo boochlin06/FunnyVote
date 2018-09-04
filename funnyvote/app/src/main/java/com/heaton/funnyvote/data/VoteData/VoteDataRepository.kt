@@ -167,7 +167,6 @@ class VoteDataRepository(
 
     override fun getParticipateVoteList(offset: Int, loginUser: User, targetUser: User, callback: VoteDataSource.GetVoteListCallback) {
         if (!targetUser.userCode.isNullOrEmpty()) {
-            //Log.d("test", "target:${targetUser.userCode} loginuser:${loginUser.userCode}")
             callback.onVoteListNotAvailable()
             return
         }

@@ -22,7 +22,6 @@ class VoteDetailPresenter(
     private var user: User = User()
 
     var voteData = VoteData()
-        private set
 
     private var optionList: MutableList<Option> = arrayListOf()
     private val searchList: List<Option>

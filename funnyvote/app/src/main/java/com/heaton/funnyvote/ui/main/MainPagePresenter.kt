@@ -56,7 +56,7 @@ class MainPagePresenter(
     }
 
     override fun resetPromotion() {
-        if (user.userCode.isNullOrEmpty()) {
+        if (!user.userCode.isNullOrEmpty()) {
             promotionRepository.getPromotionList(user, object : PromotionDataSource.GetPromotionsCallback {
                 override fun onPromotionsLoaded(promotionList: List<Promotion>) {
                     this@MainPagePresenter.promotionList = promotionList

@@ -205,7 +205,7 @@ private constructor(
     }
 
     override fun saveOptions(optionList: List<Option>) {
-        mAppExecutors.diskIO.execute { optionDao.insertOrReplaceInTx(optionList as Option) }
+        mAppExecutors.diskIO.execute { optionDao.insertOrReplaceInTx(optionList) }
     }
 
     override fun saveVoteDataList(voteDataList: List<VoteData>, offset: Int, tab: String) {
@@ -329,6 +329,7 @@ private constructor(
         @Volatile
         private var INSTANCE: LocalVoteDataSource? = null
 
+        @JvmStatic
         fun getInstance(voteDataDao: VoteDataDao, optionDao: OptionDao, appExecutors: AppExecutors): LocalVoteDataSource? {
             if (INSTANCE == null) {
                 synchronized(LocalVoteDataSource::class.java) {
@@ -340,8 +341,9 @@ private constructor(
             return INSTANCE
         }
 
+        @JvmStatic
         @VisibleForTesting
-        internal fun clearInstance() {
+        fun clearInstance() {
             INSTANCE = null
         }
     }

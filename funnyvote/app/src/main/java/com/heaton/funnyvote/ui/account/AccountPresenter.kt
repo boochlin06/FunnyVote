@@ -11,7 +11,7 @@ class AccountPresenter(
         , private val view: AccountContract.View
 ) : AccountContract.Presenter {
 
-    private lateinit var user: User
+    public lateinit var user: User
     private var mergeGuest: Boolean = false
 
     init {

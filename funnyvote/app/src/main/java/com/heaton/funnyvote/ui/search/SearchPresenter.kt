@@ -16,7 +16,7 @@ class SearchPresenter(
 ) : SearchContract.Presenter {
 
     private var searchVoteDataList: MutableList<VoteData>? = null
-    private var user: User? = null
+    var user: User? = null
 
     var keyword: String? = null
 
@@ -41,7 +41,8 @@ class SearchPresenter(
 
 
     override fun reloadSearchList(offset: Int) {
-        voteDataRepository.getSearchVoteList(keyword!!, offset, user!!, object : VoteDataSource.GetVoteListCallback {
+        voteDataRepository.getSearchVoteList(keyword!!, offset, user!!
+                , object : VoteDataSource.GetVoteListCallback {
             override fun onVoteListLoaded(voteDataList: List<VoteData>) {
                 updateSearchList(voteDataList.toMutableList(), offset)
                 view.refreshFragment(searchVoteDataList!!)

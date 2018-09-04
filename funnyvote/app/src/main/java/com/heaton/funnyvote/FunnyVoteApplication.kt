@@ -58,6 +58,7 @@ class FunnyVoteApplication : Application() {
         private val TWITTER_KEY = "x3l5s5Xo0Ns7B0woDW9Jg9fuD"
         private val TWITTER_SECRET = "F7MccZvZXRr9LFexSd2yKpqNiN6JckS697svkAHxWP9UbEqDRd"
 
+        @JvmField
         val ENCRYPTED = false
     }
 }

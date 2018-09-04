@@ -31,7 +31,7 @@ public class User implements Parcelable {
     private Long id;
 
     @SerializedName("nickname")
-    private String userName;
+    public String userName;
 
     private String email;
 

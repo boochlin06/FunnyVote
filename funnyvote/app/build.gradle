@@ -38,8 +38,8 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            aaptOptions.cruncherEnabled = false;
-            aaptOptions.useNewCruncher = false;
+            aaptOptions.cruncherEnabled = false
+            aaptOptions.useNewCruncher = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
@@ -147,8 +147,6 @@ dependencies {
     // Dependencies for Android unit tests
     androidTestImplementation "junit:junit:$rootProject.ext.junitVersion"
     androidTestImplementation "org.mockito:mockito-core:$rootProject.ext.mockitoVersion"
-    androidTestImplementation 'com.google.dexmaker:dexmaker:1.2'
-    androidTestImplementation 'com.google.dexmaker:dexmaker-mockito:1.2'
 
     // Espresso UI Testing
     androidTestImplementation "com.android.support.test.espresso:espresso-core:$rootProject.espressoVersion"
@@ -160,6 +158,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.anko:anko:$anko_version"
     implementation "org.jetbrains.anko:anko-coroutines:$anko_version"
+
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
+    androidTestImplementation "org.mockito:mockito-android:$rootProject.ext.mockitoVersion"
+//    testImplementation "org.mockito:mockito-inline:$rootProject.ext.mockitoVersion"
+
 }
 greendao {
     schemaVersion 1

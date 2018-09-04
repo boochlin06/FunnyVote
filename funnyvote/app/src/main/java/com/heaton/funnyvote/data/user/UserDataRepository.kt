@@ -76,7 +76,6 @@ class UserDataRepository(
         }
     }
 
-
     override fun registerUser(appId: String, user: User, mergeGuest: Boolean, callback: UserDataSource.RegisterUserCallback) {
         var userType = ""
         when (user.type) {
@@ -88,9 +87,9 @@ class UserDataRepository(
             val guestCode = localUserDataSource.user.userCode
             remoteUserSource.getUserCode(userType, appId, user, object : UserDataSource.GetUserCodeCallback {
                 override fun onSuccess(userCode: String) {
-
                     if (mergeGuest) {
-                        remoteUserSource.linkGuestToLoginUser(userCode, guestCode, object : Callback<ResponseBody> {
+                        remoteUserSource.linkGuestToLoginUser(userCode, guestCode
+                                , object : Callback<ResponseBody> {
                             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                                 if (response.isSuccessful) {
                                     user.userCode = userCode
