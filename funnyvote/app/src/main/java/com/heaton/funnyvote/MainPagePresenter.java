@@ -1,19 +1,30 @@
 package com.heaton.funnyvote;
 
+import android.support.annotation.NonNull;
+
 import com.heaton.funnyvote.data.user.UserDataRepository;
-import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
+
+import rx.Observer;
+import rx.subscriptions.CompositeSubscription;
 
 public class MainPagePresenter implements MainPageContract.Presenter {
 
     private MainPageContract.View view;
     private UserDataRepository userDataRepository;
+    private BaseSchedulerProvider schedulerProvider;
+    @NonNull
+    private CompositeSubscription mSubscriptions;
 
     public MainPagePresenter(UserDataRepository userDataRepository
-            , MainPageContract.View view) {
+            , MainPageContract.View view
+            , BaseSchedulerProvider schedulerProvider) {
         this.userDataRepository = userDataRepository;
         this.view = view;
         this.view.setPresenter(this);
+        this.schedulerProvider = schedulerProvider;
+        this.mSubscriptions = new CompositeSubscription();
     }
 
     @Override
@@ -48,21 +59,35 @@ public class MainPagePresenter implements MainPageContract.Presenter {
 
     @Override
     public void loadUser() {
-        userDataRepository.getUser(new UserDataSource.GetUserCallback() {
-            @Override
-            public void onResponse(User user) {
-                view.updateUserView(user);
-            }
+        mSubscriptions.add(userDataRepository.getUser(false)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<User>() {
+                    @Override
+                    public void onCompleted() {
 
-            @Override
-            public void onFailure() {
-            }
-        }, false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(User user) {
+                        view.updateUserView(user);
+                    }
+                }));
     }
 
     @Override
-    public void start() {
+    public void subscribe() {
         IntentToMainPage();
         loadUser();
+    }
+
+    @Override
+    public void unsubscribe() {
+        mSubscriptions.clear();
     }
 }

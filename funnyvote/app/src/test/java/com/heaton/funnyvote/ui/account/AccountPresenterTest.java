@@ -1,14 +1,13 @@
 package com.heaton.funnyvote.ui.account;
 
 import com.heaton.funnyvote.data.user.UserDataRepository;
-import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
+import com.heaton.funnyvote.utils.schedulers.ImmediateSchedulerProvider;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -37,17 +36,12 @@ public class AccountPresenterTest {
 
     @Mock
     private UserDataRepository userDataRepository;
-    @Captor
-    private ArgumentCaptor<UserDataSource.GetUserCallback> getUserCallbackArgumentCaptor;
-    @Captor
-    private ArgumentCaptor<UserDataSource.RegisterUserCallback> registerUserCallbackArgumentCaptor;
-    @Captor
-    private ArgumentCaptor<UserDataSource.ChangeUserNameCallback> changeUserNameCallbackArgumentCaptor;
+    private BaseSchedulerProvider schedulerProvider;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
+        schedulerProvider = new ImmediateSchedulerProvider();
         user = mock(User.class);
         when(user.getUserName()).thenReturn("Heaton");
     }
@@ -56,7 +50,7 @@ public class AccountPresenterTest {
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
         presenter = new AccountPresenter(userDataRepository
-                , view);
+                , view, schedulerProvider);
 
         // Then the presenter is set to the userPageView
         verify(view).setPresenter(presenter);
@@ -64,18 +58,19 @@ public class AccountPresenterTest {
 
     @Test
     public void getUserFromRepositoryAndUpdateToView() {
+        when(userDataRepository.getUser(eq(false))).thenReturn(rx.Observable.just(user));
         presenter = new AccountPresenter(userDataRepository
-                , view);
-        presenter.start();
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
-        getUserCallbackArgumentCaptor.getValue().onResponse(user);
+                , view, schedulerProvider);
+        presenter.subscribe();
+        verify(userDataRepository).getUser(eq(false));
         verify(view).showUser(any(User.class));
     }
 
     @Test
     public void logoutUserAndUpdateToView() {
+        when(userDataRepository.getUser(eq(false))).thenReturn(rx.Observable.just(user));
         presenter = new AccountPresenter(userDataRepository
-                , view);
+                , view, schedulerProvider);
 
         when(user.getType()).thenReturn(User.TYPE_FACEBOOK);
         presenter.setUser(user);
@@ -96,7 +91,7 @@ public class AccountPresenterTest {
     @Test
     public void loginUserAndUpdateToView() {
         presenter = new AccountPresenter(userDataRepository
-                , view);
+                , view, schedulerProvider);
         presenter.login(AccountPresenter.LOGIN_FB, true);
         verify(view).facebookLogin();
 
@@ -109,46 +104,53 @@ public class AccountPresenterTest {
 
     @Test
     public void registerUserAndUpdateToView() {
+        when(userDataRepository.registerUser(anyString(), any(User.class)
+                , anyBoolean())).thenReturn(rx.Observable.just(true));
+        when(userDataRepository.getUser(anyBoolean()))
+                .thenReturn(rx.Observable.just(user));
         presenter = new AccountPresenter(userDataRepository
-                , view);
+                , view, schedulerProvider);
         presenter.registerUser(user, "appId");
         verify(userDataRepository).registerUser(anyString(), any(User.class)
-                , anyBoolean(), registerUserCallbackArgumentCaptor.capture());
-        registerUserCallbackArgumentCaptor.getValue().onSuccess();
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
-        getUserCallbackArgumentCaptor.getValue().onResponse(user);
+                , anyBoolean());
+        //registerUserCallbackArgumentCaptor.getValue().onSuccess();
+        verify(userDataRepository).getUser(anyBoolean());
+        //getUserCallbackArgumentCaptor.getValue().onResponse(user);
         verify(view).showUser(any(User.class));
     }
 
     @Test
     public void registerUserFailureAndUpdateToView() {
+        when(userDataRepository.registerUser(anyString(), any(User.class)
+                , anyBoolean())).thenReturn(rx.Observable.error(new Exception("test error")));
+        when(userDataRepository.getUser(anyBoolean()))
+                .thenReturn(rx.Observable.error(new Exception("test error")));
         presenter = new AccountPresenter(userDataRepository
-                , view);
+                , view, schedulerProvider);
         presenter.registerUser(user, "appId");
-        verify(userDataRepository).registerUser(anyString(), any(User.class)
-                , anyBoolean(), registerUserCallbackArgumentCaptor.capture());
-        registerUserCallbackArgumentCaptor.getValue().onFailure();
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
-        getUserCallbackArgumentCaptor.getValue().onFailure();
+        verify(userDataRepository).registerUser(anyString(), any(User.class), anyBoolean());
+        verify(userDataRepository).getUser(anyBoolean());
         verify(view).showLoginView(anyString());
     }
 
     @Test
     public void changeUserNameFailureAndUpdateToView() {
+        when(userDataRepository.changeCurrentUserName(anyString()))
+                .thenReturn(rx.Observable.just(user));
+        when(userDataRepository.getUser(anyBoolean()))
+                .thenReturn(rx.Observable.error(new Exception("test error")));
         presenter = new AccountPresenter(userDataRepository
-                , view);
+                , view, schedulerProvider);
         presenter.changeCurrentUserName("new name");
-        verify(userDataRepository).changeCurrentUserName(anyString(), changeUserNameCallbackArgumentCaptor.capture());
-        changeUserNameCallbackArgumentCaptor.getValue().onSuccess();
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), anyBoolean());
-        getUserCallbackArgumentCaptor.getValue().onFailure();
+        verify(userDataRepository).changeCurrentUserName(anyString());
+        verify(userDataRepository).getUser(anyBoolean());
         verify(view).showLoginView(anyString());
     }
 
     @Test
     public void unregisterUser() {
         presenter = new AccountPresenter(userDataRepository
-                , view);
+                , view, schedulerProvider);
         presenter.unregisterUser();
         verify(userDataRepository).unregisterUser();
     }

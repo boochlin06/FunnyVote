@@ -24,7 +24,7 @@ public class AboutPresenterTest {
 
         // Then the presenter is set to the userPageView
         verify(view).setPresenter(presenter);
-        presenter.start();
+        presenter.subscribe();
     }
 
     @Test

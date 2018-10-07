@@ -53,144 +53,144 @@ public class LocalVoteDataSourceTest {
         localVoteDataSource = LocalVoteDataSource.getInstance(voteDataDao, optionDao, AppExecutors.getInstance());
         user = new User();
     }
-
-    @After
-    public void cleanUp() {
-        LocalVoteDataSource.clearInstance();
-        daoSession.clear();
-    }
-
-    @Test
-    public void testPreConditions() {
-        assertNotNull(localVoteDataSource);
-    }
-
-    @Test
-    public void saveVoteData_retrievesVoteData() {
-        final VoteData newVoteData = newVoteData(0);
-
-        localVoteDataSource.saveVoteData(newVoteData);
-        localVoteDataSource.getVoteData(newVoteData.getVoteCode(), user, new VoteDataSource.GetVoteDataCallback() {
-            @Override
-            public void onVoteDataLoaded(VoteData voteData) {
-                assertThat(voteData, is(newVoteData));
-                assertThat(voteData.getVoteCode(), is(newVoteData.getVoteCode()));
-            }
-
-            @Override
-            public void onVoteDataNotAvailable() {
-                fail("Callback error");
-            }
-        });
-    }
-
-    @Test
-    public void favoriteVoteData_retrievesVoteDataIsFavorite() {
-        VoteDataSource.FavoriteVoteCallback favoriteVoteCallback = mock(VoteDataSource.FavoriteVoteCallback.class);
-
-        final boolean expectIsFavorite = true;
-        final VoteData newVoteData = newVoteData(100);
-        localVoteDataSource.saveVoteData(newVoteData);
-        localVoteDataSource.favoriteVote(newVoteData.getVoteCode(), expectIsFavorite, user, favoriteVoteCallback);
-        localVoteDataSource.getVoteData(newVoteData.getVoteCode(), user, new VoteDataSource.GetVoteDataCallback() {
-            @Override
-            public void onVoteDataLoaded(VoteData voteData) {
-                assertThat(voteData.getVoteCode(), is(newVoteData.getVoteCode()));
-                assertThat(voteData.getIsFavorite(), is(expectIsFavorite));
-            }
-
-            @Override
-            public void onVoteDataNotAvailable() {
-                fail("Callback error");
-            }
-        });
-    }
-
-    @Test
-    public void getVotes_retrieveSaveVoteData() {
-        final VoteData voteData1 = newVoteData(0);
-        final VoteData voteData2 = newVoteData(10);
-        localVoteDataSource.saveVoteDataList(Lists.newArrayList(voteData1, voteData2), 0
-                , MainPageTabFragment.TAB_NEW);
-        localVoteDataSource.getNewVoteList(0, user, new VoteDataSource.GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                assertNotNull(voteDataList);
-                assertTrue(voteDataList.size() >= 2);
-                boolean newVoteData1IdFound = false;
-                boolean newVoteData2IdFound = false;
-                for (VoteData voteData : voteDataList) {
-                    if (voteData.getVoteCode().equals(voteData1.getVoteCode())) {
-                        newVoteData1IdFound = true;
-                    }
-                    if (voteData.getVoteCode().equals(voteData2.getVoteCode())) {
-                        newVoteData2IdFound = true;
-                    }
-                }
-                assertTrue(newVoteData1IdFound);
-                assertTrue(newVoteData2IdFound);
-            }
-
-            @Override
-            public void onVoteListNotAvailable() {
-                fail();
-            }
-        });
-    }
-
-    @Test
-    public void getOptions_retrieveSaveOption() {
-
-        final VoteData voteData = newVoteData(1);
-        final Option option1 = newOption(voteData.getVoteCode(), 1);
-        final Option option2 = newOption(voteData.getVoteCode(), 2);
-        List<Option> options = Lists.newArrayList(option1, option2);
-        localVoteDataSource.saveOptions(options);
-        localVoteDataSource.getOptions(voteData, new VoteDataSource.GetVoteOptionsCallback() {
-            @Override
-            public void onVoteOptionsLoaded(List<Option> optionList) {
-                assertNotNull(optionList);
-                assertTrue(optionList.size() >= 2);
-                boolean newOption1IdFound = false;
-                boolean newOption2IdFound = false;
-                for (Option option : optionList) {
-                    if (option.getVoteCode().equals(voteData.getVoteCode())) {
-                        if (option.getCode().equals(option2.getCode())) {
-                            newOption2IdFound = true;
-                        }
-                        if (option.getCode().equals(option1.getCode())) {
-                            newOption1IdFound = true;
-                        }
-                    }
-
-                }
-                assertTrue(newOption1IdFound);
-                assertTrue(newOption2IdFound);
-            }
-
-            @Override
-            public void onVoteOptionsNotAvailable() {
-                fail();
-            }
-
-        });
-    }
-
-    private VoteData newVoteData(int index) {
-        VoteData newVoteData = new VoteData();
-        List<Option> netOption = Lists.newArrayListWithCapacity(2);
-        newVoteData.setVoteCode("CODE_" + index);
-        newVoteData.setTitle("TITLE_" + index);
-        newVoteData.setNetOptions(netOption);
-        newVoteData.setStartTime(System.currentTimeMillis() - 3600000);
-        return newVoteData;
-    }
-
-    private Option newOption(String voteCode, int index) {
-        Option newOption = new Option();
-        newOption.setVoteCode(voteCode);
-        newOption.setTitle("TITLE_" + index);
-        newOption.setCode("Option_" + index);
-        return newOption;
-    }
+//
+//    @After
+//    public void cleanUp() {
+//        LocalVoteDataSource.clearInstance();
+//        daoSession.clear();
+//    }
+//
+//    @Test
+//    public void testPreConditions() {
+//        assertNotNull(localVoteDataSource);
+//    }
+//
+//    @Test
+//    public void saveVoteData_retrievesVoteData() {
+//        final VoteData newVoteData = newVoteData(0);
+//
+//        localVoteDataSource.saveVoteData(newVoteData);
+//        localVoteDataSource.getVoteData(newVoteData.getVoteCode(), user, new VoteDataSource.GetVoteDataCallback() {
+//            @Override
+//            public void onVoteDataLoaded(VoteData voteData) {
+//                assertThat(voteData, is(newVoteData));
+//                assertThat(voteData.getVoteCode(), is(newVoteData.getVoteCode()));
+//            }
+//
+//            @Override
+//            public void onVoteDataNotAvailable() {
+//                fail("Callback error");
+//            }
+//        });
+//    }
+//
+//    @Test
+//    public void favoriteVoteData_retrievesVoteDataIsFavorite() {
+//        VoteDataSource.FavoriteVoteCallback favoriteVoteCallback = mock(VoteDataSource.FavoriteVoteCallback.class);
+//
+//        final boolean expectIsFavorite = true;
+//        final VoteData newVoteData = newVoteData(100);
+//        localVoteDataSource.saveVoteData(newVoteData);
+//        localVoteDataSource.favoriteVote(newVoteData.getVoteCode(), expectIsFavorite, user, favoriteVoteCallback);
+//        localVoteDataSource.getVoteData(newVoteData.getVoteCode(), user, new VoteDataSource.GetVoteDataCallback() {
+//            @Override
+//            public void onVoteDataLoaded(VoteData voteData) {
+//                assertThat(voteData.getVoteCode(), is(newVoteData.getVoteCode()));
+//                assertThat(voteData.getIsFavorite(), is(expectIsFavorite));
+//            }
+//
+//            @Override
+//            public void onVoteDataNotAvailable() {
+//                fail("Callback error");
+//            }
+//        });
+//    }
+//
+//    @Test
+//    public void getVotes_retrieveSaveVoteData() {
+//        final VoteData voteData1 = newVoteData(0);
+//        final VoteData voteData2 = newVoteData(10);
+//        localVoteDataSource.saveVoteDataList(Lists.newArrayList(voteData1, voteData2), 0
+//                , MainPageTabFragment.TAB_NEW);
+//        localVoteDataSource.getNewVoteList(0, user, new VoteDataSource.GetVoteListCallback() {
+//            @Override
+//            public void onVoteListLoaded(List<VoteData> voteDataList) {
+//                assertNotNull(voteDataList);
+//                assertTrue(voteDataList.size() >= 2);
+//                boolean newVoteData1IdFound = false;
+//                boolean newVoteData2IdFound = false;
+//                for (VoteData voteData : voteDataList) {
+//                    if (voteData.getVoteCode().equals(voteData1.getVoteCode())) {
+//                        newVoteData1IdFound = true;
+//                    }
+//                    if (voteData.getVoteCode().equals(voteData2.getVoteCode())) {
+//                        newVoteData2IdFound = true;
+//                    }
+//                }
+//                assertTrue(newVoteData1IdFound);
+//                assertTrue(newVoteData2IdFound);
+//            }
+//
+//            @Override
+//            public void onVoteListNotAvailable() {
+//                fail();
+//            }
+//        });
+//    }
+//
+//    @Test
+//    public void getOptions_retrieveSaveOption() {
+//
+//        final VoteData voteData = newVoteData(1);
+//        final Option option1 = newOption(voteData.getVoteCode(), 1);
+//        final Option option2 = newOption(voteData.getVoteCode(), 2);
+//        List<Option> options = Lists.newArrayList(option1, option2);
+//        localVoteDataSource.saveOptions(options);
+//        localVoteDataSource.getOptions(voteData, new VoteDataSource.GetVoteOptionsCallback() {
+//            @Override
+//            public void onVoteOptionsLoaded(List<Option> optionList) {
+//                assertNotNull(optionList);
+//                assertTrue(optionList.size() >= 2);
+//                boolean newOption1IdFound = false;
+//                boolean newOption2IdFound = false;
+//                for (Option option : optionList) {
+//                    if (option.getVoteCode().equals(voteData.getVoteCode())) {
+//                        if (option.getCode().equals(option2.getCode())) {
+//                            newOption2IdFound = true;
+//                        }
+//                        if (option.getCode().equals(option1.getCode())) {
+//                            newOption1IdFound = true;
+//                        }
+//                    }
+//
+//                }
+//                assertTrue(newOption1IdFound);
+//                assertTrue(newOption2IdFound);
+//            }
+//
+//            @Override
+//            public void onVoteOptionsNotAvailable() {
+//                fail();
+//            }
+//
+//        });
+//    }
+//
+//    private VoteData newVoteData(int index) {
+//        VoteData newVoteData = new VoteData();
+//        List<Option> netOption = Lists.newArrayListWithCapacity(2);
+//        newVoteData.setVoteCode("CODE_" + index);
+//        newVoteData.setTitle("TITLE_" + index);
+//        newVoteData.setNetOptions(netOption);
+//        newVoteData.setStartTime(System.currentTimeMillis() - 3600000);
+//        return newVoteData;
+//    }
+//
+//    private Option newOption(String voteCode, int index) {
+//        Option newOption = new Option();
+//        newOption.setVoteCode(voteCode);
+//        newOption.setTitle("TITLE_" + index);
+//        newOption.setCode("Option_" + index);
+//        return newOption;
+//    }
 }

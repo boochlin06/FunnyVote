@@ -4,6 +4,10 @@ import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 public class PromotionRepository implements PromotionDataSource {
 
@@ -29,30 +33,27 @@ public class PromotionRepository implements PromotionDataSource {
         INSTANCE = null;
     }
 
+
     @Override
-    public void getPromotionList(final User user, final GetPromotionsCallback callback) {
-        remotePromotionSource.getPromotionList(user, new GetPromotionsCallback() {
-            @Override
-            public void onPromotionsLoaded(List<Promotion> promotionList) {
-                callback.onPromotionsLoaded(promotionList);
-                localPromotionSource.savePromotionList(promotionList);
-            }
+    public Observable<List<Promotion>> getPromotionList(User user) {
+        Observable<List<Promotion>> localVote = localPromotionSource
+                .getPromotionList(user).first();
+        Observable<List<Promotion>> remoteVote = remotePromotionSource
+                .getPromotionList(user)
+                //.subscribeOn(Schedulers.io())
+                .map(promotionList -> {
+                    localPromotionSource.savePromotionList(promotionList);
+                    return promotionList;
+                })
+                .onErrorResumeNext((Throwable e) -> localVote);
 
-            @Override
-            public void onPromotionsNotAvailable() {
-                localPromotionSource.getPromotionList(user, new GetPromotionsCallback() {
-                    @Override
-                    public void onPromotionsLoaded(List<Promotion> promotionList) {
-                        callback.onPromotionsLoaded(promotionList);
+        return Observable.concat(remoteVote, localVote).first()
+                .map(promotionList -> {
+                    if (promotionList == null) {
+                        throw new NoSuchElementException("no promotion data");
                     }
-
-                    @Override
-                    public void onPromotionsNotAvailable() {
-                        callback.onPromotionsNotAvailable();
-                    }
+                    return promotionList;
                 });
-            }
-        });
     }
 
     @Override

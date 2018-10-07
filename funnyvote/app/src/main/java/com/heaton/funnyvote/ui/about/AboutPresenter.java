@@ -45,7 +45,12 @@ public class AboutPresenter implements AboutContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void subscribe() {
+
+    }
+
+    @Override
+    public void unsubscribe() {
 
     }
 }

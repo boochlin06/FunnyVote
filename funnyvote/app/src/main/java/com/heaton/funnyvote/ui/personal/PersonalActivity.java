@@ -143,9 +143,10 @@ public class PersonalActivity extends AppCompatActivity
         });
 
         presenter = new UserPresenter(Injection.provideVoteDataRepository(getApplicationContext())
-                , Injection.provideUserRepository(getApplicationContext()), this);
+                , Injection.provideUserRepository(getApplicationContext()), this
+                , Injection.provideSchedulerProvider());
         presenter.setTargetUser(targetUser);
-        presenter.start();
+        presenter.subscribe();
     }
 
     private void setUpUser(User user) {
@@ -170,6 +171,12 @@ public class PersonalActivity extends AppCompatActivity
         super.onResume();
         tracker.setScreenName(AnalyzticsTag.SCREEN_PERSONAL);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        presenter.unsubscribe();
     }
 
     @Override

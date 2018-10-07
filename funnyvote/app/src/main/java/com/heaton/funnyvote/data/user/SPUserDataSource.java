@@ -10,6 +10,8 @@ import com.heaton.funnyvote.retrofit.Server;
 
 import okhttp3.ResponseBody;
 import retrofit2.Callback;
+import rx.Observable;
+import rx.Observer;
 
 /**
  * Created by chiu_mac on 2016/12/6.
@@ -96,9 +98,10 @@ public class SPUserDataSource implements UserDataSource {
         this.user = null;
     }
 
+
     @Override
-    public void getGuestUserCode(GetUserCodeCallback callback, String name) {
-        // Not required for the local data source
+    public Observable<String> getGuestUserCode(String name) {
+        return null;
     }
 
     @Override
@@ -107,8 +110,14 @@ public class SPUserDataSource implements UserDataSource {
     }
 
     @Override
-    public void getUser(GetUserCallback callback, boolean forceUpdateUserCode) {
-        callback.onResponse(getUser());
+    public Observable<Server.UserDataQuery> getUserInfo(User user) {
+        return null;
+    }
+
+
+    @Override
+    public Observable<User> getUser(boolean forceUpdateUserCode) {
+        return Observable.just(getUser());
     }
 
     @Override
@@ -116,9 +125,10 @@ public class SPUserDataSource implements UserDataSource {
 
     }
 
-    @Override
-    public void registerUser(String appId, User user, boolean mergeGuest, RegisterUserCallback callback) {
 
+    @Override
+    public Observable registerUser(String appId, User user, boolean mergeGuest) {
+        return null;
     }
 
 
@@ -127,9 +137,10 @@ public class SPUserDataSource implements UserDataSource {
 
     }
 
-    @Override
-    public void getUserCode(String userType, String appId, User user, GetUserCodeCallback callback) {
 
+    @Override
+    public Observable<String> getUserCode(String userType, String appId, User user) {
+        return null;
     }
 
     @Override
@@ -138,13 +149,24 @@ public class SPUserDataSource implements UserDataSource {
     }
 
     @Override
+    public Observable<ResponseBody> linkGuestToLoginUser(String otp, String guest) {
+        return null;
+    }
+
+    @Override
     public void changeUserName(Callback<ResponseBody> callback, String tokenType, String token, String name) {
 
     }
 
     @Override
-    public void changeCurrentUserName(String name, ChangeUserNameCallback callback) {
+    public Observable<ResponseBody> changeUserName(String tokenType, String token, String name) {
+        return null;
+    }
 
+
+    @Override
+    public Observable changeCurrentUserName(String name) {
+        return null;
     }
 
 }

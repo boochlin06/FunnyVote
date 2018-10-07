@@ -59,7 +59,7 @@ public class UserActivity extends AppCompatActivity
     private boolean isMainActivityNeedRestart = false;
     private AlertDialog passwordDialog;
     private MainPageContract.Presenter presenter;
-    private MainPageTabFragment createFragment,participateFragment,favoriteFragment;
+    private MainPageTabFragment createFragment, participateFragment, favoriteFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -122,9 +122,10 @@ public class UserActivity extends AppCompatActivity
             isMainActivityNeedRestart = false;
         }
         presenter = new UserPresenter(Injection.provideVoteDataRepository(getApplicationContext())
-                , Injection.provideUserRepository(getApplicationContext()), this);
+                , Injection.provideUserRepository(getApplicationContext()), this
+                , Injection.provideSchedulerProvider());
         presenter.setTargetUser(null);
-        presenter.start();
+        presenter.subscribe();
     }
 
     @Override
@@ -141,10 +142,16 @@ public class UserActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        //presenter.start();
+        //presenter.subscribe();
         presenter.refreshAllFragment();
         tracker.setScreenName(AnalyzticsTag.SCREEN_BOX);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        presenter.unsubscribe();
     }
 
     @Override
@@ -342,7 +349,7 @@ public class UserActivity extends AppCompatActivity
             argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, user);
             switch (i) {
                 case 0:
-                    if(createFragment == null) {
+                    if (createFragment == null) {
                         createFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, user);
                         createFragment.setPresenter(presenter);
                     }

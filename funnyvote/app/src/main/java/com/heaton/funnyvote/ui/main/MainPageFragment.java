@@ -110,9 +110,11 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         super.onViewCreated(view, savedInstanceState);
         pagePresenter = new MainPagePresenter(Injection.provideVoteDataRepository(context)
                 , Injection.provideUserRepository(context)
-                , Injection.providePromotionRepository(context), this);
+                , Injection.providePromotionRepository(context)
+                , this
+                , Injection.provideSchedulerProvider());
 
-        pagePresenter.start();
+        pagePresenter.subscribe();
     }
 
     @Nullable
@@ -340,7 +342,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment
     public void onStop() {
         super.onStop();
         vpHeader.stopAutoScroll();
-        //EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -348,7 +349,6 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         super.onStart();
         pagePresenter.resetPromotion();
         vpHeader.startAutoScroll();
-        //EventBus.getDefault().register(this);
     }
 
     @Override
@@ -356,7 +356,13 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         super.onResume();
         //TODO,WHY NO RESPONSE ON HERE
         pagePresenter.refreshAllFragment();
-        //pagePresenter.start();
+        //pagePresenter.subscribe();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        pagePresenter.unsubscribe();
     }
 
     @Override

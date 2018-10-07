@@ -8,7 +8,12 @@ public class AuthorInfoPresenter implements AuthorInfoContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void subscribe() {
+
+    }
+
+    @Override
+    public void unsubscribe() {
 
     }
 }

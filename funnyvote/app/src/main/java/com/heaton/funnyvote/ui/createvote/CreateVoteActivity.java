@@ -126,9 +126,16 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
                 Injection.provideVoteDataRepository(getApplicationContext())
                 , Injection.provideUserRepository(getApplicationContext())
                 , this
-                , optionFragment, settingFragment);
+                , optionFragment, settingFragment
+                , Injection.provideSchedulerProvider());
         this.setPresenter(presenter);
-        presenter.start();
+        presenter.subscribe();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        presenter.unsubscribe();
     }
 
     @Override
@@ -247,7 +254,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
                 Log.d(TAG, "onActivityResult PICK_IMAGE_CHOOSER_REQUEST_CODE:" + cropImageUri);
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
             } else {
-                // no permissions required or already grunted, can start crop image activity
+                // no permissions required or already grunted, can subscribe crop image activity
                 Log.d(TAG, "onActivityResult PICK_IMAGE_CHOOSER_REQUEST_CODE no permission:" + imageUri);
                 startCropImageActivity(imageUri);
 
@@ -280,7 +287,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
         }
         if (requestCode == CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE) {
             if (cropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // required permissions granted, start crop image activity
+                // required permissions granted, subscribe crop image activity
                 startCropImageActivity(cropImageUri);
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_image_permission, Toast.LENGTH_LONG).show();

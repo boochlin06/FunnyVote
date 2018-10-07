@@ -99,8 +99,8 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
 
         VoteNotificationManager.getInstance(getApplicationContext()).startNotificationAlarm();
         presenter = new MainPagePresenter(Injection.provideUserRepository(getApplicationContext())
-                , this);
-        presenter.start();
+                , this, Injection.provideSchedulerProvider());
+        presenter.subscribe();
     }
 
     private void setUpAdmob() {
@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
         tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
         fragment = new SearchFragment();
         Bundle searchArgument = new Bundle();
-        searchArgument.putString(SearchFragment.KEY_SEARCH_KEYWORD,searchKeyword);
+        searchArgument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
         fragment.setArguments(searchArgument);
         fragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, fragment).commit();

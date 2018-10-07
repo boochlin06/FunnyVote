@@ -130,9 +130,16 @@ public class SearchFragment extends Fragment implements SearchContract.View {
         }
 
         presenter = new SearchPresenter(Injection.provideVoteDataRepository(getContext())
-                , Injection.provideUserRepository(getContext()), this);
+                , Injection.provideUserRepository(getContext()), this
+                , Injection.provideSchedulerProvider());
         presenter.start(keyword);
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        presenter.unsubscribe();
     }
 
     private void initRecyclerView() {
@@ -178,7 +185,7 @@ public class SearchFragment extends Fragment implements SearchContract.View {
 
     @Override
     public void showHintToast(int res, long arg) {
-        if(isAdded())
+        if (isAdded())
             Toast.makeText(getActivity(), getString(res, arg), Toast.LENGTH_SHORT).show();
     }
 

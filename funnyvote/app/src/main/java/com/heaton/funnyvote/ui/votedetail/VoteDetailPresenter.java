@@ -1,17 +1,18 @@
 package com.heaton.funnyvote.ui.votedetail;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.common.base.Strings;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
-import com.heaton.funnyvote.data.VoteData.VoteDataSource;
 import com.heaton.funnyvote.data.user.UserDataRepository;
-import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.retrofit.PasswordObserver;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +20,11 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nullable;
+
+import rx.Observable;
+import rx.Observer;
+import rx.functions.Func1;
+import rx.subscriptions.CompositeSubscription;
 
 public class VoteDetailPresenter implements VoteDetailContract.Presenter {
 
@@ -28,6 +34,8 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
     private String voteId;
     private final VoteDataRepository voteDataRepository;
     private final UserDataRepository userDataRepository;
+    @NonNull
+    private final BaseSchedulerProvider schedulerProvider;
     private User user;
 
     public VoteData getVoteData() {
@@ -50,10 +58,14 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
     // all new option id is negative auto increment.
     private long newOptionIdAuto = -1;
 
+    @NonNull
+    private CompositeSubscription mSubscriptions;
+
     public VoteDetailPresenter(@Nullable String voteId,
-                               @Nullable VoteDataRepository voteDataRepository,
-                               @Nullable UserDataRepository userDataRepository,
-                               @Nullable VoteDetailContract.View view) {
+                               @NonNull VoteDataRepository voteDataRepository,
+                               @NonNull UserDataRepository userDataRepository,
+                               @NonNull VoteDetailContract.View view,
+                               @Nullable BaseSchedulerProvider schedulerProvider) {
         this.view = view;
         this.voteDataRepository = voteDataRepository;
         this.userDataRepository = userDataRepository;
@@ -64,6 +76,8 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
         this.expandOptionList = new ArrayList<>();
         this.searchList = new ArrayList<>();
         this.view.setPresenter(this);
+        mSubscriptions = new CompositeSubscription();
+        this.schedulerProvider = schedulerProvider;
     }
 
     @Override
@@ -84,24 +98,32 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
 
     @Override
     public void favoriteVote() {
-        voteDataRepository.favoriteVote(getVoteData().getVoteCode(), !getVoteData().getIsFavorite()
-                , user, new VoteDataSource.FavoriteVoteCallback() {
+        mSubscriptions.add(voteDataRepository.favoriteVote(getVoteData().getVoteCode(), !getVoteData().getIsFavorite()
+                , user)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<Boolean>() {
                     @Override
-                    public void onSuccess(boolean isFavorite) {
-                        getVoteData().setIsFavorite(isFavorite);
-                        view.updateFavoriteView(isFavorite);
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        view.showHintToast(R.string.toast_network_connect_error);
+                    }
+
+                    @Override
+                    public void onNext(Boolean aBoolean) {
+                        getVoteData().setIsFavorite(aBoolean);
+                        view.updateFavoriteView(aBoolean);
                         if (getVoteData().getIsFavorite()) {
                             view.showHintToast(R.string.vote_detail_toast_add_favorite);
                         } else {
                             view.showHintToast(R.string.vote_detail_toast_remove_favorite);
                         }
                     }
-
-                    @Override
-                    public void onFailure() {
-                        view.showHintToast(R.string.toast_network_connect_error);
-                    }
-                });
+                }));
     }
 
     @Override
@@ -117,34 +139,48 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
                 view.showPollPasswordDialog();
             } else {
                 view.showLoadingCircle();
-                voteDataRepository.pollVote(getVoteData().getVoteCode(), password, choiceCodeList, user, new VoteDataSource.PollVoteCallback() {
-                    @Override
-                    public void onSuccess(VoteData voteData) {
-                        view.hideLoadingCircle();
-                        VoteDetailPresenter.this.voteData = voteData;
-                        VoteDetailPresenter.this.optionList = getVoteData().getNetOptions();
-                        checkCurrentOptionType();
-                        view.setUpViews(VoteDetailPresenter.this.getVoteData(), optionType);
-                        view.setUpOptionAdapter(VoteDetailPresenter.this.getVoteData(), optionType, optionList);
-                        view.setUpSubmit(optionType);
-                        view.refreshOptions();
-                        view.hidePollPasswordDialog();
-                    }
+                mSubscriptions.add(voteDataRepository
+                        .pollVote(getVoteData().getVoteCode(), password, choiceCodeList, user)
+                        .flatMap(new Func1<VoteData, Observable<List<Option>>>() {
+                            @Override
+                            public Observable<List<Option>> call(VoteData voteData) {
+                                VoteDetailPresenter.this.voteData = voteData;
+                                VoteDetailPresenter.this.optionList = VoteDetailPresenter.this.getVoteData().getNetOptions();
+                                return voteDataRepository.getOptions(voteData);
+                            }
+                        }).subscribeOn(schedulerProvider.io())
+                        .observeOn(schedulerProvider.ui())
+                        .subscribe(new PasswordObserver<List<Option>>() {
 
-                    @Override
-                    public void onFailure() {
-                        view.showHintToast(R.string.toast_network_connect_error_quick_poll);
-                        view.hidePollPasswordDialog();
-                        view.hideLoadingCircle();
-                    }
+                            @Override
+                            public void onFailure(Throwable e) {
+                                view.showHintToast(R.string.toast_network_connect_error_quick_poll);
+                                view.hidePollPasswordDialog();
+                                view.hideLoadingCircle();
+                            }
 
-                    @Override
-                    public void onPasswordInvalid() {
-                        view.shakePollPasswordDialog();
-                        view.hideLoadingCircle();
-                        view.showHintToast(R.string.vote_detail_dialog_password_toast_retry);
-                    }
-                });
+                            @Override
+                            public void onSuccess(List<Option> o) {
+                                view.hideLoadingCircle();
+                                VoteDetailPresenter.this.optionList = getVoteData().getNetOptions();
+                                checkCurrentOptionType();
+                                view.setUpViews(VoteDetailPresenter.this.getVoteData(), optionType);
+                                view.setUpOptionAdapter(VoteDetailPresenter.this.getVoteData(), optionType, optionList);
+                                view.setUpSubmit(optionType);
+                                view.refreshOptions();
+                                view.hidePollPasswordDialog();
+                            }
+
+                            @Override
+                            public void onPasswordInValid() {
+                                System.out.println("onPasswordInValid");
+                                view.shakePollPasswordDialog();
+                                view.hideLoadingCircle();
+                                view.showHintToast(R.string.vote_detail_dialog_password_toast_retry);
+                            }
+                        })
+                );
+
             }
         }
     }
@@ -227,8 +263,20 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
                 view.showLoadingCircle();
                 List<String> newOptions = new ArrayList<>();
                 newOptions.add(newOptionText);
-                voteDataRepository.addNewOption(getVoteData().getVoteCode(), password, newOptions, user
-                        , new VoteDataSource.AddNewOptionCallback() {
+
+                mSubscriptions.add(voteDataRepository.addNewOption(getVoteData().getVoteCode()
+                        , password, newOptions, user)
+                        .subscribeOn(schedulerProvider.io())
+                        .observeOn(schedulerProvider.ui())
+                        .subscribe(new PasswordObserver<VoteData>() {
+                            @Override
+                            public void onFailure(Throwable e) {
+                                Log.e(TAG, "onError");
+                                view.showHintToast(R.string.toast_network_connect_error_quick_poll);
+                                view.hideAddNewOptionPasswordDialog();
+                                view.hideLoadingCircle();
+                            }
+
                             @Override
                             public void onSuccess(VoteData voteData) {
                                 Log.e(TAG, "onSuccess");
@@ -245,21 +293,15 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
                             }
 
                             @Override
-                            public void onFailure() {
-                                Log.e(TAG, "onFailure");
-                                view.showHintToast(R.string.toast_network_connect_error_quick_poll);
-                                view.hideAddNewOptionPasswordDialog();
-                                view.hideLoadingCircle();
-                            }
-
-                            @Override
-                            public void onPasswordInvalid() {
-                                Log.e(TAG, "onPasswordInvalid");
+                            public void onPasswordInValid() {
+                                Log.e(TAG, "onPasswordInValid");
                                 view.shakeAddNewOptionPasswordDialog();
                                 view.showHintToast(R.string.vote_detail_dialog_password_toast_retry);
                                 view.hideLoadingCircle();
                             }
-                        });
+                        }));
+
+
             }
         } else {
             view.showHintToast(R.string.vote_detail_toast_fill_new_option);
@@ -320,34 +362,21 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
         Comparator<Option> comparator = null;
         switch (sortType) {
             case 0:
-                comparator = new Comparator<Option>() {
-                    @Override
-                    public int compare(Option option1, Option option2) {
-                        // TODO:Add user add new option case id compare.
-                        if (option1.getId() < 0 || option2.getId() < 0) {
-                            return ((Long) (Math.abs(option1.getId()) + 100000))
-                                    .compareTo(Math.abs(option2.getId()) + 100000);
-                        } else {
-                            return option1.getId().compareTo(option2.getId());
-                        }
+                comparator = (option1, option2) -> {
+                    // TODO:Add user add new option case id compare.
+                    if (option1.getId() < 0 || option2.getId() < 0) {
+                        return ((Long) (Math.abs(option1.getId()) + 100000))
+                                .compareTo(Math.abs(option2.getId()) + 100000);
+                    } else {
+                        return option1.getId().compareTo(option2.getId());
                     }
                 };
                 break;
             case 1:
-                comparator = new Comparator<Option>() {
-                    @Override
-                    public int compare(Option option1, Option option2) {
-                        return option1.getTitle().compareTo(option2.getTitle());
-                    }
-                };
+                comparator = (option1, option2) -> option1.getTitle().compareTo(option2.getTitle());
                 break;
             case 2:
-                comparator = new Comparator<Option>() {
-                    @Override
-                    public int compare(Option option1, Option option2) {
-                        return option2.getCount().compareTo(option1.getCount());
-                    }
-                };
+                comparator = (option1, option2) -> option2.getCount().compareTo(option1.getCount());
                 break;
         }
         Collections.sort(getCurrentList(), comparator);
@@ -367,8 +396,13 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void subscribe() {
         openVoteData();
+    }
+
+    @Override
+    public void unsubscribe() {
+        mSubscriptions.clear();
     }
 
     private void openVoteData() {
@@ -377,60 +411,57 @@ public class VoteDetailPresenter implements VoteDetailContract.Presenter {
         }
         checkCurrentOptionType();
         view.showLoadingCircle();
-        userDataRepository.getUser(new UserDataSource.GetUserCallback() {
-            @Override
-            public void onResponse(User user) {
-                VoteDetailPresenter.this.user = user;
-                view.setUpAdMob(user);
-                voteDataRepository.getVoteData(voteId, user, new VoteDataSource.GetVoteDataCallback() {
-                    @Override
-                    public void onVoteDataLoaded(VoteData voteData) {
-                        VoteDetailPresenter.this.voteData = voteData;
-                        VoteDetailPresenter.this.optionList = getVoteData().getNetOptions();
-                        checkCurrentOptionType();
-                        view.setUpViews(getVoteData(), optionType);
-                        view.setUpSubmit(optionType);
-                        if (optionType == OptionItemAdapter.OPTION_UNPOLL) {
-                            view.showCaseView();
-                        }
-                        view.hideLoadingCircle();
-                        voteDataRepository.getOptions(getVoteData(), new VoteDataSource.GetVoteOptionsCallback() {
-                            @Override
-                            public void onVoteOptionsLoaded(List<Option> optionList) {
-                                VoteDetailPresenter.this.optionList = optionList;
-                                view.setUpOptionAdapter(VoteDetailPresenter.this.getVoteData(), optionType, optionList);
-                                if (VoteDetailPresenter.this.getVoteData().getEndTime() > System.currentTimeMillis() && !VoteDetailPresenter.this.getVoteData().getIsPolled() && VoteDetailPresenter.this.getVoteData().isMultiChoice()) {
-                                    view.showMultiChoiceToast(VoteDetailPresenter.this.getVoteData().getMaxOption(), VoteDetailPresenter.this.getVoteData().getMinOption());
-                                } else if (VoteDetailPresenter.this.getVoteData().getEndTime() < System.currentTimeMillis()) {
-                                    if (VoteDetailPresenter.this.getVoteData().getIsPolled()) {
-                                        view.showHintToast(R.string.vote_detail_toast_vote_end_polled);
-                                    } else {
-                                        view.showHintToast(R.string.vote_detail_toast_vote_end_not_poll);
-                                    }
-                                }
-                            }
+        mSubscriptions.add(userDataRepository.getUser(false)
 
-                            @Override
-                            public void onVoteOptionsNotAvailable() {
-                                view.showHintToast(R.string.create_vote_toast_create_fail);
-                            }
-                        });
+                .flatMap((Func1<User, Observable<VoteData>>) user -> {
+                    VoteDetailPresenter.this.user = user;
+                    return voteDataRepository.getVoteData(voteId, user);
+                })
+                .flatMap((Func1<VoteData, Observable<List<Option>>>) voteData -> {
+                    VoteDetailPresenter.this.voteData = voteData;
+                    VoteDetailPresenter.this.optionList = getVoteData().getNetOptions();
+                    return voteDataRepository.getOptions(voteData);
+                })
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<List<Option>>() {
+                               @Override
+                               public void onCompleted() {
+                               }
 
-                    }
+                               @Override
+                               public void onError(Throwable e) {
+                                   view.hideLoadingCircle();
+                                   view.setUpAdMob(user);
+                                   view.showHintToast(R.string.create_vote_toast_create_fail);
+                               }
 
-                    @Override
-                    public void onVoteDataNotAvailable() {
-                        view.hideLoadingCircle();
-                        view.showHintToast(R.string.create_vote_toast_create_fail);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure() {
-                view.showHintToast(R.string.create_vote_toast_create_fail);
-            }
-        }, false);
+                               @Override
+                               public void onNext(List<Option> optionList) {
+                                   view.setUpAdMob(user);
+                                   checkCurrentOptionType();
+                                   view.setUpViews(getVoteData(), optionType);
+                                   view.setUpSubmit(optionType);
+                                   if (optionType == OptionItemAdapter.OPTION_UNPOLL) {
+                                       view.showCaseView();
+                                   }
+                                   view.hideLoadingCircle();
+                                   VoteDetailPresenter.this.optionList = optionList;
+                                   view.setUpOptionAdapter(VoteDetailPresenter.this.getVoteData(), optionType, optionList);
+                                   if (VoteDetailPresenter.this.getVoteData().getEndTime() > System.currentTimeMillis() && !VoteDetailPresenter.this.getVoteData().getIsPolled() && VoteDetailPresenter.this.getVoteData().isMultiChoice()) {
+                                       view.showMultiChoiceToast(VoteDetailPresenter.this.getVoteData().getMaxOption(), VoteDetailPresenter.this.getVoteData().getMinOption());
+                                   } else if (VoteDetailPresenter.this.getVoteData().getEndTime() < System.currentTimeMillis()) {
+                                       if (VoteDetailPresenter.this.getVoteData().getIsPolled()) {
+                                           view.showHintToast(R.string.vote_detail_toast_vote_end_polled);
+                                       } else {
+                                           view.showHintToast(R.string.vote_detail_toast_vote_end_not_poll);
+                                       }
+                                   }
+                                   view.hideLoadingCircle();
+                               }
+                           }
+                )
+        );
     }
 
     private void checkCurrentOptionType() {

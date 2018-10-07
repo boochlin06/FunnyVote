@@ -3,6 +3,7 @@ package com.heaton.funnyvote.data;
 import com.heaton.funnyvote.retrofit.Server;
 
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
@@ -38,6 +39,7 @@ public class RemoteServiceApi {
     public RemoteServiceApi() {
         retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
         userService = retrofit.create(Server.UserService.class);
         voteService = retrofit.create(Server.VoteService.class);

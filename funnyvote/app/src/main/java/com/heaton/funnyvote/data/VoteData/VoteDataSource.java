@@ -9,80 +9,89 @@ import com.heaton.funnyvote.database.VoteData;
 import java.io.File;
 import java.util.List;
 
-import javax.annotation.Nullable;
+import rx.Observable;
 
 public interface VoteDataSource {
-    interface GetVoteDataCallback {
-        void onVoteDataLoaded(VoteData voteData);
+//    interface GetVoteDataCallback {
+//        void onVoteDataLoaded(VoteData voteData);
+//
+//        void onVoteDataNotAvailable();
+//    }
+//
+//    interface GetVoteOptionsCallback {
+//        void onVoteOptionsLoaded(List<Option> optionList);
+//
+//        void onVoteOptionsNotAvailable();
+//    }
+//
+//    interface PollVoteCallback {
+//        void onSuccess(VoteData voteData);
+//
+//        void onFailure();
+//
+//        void onPasswordInvalid();
+//    }
+//
+//    interface FavoriteVoteCallback {
+//        void onSuccess(boolean isFavorite);
+//
+//        void onFailure();
+//    }
+//
+//    interface AddNewOptionCallback {
+//        void onSuccess(VoteData voteData);
+//
+//        void onFailure();
+//
+//        void onPasswordInvalid();
+//    }
+//
+//    interface GetVoteListCallback {
+//        void onVoteListLoaded(List<VoteData> voteDataList);
+//
+//        void onVoteListNotAvailable();
+//    }
 
-        void onVoteDataNotAvailable();
-    }
 
-    interface GetVoteOptionsCallback {
-        void onVoteOptionsLoaded(List<Option> optionList);
-
-        void onVoteOptionsNotAvailable();
-    }
-
-    interface PollVoteCallback {
-        void onSuccess(VoteData voteData);
-
-        void onFailure();
-
-        void onPasswordInvalid();
-    }
-
-    interface FavoriteVoteCallback {
-        void onSuccess(boolean isFavorite);
-
-        void onFailure();
-    }
-
-    interface AddNewOptionCallback {
-        void onSuccess(VoteData voteData);
-
-        void onFailure();
-
-        void onPasswordInvalid();
-    }
-
-    interface GetVoteListCallback {
-        void onVoteListLoaded(List<VoteData> voteDataList);
-
-        void onVoteListNotAvailable();
-    }
-
-
-    void getVoteData(String voteCode, User user, @Nullable GetVoteDataCallback callback);
+    Observable<VoteData> getVoteData(String voteCode, User user);
 
     void saveVoteData(VoteData voteData);
 
-    void getOptions(VoteData voteData, GetVoteOptionsCallback callback);
+    Observable<List<Option>> getOptions(VoteData voteData);
 
     void saveOptions(List<Option> optionList);
 
     void saveVoteDataList(List<VoteData> voteDataList, int offset, String tab);
 
-    void addNewOption(String voteCode, String password, List<String> newOptions, User user
-            , AddNewOptionCallback callback);
 
-    void pollVote(@NonNull String voteCode, String password, @NonNull List<String> pollOptions
-            , @NonNull User user, @Nullable PollVoteCallback callback);
+    Observable<VoteData> addNewOption(String voteCode, String password, List<String> newOptions
+            , User user);
 
-    void favoriteVote(String voteCode, boolean isFavorite, User user, FavoriteVoteCallback callback);
 
-    void createVote(@NonNull VoteData voteSetting, @NonNull List<String> options, File image
-            , GetVoteDataCallback callback);
+    Observable<VoteData> pollVote(@NonNull String voteCode, String password, @NonNull List<String> pollOptions
+            , @NonNull User user);
 
-    void getHotVoteList(int offset, User user, GetVoteListCallback callback);
+    Observable<Boolean> favoriteVote(String voteCode, boolean isFavorite, User user);
 
-    void getNewVoteList(int offset, User user, GetVoteListCallback callback);
+    void saveFavoriteVote(String voteCode, boolean isFavorite, User user);
 
-    void getCreateVoteList(int offset, User user, User targetUser, GetVoteListCallback callback);
+    Observable<VoteData> createVote(@NonNull VoteData voteSetting, @NonNull List<String> options, File image);
 
-    void getParticipateVoteList(int offset, User user, User targetUser, GetVoteListCallback callback);
 
-    void getFavoriteVoteList(int offset, User user, User targetUser, GetVoteListCallback callback);
+    Observable<List<VoteData>> getHotVoteList(int offset, User user);
 
-    void getSearchVoteList(String keyword, int offset, @NonNull User user, GetVoteListCallback callback);
+
+    Observable<List<VoteData>> getNewVoteList(int offset, User user);
+
+
+    Observable<List<VoteData>> getCreateVoteList(int offset, User user, User targetUser);
+
+
+    Observable<List<VoteData>> getParticipateVoteList(int offset, User user, User targetUser);
+
+
+    Observable<List<VoteData>> getFavoriteVoteList(int offset, User user, User targetUser);
+
+
+    Observable<List<VoteData>> getSearchVoteList(String keyword, int offset, @NonNull User user);
 }

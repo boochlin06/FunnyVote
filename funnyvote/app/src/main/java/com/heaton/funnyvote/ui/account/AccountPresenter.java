@@ -5,6 +5,10 @@ import android.util.Log;
 import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
+
+import rx.Observer;
+import rx.subscriptions.CompositeSubscription;
 
 public class AccountPresenter implements AccountContract.Presenter {
 
@@ -15,6 +19,8 @@ public class AccountPresenter implements AccountContract.Presenter {
     private static final String TAG = AccountPresenter.class.getSimpleName();
     private UserDataRepository userDataRepository;
     private AccountContract.View view;
+    private BaseSchedulerProvider schedulerProvider;
+    private CompositeSubscription subscription;
 
     public User getUser() {
         return user;
@@ -28,30 +34,46 @@ public class AccountPresenter implements AccountContract.Presenter {
     private boolean mergeGuest;
 
     public AccountPresenter(UserDataRepository userDataRepository
-            , AccountContract.View view) {
+            , AccountContract.View view
+            , BaseSchedulerProvider schedulerProvider) {
         this.userDataRepository = userDataRepository;
         this.view = view;
         this.view.setPresenter(this);
+        this.schedulerProvider = schedulerProvider;
+        this.subscription = new CompositeSubscription();
     }
 
     @Override
-    public void start() {
+    public void subscribe() {
         updateUser();
     }
 
     @Override
-    public void registerUser(User newUser, String appId) {
-        userDataRepository.registerUser(appId, newUser, mergeGuest, new UserDataSource.RegisterUserCallback() {
-            @Override
-            public void onSuccess() {
-                updateUser();
-            }
+    public void unsubscribe() {
+        subscription.clear();
+    }
 
-            @Override
-            public void onFailure() {
-                updateUser();
-            }
-        });
+    @Override
+    public void registerUser(User newUser, String appId) {
+        subscription.add(userDataRepository.registerUser(appId, newUser, mergeGuest)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        updateUser();
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+                        updateUser();
+                    }
+                }));
     }
 
     @Override
@@ -61,37 +83,54 @@ public class AccountPresenter implements AccountContract.Presenter {
 
     @Override
     public void updateUser() {
-        userDataRepository.getUser(new UserDataSource.GetUserCallback() {
-            @Override
-            public void onResponse(User user) {
-                AccountPresenter.this.user = user;
-                if (AccountPresenter.this.user.getType() != User.TYPE_GUEST) {
-                    view.showUser(user);
-                } else {
-                    view.showLoginView(user.getUserName());
-                }
-            }
+        subscription.add(userDataRepository.getUser(false)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<User>() {
+                    @Override
+                    public void onCompleted() {
 
-            @Override
-            public void onFailure() {
-                view.showLoginView("Heaton");
-            }
-        }, false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        view.showLoginView("Heaton");
+                    }
+
+                    @Override
+                    public void onNext(User user) {
+                        AccountPresenter.this.user = user;
+                        if (AccountPresenter.this.user.getType() != User.TYPE_GUEST) {
+                            view.showUser(user);
+                        } else {
+                            view.showLoginView(user.getUserName());
+                        }
+                    }
+                }));
     }
 
     @Override
     public void changeCurrentUserName(String userName) {
-        userDataRepository.changeCurrentUserName(userName, new UserDataSource.ChangeUserNameCallback() {
-            @Override
-            public void onSuccess() {
-                updateUser();
-            }
+        subscription.add(userDataRepository.changeCurrentUserName(userName)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer() {
+                    @Override
+                    public void onCompleted() {
 
-            @Override
-            public void onFailure() {
-                Log.d(TAG, "ChangeUserNameCallback onFailure");
-            }
-        });
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, "ChangeUserNameCallback onFailure");
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+                        updateUser();
+                    }
+                }));
+
     }
 
     @Override

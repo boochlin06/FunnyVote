@@ -1,20 +1,24 @@
 package com.heaton.funnyvote.ui.personal;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
-import com.heaton.funnyvote.data.VoteData.VoteDataSource;
 import com.heaton.funnyvote.data.user.UserDataRepository;
-import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.retrofit.PasswordObserver;
 import com.heaton.funnyvote.ui.main.MainPageContract;
 import com.heaton.funnyvote.ui.main.MainPagePresenter;
 import com.heaton.funnyvote.ui.main.MainPageTabFragment;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import rx.Observer;
+import rx.subscriptions.CompositeSubscription;
 
 public class UserPresenter implements PersonalContract.Presenter {
     public static String TAG = MainPagePresenter.class.getSimpleName();
@@ -26,6 +30,8 @@ public class UserPresenter implements PersonalContract.Presenter {
 
     private List<VoteData> createVoteDataList;
     private List<VoteData> participateVoteDataList;
+    @NonNull
+    private CompositeSubscription mSubscriptions;
 
     public List<VoteData> getCreateVoteDataList() {
         return createVoteDataList;
@@ -66,10 +72,14 @@ public class UserPresenter implements PersonalContract.Presenter {
     }
 
     private User loginUser, targetUser;
+    @NonNull
+    private final BaseSchedulerProvider schedulerProvider;
+
 
     public UserPresenter(VoteDataRepository voteDataRepository
             , UserDataRepository userDataRepository
-            , PersonalContract.UserPageView userPageView) {
+            , PersonalContract.UserPageView userPageView
+            , BaseSchedulerProvider schedulerProvider) {
         this.userPageView = userPageView;
         this.userDataRepository = userDataRepository;
         this.voteDataRepository = voteDataRepository;
@@ -77,6 +87,8 @@ public class UserPresenter implements PersonalContract.Presenter {
         participateVoteDataList = new ArrayList<>();
         favoriteVoteDataList = new ArrayList<>();
         this.userPageView.setPresenter(this);
+        this.schedulerProvider = schedulerProvider;
+        mSubscriptions = new CompositeSubscription();
     }
 
     @Override
@@ -120,11 +132,25 @@ public class UserPresenter implements PersonalContract.Presenter {
 
     @Override
     public void favoriteVote(final VoteData voteData) {
-        voteDataRepository.favoriteVote(voteData.getVoteCode()
-                , voteData.getIsFavorite(), loginUser, new VoteDataSource.FavoriteVoteCallback() {
+        mSubscriptions.add(voteDataRepository.favoriteVote(voteData.getVoteCode(), voteData.getIsFavorite()
+                , loginUser)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<Boolean>() {
                     @Override
-                    public void onSuccess(boolean isFavorite) {
-                        voteData.setIsFavorite(isFavorite);
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        userPageView.showHintToast(R.string.toast_network_connect_error_favorite, 0);
+                    }
+
+                    @Override
+                    public void onNext(Boolean aBoolean) {
+                        voteData.setIsFavorite(aBoolean);
                         updateVoteDataToAllList(voteData);
                         refreshAllFragment();
                         if (voteData.getIsFavorite()) {
@@ -133,12 +159,7 @@ public class UserPresenter implements PersonalContract.Presenter {
                             userPageView.showHintToast(R.string.vote_detail_toast_remove_favorite, 0);
                         }
                     }
-
-                    @Override
-                    public void onFailure() {
-                        userPageView.showHintToast(R.string.toast_network_connect_error_favorite, 0);
-                    }
-                });
+                }));
     }
 
 
@@ -170,28 +191,34 @@ public class UserPresenter implements PersonalContract.Presenter {
             userPageView.showLoadingCircle();
             List<String> choiceCodeList = new ArrayList<>();
             choiceCodeList.add(optionCode);
-            voteDataRepository.pollVote(voteData.getVoteCode(), password, choiceCodeList, loginUser, new VoteDataSource.PollVoteCallback() {
-                @Override
-                public void onSuccess(VoteData voteData) {
-                    userPageView.hideLoadingCircle();
-                    updateVoteDataToAllList(voteData);
-                    refreshAllFragment();
-                }
+            mSubscriptions.add(voteDataRepository
+                    .pollVote(voteData.getVoteCode(), password, choiceCodeList, loginUser)
+                    .subscribeOn(schedulerProvider.io())
+                    .observeOn(schedulerProvider.ui())
+                    .subscribe(new PasswordObserver<VoteData>() {
 
-                @Override
-                public void onFailure() {
-                    userPageView.showHintToast(R.string.toast_network_connect_error_quick_poll, 0);
-                    userPageView.hidePollPasswordDialog();
-                    userPageView.hideLoadingCircle();
-                }
+                        @Override
+                        public void onSuccess(VoteData voteData) {
+                            userPageView.hideLoadingCircle();
+                            updateVoteDataToAllList(voteData);
+                            refreshAllFragment();
+                        }
 
-                @Override
-                public void onPasswordInvalid() {
-                    userPageView.shakePollPasswordDialog();
-                    userPageView.hideLoadingCircle();
-                    userPageView.showHintToast(R.string.vote_detail_dialog_password_toast_retry, 0);
-                }
-            });
+                        @Override
+                        public void onFailure(Throwable e) {
+                            userPageView.showHintToast(R.string.toast_network_connect_error_quick_poll, 0);
+                            userPageView.hidePollPasswordDialog();
+                            userPageView.hideLoadingCircle();
+                        }
+
+                        @Override
+                        public void onPasswordInValid() {
+                            userPageView.shakePollPasswordDialog();
+                            userPageView.hideLoadingCircle();
+                            userPageView.showHintToast(R.string.vote_detail_dialog_password_toast_retry, 0);
+                        }
+                    })
+            );
         }
     }
 
@@ -243,73 +270,98 @@ public class UserPresenter implements PersonalContract.Presenter {
     @Override
     public void reloadCreateList(final int offset) {
         if (loginUser == null) {
-            start();
+            subscribe();
             return;
         }
-        voteDataRepository.getCreateVoteList(offset, loginUser, targetUser, new VoteDataSource.GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                updateCreateList(voteDataList, offset);
-                createFragment.refreshFragment(createVoteDataList);
-                createFragment.hideSwipeLoadView();
-                userPageView.hideLoadingCircle();
-            }
 
-            @Override
-            public void onVoteListNotAvailable() {
-                userPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
-                userPageView.hideLoadingCircle();
-                createFragment.hideSwipeLoadView();
-            }
-        });
+        mSubscriptions.add(voteDataRepository.getCreateVoteList(offset, loginUser, targetUser)
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<List<VoteData>>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        userPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
+                        userPageView.hideLoadingCircle();
+                        createFragment.hideSwipeLoadView();
+                    }
+
+                    @Override
+                    public void onNext(List<VoteData> voteDataList) {
+                        updateCreateList(voteDataList, offset);
+                        createFragment.refreshFragment(createVoteDataList);
+                        createFragment.hideSwipeLoadView();
+                        userPageView.hideLoadingCircle();
+                    }
+                }));
     }
 
     @Override
     public void reloadParticipateList(final int offset) {
         if (loginUser == null) {
-            start();
+            subscribe();
             return;
         }
-        voteDataRepository.getParticipateVoteList(offset, loginUser, targetUser, new VoteDataSource.GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                updateParticipateList(voteDataList, offset);
-                participateFragment.refreshFragment(participateVoteDataList);
-                participateFragment.hideSwipeLoadView();
-                userPageView.hideLoadingCircle();
-            }
+        mSubscriptions.add(voteDataRepository.getParticipateVoteList(offset, loginUser, targetUser)
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<List<VoteData>>() {
+                    @Override
+                    public void onCompleted() {
 
-            @Override
-            public void onVoteListNotAvailable() {
-                userPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
-                userPageView.hideLoadingCircle();
-                participateFragment.hideSwipeLoadView();
-            }
-        });
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        userPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
+                        userPageView.hideLoadingCircle();
+                        participateFragment.hideSwipeLoadView();
+                    }
+
+                    @Override
+                    public void onNext(List<VoteData> voteDataList) {
+                        updateParticipateList(voteDataList, offset);
+                        participateFragment.refreshFragment(participateVoteDataList);
+                        participateFragment.hideSwipeLoadView();
+                        userPageView.hideLoadingCircle();
+                    }
+                }));
     }
 
     @Override
     public void reloadFavoriteList(final int offset) {
         if (loginUser == null) {
-            start();
+            subscribe();
             return;
         }
-        voteDataRepository.getFavoriteVoteList(offset, loginUser, targetUser, new VoteDataSource.GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                updateFavoriteList(voteDataList, offset);
-                favoriteFragment.refreshFragment(favoriteVoteDataList);
-                favoriteFragment.hideSwipeLoadView();
-                userPageView.hideLoadingCircle();
-            }
+        mSubscriptions.add(voteDataRepository.getFavoriteVoteList(offset, loginUser, targetUser)
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<List<VoteData>>() {
+                    @Override
+                    public void onCompleted() {
 
-            @Override
-            public void onVoteListNotAvailable() {
-                userPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
-                userPageView.hideLoadingCircle();
-                favoriteFragment.hideSwipeLoadView();
-            }
-        });
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        userPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
+                        userPageView.hideLoadingCircle();
+                        favoriteFragment.hideSwipeLoadView();
+                    }
+
+                    @Override
+                    public void onNext(List<VoteData> voteDataList) {
+                        updateFavoriteList(voteDataList, offset);
+                        favoriteFragment.refreshFragment(favoriteVoteDataList);
+                        favoriteFragment.hideSwipeLoadView();
+                        userPageView.hideLoadingCircle();
+                    }
+                }));
     }
 
     private void updateFavoriteList(List<VoteData> voteDataList, int offset) {
@@ -387,27 +439,40 @@ public class UserPresenter implements PersonalContract.Presenter {
     }
 
     @Override
-    public void start() {
+    public void subscribe() {
         userPageView.showLoadingCircle();
         userPageView.showIntroductionDialog();
-        userDataRepository.getUser(new UserDataSource.GetUserCallback() {
-            @Override
-            public void onResponse(final User user) {
-                UserPresenter.this.loginUser = user;
-                Log.d(TAG, "getUserCallback loginUser:" + user.getType());
-                userPageView.setUpUserView(targetUser == null ? user : targetUser);
-                userPageView.setUpTabsAdapter(user, targetUser);
-                reloadAllList(0);
-            }
+        mSubscriptions.add(userDataRepository.getUser(false)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<User>() {
+                    @Override
+                    public void onCompleted() {
 
-            @Override
-            public void onFailure() {
-                userPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
-                userPageView.setUpTabsAdapter(loginUser, targetUser);
-                userPageView.hideLoadingCircle();
-                Log.d(TAG, "getUserCallback loginUser failure:" + loginUser);
-            }
-        }, false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        userPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
+                        userPageView.setUpTabsAdapter(loginUser, targetUser);
+                        userPageView.hideLoadingCircle();
+                        Log.d(TAG, "getUserCallback loginUser failure:" + loginUser);
+                    }
+
+                    @Override
+                    public void onNext(User user) {
+                        UserPresenter.this.loginUser = user;
+                        Log.d(TAG, "getUserCallback loginUser:" + user.getType());
+                        userPageView.setUpUserView(targetUser == null ? user : targetUser);
+                        userPageView.setUpTabsAdapter(user, targetUser);
+                        reloadAllList(0);
+                    }
+                }));
+    }
+
+    @Override
+    public void unsubscribe() {
+
     }
 
     private void reloadAllList(int offset) {

@@ -16,6 +16,8 @@ import com.heaton.funnyvote.data.user.RemoteUserDataSource;
 import com.heaton.funnyvote.data.user.SPUserDataSource;
 import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.utils.AppExecutors;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
+import com.heaton.funnyvote.utils.schedulers.SchedulerProvider;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -42,8 +44,13 @@ public class Injection {
                 , LocalPromotionSource.getInstance(((FunnyVoteApplication) (context.getApplicationContext()))
                         .getDaoSession().getPromotionDao(), AppExecutors.getInstance()));
     }
+
     public static SharedPreferences provideFirstTimePref(@NonNull Context context) {
         checkNotNull(context);
         return FirstTimePref.getInstance(context).getPreferences();
+    }
+
+    public static BaseSchedulerProvider provideSchedulerProvider() {
+        return SchedulerProvider.getInstance();
     }
 }

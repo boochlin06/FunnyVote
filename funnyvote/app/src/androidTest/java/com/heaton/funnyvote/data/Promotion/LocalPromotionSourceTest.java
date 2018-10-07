@@ -31,58 +31,58 @@ import static org.junit.Assert.fail;
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class LocalPromotionSourceTest {
-    private LocalPromotionSource localPromotionSource;
-    private static User user;
-    private PromotionDao promotionDao;
-    private DaoSession daoSession;
-
-    @Before
-    public void setUp() {
-        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(InstrumentationRegistry.getTargetContext()
-                , ENCRYPTED ? "votes-db-encrypted" : "votes-db");
-        Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
-        daoSession = new DaoMaster(db).newSession(IdentityScopeType.Session);
-        promotionDao = daoSession.getPromotionDao();
-        LocalPromotionSource.clearInstance();
-        localPromotionSource = LocalPromotionSource.getInstance(promotionDao, AppExecutors.getInstance());
-        user = new User();
-    }
-
-    @After
-    public void cleanUp() {
-        LocalPromotionSource.clearInstance();
-    }
-
-    @Test
-    public void testPreConditions() {
-        assertNotNull(localPromotionSource);
-    }
-
-    @Test
-    public void savePromotions_retrievesPromotions() {
-        final Promotion promotion1 = new Promotion();
-        promotion1.setId((long) 1000);
-
-        localPromotionSource.savePromotionList(Lists.newArrayList(promotion1));
-        localPromotionSource.getPromotionList(user, new PromotionDataSource.GetPromotionsCallback() {
-            @Override
-            public void onPromotionsLoaded(List<Promotion> promotionList) {
-                assertNotNull(promotionList);
-                assertTrue(promotionList.size() > 0);
-                boolean promotion1IdFound = false;
-                for (Promotion promotion : promotionList) {
-                    if (promotion1.getId() == promotion.getId()) {
-                        promotion1IdFound = true;
-                    }
-                }
-                assertTrue(promotion1IdFound);
-            }
-
-            @Override
-            public void onPromotionsNotAvailable() {
-                fail();
-            }
-
-        });
-    }
+//    private LocalPromotionSource localPromotionSource;
+//    private static User user;
+//    private PromotionDao promotionDao;
+//    private DaoSession daoSession;
+//
+//    @Before
+//    public void setUp() {
+//        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(InstrumentationRegistry.getTargetContext()
+//                , ENCRYPTED ? "votes-db-encrypted" : "votes-db");
+//        Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
+//        daoSession = new DaoMaster(db).newSession(IdentityScopeType.Session);
+//        promotionDao = daoSession.getPromotionDao();
+//        LocalPromotionSource.clearInstance();
+//        localPromotionSource = LocalPromotionSource.getInstance(promotionDao, AppExecutors.getInstance());
+//        user = new User();
+//    }
+//
+//    @After
+//    public void cleanUp() {
+//        LocalPromotionSource.clearInstance();
+//    }
+//
+//    @Test
+//    public void testPreConditions() {
+//        assertNotNull(localPromotionSource);
+//    }
+//
+//    @Test
+//    public void savePromotions_retrievesPromotions() {
+//        final Promotion promotion1 = new Promotion();
+//        promotion1.setId((long) 1000);
+//
+//        localPromotionSource.savePromotionList(Lists.newArrayList(promotion1));
+//        localPromotionSource.getPromotionList(user, new PromotionDataSource.GetPromotionsCallback() {
+//            @Override
+//            public void onPromotionsLoaded(List<Promotion> promotionList) {
+//                assertNotNull(promotionList);
+//                assertTrue(promotionList.size() > 0);
+//                boolean promotion1IdFound = false;
+//                for (Promotion promotion : promotionList) {
+//                    if (promotion1.getId() == promotion.getId()) {
+//                        promotion1IdFound = true;
+//                    }
+//                }
+//                assertTrue(promotion1IdFound);
+//            }
+//
+//            @Override
+//            public void onPromotionsNotAvailable() {
+//                fail();
+//            }
+//
+//        });
+//    }
 }

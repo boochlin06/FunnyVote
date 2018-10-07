@@ -7,6 +7,8 @@ import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
+import com.heaton.funnyvote.utils.schedulers.ImmediateSchedulerProvider;
 
 import junit.framework.Assert;
 
@@ -21,7 +23,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import rx.Observable;
+
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyMap;
@@ -51,16 +56,12 @@ public class CreateVoteActivityPresenterTest {
 
     private CreateVoteActivityPresenter presenter;
 
-    @Captor
-    private ArgumentCaptor<VoteDataSource.GetVoteDataCallback> getVoteDataCallbackArgumentCaptor;
-
-    @Captor
-    private ArgumentCaptor<UserDataSource.GetUserCallback> getUserCallbackArgumentCaptor;
+    private BaseSchedulerProvider mSchedulerProvider;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-
+        mSchedulerProvider = new ImmediateSchedulerProvider();
         user = mock(User.class);
         when(user.getUserName()).thenReturn("Heaton");
     }
@@ -69,7 +70,7 @@ public class CreateVoteActivityPresenterTest {
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
         presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+                , activityView, optionFragmentView, settingFragmentView, mSchedulerProvider);
 
         // Then the presenter is set to the view
         verify(activityView).setPresenter(presenter);
@@ -79,17 +80,17 @@ public class CreateVoteActivityPresenterTest {
 
     @Test
     public void getUserAndInitialDefaultView() {
+        when(userDataRepository.getUser(eq(false))).thenReturn(rx.Observable.just(any()));
         presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
-        presenter.start();
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
-        getUserCallbackArgumentCaptor.getValue().onResponse(user);
+                , activityView, optionFragmentView, settingFragmentView, mSchedulerProvider);
+        presenter.subscribe();
+        verify(userDataRepository).getUser(anyBoolean());
     }
 
     @Test
     public void submitCreateVoteSuccessAndShowVoteDetail() {
         presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+                , activityView, optionFragmentView, settingFragmentView, mSchedulerProvider);
         presenter.setVoteSettings(voteData);
 
         optionList.clear();
@@ -111,12 +112,12 @@ public class CreateVoteActivityPresenterTest {
         presenter.getVoteSettings().setSecurity(VoteData.SECURITY_PUBLIC);
         presenter.getVoteSettings().setEndTime(System.currentTimeMillis() + 3000 * 86400 * 1000);
         when(settingFragmentView.getFinalVoteSettings(voteData)).thenReturn(voteData);
-
+        when(voteDataRepository.createVote(any(VoteData.class), anyList()
+                , any(File.class))).thenReturn(Observable.just(voteData));
         presenter.submitCreateVote();
         verify(activityView).showLoadingCircle();
         verify(voteDataRepository).createVote(any(VoteData.class), anyList()
-                , any(File.class), getVoteDataCallbackArgumentCaptor.capture());
-        getVoteDataCallbackArgumentCaptor.getValue().onVoteDataLoaded(voteData);
+                , any(File.class));
         verify(activityView).showHintToast(anyInt());
         verify(activityView).hideLoadingCircle();
         verify(activityView).IntentToVoteDetail(voteData);
@@ -125,7 +126,7 @@ public class CreateVoteActivityPresenterTest {
     @Test
     public void submitCreateVoteRemoteFailureAndShowErrorToast() {
         presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+                , activityView, optionFragmentView, settingFragmentView, mSchedulerProvider);
         presenter.setVoteSettings(voteData);
 
         optionList.clear();
@@ -147,12 +148,13 @@ public class CreateVoteActivityPresenterTest {
         presenter.getVoteSettings().setSecurity(VoteData.SECURITY_PUBLIC);
         presenter.getVoteSettings().setEndTime(System.currentTimeMillis() + 3000 * 86400 * 1000);
         when(settingFragmentView.getFinalVoteSettings(voteData)).thenReturn(voteData);
-
+        when(voteDataRepository.createVote(any(VoteData.class), anyList()
+                , any(File.class))).thenReturn(Observable.error(new Exception("TEST ERROR")));
         presenter.submitCreateVote();
         verify(activityView).showLoadingCircle();
         verify(voteDataRepository).createVote(any(VoteData.class), anyList()
-                , any(File.class), getVoteDataCallbackArgumentCaptor.capture());
-        getVoteDataCallbackArgumentCaptor.getValue().onVoteDataNotAvailable();
+                , any(File.class));
+        //getVoteDataCallbackArgumentCaptor.getValue().onVoteDataNotAvailable();
         verify(activityView).showHintToast(anyInt());
         verify(activityView).hideLoadingCircle();
         verify(activityView, never()).IntentToVoteDetail(voteData);
@@ -161,7 +163,7 @@ public class CreateVoteActivityPresenterTest {
     @Test
     public void submitCreateVoteLocalFailureAndShowErrorDialog() {
         presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+                , activityView, optionFragmentView, settingFragmentView, mSchedulerProvider);
         presenter.setVoteSettings(voteData);
 
         for (long i = 0; i < 2; i++) {
@@ -183,11 +185,12 @@ public class CreateVoteActivityPresenterTest {
         presenter.getVoteSettings().setSecurity(VoteData.SECURITY_PUBLIC);
         presenter.getVoteSettings().setEndTime(System.currentTimeMillis() + 3000 * 86400 * 1000);
         when(settingFragmentView.getFinalVoteSettings(voteData)).thenReturn(voteData);
-
+        when(voteDataRepository.createVote(any(VoteData.class), anyList()
+                , any(File.class))).thenReturn(Observable.error(new Exception("TEST ERROR")));
         presenter.submitCreateVote();
         verify(activityView).showLoadingCircle();
         verify(voteDataRepository, never()).createVote(any(VoteData.class), anyList()
-                , any(File.class), getVoteDataCallbackArgumentCaptor.capture());
+                , any(File.class));
         verify(activityView).hideLoadingCircle();
         verify(activityView).showCreateVoteError(anyMap());
     }
@@ -195,7 +198,7 @@ public class CreateVoteActivityPresenterTest {
     @Test
     public void addAndReviseAndRemoveOptionUpdateToView() {
         presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+                , activityView, optionFragmentView, settingFragmentView, mSchedulerProvider);
         long optionId = presenter.addNewOption();
         presenter.addNewOption();
         presenter.addNewOption();
@@ -217,7 +220,7 @@ public class CreateVoteActivityPresenterTest {
     @Test
     public void updateVoteSecurityAndEndTimeAndTitleAndUpdateToView() {
         presenter = new CreateVoteActivityPresenter(voteDataRepository, userDataRepository
-                , activityView, optionFragmentView, settingFragmentView);
+                , activityView, optionFragmentView, settingFragmentView, mSchedulerProvider);
         presenter.updateVoteSecurity(VoteData.SECURITY_PRIVATE);
         Assert.assertEquals(presenter.getVoteSettings().getSecurity(), VoteData.SECURITY_PRIVATE);
         presenter.updateVoteEndTime(System.currentTimeMillis()
@@ -232,6 +235,6 @@ public class CreateVoteActivityPresenterTest {
         presenter.updateVoteImage(new File("test"));
         Assert.assertNotNull(presenter.getVoteSettings().getImageFile());
         presenter.updateVoteTitle("title");
-        Assert.assertEquals(presenter.getVoteSettings().getTitle(),"title");
+        Assert.assertEquals(presenter.getVoteSettings().getTitle(), "title");
     }
 }

@@ -10,6 +10,8 @@ import com.heaton.funnyvote.utils.AppExecutors;
 
 import java.util.List;
 
+import rx.Observable;
+
 public class LocalPromotionSource implements PromotionDataSource {
     private PromotionDao promotionDao;
     private static volatile LocalPromotionSource INSTANCE;
@@ -32,24 +34,10 @@ public class LocalPromotionSource implements PromotionDataSource {
         return INSTANCE;
     }
 
+
     @Override
-    public void getPromotionList(final User user, final GetPromotionsCallback callback) {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                if (user == null) {
-                    callback.onPromotionsNotAvailable();
-                }
-                mAppExecutors.mainThread().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        List<Promotion> list = promotionDao.loadAll();
-                        callback.onPromotionsLoaded(list);
-                    }
-                });
-            }
-        };
-        mAppExecutors.diskIO().execute(runnable);
+    public Observable<List<Promotion>> getPromotionList(User user) {
+        return promotionDao.rx().loadAll();
     }
 
     @Override

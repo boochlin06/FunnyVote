@@ -32,19 +32,19 @@ public class VoteDataDaoTest {
 
     private DaoSession daoSession;
 
-//    @Before
-//    public void initDb() {
-//        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(InstrumentationRegistry.getTargetContext()
-//                , ENCRYPTED ? "votes-db-encrypted" : "votes-db-test");
-//        database = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
-//        daoSession = new DaoMaster(database).newSession(IdentityScopeType.Session);
-//    }
-//
-//    @After
-//    public void closeDb() {
-//        daoSession.clear();
-//        database.close();
-//    }
+    @Before
+    public void initDb() {
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(InstrumentationRegistry.getTargetContext()
+                , ENCRYPTED ? "votes-db-encrypted" : "votes-db-test");
+        database = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
+        daoSession = new DaoMaster(database).newSession(IdentityScopeType.Session);
+    }
+
+    @After
+    public void closeDb() {
+        daoSession.clear();
+        database.close();
+    }
 //
 //    @Test
 //    public void insertVoteDataAndGetById() {

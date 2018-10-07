@@ -48,12 +48,12 @@ import static org.hamcrest.CoreMatchers.not;
 @FixMethodOrder(MethodSorters.DEFAULT)
 public class MainScreenTest {
 
-//    @Rule
-//    public ActivityTestRule<MainActivity> mainActivityActivityTestRule =
-//            new ActivityTestRule<MainActivity>(MainActivity.class) {
-//
-//            };
-//
+    @Rule
+    public ActivityTestRule<MainActivity> mainActivityActivityTestRule =
+            new ActivityTestRule<MainActivity>(MainActivity.class) {
+
+            };
+
 //    @Before
 //    public void setUp() {
 //        Injection.provideFirstTimePref(mainActivityActivityTestRule.getActivity()).edit()

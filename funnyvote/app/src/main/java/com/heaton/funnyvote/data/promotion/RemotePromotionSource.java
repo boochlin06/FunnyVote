@@ -13,6 +13,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import rx.Observable;
 
 public class RemotePromotionSource implements PromotionDataSource {
 
@@ -37,15 +38,10 @@ public class RemotePromotionSource implements PromotionDataSource {
     }
 
     @Override
-    public void getPromotionList(User user, GetPromotionsCallback callback) {
-        if (user == null) {
-            callback.onPromotionsNotAvailable();
-            return;
-        }
-        Call<List<Promotion>> call = promotionService.getPromotionList(1, PAGE_COUNT
+    public Observable<List<Promotion>> getPromotionList(User user) {
+        return promotionService.getPromotionListRx(1, PAGE_COUNT
                 , user.getUserCode()
                 , user.getTokenType());
-        call.enqueue(new getPromotionListResponseCallback(callback));
     }
 
     @Override
@@ -53,35 +49,4 @@ public class RemotePromotionSource implements PromotionDataSource {
         // Nothing to do
     }
 
-    public class getPromotionListResponseCallback implements Callback<List<Promotion>> {
-
-        private GetPromotionsCallback callback;
-
-
-        public getPromotionListResponseCallback(GetPromotionsCallback callback) {
-            this.callback = callback;
-        }
-
-        @Override
-        public void onResponse(Call<List<Promotion>> call, Response<List<Promotion>> response) {
-            if (response.isSuccessful()) {
-                callback.onPromotionsLoaded(response.body());
-            } else {
-                String errorMessage = "";
-                try {
-                    errorMessage = response.errorBody().string();
-                    Log.d(TAG, "getPromotionListResponseCallback onResponse false:" + errorMessage);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                callback.onPromotionsNotAvailable();
-            }
-        }
-
-        @Override
-        public void onFailure(Call<List<Promotion>> call, Throwable t) {
-            Log.d(TAG, "getPromotionListResponseCallback onFailure:" + t.getMessage());
-            callback.onPromotionsNotAvailable();
-        }
-    }
 }

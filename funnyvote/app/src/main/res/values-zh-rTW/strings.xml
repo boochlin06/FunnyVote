@@ -7,9 +7,7 @@
     <!--Drawer Menu and toolbar title-->
     <string name="drawer_home">首頁</string>
     <string name="drawer_my_box">收集箱</string>
-    <string name="drawer_favorite">收藏</string>
     <string name="drawer_create_new_vote">發起投票</string>
-    <string name="drawer_settings">設定</string>
     <string name="drawer_account">帳戶</string>
     <string name="drawer_about">關於</string>
     <string name="drawer_search">搜尋</string>
@@ -20,8 +18,6 @@
 
     <!--Vote Wall item-->
     <string name="wall_item_vote_end">投票已結束</string>
-    <string name="wall_item_more">還有喔...</string>
-    <string name="wall_item_no_one_poll">沒人投票阿</string>
     <string name="wall_item_bar_vote_count" formatted="false">票數:%d </string>
     <string name="wall_item_bar_Share">分享</string>
     <string name="wall_item_bar_favorite">收藏</string>
@@ -57,7 +53,6 @@
     <string name="create_vote_tab_settings_need_password">是否需要密碼：</string>
     <string name="create_vote_tab_settings_pre_result">可以先看投票結果：</string>
     <string name="create_vote_tab_settings_password">密碼：</string>
-    <string name="create_vote_tab_settings_password_hint">密碼寫在這裡</string>
 
     <string name="create_vote_tab_settings_public">公開</string>
     <string name="create_vote_tab_settings_public_hint">全部使用者都可以投票.</string>
@@ -93,7 +88,6 @@
     <string name="create_vote_dialog_exit_button_keep">停留</string>
 
     <!--Vote detail activity-->
-    <string name="vote_detail_toast_option_choice_hint" formatted="false">"多選:\n請選擇 %d - %d 選項."</string>
     <string name="vote_detail_toast_option_over_max" formatted="false">\"最多選:%d 選項.\"</string>
     <string name="vote_detail_toast_option_at_least_min" formatted="false">至少要選 :%d 選項.</string>
     <string name="vote_detail_toast_add_favorite">加入收藏</string>
@@ -107,7 +101,6 @@
     <string name="vote_detail_circle_updating" formatted="false">上傳中</string>
     <string name="vote_detail_title">詳情</string>
 
-    <string name="vote_detail_menu_share">分享</string>
     <string name="vote_detail_menu_submit">提交</string>
     <string name="vote_detail_menu_info">資訊</string>
     <string name="vote_detail_menu_search_hint">搜尋選項</string>
@@ -122,8 +115,6 @@
     <string name="vote_detail_fab_sort_option">排序選項</string>
     <string name="vote_detail_fab_pre_result">偷看結果</string>
     <string name="vote_detail_fab_return_poll">回去投票</string>
-
-    <string name="vote_share_to_other_app_default_message" formatted="false">拍謝，這裡有一個好問題想請教各位 %s</string>
 
     <!-- vote detail Dialog-->
     <string name="vote_detail_dialog_title_info">資訊</string>

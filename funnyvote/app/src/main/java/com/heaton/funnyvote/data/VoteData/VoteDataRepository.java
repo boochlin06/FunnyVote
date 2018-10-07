@@ -1,23 +1,26 @@
 package com.heaton.funnyvote.data.VoteData;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
+import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.ui.main.MainPageTabFragment;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
 
 import java.io.File;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-import javax.annotation.Nullable;
+import rx.Observable;
 
 public class VoteDataRepository implements VoteDataSource {
     private static VoteDataRepository INSTANCE = null;
     private final VoteDataSource voteDataRemoteSource;
     private final VoteDataSource voteDataLocalSource;
     public static final int PAGE_COUNT = 20;
+    private BaseSchedulerProvider schedulerProvider;
 
     public static VoteDataRepository getInstance(VoteDataSource voteDataLocalSource
             , VoteDataSource voteDataRemoteSource) {
@@ -35,33 +38,28 @@ public class VoteDataRepository implements VoteDataSource {
             , VoteDataSource voteDataRemoteSource) {
         this.voteDataRemoteSource = voteDataRemoteSource;
         this.voteDataLocalSource = voteDataLocalSource;
+        this.schedulerProvider = Injection.provideSchedulerProvider();
     }
 
     @Override
-    public void getVoteData(final String voteCode, final User user, @Nullable final GetVoteDataCallback callback) {
-        voteDataRemoteSource.getVoteData(voteCode, user, new GetVoteDataCallback() {
-            @Override
-            public void onVoteDataLoaded(VoteData voteData) {
-                voteDataLocalSource.saveVoteData(voteData);
-                callback.onVoteDataLoaded(voteData);
-            }
+    public Observable<VoteData> getVoteData(String voteCode, User user) {
+        Observable<VoteData> localVote = voteDataLocalSource.getVoteData(voteCode, user).first();
+        Observable<VoteData> remoteVote = voteDataRemoteSource
+                .getVoteData(voteCode, user)
+                .subscribeOn(schedulerProvider.io())
+                .map(voteData -> {
+                    voteDataLocalSource.saveVoteData(voteData);
+                    return voteData;
+                })
+                .onErrorResumeNext((Throwable e) -> localVote);
 
-            @Override
-            public void onVoteDataNotAvailable() {
-                voteDataLocalSource.getVoteData(voteCode, user, new GetVoteDataCallback() {
-                    @Override
-                    public void onVoteDataLoaded(VoteData voteData) {
-                        callback.onVoteDataLoaded(voteData);
+        return Observable.concat(remoteVote, localVote).first()
+                .map(voteData -> {
+                    if (voteData == null) {
+                        throw new NoSuchElementException("no vote data");
                     }
-
-                    @Override
-                    public void onVoteDataNotAvailable() {
-                        callback.onVoteDataNotAvailable();
-                    }
+                    return voteData;
                 });
-
-            }
-        });
     }
 
     @Override
@@ -69,9 +67,10 @@ public class VoteDataRepository implements VoteDataSource {
         voteDataLocalSource.saveVoteData(voteData);
     }
 
+
     @Override
-    public void getOptions(VoteData voteData, GetVoteOptionsCallback callback) {
-        voteDataLocalSource.getOptions(voteData, callback);
+    public Observable<List<Option>> getOptions(VoteData voteData) {
+        return voteDataLocalSource.getOptions(voteData);
     }
 
     @Override
@@ -84,254 +83,185 @@ public class VoteDataRepository implements VoteDataSource {
         voteDataLocalSource.saveVoteDataList(voteDataList, offset, tab);
     }
 
+
     @Override
-    public void addNewOption(String voteCode, String password, List<String> newOptions
-            , User user, final AddNewOptionCallback callback) {
-        voteDataRemoteSource.addNewOption(voteCode, password, newOptions, user, new AddNewOptionCallback() {
-            @Override
-            public void onSuccess(VoteData voteData) {
-                voteDataLocalSource.saveVoteData(voteData);
-                callback.onSuccess(voteData);
-            }
-
-            @Override
-            public void onFailure() {
-                callback.onFailure();
-            }
-
-            @Override
-            public void onPasswordInvalid() {
-                callback.onPasswordInvalid();
-            }
-        });
-
+    public Observable<VoteData> addNewOption(String voteCode, String password, List<String> newOptions, User user) {
+        return voteDataRemoteSource.addNewOption(voteCode, password, newOptions, user)
+                .map(voteData -> {
+                    voteDataLocalSource.saveVoteData(voteData);
+                    return voteData;
+                }).observeOn(schedulerProvider.io());
     }
 
     @Override
-    public void pollVote(@NonNull String voteCode, String password
-            , @NonNull List<String> pollOptions, @NonNull User user, @Nullable final PollVoteCallback callback) {
-        voteDataRemoteSource.pollVote(voteCode, password, pollOptions, user, new PollVoteCallback() {
-            @Override
-            public void onSuccess(VoteData voteDataNetwork) {
-                voteDataLocalSource.saveVoteData(voteDataNetwork);
-                callback.onSuccess(voteDataNetwork);
-            }
-
-            @Override
-            public void onFailure() {
-                callback.onFailure();
-            }
-
-            @Override
-            public void onPasswordInvalid() {
-                callback.onPasswordInvalid();
-            }
-        });
-    }
-
-    @Override
-    public void favoriteVote(final String voteCode, final boolean isFavorite, final User user, final FavoriteVoteCallback callback) {
-
-        Log.d("favoriteVoteRE", "favoriteVote favoriteVote");
-        voteDataRemoteSource.favoriteVote(voteCode, isFavorite, user, new FavoriteVoteCallback() {
-            @Override
-            public void onSuccess(boolean isFavorite) {
-                voteDataLocalSource.favoriteVote(voteCode, isFavorite, user, new FavoriteVoteCallback() {
-                    @Override
-                    public void onSuccess(boolean isFavorite) {
-                        callback.onSuccess(isFavorite);
-                    }
-
-                    @Override
-                    public void onFailure() {
-                        callback.onFailure();
-                    }
+    public Observable<VoteData> pollVote(@NonNull String voteCode, String password
+            , @NonNull List<String> pollOptions, @NonNull User user) {
+        return voteDataRemoteSource.pollVote(voteCode, password, pollOptions, user)
+                .map(voteData -> {
+                    voteDataLocalSource.saveVoteData(voteData);
+                    return voteData;
                 });
-            }
-
-            @Override
-            public void onFailure() {
-                callback.onFailure();
-            }
-        });
     }
 
     @Override
-    public void createVote(@NonNull VoteData voteSetting
-            , @NonNull List<String> options, File image, final GetVoteDataCallback callback) {
-        voteDataRemoteSource.createVote(voteSetting, options, image, new GetVoteDataCallback() {
-            @Override
-            public void onVoteDataLoaded(VoteData voteData) {
-                voteDataLocalSource.saveVoteData(voteData);
-                callback.onVoteDataLoaded(voteData);
-            }
-
-            @Override
-            public void onVoteDataNotAvailable() {
-                callback.onVoteDataNotAvailable();
-            }
-        });
-    }
-
-    @Override
-    public void getHotVoteList(final int offset, final User user, final GetVoteListCallback callback) {
-        voteDataRemoteSource.getHotVoteList(offset, user, new GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_HOT);
-                callback.onVoteListLoaded(voteDataList);
-            }
-
-            @Override
-            public void onVoteListNotAvailable() {
-                voteDataLocalSource.getHotVoteList(offset, user, new GetVoteListCallback() {
-                    @Override
-                    public void onVoteListLoaded(List<VoteData> voteDataList) {
-                        callback.onVoteListLoaded(voteDataList);
-                    }
-
-                    @Override
-                    public void onVoteListNotAvailable() {
-                        callback.onVoteListNotAvailable();
-                    }
+    public Observable<Boolean> favoriteVote(String voteCode, boolean isFavorite, User user) {
+        // save local after get remote
+        return voteDataRemoteSource.favoriteVote(voteCode, isFavorite, user)
+                .map(isSFavorite -> {
+                    voteDataLocalSource.saveFavoriteVote(voteCode, isFavorite, user);
+                    return isSFavorite;
                 });
-            }
-        });
-
     }
 
     @Override
-    public void getCreateVoteList(final int offset, final User user, final User targetUser, final GetVoteListCallback callback) {
-        voteDataRemoteSource.getCreateVoteList(offset, user, targetUser, new GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_CREATE);
-                callback.onVoteListLoaded(voteDataList);
-            }
+    public void saveFavoriteVote(String voteCode, boolean isFavorite, User user) {
+        voteDataLocalSource.saveFavoriteVote(voteCode, isFavorite, user);
+    }
 
-            @Override
-            public void onVoteListNotAvailable() {
-                voteDataLocalSource.getCreateVoteList(offset, user, targetUser, new GetVoteListCallback() {
-                    @Override
-                    public void onVoteListLoaded(List<VoteData> voteDataList) {
-                        callback.onVoteListLoaded(voteDataList);
-                    }
 
-                    @Override
-                    public void onVoteListNotAvailable() {
-                        callback.onVoteListNotAvailable();
+    @Override
+    public Observable<VoteData> createVote(@NonNull VoteData voteSetting, @NonNull List<String> options, File image) {
+        return voteDataRemoteSource.createVote(voteSetting, options, image)
+                .map(voteData -> {
+                    voteDataLocalSource.saveVoteData(voteData);
+                    return voteData;
+                }).observeOn(schedulerProvider.io());
+    }
+
+
+    @Override
+    public Observable<List<VoteData>> getHotVoteList(int offset, User user) {
+        Observable<List<VoteData>> localVote = voteDataLocalSource
+                .getHotVoteList(offset, user).first();
+        Observable<List<VoteData>> remoteVote = voteDataRemoteSource
+                .getHotVoteList(offset, user)
+                .subscribeOn(schedulerProvider.io())
+                .map(voteDataList -> {
+                    voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_HOT);
+                    return voteDataList;
+                })
+                .onErrorResumeNext((Throwable e) -> localVote);
+
+        return Observable.concat(remoteVote, localVote).first()
+                .map(voteDataList -> {
+                    if (voteDataList == null) {
+                        throw new NoSuchElementException("no vote data");
                     }
+                    return voteDataList;
                 });
-            }
-        });
+    }
+
+
+    @Override
+    public Observable<List<VoteData>> getCreateVoteList(int offset, User user, User targetUser) {
+        Observable<List<VoteData>> localVote = voteDataLocalSource
+                .getCreateVoteList(offset, user, targetUser).first();
+        Observable<List<VoteData>> remoteVote = voteDataRemoteSource
+                .getCreateVoteList(offset, user, targetUser).first()
+                .subscribeOn(schedulerProvider.io())
+                .map(voteDataList -> {
+                    voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_CREATE);
+                    return voteDataList;
+                })
+                .onErrorResumeNext((Throwable e) -> localVote);
+
+        return Observable.concat(remoteVote, localVote).first()
+                .map(voteDataList -> {
+                    if (voteDataList == null) {
+                        throw new NoSuchElementException("no vote data");
+                    }
+                    return voteDataList;
+                });
+    }
+
+
+    @Override
+    public Observable<List<VoteData>> getParticipateVoteList(int offset, User user, User targetUser) {
+        Observable<List<VoteData>> localVote = voteDataLocalSource
+                .getParticipateVoteList(offset, user, targetUser).first();
+        Observable<List<VoteData>> remoteVote = voteDataRemoteSource
+                .getParticipateVoteList(offset, user, targetUser).first()
+                .subscribeOn(schedulerProvider.io())
+                .map(voteDataList -> {
+                    voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_PARTICIPATE);
+                    return voteDataList;
+                })
+                .onErrorResumeNext((Throwable e) -> localVote);
+
+        return Observable.concat(remoteVote, localVote).first()
+                .map(voteDataList -> {
+                    if (voteDataList == null) {
+                        throw new NoSuchElementException("no vote data");
+                    }
+                    return voteDataList;
+                });
     }
 
     @Override
-    public void getParticipateVoteList(final int offset, final User user, final User targetUser, final GetVoteListCallback callback) {
-        if (targetUser != null) {
-            callback.onVoteListNotAvailable();
-            return;
-        }
-        voteDataRemoteSource.getParticipateVoteList(offset, user, targetUser, new GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_PARTICIPATE);
-                callback.onVoteListLoaded(voteDataList);
-            }
+    public Observable<List<VoteData>> getFavoriteVoteList(int offset, User user, User targetUser) {
+        Observable<List<VoteData>> localVote = voteDataLocalSource
+                .getFavoriteVoteList(offset, user, targetUser).first();
+        Observable<List<VoteData>> remoteVote = voteDataRemoteSource
+                .getFavoriteVoteList(offset, user, targetUser).first()
+                .subscribeOn(schedulerProvider.io())
+                .map(voteDataList -> {
+                    voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_FAVORITE);
+                    return voteDataList;
+                })
+                .onErrorResumeNext((Throwable e) -> localVote);
 
-            @Override
-            public void onVoteListNotAvailable() {
-                voteDataLocalSource.getParticipateVoteList(offset, user, targetUser, new GetVoteListCallback() {
-                    @Override
-                    public void onVoteListLoaded(List<VoteData> voteDataList) {
-                        callback.onVoteListLoaded(voteDataList);
+        return Observable.concat(remoteVote, localVote).first()
+                .map(voteDataList -> {
+                    if (voteDataList == null) {
+                        throw new NoSuchElementException("no vote data");
                     }
-
-                    @Override
-                    public void onVoteListNotAvailable() {
-                        callback.onVoteListNotAvailable();
-                    }
+                    return voteDataList;
                 });
-            }
-        });
     }
 
     @Override
-    public void getFavoriteVoteList(final int offset, final User user, final User targetUser, final GetVoteListCallback callback) {
-        voteDataRemoteSource.getFavoriteVoteList(offset, user, targetUser, new GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_FAVORITE);
-                callback.onVoteListLoaded(voteDataList);
-            }
+    public Observable<List<VoteData>> getSearchVoteList(String keyword, int offset, @NonNull User user) {
+        Observable<List<VoteData>> localVote = voteDataLocalSource
+                .getSearchVoteList(keyword, offset, user).first();
+        Observable<List<VoteData>> remoteVote = voteDataRemoteSource
+                .getSearchVoteList(keyword, offset, user)
+                .subscribeOn(schedulerProvider.io())
+                .map(voteDataList -> {
+                    voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_FAVORITE);
+                    return voteDataList;
+                })
+                .onErrorResumeNext((Throwable e) -> localVote);
 
-            @Override
-            public void onVoteListNotAvailable() {
-                voteDataLocalSource.getFavoriteVoteList(offset, user, targetUser, new GetVoteListCallback() {
-                    @Override
-                    public void onVoteListLoaded(List<VoteData> voteDataList) {
-                        callback.onVoteListLoaded(voteDataList);
+        return Observable.concat(remoteVote, localVote).first()
+                .map(voteDataList -> {
+                    if (voteDataList == null) {
+                        throw new NoSuchElementException("no vote data");
                     }
-
-                    @Override
-                    public void onVoteListNotAvailable() {
-                        callback.onVoteListNotAvailable();
-                    }
+                    return voteDataList;
                 });
-            }
-        });
     }
 
-    @Override
-    public void getSearchVoteList(final String keyword, final int offset, @NonNull final User user, final GetVoteListCallback callback) {
-        voteDataRemoteSource.getSearchVoteList(keyword, offset, user, new GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, null);
-                callback.onVoteListLoaded(voteDataList);
-            }
-
-            @Override
-            public void onVoteListNotAvailable() {
-                voteDataLocalSource.getSearchVoteList(keyword, offset, user, new GetVoteListCallback() {
-                    @Override
-                    public void onVoteListLoaded(List<VoteData> voteDataList) {
-                        callback.onVoteListLoaded(voteDataList);
-                    }
-
-                    @Override
-                    public void onVoteListNotAvailable() {
-                        callback.onVoteListNotAvailable();
-                    }
-                });
-            }
-        });
-    }
 
     @Override
-    public void getNewVoteList(final int offset, final User user, final GetVoteListCallback callback) {
-        voteDataRemoteSource.getNewVoteList(offset, user, new GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_NEW);
-                callback.onVoteListLoaded(voteDataList);
-            }
+    public Observable<List<VoteData>> getNewVoteList(int offset, User user) {
+        Observable<List<VoteData>> localVote = voteDataLocalSource
+                .getNewVoteList(offset, user).first();
+        Observable<List<VoteData>> remoteVote = voteDataRemoteSource
+                .getNewVoteList(offset, user)
+                .subscribeOn(schedulerProvider.io())
+                .map(voteDataList -> {
+                    voteDataLocalSource.saveVoteDataList(voteDataList, offset, MainPageTabFragment.TAB_NEW);
+                    return voteDataList;
+                })
+                .onErrorResumeNext((Throwable e) -> localVote);
 
-            @Override
-            public void onVoteListNotAvailable() {
-                voteDataLocalSource.getNewVoteList(offset, user, new GetVoteListCallback() {
-                    @Override
-                    public void onVoteListLoaded(List<VoteData> voteDataList) {
-                        callback.onVoteListLoaded(voteDataList);
+        return Observable.concat(remoteVote, localVote).first()
+                .map(voteDataList -> {
+                    if (voteDataList == null) {
+                        throw new NoSuchElementException("no vote data");
                     }
-
-                    @Override
-                    public void onVoteListNotAvailable() {
-                        callback.onVoteListNotAvailable();
-                    }
+                    return voteDataList;
                 });
-            }
-        });
     }
 
 }

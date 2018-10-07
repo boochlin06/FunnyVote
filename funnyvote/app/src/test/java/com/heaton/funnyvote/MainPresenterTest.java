@@ -1,18 +1,17 @@
 package com.heaton.funnyvote;
 
 import com.heaton.funnyvote.data.user.UserDataRepository;
-import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
-import com.heaton.funnyvote.ui.votedetail.OptionItemAdapter;
+import com.heaton.funnyvote.utils.schedulers.ImmediateSchedulerProvider;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertTrue;
+import rx.Observable;
+
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -29,14 +28,12 @@ public class MainPresenterTest {
     private MainPageContract.View view;
 
     private MainPagePresenter presenter;
-    @Captor
-    private ArgumentCaptor<UserDataSource.GetUserCallback> getUserCallbackArgumentCaptor;
 
     @Before
     public void setupMainPresenter() {
         MockitoAnnotations.initMocks(this);
 
-        presenter = new MainPagePresenter(userDataRepository, view);
+        presenter = new MainPagePresenter(userDataRepository, view, new ImmediateSchedulerProvider());
         user = mock(User.class);
         when(user.getUserName()).thenReturn("Heaton");
     }
@@ -44,7 +41,7 @@ public class MainPresenterTest {
     @Test
     public void createPresenter_setsThePresenterToView() {
         // Get a reference to the class under test
-        presenter = new MainPagePresenter(userDataRepository, view);
+        presenter = new MainPagePresenter(userDataRepository, view, new ImmediateSchedulerProvider());
 
         // Then the presenter is set to the view
         verify(view).setPresenter(presenter);
@@ -52,14 +49,12 @@ public class MainPresenterTest {
 
     @Test
     public void loadUserFromRepositoryAndLoadIntoView() {
-        presenter.start();
+        when(userDataRepository.getUser(eq(false))).thenReturn(Observable.just(user));
+        presenter.subscribe();
 
-        verify(userDataRepository).getUser(getUserCallbackArgumentCaptor.capture(), eq(false));
-        getUserCallbackArgumentCaptor.getValue().onResponse(user);
+        verify(userDataRepository).getUser(eq(false));
 
-        ArgumentCaptor<User> updateUserArgumentCaptor = ArgumentCaptor.forClass(User.class);
-        verify(view).updateUserView(updateUserArgumentCaptor.capture());
-        assertTrue(updateUserArgumentCaptor.getValue().getUserName().length() > 0);
+        verify(view).updateUserView(any());
     }
 
     @Test

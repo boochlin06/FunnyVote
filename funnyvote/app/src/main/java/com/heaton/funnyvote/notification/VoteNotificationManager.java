@@ -19,6 +19,9 @@ import com.heaton.funnyvote.ui.personal.UserActivity;
 
 import java.util.Calendar;
 
+import rx.Observer;
+import rx.subscriptions.CompositeSubscription;
+
 /**
  * Created by heaton on 2017/4/29.
  */
@@ -68,21 +71,31 @@ public class VoteNotificationManager {
 
     public void sendNotification() {
         UserDataRepository userDataRepository = Injection.provideUserRepository(context);
-        userDataRepository.getUser(new UserDataSource.GetUserCallback() {
+        CompositeSubscription subscription = new CompositeSubscription();
+        subscription.add(userDataRepository.getUser(false)
+        .subscribeOn(Injection.provideSchedulerProvider().computation())
+        .subscribeOn(Injection.provideSchedulerProvider().ui())
+        .subscribe(new Observer<User>() {
             @Override
-            public void onResponse(User user) {
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                sendMainNotification();
+            }
+
+            @Override
+            public void onNext(User user) {
                 if (((int) (Math.random() * 4)) % 4 == 1) {
                     sendMainNotification();
                 } else {
                     sendUserVoteChange(user.getUserCode());
                 }
             }
+        }));
 
-            @Override
-            public void onFailure() {
-                sendMainNotification();
-            }
-        }, false);
     }
 
     public void sendUserVoteChange(String authorCode) {

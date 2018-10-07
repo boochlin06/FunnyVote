@@ -1,15 +1,19 @@
 package com.heaton.funnyvote.ui.search;
 
+import android.support.annotation.NonNull;
+
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
-import com.heaton.funnyvote.data.VoteData.VoteDataSource;
 import com.heaton.funnyvote.data.user.UserDataRepository;
-import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import rx.Observer;
+import rx.subscriptions.CompositeSubscription;
 
 public class SearchPresenter implements SearchContract.Presenter {
 
@@ -38,16 +42,22 @@ public class SearchPresenter implements SearchContract.Presenter {
     }
 
     private String keyword;
+    private BaseSchedulerProvider schedulerProvider;
+    @NonNull
+    private CompositeSubscription mSubscriptions;
 
 
     public SearchPresenter(VoteDataRepository voteDataRepository
             , UserDataRepository userDataRepository
-            , SearchContract.View mainPageView) {
+            , SearchContract.View mainPageView
+            , BaseSchedulerProvider schedulerProvider) {
         this.view = mainPageView;
         this.userDataRepository = userDataRepository;
         this.voteDataRepository = voteDataRepository;
         this.searchVoteDataList = new ArrayList<>();
         this.view.setPresenter(this);
+        this.schedulerProvider = schedulerProvider;
+        mSubscriptions = new CompositeSubscription();
     }
 
     @Override
@@ -59,18 +69,27 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     @Override
     public void reloadSearchList(final int offset) {
-        voteDataRepository.getSearchVoteList(keyword, offset, user, new VoteDataSource.GetVoteListCallback() {
-            @Override
-            public void onVoteListLoaded(List<VoteData> voteDataList) {
-                updateSearchList(voteDataList, offset);
-                view.refreshFragment(searchVoteDataList);
-            }
+        mSubscriptions.add(voteDataRepository.getSearchVoteList(keyword, offset, user)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<List<VoteData>>() {
+                    @Override
+                    public void onCompleted() {
 
-            @Override
-            public void onVoteListNotAvailable() {
-                view.showHintToast(R.string.toast_network_connect_error, 0);
-            }
-        });
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        view.showHintToast(R.string.toast_network_connect_error, 0);
+
+                    }
+
+                    @Override
+                    public void onNext(List<VoteData> voteDataList) {
+                        updateSearchList(voteDataList, offset);
+                        view.refreshFragment(searchVoteDataList);
+                    }
+                }));
     }
 
     @Override
@@ -104,25 +123,37 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void start(final String keyword) {
         this.keyword = keyword;
-        userDataRepository.getUser(new UserDataSource.GetUserCallback() {
-            @Override
-            public void onResponse(User user) {
-                SearchPresenter.this.user = user;
-                if (!(keyword == null || keyword.length() == 0)) {
-                    System.out.println("1keyword:" + keyword);
-                    searchVote(keyword);
-                }
-            }
+        mSubscriptions.add(userDataRepository.getUser(false)
+                .subscribeOn(schedulerProvider.computation())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(new Observer<User>() {
+                    @Override
+                    public void onCompleted() {
 
-            @Override
-            public void onFailure() {
+                    }
 
-            }
-        }, false);
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(User user) {
+                        SearchPresenter.this.user = user;
+                        if (!(keyword == null || keyword.length() == 0)) {
+                            searchVote(keyword);
+                        }
+                    }
+                }));
     }
 
     @Override
-    public void start() {
+    public void subscribe() {
         start("");
+    }
+
+    @Override
+    public void unsubscribe() {
+        mSubscriptions.clear();
     }
 }

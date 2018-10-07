@@ -14,7 +14,6 @@ import com.heaton.funnyvote.MainActivity;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.data.user.UserDataRepository;
-import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.PromotionDao;
 import com.heaton.funnyvote.database.User;
@@ -23,6 +22,9 @@ import com.heaton.funnyvote.ui.introduction.IntroductionActivity;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+
+import rx.Observer;
+import rx.subscriptions.CompositeSubscription;
 
 /**
  * Created by heaton on 2016/10/26.
@@ -64,17 +66,26 @@ public class WelcomeActivity extends AppCompatActivity {
                         new Intent(contextWeakReference.get(), MainActivity.class));
             }
             UserDataRepository userDataRepository = Injection.provideUserRepository(contextWeakReference.get());
-            userDataRepository.getUser(new UserDataSource.GetUserCallback() {
-                @Override
-                public void onResponse(User user) {
-                    contextWeakReference.get().finish();
-                }
+            CompositeSubscription subscription = new CompositeSubscription();
+            subscription.add(userDataRepository.getUser(true)
+                    .subscribeOn(Injection.provideSchedulerProvider().computation())
+                    .observeOn(Injection.provideSchedulerProvider().ui())
+                    .subscribe(new Observer<User>() {
+                        @Override
+                        public void onCompleted() {
 
-                @Override
-                public void onFailure() {
-                    contextWeakReference.get().finish();
-                }
-            }, true);
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            contextWeakReference.get().finish();
+                        }
+
+                        @Override
+                        public void onNext(User user) {
+                            contextWeakReference.get().finish();
+                        }
+                    }));
         }
 
         @Override
@@ -85,22 +96,22 @@ public class WelcomeActivity extends AppCompatActivity {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, true)) {
-                PromotionDao promotionDao = ((FunnyVoteApplication) (contextWeakReference.get().getApplicationContext()))
-                        .getDaoSession().getPromotionDao();
-                String imageURL[] = contextWeakReference.get().getResources().getStringArray(R.array.imageURL);
-                List<Promotion> promotions = new ArrayList<>();
-                for (int i = 0; i < 1; i++) {
-                    Promotion promotion = new Promotion();
-                    promotion.setImageURL(imageURL[i % imageURL.length]);
-                    promotion.setActionURL("https://play.google.com/store/apps/details?id=com.heaton.funnyvote");
-                    promotion.setTitle("title:" + i);
-                    promotions.add(promotion);
-                }
-                promotionDao.deleteAll();
-                promotionDao.insertInTx(promotions);
-                firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, false).apply();
+            //if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, true)) {
+            PromotionDao promotionDao = ((FunnyVoteApplication) (contextWeakReference.get().getApplicationContext()))
+                    .getDaoSession().getPromotionDao();
+            String imageURL[] = contextWeakReference.get().getResources().getStringArray(R.array.imageURL);
+            List<Promotion> promotions = new ArrayList<>();
+            for (int i = 0; i < 1; i++) {
+                Promotion promotion = new Promotion();
+                promotion.setImageURL(imageURL[i % imageURL.length]);
+                promotion.setActionURL("https://play.google.com/store/apps/details?id=com.heaton.funnyvote");
+                promotion.setTitle("title:" + i);
+                promotions.add(promotion);
             }
+            promotionDao.deleteAll();
+            promotionDao.insertInTx(promotions);
+            firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, false).apply();
+            //}
             return null;
         }
     }

@@ -248,8 +248,9 @@ public class AccountFragment extends android.support.v4.app.Fragment
         twitterLoginBtn.setOnClickListener(this);
 
 
-        presenter = new AccountPresenter(Injection.provideUserRepository(getContext()), this);
-        presenter.start();
+        presenter = new AccountPresenter(Injection.provideUserRepository(getContext()), this
+                , Injection.provideSchedulerProvider());
+        presenter.subscribe();
 
         return view;
     }
@@ -257,6 +258,7 @@ public class AccountFragment extends android.support.v4.app.Fragment
     @Override
     public void onPause() {
         super.onPause();
+        presenter.unsubscribe();
         Log.d(TAG, "onPause");
     }
 

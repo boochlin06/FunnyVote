@@ -1,8 +1,8 @@
 package com.heaton.funnyvote.retrofit;
 
+import com.google.gson.annotations.SerializedName;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.VoteData;
-import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 import java.util.Map;
@@ -11,6 +11,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -22,6 +23,7 @@ import retrofit2.http.Part;
 import retrofit2.http.PartMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import rx.Observable;
 
 /**
  * Created by heaton on 2016/12/4.
@@ -39,6 +41,10 @@ public class Server {
         Call<ResponseBody> getGuestCode(@Path("name") String guestName);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @POST("api/guest/{name}")
+        Observable<Response<ResponseBody>> getGuestCodeRx(@Path("name") String guestName);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
         @POST("api/social/member")
         Call<ResponseBody> addUser(@Field("type") String type,
@@ -48,6 +54,24 @@ public class Server {
                                    @Field("imgurl") String imgUrl,
                                    @Field("email") String email,
                                    @Field("gender") String gender);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @POST("api/social/member")
+        Observable<Response<ResponseBody>> addUserRx(@Field("type") String type,
+                                   @Field("appid") String appId,
+                                   @Field("id") String id,
+                                   @Field("name") String name,
+                                   @Field("imgurl") String imgUrl,
+                                   @Field("email") String email,
+                                   @Field("gender") String gender);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @PUT("api/member")
+        Observable<Response<ResponseBody>> changeUserNameRx(@Field("tokentype") String tokenType,
+                                                  @Field("token") String token,
+                                                  @Field("nickname") String newName);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
@@ -62,9 +86,19 @@ public class Server {
                                               @Path("guest") String guest);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @PUT("api/link/{otp}/{guest}")
+        Observable<Response<ResponseBody>> linkGuestLoginUserRx(@Path("otp") String otp,
+                                              @Path("guest") String guest);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/member")
         Call<UserDataQuery> getUserInfo(@Query("tokentype") String tokenType,
-                                 @Query("token") String token);
+                                        @Query("token") String token);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/member")
+        Observable<Response<Server.UserDataQuery>> getUserInfoRx(@Query("tokentype") String tokenType,
+                                                                 @Query("token") String token);
     }
 
     public interface VoteService {
@@ -78,10 +112,25 @@ public class Server {
         );
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @Multipart
+        @POST("api/poll")
+        Observable<VoteData> createVoteRx(@PartMap Map<String, RequestBody> parameter,
+                                          @Part("description") RequestBody description,
+                                          @Part MultipartBody.Part file
+
+        );
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/poll/{votecode}")
         Call<VoteData> getVote(@Path("votecode") String voteCode,
                                @Query("token") String token,
                                @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/poll/{votecode}")
+        Observable<VoteData> getVoteRx(@Path("votecode") String voteCode,
+                                       @Query("token") String token,
+                                       @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
@@ -93,6 +142,15 @@ public class Server {
                                 @Field("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @POST("api/vote/{votecode}")
+        Observable<VoteData> pollVoteRx(@Path("votecode") String voteCode,
+                                        @Field("p") String password,
+                                        @Field("oc") List<String> optionCode,
+                                        @Field("token") String token,
+                                        @Field("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/plist")
         Call<List<VoteData>> getVoteList(@Query("p") int pageNumber,
                                          @Query("ps") int pageCount,
@@ -101,11 +159,26 @@ public class Server {
                                          @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/plist")
+        Observable<List<VoteData>> getVoteListRx(@Query("p") int pageNumber,
+                                                 @Query("ps") int pageCount,
+                                                 @Query("o") String listType,
+                                                 @Query("token") String token,
+                                                 @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/fav")
         Call<List<VoteData>> getFavoriteVoteList(@Query("p") int pageNumber,
                                                  @Query("ps") int pageCount,
                                                  @Query("token") String token,
                                                  @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/fav")
+        Observable<List<VoteData>> getFavoriteVoteListRx(@Query("p") int pageNumber,
+                                                         @Query("ps") int pageCount,
+                                                         @Query("token") String token,
+                                                         @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
@@ -116,6 +189,14 @@ public class Server {
                                           @Field("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @POST("api/fav")
+        Observable<ResponseBody> updateFavoriteRx(@Field("c") String voteCode,
+                                                  @Field("action") String isFavorite,
+                                                  @Field("token") String token,
+                                                  @Field("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/poll/history/create")
         Call<List<VoteData>> getUserCreateVoteList(@Query("p") int pageNumber,
                                                    @Query("ps") int pageCount,
@@ -123,11 +204,25 @@ public class Server {
                                                    @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/poll/history/create")
+        Observable<List<VoteData>> getUserCreateVoteListRx(@Query("p") int pageNumber,
+                                                           @Query("ps") int pageCount,
+                                                           @Query("token") String token,
+                                                           @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/poll/history/vote")
         Call<List<VoteData>> getUserParticipateVoteList(@Query("p") int pageNumber,
                                                         @Query("ps") int pageCount,
                                                         @Query("token") String token,
                                                         @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/poll/history/vote")
+        Observable<List<VoteData>> getUserParticipateVoteListRx(@Query("p") int pageNumber,
+                                                                @Query("ps") int pageCount,
+                                                                @Query("token") String token,
+                                                                @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @FormUrlEncoded
@@ -139,12 +234,29 @@ public class Server {
                                     @Field("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @FormUrlEncoded
+        @POST("api/option")
+        Observable<VoteData> updateOptionRx(@Field("c") String voteCode,
+                                            @Field("p") String password,
+                                            @Field("ot") List<String> newOption,
+                                            @Field("token") String token,
+                                            @Field("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/search")
         Call<List<VoteData>> getSearchVoteList(@Query("keyword") String keyword,
                                                @Query("p") int pageNumber,
                                                @Query("ps") int pageCount,
                                                @Query("token") String token,
                                                @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/search")
+        Observable<List<VoteData>> getSearchVoteListRx(@Query("keyword") String keyword,
+                                                       @Query("p") int pageNumber,
+                                                       @Query("ps") int pageCount,
+                                                       @Query("token") String token,
+                                                       @Query("tokentype") String tokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/public/create")
@@ -156,6 +268,15 @@ public class Server {
                                                        @Query("cretokentype") String targettokenType);
 
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/public/create")
+        Observable<List<VoteData>> getPersonalCreateVoteListRx(@Query("p") int pageNumber,
+                                                               @Query("ps") int pageCount,
+                                                               @Query("token") String token,
+                                                               @Query("tokentype") String tokenType,
+                                                               @Query("cretoken") String targettoken,
+                                                               @Query("cretokentype") String targettokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/public/fav")
         Call<List<VoteData>> getPersonalFavoriteVoteList(@Query("p") int pageNumber,
                                                          @Query("ps") int pageCount,
@@ -163,6 +284,15 @@ public class Server {
                                                          @Query("tokentype") String tokenType,
                                                          @Query("favtoken") String targettoken,
                                                          @Query("favtokentype") String targettokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/public/fav")
+        Observable<List<VoteData>> getPersonalFavoriteVoteListRx(@Query("p") int pageNumber,
+                                                                 @Query("ps") int pageCount,
+                                                                 @Query("token") String token,
+                                                                 @Query("tokentype") String tokenType,
+                                                                 @Query("favtoken") String targettoken,
+                                                                 @Query("favtokentype") String targettokenType);
     }
 
     public interface PromotionService {
@@ -172,6 +302,13 @@ public class Server {
                                                @Query("ps") int pageCount,
                                                @Query("token") String token,
                                                @Query("tokentype") String tokenType);
+
+        @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
+        @GET("api/promotion")
+        Observable<List<Promotion>> getPromotionListRx(@Query("p") int pageNumber,
+                                                       @Query("ps") int pageCount,
+                                                       @Query("token") String token,
+                                                       @Query("tokentype") String tokenType);
     }
 
     public static class UserDataQuery {

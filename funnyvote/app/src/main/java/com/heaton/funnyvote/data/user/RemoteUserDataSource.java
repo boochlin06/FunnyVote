@@ -14,6 +14,9 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import rx.Observable;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 public class RemoteUserDataSource implements UserDataSource {
     private static final String TAG = RemoteUserDataSource.class.getSimpleName();
@@ -51,10 +54,32 @@ public class RemoteUserDataSource implements UserDataSource {
         // Not required for the network data source
     }
 
+
     @Override
-    public void getGuestUserCode(GetUserCodeCallback callback, String name) {
-        Call<ResponseBody> call = userService.getGuestCode(name);
-        call.enqueue(new GuestUserCodeResponseCallback(callback));
+    public Observable<String> getGuestUserCode(String name) {
+        return userService.getGuestCodeRx(name).flatMap(new Func1<Response<ResponseBody>, Observable<String>>() {
+            @Override
+            public Observable<String> call(Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        String responseStr = response.body().string();
+                        JSONObject jsonObject = new JSONObject(responseStr);
+                        String otpString = jsonObject.getString("guest");
+                        return Observable.just(otpString);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return Observable.error(e);
+                    }
+                } else {
+                    try {
+                        Log.d(TAG, "onResponse false:" + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return Observable.error(new IOException("network failure"));
+                }
+            }
+        }).subscribeOn(Schedulers.io());
     }
 
     @Override
@@ -64,8 +89,30 @@ public class RemoteUserDataSource implements UserDataSource {
     }
 
     @Override
-    public void getUser(GetUserCallback callback, boolean forceUpdateUserCode) {
+    public Observable<Server.UserDataQuery> getUserInfo(User user) {
+        return userService.getUserInfoRx(user.getTokenType(), user.getUserCode())
+                .flatMap(new Func1<Response<Server.UserDataQuery>, Observable<Server.UserDataQuery>>() {
+                    @Override
+                    public Observable<Server.UserDataQuery> call(Response<Server.UserDataQuery> response) {
+                        if (response.isSuccessful()) {
+                            return Observable.just(response.body());
+                        } else {
+                            String errorMessage = "";
+                            try {
+                                errorMessage = response.errorBody().string();
+                                Log.e(TAG, "getUser onResponse false" + errorMessage);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            return Observable.error(new Exception(errorMessage));
+                        }
+                    }
+                });
+    }
 
+    @Override
+    public Observable<User> getUser(boolean forceUpdateUserCode) {
+        return null;
     }
 
     @Override
@@ -73,10 +120,10 @@ public class RemoteUserDataSource implements UserDataSource {
 
     }
 
-    @Override
-    public void registerUser(String appId, User user, boolean mergeGuest, RegisterUserCallback callback) {
 
-        //Not required for the network data source
+    @Override
+    public Observable registerUser(String appId, User user, boolean mergeGuest) {
+        return null;
     }
 
 
@@ -85,11 +132,34 @@ public class RemoteUserDataSource implements UserDataSource {
         //Not required for the network data source
     }
 
+
     @Override
-    public void getUserCode(String userType, String appId, User user, GetUserCodeCallback callback) {
-        Call<ResponseBody> call = userService.addUser(userType, appId, user.getUserID(),
-                user.getUserName(), user.getEmail(), user.getUserIcon(), user.getGender());
-        call.enqueue(new LoginUserCodeResponseCallback(callback));
+    public Observable<String> getUserCode(String userType, String appId, User user) {
+        return userService.addUserRx(userType, appId, user.getUserID(),
+                user.getUserName(), user.getEmail(), user.getUserIcon(), user.getGender())
+                .flatMap(new Func1<Response<ResponseBody>, Observable<String>>() {
+                    @Override
+                    public Observable<String> call(Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            try {
+                                String responseStr = response.body().string();
+                                JSONObject jsonObject = new JSONObject(responseStr);
+                                String otpString = jsonObject.getString("otp");
+                                return Observable.just(otpString);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                return Observable.error(e);
+                            }
+                        } else {
+                            try {
+                                Log.d(TAG, "onResponse false:" + response.errorBody().string());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            return Observable.error(new IOException("network failure"));
+                        }
+                    }
+                });
     }
 
     @Override
@@ -98,81 +168,54 @@ public class RemoteUserDataSource implements UserDataSource {
         call.enqueue(callback);
     }
 
+    @Override
+    public Observable<ResponseBody> linkGuestToLoginUser(String otp, String guest) {
+        return userService.linkGuestLoginUserRx(otp, guest)
+                .flatMap(new Func1<Response<ResponseBody>, Observable<ResponseBody>>() {
+                    @Override
+                    public Observable<ResponseBody> call(Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            return Observable.just(response.body());
+                        } else {
+                            try {
+                                Log.e(TAG, "registerUser" + response.errorBody().string());
+                                return Observable.error(new Exception(response.errorBody().string()));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            return Observable.error(new Exception("linkGuestToLoginUser error"));
+                        }
+                    }
+                });
+    }
+
     public void changeUserName(Callback<ResponseBody> callback, String tokenType, String token, String name) {
         Call<ResponseBody> call = userService.changeUserName(tokenType, token, name);
         call.enqueue(callback);
     }
 
     @Override
-    public void changeCurrentUserName(String name, ChangeUserNameCallback callback) {
-
+    public Observable<ResponseBody> changeUserName(String tokenType, String token, String name) {
+        return userService.changeUserNameRx(tokenType, token, name)
+                .flatMap((Func1<Response<ResponseBody>, Observable<ResponseBody>>) response -> {
+                    if (response.isSuccessful()) {
+                        return Observable.just(response.body());
+                    } else {
+                        String errorMessage = "";
+                        try {
+                            errorMessage = response.errorBody().string();
+                            Log.e(TAG, "changeUserName onResponse false" + errorMessage);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return Observable.error(new Exception(errorMessage));
+                    }
+                });
     }
 
-    class LoginUserCodeResponseCallback implements Callback<ResponseBody> {
-        GetUserCodeCallback getUserCodeCallback;
-
-        public LoginUserCodeResponseCallback(GetUserCodeCallback getUserCodeCallback) {
-            this.getUserCodeCallback = getUserCodeCallback;
-        }
-
-        @Override
-        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-            Log.d(TAG, "Response Status:" + response.code());
-
-            if (response.isSuccessful()) {
-                try {
-                    String responseStr = response.body().string();
-                    JSONObject jsonObject = new JSONObject(responseStr);
-                    String otpString = jsonObject.getString("otp");
-                    getUserCodeCallback.onSuccess(otpString);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    getUserCodeCallback.onFalure();
-                }
-            } else {
-                try {
-                    Log.d(TAG, "onResponse false:" + response.errorBody().string());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                getUserCodeCallback.onFalure();
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ResponseBody> call, Throwable t) {
-            getUserCodeCallback.onFalure();
-        }
+    @Override
+    public Observable changeCurrentUserName(String name) {
+        return null;
     }
 
-    class GuestUserCodeResponseCallback implements Callback<ResponseBody> {
-        GetUserCodeCallback getUserCodeCallback;
-
-        public GuestUserCodeResponseCallback(GetUserCodeCallback getUserCodeCallback) {
-            this.getUserCodeCallback = getUserCodeCallback;
-        }
-
-        @Override
-        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-            Log.d(TAG, "Response Status:" + response.code());
-            if (response.isSuccessful()) {
-                try {
-                    String responseStr = response.body().string();
-                    JSONObject jsonObject = new JSONObject(responseStr);
-                    String guestCode = jsonObject.getString("guest");
-                    getUserCodeCallback.onSuccess(guestCode);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    getUserCodeCallback.onFalure();
-                }
-            } else {
-                getUserCodeCallback.onFalure();
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ResponseBody> call, Throwable t) {
-            getUserCodeCallback.onFalure();
-        }
-    }
 }

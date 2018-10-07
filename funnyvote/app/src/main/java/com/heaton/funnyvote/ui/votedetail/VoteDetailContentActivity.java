@@ -237,8 +237,9 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
         presenter = new VoteDetailPresenter(voteCode
                 , Injection.provideVoteDataRepository(context)
                 , Injection.provideUserRepository(context)
-                , this);
-        presenter.start();
+                , this
+                , Injection.provideSchedulerProvider());
+        presenter.subscribe();
 
     }
 
@@ -247,6 +248,12 @@ public class VoteDetailContentActivity extends AppCompatActivity implements Vote
         super.onResume();
         tracker.setScreenName(AnalyzticsTag.SCREEN_VOTE_DETAIL);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        presenter.unsubscribe();
     }
 
     @Override
