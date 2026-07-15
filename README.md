@@ -4,19 +4,26 @@
 *   **目的與解決痛點**：這是一個架構較為複雜的進階版投票系統。有別於 EasyVote，它解決了「網路延遲」、「多層級非同步請求」以及「離線資料快取」等痛點。讓使用者在網路不穩定的環境下依然能順暢瀏覽投票選項。
 *   **專案定位**：進階實用工具類 APP (Advanced Utility Application)。
 
-## 🚀 技術亮點 (Technical Highlights)
-*   **GreenDAO 本地快取**：選用了以效能著稱的 `GreenDAO` 關聯式資料庫。將遠端拉取的投票資料映射至本地端，實現了斷網可用性與極快的冷啟動速度。
-*   **Retrofit 高效網路層**：拋棄 `HttpURLConnection`，以 `Retrofit 2` 進行 RESTful API 呼叫，大幅提升了連線穩定度與 JSON 解析效率。
+## 🚀 技術亮點 (Modernized Tech Stack)
+*   **Jetpack Compose**：全面導入宣告式 UI 架構，捨棄傳統 XML Layout，並以單一 Activity (`Single-Activity Architecture`) 搭配 `Navigation Compose` 來管理畫面路由。
+*   **Room Database**：取代了原本的 GreenDAO。以更安全的型別檢查及更好的 Coroutines 整合，負責本地資料庫快取功能。
+*   **Retrofit & Coroutines**：API 層全面升級，使用 `Kotlin Coroutines` 與 `Retrofit` 取代舊有的 Callback 寫法，讓非同步請求代碼更加簡潔易讀。
+*   **Hilt (Dependency Injection)**：引進 Google 官方推薦的 Dagger Hilt 進行依賴注入，解除物件間的耦合，降低維護成本。
 
 ## 🏗️ 架構與 Design Pattern
-*   **EventBus (發布/訂閱模式)**：這是在 RxJava 尚未完全普及前的頂級架構選擇。專案中的資料管理員 (如 `VoteDataManager`) 在背景執行緒透過 Retrofit 取得資料後，利用 `EventBus.getDefault().post()` 將事件廣播出去。而 UI 層 (Fragment/Activity) 只需透過 `@Subscribe` 標記即可接收更新，完美達成了 View 與 Model 的強制解耦。
-*   **Repository Pattern (儲存庫模式)**：雖然未明說，但 `VoteDataManager` 實際上扮演了 Repository 的角色，負責判斷資料該從本地 GreenDAO 還是遠端 API 獲取。
+*   **MVVM & StateFlow**：專案從原先的 EventBus 事件驅動架構，重構為標準的 MVVM 架構。使用 `ViewModel` 與 `StateFlow` 管理畫面狀態 (`UiState`)，達成單向資料流 (UDF, Unidirectional Data Flow)。
+*   **Repository Pattern (儲存庫模式)**：利用 Repository 整合本地端 (Room) 與遠端 (Retrofit) 的資料來源，並提供單一資料來源 (SSOT) 給 ViewModel。
 
 ## 🌿 各分支目的 (Branches Overview)
-*   本專案為穩定版的 Master 快照 (`FunnyVote-master`)，專注於提供一套完整可運作的投票系統範例。
+*   本專案為穩定版的 Master 快照 (`FunnyVote-master`)，並且已完成全面的 Modern Android 架構重構。
 
 ## 📦 How to Use (快速上手)
 ```bash
-# 使用 Android Studio 匯入專案，編譯前請確認 GreenDAO 生成腳本是否執行成功
-./gradlew build
+# 使用 Android Studio (Hedgehog 或更新版本) 匯入專案
+./gradlew assembleDebug
 ```
+
+## 🎯 面試與推銷指南 (Interview & Pitch Guide)
+如果您即將在面試中展示此專案，請務必閱讀這份專屬的教戰手冊：
+👉 **[點此查看面試推銷攻略 (interview.md)](./interview.md)**
+
