@@ -5,15 +5,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.tooling.preview.Preview
 import com.heaton.funnyvote.data.local.entity.VoteData
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
@@ -21,8 +21,26 @@ fun MainScreen(
     onNavigateToCreate: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    MainScreenContent(
+        uiState = uiState,
+        onNavigateToDetail = onNavigateToDetail,
+        onNavigateToCreate = onNavigateToCreate,
+        onNavigateToProfile = onNavigateToProfile,
+        onRefresh = { viewModel.handleIntent(MainIntent.RefreshVotes) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreenContent(
+    uiState: MainUiState,
+    onNavigateToDetail: (String) -> Unit,
+    onNavigateToCreate: () -> Unit,
+    onNavigateToProfile: () -> Unit,
+    onRefresh: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,7 +80,7 @@ fun MainScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Error: ${state.message}", color = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.fetchHotVotes() }) {
+                        Button(onClick = onRefresh) {
                             Text("Retry")
                         }
                     }
@@ -107,4 +125,44 @@ fun VoteItemCard(vote: VoteData, onClick: () -> Unit) {
             Text(text = "Author: ${vote.authorName ?: "Unknown"}", style = MaterialTheme.typography.bodyMedium)
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenLoadingPreview() {
+    MainScreenContent(
+        uiState = MainUiState.Loading,
+        onNavigateToDetail = {},
+        onNavigateToCreate = {},
+        onNavigateToProfile = {},
+        onRefresh = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenSuccessPreview() {
+    val mockData = listOf(
+        VoteData(voteCode = "123", title = "What is your favorite color?", authorName = "Alice"),
+        VoteData(voteCode = "456", title = "Best Android Architecture?", authorName = "Bob")
+    )
+    MainScreenContent(
+        uiState = MainUiState.Success(mockData),
+        onNavigateToDetail = {},
+        onNavigateToCreate = {},
+        onNavigateToProfile = {},
+        onRefresh = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainScreenErrorPreview() {
+    MainScreenContent(
+        uiState = MainUiState.Error("Network Timeout"),
+        onNavigateToDetail = {},
+        onNavigateToCreate = {},
+        onNavigateToProfile = {},
+        onRefresh = {}
+    )
 }

@@ -18,6 +18,11 @@ sealed class MainUiState {
     data class Error(val message: String) : MainUiState()
 }
 
+sealed class MainIntent {
+    object LoadHotVotes : MainIntent()
+    object RefreshVotes : MainIntent()
+}
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val voteRepository: VoteRepository
@@ -27,10 +32,17 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     init {
-        fetchHotVotes()
+        handleIntent(MainIntent.LoadHotVotes)
     }
 
-    fun fetchHotVotes() {
+    fun handleIntent(intent: MainIntent) {
+        when (intent) {
+            is MainIntent.LoadHotVotes -> fetchHotVotes()
+            is MainIntent.RefreshVotes -> fetchHotVotes()
+        }
+    }
+
+    private fun fetchHotVotes() {
         _uiState.update { MainUiState.Loading }
         viewModelScope.launch {
             voteRepository.getHotVotes().collect { result ->

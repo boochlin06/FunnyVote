@@ -5,22 +5,37 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.tooling.preview.Preview
+import com.heaton.funnyvote.data.local.entity.VoteData
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoteDetailScreen(
     voteCode: String,
     viewModel: VoteDetailViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    VoteDetailScreenContent(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onRefresh = { viewModel.handleIntent(VoteDetailIntent.RefreshVoteDetail) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VoteDetailScreenContent(
+    uiState: VoteDetailUiState,
+    onNavigateBack: () -> Unit,
+    onRefresh: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -68,9 +83,46 @@ fun VoteDetailScreen(
                     }
                 }
                 is VoteDetailUiState.Error -> {
-                    Text(text = "Error: ${state.message}", color = MaterialTheme.colorScheme.error)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Error: ${state.message}", color = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = onRefresh) {
+                            Text("Retry")
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun VoteDetailScreenLoadingPreview() {
+    VoteDetailScreenContent(
+        uiState = VoteDetailUiState.Loading,
+        onNavigateBack = {},
+        onRefresh = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun VoteDetailScreenSuccessPreview() {
+    val mockData = VoteData(voteCode = "123", title = "Favorite Programming Language?", authorName = "John Doe")
+    VoteDetailScreenContent(
+        uiState = VoteDetailUiState.Success(mockData),
+        onNavigateBack = {},
+        onRefresh = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun VoteDetailScreenErrorPreview() {
+    VoteDetailScreenContent(
+        uiState = VoteDetailUiState.Error("Failed to fetch vote details"),
+        onNavigateBack = {},
+        onRefresh = {}
+    )
 }

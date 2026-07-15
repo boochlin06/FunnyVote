@@ -17,24 +17,40 @@ data class CreateVoteUiState(
     val error: String? = null
 )
 
+sealed class CreateVoteIntent {
+    data class UpdateTitle(val title: String) : CreateVoteIntent()
+    data class UpdateOption1(val option: String) : CreateVoteIntent()
+    data class UpdateOption2(val option: String) : CreateVoteIntent()
+    object SubmitVote : CreateVoteIntent()
+}
+
 @HiltViewModel
 class CreateVoteViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(CreateVoteUiState())
     val uiState: StateFlow<CreateVoteUiState> = _uiState.asStateFlow()
 
-    fun updateTitle(title: String) {
+    fun handleIntent(intent: CreateVoteIntent) {
+        when (intent) {
+            is CreateVoteIntent.UpdateTitle -> updateTitle(intent.title)
+            is CreateVoteIntent.UpdateOption1 -> updateOption1(intent.option)
+            is CreateVoteIntent.UpdateOption2 -> updateOption2(intent.option)
+            is CreateVoteIntent.SubmitVote -> submitVote()
+        }
+    }
+
+    private fun updateTitle(title: String) {
         _uiState.update { it.copy(title = title) }
     }
 
-    fun updateOption1(option: String) {
+    private fun updateOption1(option: String) {
         _uiState.update { it.copy(option1 = option) }
     }
 
-    fun updateOption2(option: String) {
+    private fun updateOption2(option: String) {
         _uiState.update { it.copy(option2 = option) }
     }
 
-    fun submitVote() {
+    private fun submitVote() {
         // Mock implementation for creation
         _uiState.update { it.copy(isLoading = true) }
         // TODO: Call repository

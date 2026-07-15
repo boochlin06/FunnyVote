@@ -19,6 +19,11 @@ sealed class VoteDetailUiState {
     data class Error(val message: String) : VoteDetailUiState()
 }
 
+sealed class VoteDetailIntent {
+    object LoadVoteDetail : VoteDetailIntent()
+    object RefreshVoteDetail : VoteDetailIntent()
+}
+
 @HiltViewModel
 class VoteDetailViewModel @Inject constructor(
     private val voteRepository: VoteRepository,
@@ -31,10 +36,17 @@ class VoteDetailViewModel @Inject constructor(
     val uiState: StateFlow<VoteDetailUiState> = _uiState.asStateFlow()
 
     init {
-        fetchVoteDetail()
+        handleIntent(VoteDetailIntent.LoadVoteDetail)
     }
 
-    fun fetchVoteDetail() {
+    fun handleIntent(intent: VoteDetailIntent) {
+        when (intent) {
+            is VoteDetailIntent.LoadVoteDetail -> fetchVoteDetail()
+            is VoteDetailIntent.RefreshVoteDetail -> fetchVoteDetail()
+        }
+    }
+
+    private fun fetchVoteDetail() {
         _uiState.update { VoteDetailUiState.Loading }
         viewModelScope.launch {
             val result = voteRepository.getVoteDetail(voteCode)

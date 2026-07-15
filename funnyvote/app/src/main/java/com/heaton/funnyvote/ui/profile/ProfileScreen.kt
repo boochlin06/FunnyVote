@@ -8,10 +8,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+
+@Composable
+fun ProfileScreen(
+    onNavigateBack: () -> Unit
+) {
+    ProfileScreenContent(onNavigateBack = onNavigateBack)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
+fun ProfileScreenContent(
     onNavigateBack: () -> Unit
 ) {
     Scaffold(
@@ -42,4 +50,10 @@ fun ProfileScreen(
             Text("Profile stats and settings coming soon.")
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ProfileScreenPreview() {
+    ProfileScreenContent(onNavigateBack = {})
 }
