@@ -15,7 +15,9 @@
 *   **Repository Pattern (儲存庫模式)**：利用 Repository 整合本地端 (Room) 與遠端 (Retrofit) 的資料來源，並提供單一資料來源 (SSOT) 給 ViewModel。
 
 ## 🌿 各分支目的 (Branches Overview)
-*   本專案為穩定版的 Master 快照 (`FunnyVote-master`)，並且已完成全面的 Modern Android 架構重構。
+*   **`master`**: 原始基底分支，主要使用傳統 Activity/EventBus 架構。
+*   **`mvp`**, **`mvp_dagger`**, **`mvp_kotlin`**, **`mvp_rxjava`**: 原作者過去嘗試重構的各種架構實驗分支。
+*   **`kotlin-rewrite`** (Current): 最新且最激進的全面現代化重構分支。我們直接跳過了 MVP、傳統 Dagger 甚至 RxJava，採用了目前 Google 官方最推薦的 **MVVM 搭配 Jetpack Compose (UI) + Coroutines/StateFlow (響應式) + Hilt (DI) + Room**，實現了架構的終極升級！
 
 ## 📦 How to Use (快速上手)
 ```bash
