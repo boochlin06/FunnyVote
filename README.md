@@ -128,21 +128,44 @@ funnyvote/
 
 ---
 
+## 💡 當年時空背景與工程師決策復盤 (Retrospective)
+
+### 為什麼要有 `modern-android` 這個里程碑？
+在前兩個實驗性分支（`kotlin-rewrite` 與 `mvi-rewrite`）中，雖然 Kotlin 語法與 MVI 架構均已奠基，但遺漏了大量經典細節與子頁面。許多開源重構專案往往「架構很新，但功能砍半」。`modern-android` 的使命就是打破這個魔咒——**在享受 100% 宣告式 Compose 與 MVI 的同時，原版的所有功能、動態與細節一個都不能少**。
+
+### 雙重 QA 稽核帶來的極致品質：
+1. **100% 全畫面與組件無損復刻**：包含 6 頁功能導覽、四層級關於頁面、個人中心雙 Tab、即時排序 FAB 與自訂社群分享底層彈窗。
+2. **零廣告純淨體驗 (Pure No-Ads)**：淘汰 2016 時代充斥螢幕的 AdMob 廣告橫幅，改以自研現代化 `PromotionCarousel` 輪播呈現精選話題。
+3. **無縫離線持久化 (SSOT)**：以 Room Database 作為單一真相來源，實現無網路時秒開、有網路時背景無感同步。
+
+### 邁向下一階段的終極缺塊（通往 Firebase 雲原生的催化劑）：
+- **後端停機的遺憾**：UI 已經打磨到極致，但後端依賴的 2016 年舊伺服器早已除役。在沒有現代化雲端後端的情況下，App 只能依賴 Mock 資料展示，無法讓使用者跨裝置真實投票、即時看到得票率變動。這成為催生最終旗艦分支 `feature/firebase-backend` 的關鍵火種！
+
+---
+
 ## 🌿 各分支演進地圖 (Branch Evolutionary Roadmap)
 
 ```text
 [main] ───────────────► 2016 經典 Java / ButterKnife / EventBus / SQLite
    │
-   ├─► [kotlin-rewrite] ──► 語法現代化：Java 轉 Kotlin、導入基礎 Coroutines 與 Compose
+   ├─► [mvp] ──────────► 2017 初次解耦：導入 Google MVP Blueprint、Contract 契約設計
    │
-   ├─► [mvi-rewrite] ────► 架構規範化：探索嚴格 MVI 單向資料流 (UDF) 基礎
+   ├─► [mvp_rxjava] ────► 2017 響應式進化：引入 RxJava 切換執行緒、統一數據串流管線
+   │
+   ├─► [mvp_dagger] ────► 2017 依賴注入：引入 Dagger 2，實現編譯期依賴拓撲圖
+   │
+   ├─► [mvp_kotlin] ────► 2018 初探 Kotlin：Java 全盤轉 Kotlin 1.2、消滅 NPE
+   │
+   ├─► [kotlin-rewrite] ──► 2024 現代轉型：Kotlin 2.0 + Coroutines + 基礎 Compose
+   │
+   ├─► [mvi-rewrite] ────► 2024 架構規範：嚴格 MVI (UDF) 單向資料流
    │
    ├─► [modern-android] (★ Current)
-   │                       └─► 全面現代化：Compose 100% 畫面補全、Room 本地快取、
+   │                       └─► 2026 現代完備：Compose 100% 畫面補全、Room 快取、
    │                           Hilt 依賴注入、雙重 QA 驗收 100% 通過
    │
    └─► [feature/firebase-backend]
-                           └─► 雲原生躍遷：Firebase Serverless、Cloud Firestore、
+                           └─► 2026 雲原生旗艦版：Firebase Serverless、Cloud Firestore、
                                離線持久化、實體 Android 16 真機驗收
 ```
 
