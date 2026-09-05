@@ -5,10 +5,18 @@ import androidx.compose.runtime.Composable
 @Composable
 fun AboutScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToTutorial: () -> Unit = {}
+    onNavigateToAboutApp: () -> Unit = {},
+    onNavigateToTutorial: () -> Unit = {},
+    onNavigateToAuthorInfo: () -> Unit = {},
+    onNavigateToLicence: () -> Unit = {},
+    onNavigateToProblem: () -> Unit = {}
 ) {
     AboutScreenContent(
         onNavigateBack = onNavigateBack,
-        onNavigateToTutorial = onNavigateToTutorial
+        onNavigateToAboutApp = onNavigateToAboutApp,
+        onNavigateToTutorial = onNavigateToTutorial,
+        onNavigateToAuthorInfo = onNavigateToAuthorInfo,
+        onNavigateToLicence = onNavigateToLicence,
+        onNavigateToProblem = onNavigateToProblem
     )
 }

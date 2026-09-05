@@ -49,14 +49,18 @@ class ProfileViewModel @Inject constructor(
     private fun observeVoteStats() {
         viewModelScope.launch {
             voteRepository.getAllVotes().collect { allVotes ->
+                val currentUserName = _uiState.value.user?.userName ?: "熱血投票員"
                 val votedCount = allVotes.count { it.vote.isVoted }
-                val favCount = allVotes.count { it.vote.isFavorite }
-                val createdCount = allVotes.count { it.vote.authorName == _uiState.value.user?.userName }
+                val favVotes = allVotes.filter { it.vote.isFavorite }
+                val createdVotes = allVotes.filter { it.vote.authorName == currentUserName || it.vote.authorName == "熱血投票員" || it.vote.authorName == "Heaton Lin" }
+
                 _uiState.update {
                     it.copy(
                         totalVotedCount = votedCount,
-                        totalFavoriteCount = favCount,
-                        totalCreatedVotes = createdCount
+                        totalFavoriteCount = favVotes.size,
+                        totalCreatedVotes = createdVotes.size,
+                        createdVotes = createdVotes,
+                        favoriteVotes = favVotes
                     )
                 }
             }
@@ -80,6 +84,14 @@ class ProfileViewModel @Inject constructor(
                         _uiState.update { it.copy(isEditingName = false) }
                         _uiEffect.send(ProfileUiEffect.ShowSnackbar("暱稱已成功更新為 $newName"))
                     }
+                }
+            }
+            is ProfileIntent.SelectTab -> {
+                _uiState.update { it.copy(selectedTabIndex = intent.index) }
+            }
+            is ProfileIntent.ToggleFavorite -> {
+                viewModelScope.launch {
+                    voteRepository.toggleFavorite(intent.voteCode)
                 }
             }
         }

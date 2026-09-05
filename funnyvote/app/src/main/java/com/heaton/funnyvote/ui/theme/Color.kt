@@ -24,3 +24,8 @@ val Option2Text = Color(0xFF1565C0)
 val ProgressAmber = Color(0xFFFFB300)
 val ProgressAmberTrack = Color(0xFFFFECB3)
 val StarGold = Color(0xFFFFB300)
+
+val TabIndicatorWhite = Color.White
+val ProgressBarChampion = Color(0xFFFFB300)
+val ProgressBarNormal = Color(0xFF2979FF)
+val ProgressBarTrack = Color(0xFFE0E0E0)

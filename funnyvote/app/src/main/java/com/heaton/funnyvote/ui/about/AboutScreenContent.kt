@@ -1,34 +1,41 @@
 package com.heaton.funnyvote.ui.about
 
 import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.heaton.funnyvote.R
 import com.heaton.funnyvote.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreenContent(
     onNavigateBack: () -> Unit,
-    onNavigateToTutorial: () -> Unit = {}
+    onNavigateToAboutApp: () -> Unit = {},
+    onNavigateToTutorial: () -> Unit = {},
+    onNavigateToAuthorInfo: () -> Unit = {},
+    onNavigateToLicence: () -> Unit = {},
+    onNavigateToProblem: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -41,7 +48,7 @@ fun AboutScreenContent(
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 ),
-                title = { Text("關於 FunnyVote", fontWeight = FontWeight.Bold) },
+                title = { Text("關於", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
@@ -58,178 +65,179 @@ fun AboutScreenContent(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 1. App 介紹卡片 (對應 activity_about_app.xml)
+            // Card 1: 關於趣投票功能清單
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape),
-                        color = FunnyVoteBlue
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(44.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "全台最大投票軟體上線啦",
+                        text = "關於趣投票",
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
                         color = TextPrimary
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "版本 3.0.0 (Modern Android Edition)",
-                        fontSize = 12.sp,
-                        color = TextSecondary
-                    )
-
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-
-                    Text(
-                        text = "【快速發起投票】\n會想發起投票就是因為心中有猶豫、或是覺得有趣，趣投票讓發起投票變得超級方便！\n\n" +
-                                "【快速投票】\n完全不需要繁複過程，只要一鍵就可以快速投票。\n\n" +
-                                "【沒有廢話】\n求助時最怕想尋求眾人智慧卻一堆人指指點點，趣投票堅持「沒有留言板」乾淨純粹。\n\n" +
-                                "【大數據與共享】\n投票本身就是一種智慧共享，快來拯救猶豫不決的眾生！",
-                        fontSize = 13.sp,
-                        lineHeight = 20.sp,
-                        color = TextSecondary
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // 導覽介紹 (txtTutorial)
-                        OutlinedButton(
-                            onClick = onNavigateToTutorial,
-                            shape = RoundedCornerShape(20.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, modifier = Modifier.size(16.dp), tint = FunnyVoteBlue)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("功能導覽介紹", color = FunnyVoteBlue, fontSize = 13.sp)
-                        }
+                    // 經典 Logo 橫幅
+                    Image(
+                        painter = painterResource(id = R.mipmap.ic_launcher),
+                        contentDescription = "FunnyVote Banner",
+                        modifier = Modifier
+                            .size(72.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
 
-                        // 一鍵分享按鈕 (btnShareApp)
-                        Button(
-                            onClick = {
-                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_SUBJECT, "FunnyVote 趣投票")
-                                    putExtra(Intent.EXTRA_TEXT, "最有趣的投票社群 FunnyVote！快來下載體驗：https://www.funny-vote.com")
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    AboutNavRow(
+                        title = "關於趣投票 APP",
+                        icon = Icons.Default.Info,
+                        onClick = onNavigateToAboutApp
+                    )
+                    HorizontalDivider(color = DividerColor.copy(alpha = 0.5f))
+
+                    AboutNavRow(
+                        title = "功能導覽介紹",
+                        icon = Icons.AutoMirrored.Filled.MenuBook,
+                        onClick = onNavigateToTutorial
+                    )
+                    HorizontalDivider(color = DividerColor.copy(alpha = 0.5f))
+
+                    AboutNavRow(
+                        title = "作者相關資訊",
+                        icon = Icons.Default.Person,
+                        onClick = onNavigateToAuthorInfo
+                    )
+                    HorizontalDivider(color = DividerColor.copy(alpha = 0.5f))
+
+                    AboutNavRow(
+                        title = "開源許可授權",
+                        icon = Icons.Default.Description,
+                        onClick = onNavigateToLicence
+                    )
+                    HorizontalDivider(color = DividerColor.copy(alpha = 0.5f))
+
+                    AboutNavRow(
+                        title = "常見問題 FAQ",
+                        icon = Icons.Default.HelpOutline,
+                        onClick = onNavigateToProblem
+                    )
+                }
+            }
+
+            // Card 2: 版本資訊與分享
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(4.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "軟體資訊",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "目前版本", fontSize = 15.sp, color = TextPrimary)
+                        Text(text = "3.0.0 (Modern Compose)", fontSize = 14.sp, color = TextSecondary)
+                    }
+
+                    HorizontalDivider(color = DividerColor.copy(alpha = 0.5f))
+
+                    AboutNavRow(
+                        title = "檢查線上更新",
+                        icon = Icons.Default.SystemUpdate,
+                        onClick = {
+                            val appPackageName = context.packageName
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName")).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 }
-                                context.startActivity(Intent.createChooser(shareIntent, "分享 FunnyVote"))
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue),
-                            shape = RoundedCornerShape(20.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("分享給好友", color = Color.White, fontSize = 13.sp)
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                                context.startActivity(intent)
+                            }
                         }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, "FunnyVote 趣投票")
+                                putExtra(Intent.EXTRA_TEXT, "最有趣的投票社群 FunnyVote！快來下載體驗：https://www.funny-vote.com")
+                            }
+                            context.startActivity(Intent.createChooser(shareIntent, "分享 FunnyVote"))
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(bottom = 4.dp)
+                    ) {
+                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("分享趣投票給好友", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                     }
                 }
             }
 
-            // 2. 開發團隊資訊 (about_author_info)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Text(
-                        text = "開發團隊 (Author Information)",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    AuthorItem(name = "Heaton", role = "全端架構與 Android", desc = "PM, Android RD, UI, QA 樣樣兼修，負責現代化 Compose 重構。")
-                    AuthorItem(name = "Jim", role = "後端架構", desc = "負責後端資料服務與雲端部署。")
-                    AuthorItem(name = "Nick", role = "文案設計", desc = "文案主要擔當，幽默風格。")
-                    AuthorItem(name = "Eason", role = "顧問團隊", desc = "社群與運營顧問。")
-                }
-            }
-
-            // 3. 開源許可證 (activity_licence.xml)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Text(
-                        text = "開源許可 (Open Source Licences)",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    LicenceItem(name = "Jetpack Compose & Material 3", licence = "Apache License 2.0 (Google LLC)")
-                    LicenceItem(name = "Kotlin Coroutines & Flow", licence = "Apache License 2.0 (JetBrains s.r.o.)")
-                    LicenceItem(name = "AndroidX Room & Navigation", licence = "Apache License 2.0 (Google LLC)")
-                    LicenceItem(name = "Hilt Dependency Injection", licence = "Apache License 2.0 (Google LLC)")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun AuthorItem(name: String, role: String, desc: String) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
-            Spacer(modifier = Modifier.width(6.dp))
-            Surface(shape = RoundedCornerShape(4.dp), color = FunnyVoteBlue.copy(alpha = 0.1f)) {
-                Text(text = role, fontSize = 11.sp, color = FunnyVoteBlue, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
-            }
-        }
-        Text(text = desc, fontSize = 12.sp, color = TextSecondary, modifier = Modifier.padding(top = 2.dp))
+private fun AboutNavRow(
+    title: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = FunnyVoteBlue,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = title,
+            fontSize = 15.sp,
+            color = TextPrimary,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+            contentDescription = null,
+            tint = Color.LightGray,
+            modifier = Modifier.size(14.dp)
+        )
     }
-}
-
-@Composable
-fun LicenceItem(name: String, licence: String) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text(text = name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextPrimary)
-        Text(text = licence, fontSize = 11.sp, color = TextSecondary)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AboutScreenPreview() {
-    AboutScreenContent(onNavigateBack = {})
 }

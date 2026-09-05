@@ -11,11 +11,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun VoteDetailScreen(
     voteCode: String,
-    viewModel: VoteDetailViewModel = hiltViewModel(),
+    viewModel: VoteDetailViewModel = hiltViewModel(key = voteCode),
     onNavigateBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(voteCode) {
+        viewModel.handleIntent(VoteDetailIntent.InitWithVoteCode(voteCode))
+    }
 
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->

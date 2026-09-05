@@ -18,7 +18,7 @@ class VoteDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val voteCode: String = savedStateHandle.get<String>("voteCode")
+    private var activeVoteCode: String = savedStateHandle.get<String>("voteCode")
         ?: runCatching { savedStateHandle.toRoute<VoteDetailRoute>().voteCode }.getOrDefault("vote_default")
 
     private val _uiState = MutableStateFlow(VoteDetailUiState())
@@ -28,11 +28,17 @@ class VoteDetailViewModel @Inject constructor(
     val uiEffect: Flow<VoteDetailUiEffect> = _uiEffect.receiveAsFlow()
 
     init {
-        loadVoteDetail()
+        loadVoteDetail(activeVoteCode)
     }
 
     fun handleIntent(intent: VoteDetailIntent) {
         when (intent) {
+            is VoteDetailIntent.InitWithVoteCode -> {
+                if (activeVoteCode != intent.code) {
+                    activeVoteCode = intent.code
+                    loadVoteDetail(activeVoteCode)
+                }
+            }
             is VoteDetailIntent.SelectOption -> {
                 val vote = _uiState.value.voteWithDetails?.vote ?: return
                 if (vote.isVoted) return // 已投票不能再選
@@ -87,12 +93,44 @@ class VoteDetailViewModel @Inject constructor(
                     _uiEffect.send(VoteDetailUiEffect.ShowSnackbar(msg))
                 }
             }
+
+            is VoteDetailIntent.SetShowInfoDialog -> {
+                _uiState.update { it.copy(showInfoDialog = intent.show) }
+            }
+
+            is VoteDetailIntent.SetShowAddOptionDialog -> {
+                _uiState.update { it.copy(showAddOptionDialog = intent.show, newOptionInput = if (!intent.show) "" else it.newOptionInput) }
+            }
+
+            is VoteDetailIntent.UpdateNewOptionInput -> {
+                _uiState.update { it.copy(newOptionInput = intent.input) }
+            }
+
+            is VoteDetailIntent.SubmitNewOption -> {
+                val input = _uiState.value.newOptionInput.trim()
+                if (input.isEmpty()) {
+                    viewModelScope.launch {
+                        _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("請輸入選項內容！"))
+                    }
+                } else {
+                    viewModelScope.launch {
+                        val res = repository.addNewOption(activeVoteCode, input)
+                        res.onSuccess {
+                            _uiState.update { it.copy(showAddOptionDialog = false, newOptionInput = "") }
+                            _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("成功新增選項：$input"))
+                        }.onFailure { e ->
+                            _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("新增選項失敗：${e.message}"))
+                        }
+                    }
+                }
+            }
         }
     }
 
-    private fun loadVoteDetail() {
+    private fun loadVoteDetail(code: String) {
         viewModelScope.launch {
-            repository.getVoteDetail(voteCode)
+            _uiState.update { it.copy(isLoading = true) }
+            repository.getVoteDetail(code)
                 .catch { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
                 }
@@ -119,7 +157,7 @@ class VoteDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true) }
-            val result = repository.submitVote(voteCode, selected)
+            val result = repository.submitVote(activeVoteCode, selected)
             _uiState.update { it.copy(isSubmitting = false) }
 
             result.onSuccess {

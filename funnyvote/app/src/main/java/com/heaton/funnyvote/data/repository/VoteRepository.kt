@@ -48,6 +48,25 @@ class VoteRepository @Inject constructor(
         voteDao.updateFavorite(voteCode, !currentFavorite)
     }
 
+    suspend fun toggleFavorite(voteCode: String) {
+        val current = voteDao.getVoteByCodeOnce(voteCode)?.vote ?: return
+        voteDao.updateFavorite(voteCode, !current.isFavorite)
+    }
+
+    suspend fun addNewOption(voteCode: String, optionTitle: String): Result<Unit> {
+        return runCatching {
+            val optCode = "opt_${System.currentTimeMillis()}_${(100..999).random()}"
+            val newOption = com.heaton.funnyvote.data.local.entity.OptionEntity(
+                voteCode = voteCode,
+                optionCode = optCode,
+                title = optionTitle,
+                count = 0,
+                isUserChoiced = false
+            )
+            voteDao.insertOption(newOption)
+        }
+    }
+
     suspend fun submitVote(voteCode: String, selectedOptionCodes: List<String>): Result<Unit> {
         return runCatching {
             selectedOptionCodes.forEach { optCode ->

@@ -11,7 +11,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onVoteClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -30,6 +31,7 @@ fun ProfileScreen(
         uiState = uiState,
         onIntent = viewModel::handleIntent,
         onNavigateBack = onNavigateBack,
+        onVoteClick = onVoteClick,
         snackbarHostState = snackbarHostState
     )
 }

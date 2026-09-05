@@ -1,23 +1,27 @@
 package com.heaton.funnyvote.ui.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heaton.funnyvote.data.local.entity.UserEntity
+import com.heaton.funnyvote.ui.home.ClassicVoteCard
 import com.heaton.funnyvote.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,6 +30,7 @@ fun ProfileScreenContent(
     uiState: ProfileUiState,
     onIntent: (ProfileIntent) -> Unit,
     onNavigateBack: () -> Unit,
+    onVoteClick: (String) -> Unit = {},
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
     Scaffold(
@@ -47,81 +52,67 @@ fun ProfileScreenContent(
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            // 1. 個人資料卡片 (包含折疊底圖與圓形頭像)
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
                 ) {
-                    // 原版 activity_personal.xml 之視差橫幅效果 (imgProfileBackdrop)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(110.dp)
-                            .background(FunnyVoteBlue)
-                    )
-
-                    // 懸浮重疊大圓頭像
-                    Surface(
-                        modifier = Modifier
-                            .offset(y = (-45).dp)
-                            .size(90.dp)
-                            .clip(CircleShape),
-                        color = Color.White,
-                        shadowElevation = 6.dp
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .clip(CircleShape)
-                                .background(FunnyVoteBlue)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                modifier = Modifier.size(54.dp),
-                                tint = Color.White
-                            )
-                        }
-                    }
-
                     Column(
-                        modifier = Modifier
-                            .offset(y = (-35).dp)
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (uiState.isEditingName) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
+                        // 視差橫幅
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(90.dp)
+                                .background(FunnyVoteBlue.copy(alpha = 0.85f))
+                        )
+
+                        // 圓形頭像
+                        Surface(
+                            modifier = Modifier
+                                .size(76.dp)
+                                .offset(y = (-38).dp)
+                                .clip(CircleShape),
+                            color = Color.White,
+                            shadowElevation = 4.dp
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .clip(CircleShape)
+                                    .background(FunnyVoteBlue)
                             ) {
-                                OutlinedTextField(
-                                    value = uiState.nameInput,
-                                    onValueChange = { onIntent(ProfileIntent.UpdateNameInput(it)) },
-                                    label = { Text("修改暱稱") },
-                                    singleLine = true,
-                                    modifier = Modifier.weight(1f)
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(50.dp),
+                                    tint = Color.White
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                IconButton(onClick = { onIntent(ProfileIntent.SaveName) }) {
-                                    Icon(Icons.Default.Check, contentDescription = "儲存", tint = FunnyVoteBlue)
-                                }
                             }
-                        } else {
+                        }
+
+                        // 姓名與修改按鈕
+                        Column(
+                            modifier = Modifier
+                                .offset(y = (-28).dp)
+                                .padding(horizontal = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = uiState.user?.userName ?: "訪客",
@@ -129,68 +120,168 @@ fun ProfileScreenContent(
                                     fontWeight = FontWeight.Bold,
                                     color = TextPrimary
                                 )
-                                IconButton(onClick = { onIntent(ProfileIntent.EditName(true)) }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "編輯暱稱", modifier = Modifier.size(18.dp), tint = FunnyVoteBlue)
+                                IconButton(
+                                    onClick = { onIntent(ProfileIntent.EditName(true)) },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Edit,
+                                        contentDescription = "編輯暱稱",
+                                        modifier = Modifier.size(18.dp),
+                                        tint = FunnyVoteBlue
+                                    )
                                 }
                             }
+
+                            Text(
+                                text = uiState.user?.email ?: "dev@funnyvote.org",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextSecondary
+                            )
                         }
 
-                        Text(
-                            text = uiState.user?.email ?: "未綁定電子郵件",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
-                        )
+                        // 3 欄數據統計小卡
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .offset(y = (-14).dp)
+                                .padding(horizontal = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            StatCard(
+                                title = "發起投票",
+                                count = uiState.totalCreatedVotes,
+                                unit = "則",
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatCard(
+                                title = "已收藏",
+                                count = uiState.totalFavoriteCount,
+                                unit = "則",
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatCard(
+                                title = "已參與",
+                                count = uiState.totalVotedCount,
+                                unit = "次",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
 
-            // 數據統計列
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                StatCard(
-                    title = "已參與",
-                    count = uiState.totalVotedCount,
-                    unit = "項",
-                    modifier = Modifier.weight(1f)
-                )
-                StatCard(
-                    title = "已收藏",
-                    count = uiState.totalFavoriteCount,
-                    unit = "項",
-                    modifier = Modifier.weight(1f)
-                )
-                StatCard(
-                    title = "發起投票",
-                    count = uiState.totalCreatedVotes,
-                    unit = "次",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            // App 資訊卡片
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Text(
-                        text = "關於 FunnyVote",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+            // 2. 雙 Tab 分頁選單 (PersonalActivity.TabsAdapter: 1. 我發起的投票, 2. 我的收藏)
+            item {
+                TabRow(
+                    selectedTabIndex = uiState.selectedTabIndex,
+                    containerColor = Color.White,
+                    contentColor = FunnyVoteBlue,
+                    indicator = { tabPositions ->
+                        TabRowDefaults.SecondaryIndicator(
+                            Modifier.tabIndicatorOffset(tabPositions[uiState.selectedTabIndex]),
+                            color = FunnyVoteBlue,
+                            height = 3.dp
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
+                ) {
+                    Tab(
+                        selected = uiState.selectedTabIndex == 0,
+                        onClick = { onIntent(ProfileIntent.SelectTab(0)) },
+                        text = {
+                            Text(
+                                text = "我發起的投票 (${uiState.createdVotes.size})",
+                                fontWeight = if (uiState.selectedTabIndex == 0) FontWeight.Bold else FontWeight.Normal,
+                                color = if (uiState.selectedTabIndex == 0) FunnyVoteBlue else TextSecondary
+                            )
+                        }
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TechInfoRow(label = "版本號", value = "3.0.0 (Modern Android Edition)")
-                    TechInfoRow(label = "UI 系統", value = "Jetpack Compose (經典藍色主題)")
-                    TechInfoRow(label = "架構模式", value = "MVI (StateFlow + Channel UDF)")
-                    TechInfoRow(label = "資料快取", value = "Room 2.6+ (Local-First SSOT)")
-                    TechInfoRow(label = "導航架構", value = "Navigation Compose 2.8+ Type-Safe")
+                    Tab(
+                        selected = uiState.selectedTabIndex == 1,
+                        onClick = { onIntent(ProfileIntent.SelectTab(1)) },
+                        text = {
+                            Text(
+                                text = "我的收藏 (${uiState.favoriteVotes.size})",
+                                fontWeight = if (uiState.selectedTabIndex == 1) FontWeight.Bold else FontWeight.Normal,
+                                color = if (uiState.selectedTabIndex == 1) FunnyVoteBlue else TextSecondary
+                            )
+                        }
+                    )
                 }
             }
+
+            // 3. 渲染投票列表或空狀態
+            val currentList = if (uiState.selectedTabIndex == 0) uiState.createdVotes else uiState.favoriteVotes
+            if (currentList.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = if (uiState.selectedTabIndex == 0) Icons.Default.HowToVote else Icons.Default.StarBorder,
+                                contentDescription = null,
+                                modifier = Modifier.size(54.dp),
+                                tint = Color.LightGray
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = if (uiState.selectedTabIndex == 0) "你尚未發起過任何投票" else "尚未加入任何收藏投票",
+                                color = TextSecondary,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+            } else {
+                items(currentList, key = { it.vote.voteCode }) { voteItem ->
+                    ClassicVoteCard(
+                        item = voteItem,
+                        onClick = { onVoteClick(voteItem.vote.voteCode) },
+                        onFavoriteToggle = { onIntent(ProfileIntent.ToggleFavorite(voteItem.vote.voteCode)) }
+                    )
+                }
+            }
+        }
+
+        // 4. 專屬暱稱修改對話框 (dialog_account_name_edit)
+        if (uiState.isEditingName) {
+            AlertDialog(
+                onDismissRequest = { onIntent(ProfileIntent.EditName(false)) },
+                title = { Text("修改暱稱 (Change Name)", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column {
+                        Text("請輸入你希望在 FunnyVote 顯示的新暱稱：", fontSize = 13.sp, color = TextSecondary)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        OutlinedTextField(
+                            value = uiState.nameInput,
+                            onValueChange = { onIntent(ProfileIntent.UpdateNameInput(it)) },
+                            label = { Text("個人暱稱 (最多 20 字)") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { onIntent(ProfileIntent.SaveName) },
+                        colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue)
+                    ) {
+                        Text("儲存")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { onIntent(ProfileIntent.EditName(false)) }) {
+                        Text("取消", color = Color.Gray)
+                    }
+                }
+            )
         }
     }
 }
@@ -205,55 +296,27 @@ fun StatCard(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FAFB)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = title, fontSize = 12.sp, color = TextSecondary)
+            Text(text = title, fontSize = 11.sp, color = TextSecondary)
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = "$count",
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = FunnyVoteBlue
                 )
                 Spacer(modifier = Modifier.width(2.dp))
-                Text(text = unit, fontSize = 11.sp, color = TextSecondary)
+                Text(text = unit, fontSize = 10.sp, color = TextSecondary)
             }
         }
     }
-}
-
-@Composable
-fun TechInfoRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = label, fontSize = 13.sp, color = TextSecondary)
-        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenClassicPreview() {
-    ProfileScreenContent(
-        uiState = ProfileUiState(
-            user = UserEntity(userId = "1", userName = "Heaton Lin", email = "test@dev.com"),
-            totalCreatedVotes = 3,
-            totalVotedCount = 18,
-            totalFavoriteCount = 5
-        ),
-        onIntent = {},
-        onNavigateBack = {}
-    )
 }

@@ -7,11 +7,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.heaton.funnyvote.ui.about.AboutScreen
+import com.heaton.funnyvote.ui.about.sub.AboutAppScreen
+import com.heaton.funnyvote.ui.about.sub.AuthorInfoScreen
+import com.heaton.funnyvote.ui.about.sub.LicenceScreen
+import com.heaton.funnyvote.ui.about.sub.ProblemScreen
 import com.heaton.funnyvote.ui.create.CreateVoteScreen
 import com.heaton.funnyvote.ui.detail.VoteDetailScreen
 import com.heaton.funnyvote.ui.home.HomeScreen
 import com.heaton.funnyvote.ui.profile.ProfileScreen
+import com.heaton.funnyvote.ui.tutorial.TutorialScreen
+import com.heaton.funnyvote.ui.welcome.WelcomeScreen
 import kotlinx.serialization.Serializable
+
+@Serializable
+object WelcomeRoute
 
 @Serializable
 object HomeRoute
@@ -31,6 +41,18 @@ object AboutRoute
 @Serializable
 object TutorialRoute
 
+@Serializable
+object AboutAppRoute
+
+@Serializable
+object AuthorInfoRoute
+
+@Serializable
+object LicenceRoute
+
+@Serializable
+object ProblemRoute
+
 @Composable
 fun FunnyVoteNavGraph(
     modifier: Modifier = Modifier,
@@ -38,9 +60,19 @@ fun FunnyVoteNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = HomeRoute,
+        startDestination = WelcomeRoute,
         modifier = modifier
     ) {
+        composable<WelcomeRoute> {
+            WelcomeScreen(
+                onNavigateToHome = {
+                    navController.navigate(HomeRoute) {
+                        popUpTo<WelcomeRoute> { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable<HomeRoute> {
             HomeScreen(
                 onNavigateToDetail = { code ->
@@ -83,23 +115,70 @@ fun FunnyVoteNavGraph(
             ProfileScreen(
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onVoteClick = { code ->
+                    navController.navigate(VoteDetailRoute(voteCode = code))
                 }
             )
         }
 
         composable<AboutRoute> {
-            com.heaton.funnyvote.ui.about.AboutScreen(
+            AboutScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
+                onNavigateToAboutApp = {
+                    navController.navigate(AboutAppRoute)
+                },
                 onNavigateToTutorial = {
                     navController.navigate(TutorialRoute)
+                },
+                onNavigateToAuthorInfo = {
+                    navController.navigate(AuthorInfoRoute)
+                },
+                onNavigateToLicence = {
+                    navController.navigate(LicenceRoute)
+                },
+                onNavigateToProblem = {
+                    navController.navigate(ProblemRoute)
+                }
+            )
+        }
+
+        composable<AboutAppRoute> {
+            AboutAppScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<AuthorInfoRoute> {
+            AuthorInfoScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<LicenceRoute> {
+            LicenceScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<ProblemRoute> {
+            ProblemScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
 
         composable<TutorialRoute> {
-            com.heaton.funnyvote.ui.tutorial.TutorialScreen(
+            TutorialScreen(
                 onFinish = {
                     navController.popBackStack()
                 }

@@ -41,6 +41,9 @@ interface VoteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOptions(options: List<OptionEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOption(option: OptionEntity)
+
     @Query("UPDATE votes SET isFavorite = :isFavorite WHERE voteCode = :voteCode")
     suspend fun updateFavorite(voteCode: String, isFavorite: Boolean)
 

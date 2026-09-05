@@ -47,6 +47,7 @@ fun VoteDetailScreenContent(
     val rawOptions = uiState.voteWithDetails?.options ?: emptyList()
     var isSortedByCount by remember { mutableStateOf(false) }
     var isPreviewResult by remember { mutableStateOf(false) }
+    var showShareSheet by remember { mutableStateOf(false) }
     val options = remember(rawOptions, isSortedByCount) {
         if (isSortedByCount) rawOptions.sortedByDescending { it.count } else rawOptions
     }
@@ -72,6 +73,20 @@ fun VoteDetailScreenContent(
                 },
                 actions = {
                     if (vote != null) {
+                        IconButton(onClick = { showShareSheet = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "分享",
+                                tint = Color.White
+                            )
+                        }
+                        IconButton(onClick = { onIntent(VoteDetailIntent.SetShowInfoDialog(true)) }) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "規則詳情",
+                                tint = Color.White
+                            )
+                        }
                         IconButton(onClick = { onIntent(VoteDetailIntent.ToggleFavorite) }) {
                             Icon(
                                 imageVector = if (vote.isFavorite) Icons.Default.Star else Icons.Outlined.StarOutline,
@@ -279,8 +294,149 @@ fun VoteDetailScreenContent(
                             }
                         )
                     }
+
+                    // 自由新增選項卡片 (card_view_item_unpoll_create_new_option)
+                    if (vote.isUserCanAddOption && !vote.isVoted) {
+                        item {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onIntent(VoteDetailIntent.SetShowAddOptionDialog(true)) },
+                                shape = RoundedCornerShape(4.dp),
+                                colors = CardDefaults.cardColors(containerColor = Option2Background),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(14.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "新增選項",
+                                        tint = FunnyVoteBlue,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "新增投票選項 (Add New Option)",
+                                        fontWeight = FontWeight.Bold,
+                                        color = FunnyVoteBlue,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        // 1. 規則說明彈窗 (dialog_vote_detail_info)
+        if (uiState.showInfoDialog && vote != null) {
+            AlertDialog(
+                onDismissRequest = { onIntent(VoteDetailIntent.SetShowInfoDialog(false)) },
+                title = {
+                    Text(
+                        text = "投票詳細資訊",
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column {
+                            Text(text = "選擇規則", fontSize = 12.sp, color = TextSecondary)
+                            Text(
+                                text = if (vote.maxOption > 1) "複選投票 (最多可選 ${vote.maxOption} 項)" else "單選投票 (僅可選擇 1 項)",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = TextPrimary
+                            )
+                        }
+                        Column {
+                            Text(text = "安全與權限", fontSize = 12.sp, color = TextSecondary)
+                            Text(
+                                text = buildString {
+                                    append(if (vote.isNeedPassword) "🔒 私密保護投票 (需要密碼)" else "🌐 公開投票 (免密碼)")
+                                    if (vote.isUserCanAddOption) append(" • 允許參與者自由新增選項")
+                                },
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = TextPrimary
+                            )
+                        }
+                        Column {
+                            Text(text = "建立時間與發起者", fontSize = 12.sp, color = TextSecondary)
+                            Text(
+                                text = "由 ${vote.authorName} 發起於 2026/09/05",
+                                fontSize = 14.sp,
+                                color = TextPrimary
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { onIntent(VoteDetailIntent.SetShowInfoDialog(false)) }) {
+                        Text("知道了", color = FunnyVoteBlue, fontWeight = FontWeight.Bold)
+                    }
+                }
+            )
+        }
+
+        // 2. 新增選項彈窗 (Add Option Dialog)
+        if (uiState.showAddOptionDialog) {
+            AlertDialog(
+                onDismissRequest = { onIntent(VoteDetailIntent.SetShowAddOptionDialog(false)) },
+                title = {
+                    Text(
+                        text = "新增投票選項",
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "發起人已開放參與者擴充選項，請輸入你想推薦的選項內容：",
+                            fontSize = 13.sp,
+                            color = TextSecondary
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedTextField(
+                            value = uiState.newOptionInput,
+                            onValueChange = { onIntent(VoteDetailIntent.UpdateNewOptionInput(it)) },
+                            label = { Text("選項名稱 (最多 30 字)") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { onIntent(VoteDetailIntent.SubmitNewOption) },
+                        colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue)
+                    ) {
+                        Text("送出新增")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { onIntent(VoteDetailIntent.SetShowAddOptionDialog(false)) }) {
+                        Text("取消", color = Color.Gray)
+                    }
+                }
+            )
+        }
+
+        // 3. 社群分享彈窗 (Share Bottom Sheet)
+        if (showShareSheet && vote != null) {
+            com.heaton.funnyvote.ui.common.ShareBottomSheet(
+                title = vote.title,
+                voteUrl = "https://www.funny-vote.com/vote/${vote.voteCode}",
+                onDismiss = { showShareSheet = false }
+            )
         }
     }
 }
