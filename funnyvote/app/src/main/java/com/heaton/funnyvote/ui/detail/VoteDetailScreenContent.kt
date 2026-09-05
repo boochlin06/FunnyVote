@@ -5,11 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.heaton.funnyvote.data.local.entity.OptionEntity
 import com.heaton.funnyvote.data.local.entity.VoteEntity
 import com.heaton.funnyvote.data.local.entity.VoteWithDetails
+import com.heaton.funnyvote.ui.theme.*
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,9 +41,16 @@ fun VoteDetailScreenContent(
     val options = uiState.voteWithDetails?.options ?: emptyList()
 
     Scaffold(
+        containerColor = FunnyVoteWindowBg,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = FunnyVoteBlue,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                ),
                 title = { Text(text = "投票詳情", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -52,9 +61,9 @@ fun VoteDetailScreenContent(
                     if (vote != null) {
                         IconButton(onClick = { onIntent(VoteDetailIntent.ToggleFavorite) }) {
                             Icon(
-                                imageVector = if (vote.isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                                imageVector = if (vote.isFavorite) Icons.Default.Star else Icons.Outlined.StarOutline,
                                 contentDescription = "收藏",
-                                tint = if (vote.isFavorite) Color.Red else MaterialTheme.colorScheme.outline
+                                tint = if (vote.isFavorite) StarGold else Color.White
                             )
                         }
                     }
@@ -65,7 +74,7 @@ fun VoteDetailScreenContent(
             if (vote != null && !vote.isVoted && uiState.isUnlocked) {
                 Surface(
                     shadowElevation = 8.dp,
-                    color = MaterialTheme.colorScheme.surface
+                    color = Color.White
                 ) {
                     Box(
                         modifier = Modifier
@@ -77,18 +86,19 @@ fun VoteDetailScreenContent(
                             enabled = uiState.selectedOptionCodes.isNotEmpty() && !uiState.isSubmitting,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(52.dp),
-                            shape = RoundedCornerShape(12.dp)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(4.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue)
                         ) {
                             if (uiState.isSubmitting) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    color = Color.White
                                 )
                             } else {
                                 Text(
                                     text = "確認送出投票 (${uiState.selectedOptionCodes.size}/${vote.maxOption})",
-                                    fontSize = 16.sp,
+                                    fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -105,14 +115,13 @@ fun VoteDetailScreenContent(
             contentAlignment = Alignment.Center
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = FunnyVoteBlue)
             } else if (vote == null) {
                 Text(
                     text = uiState.errorMessage ?: "查無此投票資訊",
-                    color = MaterialTheme.colorScheme.error
+                    color = Color.Red
                 )
             } else if (!uiState.isUnlocked) {
-                // 密碼鎖定卡片
                 PasswordLockCard(
                     passwordInput = uiState.passwordInput,
                     passwordError = uiState.passwordError,
@@ -120,28 +129,99 @@ fun VoteDetailScreenContent(
                     onUnlock = { onIntent(VoteDetailIntent.UnlockWithPassword) }
                 )
             } else {
-                // 正常投票內容
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     item {
-                        VoteHeaderSection(vote = vote)
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Surface(
+                                        modifier = Modifier.size(36.dp),
+                                        shape = CircleShape,
+                                        color = Color(0xFFE0E0E0)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray)
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = vote.authorName, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
+                                        Text(text = "2026/09/05", fontSize = 11.sp, color = TextSecondary)
+                                    }
+                                    if (vote.isVoted) {
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = FunnyVoteBlue.copy(alpha = 0.12f)
+                                        ) {
+                                            Text(
+                                                text = "你已投票",
+                                                color = FunnyVoteBlue,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                Text(
+                                    text = vote.title,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPrimary
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = if (vote.maxOption > 1) "規則：複選 (最多 ${vote.maxOption} 項)" else "規則：單選投票",
+                                        fontSize = 13.sp,
+                                        color = TextSecondary
+                                    )
+                                    Text(
+                                        text = "總參與：${vote.totalVotedCount} 票",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = FunnyVoteBlue
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     items(options, key = { it.optionCode }) { option ->
                         val isSelected = uiState.selectedOptionCodes.contains(option.optionCode)
                         val totalVotes = options.sumOf { it.count }.coerceAtLeast(1)
-                        val ratio = option.count.toFloat() / totalVotes.toFloat()
+                        val ratio = (option.count.toFloat() / totalVotes.toFloat()).coerceIn(0f, 1f)
                         val percentage = ratio * 100f
+                        val maxCount = options.maxOfOrNull { it.count } ?: 0
+                        val isChampion = option.count > 0 && option.count == maxCount
 
-                        OptionCard(
+                        ClassicOptionDetailCard(
                             option = option,
                             isVoted = vote.isVoted,
                             isSelected = isSelected,
                             percentage = percentage,
                             ratio = ratio,
+                            isChampion = isChampion,
                             isMultiChoice = vote.maxOption > 1,
                             onClick = {
                                 onIntent(VoteDetailIntent.SelectOption(option.optionCode))
@@ -155,138 +235,89 @@ fun VoteDetailScreenContent(
 }
 
 @Composable
-fun VoteHeaderSection(vote: VoteEntity) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AssistChip(
-                    onClick = {},
-                    label = {
-                        Text(
-                            text = if (vote.maxOption > 1) "複選投票 (最多可選 ${vote.maxOption} 項)" else "單選投票"
-                        )
-                    }
-                )
-                if (vote.isVoted) {
-                    Badge(containerColor = MaterialTheme.colorScheme.primary) {
-                        Text("你已完成投票", modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = vote.title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "發起人：${vote.authorName}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline
-                )
-                Text(
-                    text = "累積投票數：${vote.totalVotedCount} 票",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun OptionCard(
+fun ClassicOptionDetailCard(
     option: OptionEntity,
     isVoted: Boolean,
     isSelected: Boolean,
     percentage: Float,
     ratio: Float,
+    isChampion: Boolean,
     isMultiChoice: Boolean,
     onClick: () -> Unit
 ) {
-    val animatedProgress by animateFloatAsState(
-        targetValue = if (isVoted) ratio else 0f,
-        label = "progress"
-    )
+    val animatedProgress by animateFloatAsState(targetValue = if (isVoted) ratio else 0f, label = "progress")
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = !isVoted, onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        border = if (isSelected) CardDefaults.outlinedCardBorder().copy(width = 2.dp) else null,
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp)
+        shape = RoundedCornerShape(4.dp),
+        colors = CardDefaults.cardColors(containerColor = if (isSelected) Option2Background else Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (!isVoted) {
-                        if (isMultiChoice) {
-                            Checkbox(checked = isSelected, onCheckedChange = { onClick() })
-                        } else {
-                            RadioButton(selected = isSelected, onClick = { onClick() })
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                    } else if (option.isUserChoiced) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "你的選擇",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                if (!isVoted) {
+                    if (isMultiChoice) {
+                        Checkbox(
+                            checked = isSelected,
+                            onCheckedChange = { onClick() },
+                            colors = CheckboxDefaults.colors(checkedColor = FunnyVoteBlue)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                    } else {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { onClick() },
+                            colors = RadioButtonDefaults.colors(selectedColor = FunnyVoteBlue)
+                        )
                     }
-
-                    Text(
-                        text = option.title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (isSelected || option.isUserChoiced) FontWeight.Bold else FontWeight.Normal
+                    Spacer(modifier = Modifier.width(6.dp))
+                } else if (option.isUserChoiced) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "你的選擇",
+                        tint = FunnyVoteBlue,
+                        modifier = Modifier.size(20.dp)
                     )
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
+
+                Text(
+                    text = option.title,
+                    fontSize = 15.sp,
+                    fontWeight = if (isSelected || option.isUserChoiced) FontWeight.Bold else FontWeight.Medium,
+                    color = TextPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (isVoted && isChampion) {
+                    Text("🏆", fontSize = 14.sp)
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
 
                 if (isVoted) {
                     Text(
                         text = String.format(Locale.getDefault(), "%.1f%% (%d 票)", percentage, option.count),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (option.isUserChoiced) FunnyVoteBlue else TextPrimary
                     )
                 }
             }
 
             if (isVoted) {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 LinearProgressIndicator(
                     progress = { animatedProgress },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(5.dp)),
-                    color = if (option.isUserChoiced) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = ProgressAmber,
+                    trackColor = ProgressAmberTrack
                 )
             }
         }
@@ -303,31 +334,34 @@ fun PasswordLockCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp),
-        shape = RoundedCornerShape(16.dp)
+            .padding(20.dp),
+        shape = RoundedCornerShape(4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = Icons.Default.Lock,
                 contentDescription = null,
-                modifier = Modifier.size(56.dp),
-                tint = MaterialTheme.colorScheme.primary
+                modifier = Modifier.size(52.dp),
+                tint = FunnyVoteBlue
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "此為私密保護投票",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
             )
             Text(
                 text = "請輸入密碼以解鎖檢視內容並參與投票",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
+                color = TextSecondary
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = passwordInput,
@@ -336,7 +370,7 @@ fun PasswordLockCard(
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 isError = passwordError != null,
-                supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                supportingText = passwordError?.let { { Text(it, color = Color.Red) } },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -344,91 +378,12 @@ fun PasswordLockCard(
 
             Button(
                 onClick = onUnlock,
+                colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue),
+                shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("解鎖投票")
             }
         }
     }
-}
-
-// ----------------- Previews -----------------
-
-@Preview(showBackground = true)
-@Composable
-fun VoteDetailUnvotedPreview() {
-    val sample = VoteWithDetails(
-        vote = VoteEntity(
-            voteCode = "v1",
-            title = "今天中午要訂哪一家外送？",
-            authorName = "同事A",
-            maxOption = 1,
-            totalVotedCount = 10
-        ),
-        options = listOf(
-            OptionEntity(voteCode = "v1", optionCode = "o1", title = "大戶屋定食", count = 6),
-            OptionEntity(voteCode = "v1", optionCode = "o2", title = "摩斯漢堡", count = 4)
-        )
-    )
-    VoteDetailScreenContent(
-        uiState = VoteDetailUiState(
-            isLoading = false,
-            voteWithDetails = sample,
-            selectedOptionCodes = setOf("o1"),
-            isUnlocked = true
-        ),
-        onIntent = {},
-        onNavigateBack = {}
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun VoteDetailVotedPreview() {
-    val sample = VoteWithDetails(
-        vote = VoteEntity(
-            voteCode = "v1",
-            title = "今天中午要訂哪一家外送？",
-            authorName = "同事A",
-            maxOption = 1,
-            isVoted = true,
-            totalVotedCount = 10
-        ),
-        options = listOf(
-            OptionEntity(voteCode = "v1", optionCode = "o1", title = "大戶屋定食", count = 6, isUserChoiced = true),
-            OptionEntity(voteCode = "v1", optionCode = "o2", title = "摩斯漢堡", count = 4)
-        )
-    )
-    VoteDetailScreenContent(
-        uiState = VoteDetailUiState(
-            isLoading = false,
-            voteWithDetails = sample,
-            isUnlocked = true
-        ),
-        onIntent = {},
-        onNavigateBack = {}
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun VoteDetailLockedPreview() {
-    val sample = VoteWithDetails(
-        vote = VoteEntity(
-            voteCode = "v2",
-            title = "機密年度考核投票",
-            authorName = "管理部",
-            isNeedPassword = true
-        ),
-        options = emptyList()
-    )
-    VoteDetailScreenContent(
-        uiState = VoteDetailUiState(
-            isLoading = false,
-            voteWithDetails = sample,
-            isUnlocked = false
-        ),
-        onIntent = {},
-        onNavigateBack = {}
-    )
 }

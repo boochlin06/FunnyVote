@@ -11,11 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heaton.funnyvote.data.local.entity.UserEntity
+import com.heaton.funnyvote.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,9 +28,15 @@ fun ProfileScreenContent(
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
     Scaffold(
+        containerColor = FunnyVoteWindowBg,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = FunnyVoteBlue,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                ),
                 title = { Text("個人中心", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -42,39 +50,39 @@ fun ProfileScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 用戶頭像與名稱卡片
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                shape = RoundedCornerShape(4.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Surface(
                         modifier = Modifier
-                            .size(80.dp)
+                            .size(72.dp)
                             .clip(CircleShape),
-                        color = MaterialTheme.colorScheme.primary
+                        color = FunnyVoteBlue
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = MaterialTheme.colorScheme.onPrimary
+                                modifier = Modifier.size(44.dp),
+                                tint = Color.White
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     if (uiState.isEditingName) {
                         Row(
@@ -90,7 +98,7 @@ fun ProfileScreenContent(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             IconButton(onClick = { onIntent(ProfileIntent.SaveName) }) {
-                                Icon(Icons.Default.Check, contentDescription = "儲存", tint = MaterialTheme.colorScheme.primary)
+                                Icon(Icons.Default.Check, contentDescription = "儲存", tint = FunnyVoteBlue)
                             }
                         }
                     } else {
@@ -98,10 +106,11 @@ fun ProfileScreenContent(
                             Text(
                                 text = uiState.user?.userName ?: "訪客",
                                 style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
                             )
                             IconButton(onClick = { onIntent(ProfileIntent.EditName(true)) }) {
-                                Icon(Icons.Default.Edit, contentDescription = "編輯暱稱", modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Edit, contentDescription = "編輯暱稱", modifier = Modifier.size(18.dp), tint = FunnyVoteBlue)
                             }
                         }
                     }
@@ -109,7 +118,7 @@ fun ProfileScreenContent(
                     Text(
                         text = uiState.user?.email ?: "未綁定電子郵件",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline
+                        color = TextSecondary
                     )
                 }
             }
@@ -117,7 +126,7 @@ fun ProfileScreenContent(
             // 數據統計列
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 StatCard(
                     title = "已參與",
@@ -142,21 +151,23 @@ fun ProfileScreenContent(
             // App 資訊卡片
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(4.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(14.dp)) {
                     Text(
-                        text = "架構與技術亮點",
+                        text = "關於 FunnyVote",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    TechInfoRow(label = "UI 系統", value = "Jetpack Compose + Material 3")
-                    TechInfoRow(label = "應用架構", value = "MVI (StateFlow + Channel UDF)")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TechInfoRow(label = "版本號", value = "3.0.0 (Modern Android Edition)")
+                    TechInfoRow(label = "UI 系統", value = "Jetpack Compose (經典藍色主題)")
+                    TechInfoRow(label = "架構模式", value = "MVI (StateFlow + Channel UDF)")
+                    TechInfoRow(label = "資料快取", value = "Room 2.6+ (Local-First SSOT)")
                     TechInfoRow(label = "導航架構", value = "Navigation Compose 2.8+ Type-Safe")
-                    TechInfoRow(label = "持久化儲存", value = "Room 2.6+ (Local-First SSOT)")
-                    TechInfoRow(label = "依賴注入", value = "Dagger Hilt + KSP")
-                    TechInfoRow(label = "單元測試", value = "Turbine + MockK + CoroutineTest")
                 }
             }
         }
@@ -172,26 +183,27 @@ fun StatCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+        shape = RoundedCornerShape(4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = title, fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
+            Text(text = title, fontSize = 12.sp, color = TextSecondary)
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = "$count",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = FunnyVoteBlue
                 )
                 Spacer(modifier = Modifier.width(2.dp))
-                Text(text = unit, fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                Text(text = unit, fontSize = 11.sp, color = TextSecondary)
             }
         }
     }
@@ -205,19 +217,17 @@ fun TechInfoRow(label: String, value: String) {
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, fontSize = 13.sp, color = MaterialTheme.colorScheme.outline)
-        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Text(text = label, fontSize = 13.sp, color = TextSecondary)
+        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
     }
 }
 
-// ----------------- Previews -----------------
-
 @Preview(showBackground = true)
 @Composable
-fun ProfileScreenPreview() {
+fun ProfileScreenClassicPreview() {
     ProfileScreenContent(
         uiState = ProfileUiState(
-            user = UserEntity(userId = "1", userName = "Android資深開發者", email = "test@dev.com"),
+            user = UserEntity(userId = "1", userName = "Heaton Lin", email = "test@dev.com"),
             totalCreatedVotes = 3,
             totalVotedCount = 18,
             totalFavoriteCount = 5
