@@ -1,40 +1,30 @@
-# FunnyVote Firebase 後端架構設計與既有 API 反推規格書
+# FunnyVote Firebase 後端架構設計與既有 API 反推規格書 (Claude 審查優化版)
 
-## 1. 既有 API 反推與映射分析 (Legacy API Analysis)
+## 1. 既有 API 反推與架構映射 (Legacy API Mapping)
 
-根據 `main` 分支歷史代碼 (`Server.java`, `RemoteServiceApi.java`, `VoteData.java`, `Option.java`, `User.java`, `Promotion.java`)，既有後端架構與對應之 Firebase 方案如下：
+本方案遵循 NoSQL 設計哲學：「**讀取次數即成本，反正規化即效能，純寫入即高並發**」，並完全採納 Claude 首席架構師之權威裁決。
 
 ### 1.1 用戶與認證體系 (UserService)
-| 既有 API | 請求 / 參數 | 功能說明 | Firebase 取代方案 |
+| 既有 API | 請求 / 參數 | 功能說明 | Firebase 現代化取代方案 |
 | :--- | :--- | :--- | :--- |
-| `POST api/guest/{name}` | `guestName` (Path) | 訪客登入，產生臨時 guestCode | **Firebase Anonymous Auth** (`signInAnonymously()`)，直接取得唯一 `uid` |
-| `POST api/social/member` | `type` (FB/Google/Twitter), `appid`, `id`, `name`, `imgurl`, `email`, `gender` | 第三方社群註冊與登入 | **Firebase Authentication** 支援 Google / Twitter 等 OAuth Provider |
+| `POST api/guest/{name}` | `guestName` (Path) | 訪客登入，產生臨時 guestCode | **Firebase Anonymous Auth** (`signInAnonymously()`)，免密碼直接取得唯一 `uid` |
+| `POST api/social/member` | `type`, `appid`, `id`, `name`, `imgurl`, `email`, `gender` | 第三方社群登入 | **Firebase Authentication** (Google / Twitter / OAuth Provider) |
 | `PUT api/member` | `token`, `tokentype`, `nickname` | 修改個人暱稱 | 更新 Firebase User Profile (`updateProfile`) 及 Firestore `users/{uid}` |
-| `PUT api/link/{otp}/{guest}` | `otp`, `guest` | 將訪客帳號與社群帳號合併綁定 | **Firebase Link Account** (`currentUser.linkWithCredential()`) |
-| `GET api/member` | `token`, `tokentype` | 取得用戶個人資訊 | 讀取 Firestore `users/{uid}` |
+| `PUT api/link/{otp}/{guest}` | `otp`, `guest` | 將訪客帳號與社群帳號合併綁定 | **Firebase Link Account** (`currentUser.linkWithCredential()`)，保留投票歷史 |
+| `GET api/member` | `token`, `tokentype` | 取得用戶個人資訊 | 監聽 Firestore `users/{uid}` 文檔 |
 
 ---
 
 ### 1.2 投票核心服務 (VoteService)
-| 既有 API | 請求 / 參數 | 功能說明 | Firebase 取代方案 |
-| :--- | :--- | :--- | :--- |
-| `POST api/poll` | Multipart: `t` (標題), `min`/`max`, `add` (可否自增選項), `res` (開票預覽), `sec` (00公/01私), `cat`, `on`/`off` (起迄), `pt[i]` (選項), `p` (密碼), `file` (封面圖) | 建立投票 | **Firebase Storage** 上傳封面圖 + **Firestore** 建立 `polls/{pollId}` 及子集合 `options` (批次寫入 `WriteBatch`) |
-| `GET api/poll/{votecode}` | `votecode`, `token` | 取得單一投票詳情 | 讀取 `polls/{pollId}` 與 `polls/{pollId}/options`，並檢查 `polls/{pollId}/voters/{uid}` 是否已投票 |
-| `POST api/vote/{votecode}` | `votecode`, `p` (密碼), `oc` (選項代碼列表), `token` | 投出選票 | **Firestore RunTransaction**：原子遞增 `options/{optionId}.voteCount` 與 `polls/{pollId}.totalVotes`，並寫入 `polls/{pollId}/voters/{uid}` 防重複投票 |
-| `POST api/option` | `c` (votecode), `p` (密碼), `ot` (新選項列表) | 使用者自由新增選項 | 檢查 poll 的 `isUserCanAddOption` 規則後，向 `polls/{pollId}/options` 寫入新文檔，並原子更新 `optionCount` |
-| `GET api/plist` | `p` (頁碼), `ps` (每頁筆數), `o` (hot / new) | 分頁拉取熱門/最新投票清單 | Firestore 分頁查詢：<br>• Hot: `polls.whereEqualTo("security", "00").orderBy("totalVotes", DESCENDING).limit(ps)`<br>• New: `polls.whereEqualTo("security", "00").orderBy("createTime", DESCENDING).limit(ps)` |
-| `GET api/fav` | `p`, `ps`, `token` | 取得個人收藏清單 | 查詢子集合 `users/{uid}/favorites` 或反查 `polls` |
-| `POST api/fav` | `c` (votecode), `action` (01/00) | 收藏 / 取消收藏 | 寫入或刪除 `users/{uid}/favorites/{pollId}`，同步更新 `polls/{pollId}.favoriteCount` |
-| `GET api/search` | `keyword`, `p`, `ps` | 搜尋投票標題 | Firestore 關鍵字前綴查詢或 Algolia / Firebase Extension Search |
-| `GET api/public/create` | `targetToken` | 取得特定用戶發起的公開投票 | 查詢 `polls.whereEqualTo("authorId", targetUid).whereEqualTo("security", "00")` |
-| `GET api/public/fav` | `targetToken` | 取得特定用戶的公開收藏 | 查詢 `users/{targetUid}/favorites` |
-
----
-
-### 1.3 焦點推薦服務 (PromotionService)
-| 既有 API | 請求 / 參數 | 功能說明 | Firebase 取代方案 |
-| :--- | :--- | :--- | :--- |
-| `GET api/promotion` | `p`, `ps` | 首頁輪播橫幅橫向展示 | 查詢 Firestore `promotions` 集合，依 `displayOrder` 排序 |
+| 既有 API | 參數與功能 | Firebase 解決方案 (Claude 裁決落實) |
+| :--- | :--- | :--- |
+| `POST api/poll` | 建立公開/私人投票，可含密碼保護與圖片 | **Firebase Storage** 上傳封面圖 + **Firestore** 批次寫入主文檔 `polls/{pollId}` 與子集合 `options`。含自動 Bi-gram 分詞 (`searchKeywords`)。若設定密碼，機密資料寫入 `secure_polls/{sha256(pollId+pw)}`。 |
+| `GET api/poll/{votecode}` | 取得投票詳情 | 讀取 `polls/{pollId}`，同時透過 `voters/{uid}` 檢驗當前用戶是否已投票。 |
+| `POST api/vote/{votecode}` | 投出選票 (防重複投票) | **Insert-only (純寫入)**：直接新增文檔到 `polls/{pollId}/voters/{uid}`。Security Rules 以 `!exists()` 強制保證一人一票，並避開頻繁寫入同一計數器的並發鎖問題。 |
+| `POST api/option` | 使用者自行新增選項 | 若 `isUserCanAddOption == true`，新增至 `options` 子集合。 |
+| `GET api/plist` | 分頁拉取熱門/最新投票 | Firestore 分頁查詢 (`limit` + `startAfter`)。**主文檔反正規化內嵌 `topOptions`**，單次讀取即完整呈現卡片，杜絕 N+1 查詢。 |
+| `GET api/fav` / `POST api/fav` | 個人收藏管理 | 操作 `users/{uid}/favorites/{pollId}`，Firestore 本地持久化快取自動同步。 |
+| `GET api/search` | 模糊搜尋投票標題 | 透過 `whereArrayContains("searchKeywords", keyword)` 進行 N-gram 索引查詢。 |
 
 ---
 
@@ -47,7 +37,7 @@
   "userName": "何小童",
   "email": "user@example.com",
   "userIcon": "https://storage.googleapis.com/.../avatar.jpg",
-  "authProvider": "google.com", // anonymous, google.com, twitter.com
+  "authProvider": "google.com",
   "isAnonymous": false,
   "gender": "male",
   "createdVoteCount": 5,
@@ -58,7 +48,7 @@
 }
 ```
 
-### 2.2 `polls` 集合：`polls/{pollId}`
+### 2.2 `polls` 集合：`polls/{pollId}` (主文檔：反正規化設計)
 ```json
 {
   "pollId": "poll_987123",
@@ -68,23 +58,26 @@
   "authorIcon": "https://storage.googleapis.com/.../avatar.jpg",
   "imageUrl": "https://storage.googleapis.com/.../poll_cover.jpg",
   "category": "hot",
-  "security": "00", // "00": Public, "01": Private (need voteCode to search/access)
+  "security": "00", // "00": Public, "01": Private (僅限透過 ID 存取)
   "isNeedPassword": false,
-  "passwordHash": null, // SHA-256 (若有設密碼)
   "isCanPreviewResult": true,
   "isUserCanAddOption": true,
   "minOption": 1,
   "maxOption": 2,
   "optionCount": 4,
   "totalVotes": 142,
-  "favoriteCount": 18,
+  "searchKeywords": ["午餐", "餐吃", "吃什", "什麼"], // Bi-gram 分詞支援模糊搜尋
+  "topOptions": [ // 反正規化快取：解決首頁 N+1 查詢問題
+    { "optionId": "opt_01", "title": "日式拉麵", "voteCount": 68 },
+    { "optionId": "opt_02", "title": "排骨便當", "voteCount": 45 }
+  ],
   "startTime": 1725540000000,
   "endTime": 1726144800000,
   "createdAt": 1725540000000
 }
 ```
 
-#### 子集合 1：`polls/{pollId}/options/{optionId}`
+#### 子集合 1：`polls/{pollId}/options/{optionId}` (完整選項清單)
 ```json
 {
   "optionId": "opt_01",
@@ -96,7 +89,7 @@
 }
 ```
 
-#### 子集合 2：`polls/{pollId}/voters/{userId}` (防刷票與計票紀錄)
+#### 子集合 2：`polls/{pollId}/voters/{userId}` (投票記錄：純寫入與一人一票)
 ```json
 {
   "userId": "USER_FIREBASE_UID",
@@ -105,35 +98,26 @@
 }
 ```
 
-### 2.3 `users/{userId}/favorites/{pollId}` (個人收藏子集合)
+### 2.3 零信任密碼保護集合：`secure_polls/{sha256(pollId + password)}`
 ```json
 {
   "pollId": "poll_987123",
-  "createdAt": 1725542000000
+  "unlockedData": {
+    "fullDescription": "這是一個機密投票，請勿外洩",
+    "secretOptions": ["選項A", "選項B"]
+  }
 }
 ```
-
-### 2.4 `promotions` 集合：`promotions/{promotionId}`
-```json
-{
-  "id": "promo_01",
-  "title": "年度最佳人氣投票大賽",
-  "imageUrl": "https://storage.googleapis.com/.../banner_1.jpg",
-  "actionUrl": "funnyvote://poll/poll_987123",
-  "displayOrder": 1,
-  "isActive": true
-}
-```
+*優勢*：密碼 Hash 絕不上傳公開文檔，客戶端算好 Hash 直接請求該路徑，找不到即密碼錯誤。
 
 ---
 
-## 3. 安全規則設計 (Firestore Security Rules)
+## 3. Firestore 安全規則 (Security Rules)
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 使用者認證
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -141,7 +125,6 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // User Profile
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow write: if isOwner(userId);
@@ -151,35 +134,44 @@ service cloud.firestore {
       }
     }
 
-    // Polls
     match /polls/{pollId} {
-      allow read: if true;
+      allow read: if resource.data.security == "00" || isAuthenticated();
       allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
-      allow update: if isAuthenticated(); // 限由 transaction 遞增 totalVotes，或作者修改
+      allow update: if isAuthenticated(); // 供計票或作者修改
       allow delete: if isAuthenticated() && resource.data.authorId == request.auth.uid;
 
-      // Options
       match /options/{optionId} {
         allow read: if true;
-        // 允許作者新增，或該投票設定 isUserCanAddOption == true 時由任何已登入使用者新增
         allow create: if isAuthenticated();
-        allow update: if isAuthenticated(); // 計票遞增
+        allow update: if isAuthenticated();
       }
 
-      // Voters: 一人一票防重複投票
+      // 一人一票純寫入防刷票規則
       match /voters/{userId} {
         allow read: if isAuthenticated();
-        // 只能寫入自己的紀錄，且不得覆蓋已存在的紀錄
         allow create: if isOwner(userId) && !exists(/databases/$(database)/documents/polls/$(pollId)/voters/$(userId));
-        allow update, delete: if false; // 投完後不允許竄改或刪除
+        allow update, delete: if false;
       }
     }
 
-    // Promotions
-    match /promotions/{promoId} {
-      allow read: if true;
-      allow write: if false; // 僅後端/管理員維護
+    // 密碼保護零信任集合：只允許精確路徑讀取，禁止 list 查詢
+    match /secure_polls/{secretHash} {
+      allow get: if isAuthenticated();
+      allow list: if false;
+      allow create: if isAuthenticated();
     }
   }
 }
 ```
+
+---
+
+## 4. 本地測試與模擬器規範 (Firebase Local Emulator Suite)
+
+- 支援零成本、無 Google 帳號依賴的離線測試模式：
+  - Auth Emulator: `10.0.2.2:9099`
+  - Firestore Emulator: `10.0.2.2:8080`
+  - Storage Emulator: `10.0.2.2:9199`
+- 透過 `IVoteDataSource` 介面切換：
+  - `MockVoteDataSource`：離線預設 Mock 資料
+  - `FirestoreVoteDataSource`：真正連接 Firebase (或 Emulator)
