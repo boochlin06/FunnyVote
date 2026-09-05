@@ -57,9 +57,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private var loadVotesJob: kotlinx.coroutines.Job? = null
+    private var searchJob: kotlinx.coroutines.Job? = null
+
     private fun loadVotes() {
         val currentTab = _uiState.value.selectedTab
-        viewModelScope.launch {
+        searchJob?.cancel()
+        loadVotesJob?.cancel()
+        loadVotesJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             repository.getVotesByCategory(currentTab)
                 .catch { e ->
@@ -72,7 +77,9 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun performSearch(query: String) {
-        viewModelScope.launch {
+        loadVotesJob?.cancel()
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
             repository.searchVotes(query)
                 .catch { e ->
                     _uiState.update { it.copy(message = e.message) }

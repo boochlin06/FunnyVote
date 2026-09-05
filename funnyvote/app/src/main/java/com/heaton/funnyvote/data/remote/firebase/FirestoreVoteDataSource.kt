@@ -1,5 +1,6 @@
 package com.heaton.funnyvote.data.remote.firebase
 
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -18,7 +19,8 @@ import javax.inject.Singleton
 
 @Singleton
 class FirestoreVoteDataSource @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
 ) : VoteRemoteDataSource {
 
     private val pollsCollection = firestore.collection("polls")
@@ -42,6 +44,42 @@ class FirestoreVoteDataSource @Inject constructor(
     }
 
     override fun getVotesByCategory(category: String): Flow<List<VoteWithDetails>> = callbackFlow {
+        if (category == "favorite") {
+            val userId = auth.currentUser?.uid
+            if (userId == null) {
+                trySend(emptyList())
+                awaitClose { }
+                return@callbackFlow
+            }
+
+            val favRef = firestore.collection("users").document(userId).collection("favorites")
+            val registration = favRef.addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+                val pollIds = snapshot?.documents?.mapNotNull { it.id }.orEmpty()
+                if (pollIds.isEmpty()) {
+                    trySend(emptyList())
+                } else {
+                    pollsCollection.whereIn("pollId", pollIds.take(10)).get()
+                        .addOnSuccessListener { pollDocs ->
+                            val list = pollDocs.documents.mapNotNull { doc ->
+                                mapDocToVoteWithDetails(doc)?.let {
+                                    it.copy(vote = it.vote.copy(isFavorite = true))
+                                }
+                            }
+                            trySend(list)
+                        }
+                        .addOnFailureListener {
+                            trySend(emptyList())
+                        }
+                }
+            }
+            awaitClose { registration.remove() }
+            return@callbackFlow
+        }
+
         val query = if (category == "hot") {
             pollsCollection
                 .whereEqualTo("security", "00")
@@ -70,10 +108,62 @@ class FirestoreVoteDataSource @Inject constructor(
     override fun getVoteDetail(voteCode: String): Flow<VoteWithDetails?> = callbackFlow {
         val pollDocRef = pollsCollection.document(voteCode)
         val optionsRef = pollDocRef.collection("options").orderBy("displayOrder")
+        val currentUid = auth.currentUser?.uid
+        val voterDocRef = currentUid?.let { pollDocRef.collection("voters").document(it) }
+        val favDocRef = currentUid?.let { firestore.collection("users").document(it).collection("favorites").document(voteCode) }
+
+        var currentOptions = emptyList<OptionEntity>()
+        var currentPollDoc: com.google.firebase.firestore.DocumentSnapshot? = null
+
+        fun tryEmit() {
+            val doc = currentPollDoc ?: return
+            if (!doc.exists()) {
+                close(NoSuchElementException("Poll $voteCode not found"))
+                return
+            }
+            val base = mapDocToVoteWithDetails(doc) ?: return
+            if (voterDocRef != null) {
+                voterDocRef.get().addOnSuccessListener { voterDoc ->
+                    val isVoted = voterDoc.exists()
+                    @Suppress("UNCHECKED_CAST")
+                    val chosenCodes = voterDoc.get("selectedOptionCodes") as? List<String> ?: emptyList()
+                    val resolvedOptions = (if (currentOptions.isNotEmpty()) currentOptions else base.options).map { opt ->
+                        opt.copy(isUserChoiced = chosenCodes.contains(opt.optionCode))
+                    }
+
+                    if (favDocRef != null) {
+                        favDocRef.get().addOnSuccessListener { favDoc ->
+                            val isFav = favDoc.exists()
+                            trySend(base.copy(
+                                vote = base.vote.copy(isVoted = isVoted, isFavorite = isFav),
+                                options = resolvedOptions
+                            ))
+                        }.addOnFailureListener {
+                            trySend(base.copy(
+                                vote = base.vote.copy(isVoted = isVoted),
+                                options = resolvedOptions
+                            ))
+                        }
+                    } else {
+                        trySend(base.copy(
+                            vote = base.vote.copy(isVoted = isVoted),
+                            options = resolvedOptions
+                        ))
+                    }
+                }.addOnFailureListener {
+                    trySend(base.copy(options = if (currentOptions.isNotEmpty()) currentOptions else base.options))
+                }
+            } else {
+                trySend(base.copy(options = if (currentOptions.isNotEmpty()) currentOptions else base.options))
+            }
+        }
 
         val regOptions = optionsRef.addSnapshotListener { optSnapshot, optError ->
-            if (optError != null) return@addSnapshotListener
-            val options = optSnapshot?.documents?.mapNotNull { doc ->
+            if (optError != null) {
+                close(optError)
+                return@addSnapshotListener
+            }
+            currentOptions = optSnapshot?.documents?.mapNotNull { doc ->
                 val id = doc.id
                 val title = doc.getString("title") ?: ""
                 val count = doc.getLong("voteCount")?.toInt() ?: 0
@@ -86,22 +176,26 @@ class FirestoreVoteDataSource @Inject constructor(
                     isUserChoiced = false
                 )
             }.orEmpty()
-
-            pollDocRef.get().addOnSuccessListener { pollDoc ->
-                if (!pollDoc.exists()) {
-                    trySend(null)
-                } else {
-                    val base = mapDocToVoteWithDetails(pollDoc)
-                    if (base != null) {
-                        trySend(base.copy(options = if (options.isNotEmpty()) options else base.options))
-                    } else {
-                        trySend(null)
-                    }
-                }
-            }
+            tryEmit()
         }
 
-        awaitClose { regOptions.remove() }
+        val regPoll = pollDocRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+            if (snapshot == null || !snapshot.exists()) {
+                close(NoSuchElementException("Poll $voteCode not found"))
+                return@addSnapshotListener
+            }
+            currentPollDoc = snapshot
+            tryEmit()
+        }
+
+        awaitClose {
+            regOptions.remove()
+            regPoll.remove()
+        }
     }
 
     override fun searchVotes(query: String): Flow<List<VoteWithDetails>> = callbackFlow {
