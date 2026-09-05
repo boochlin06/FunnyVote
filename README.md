@@ -96,6 +96,21 @@ funnyvote/app/src/main/
 
 ---
 
+## 💡 當年時空背景與工程師決策復盤 (Retrospective)
+
+### 為什麼在 2016 年這樣設計？
+2016 年正是 Android 系統從混亂走向成熟的陣痛期（Android 6.0 Marshmallow 剛剛引入動態權限）。當時沒有 Jetpack，沒有 Coroutines，甚至沒有官方推薦架構指南：
+- **為什麼用 ButterKnife？**：當時寫 Android 最痛苦的就是滿滿幾百行的 `findViewById`，Jake Wharton 的 ButterKnife 宛如救星，用註解代碼生成解決了視圖綁定。
+- **為什麼用 EventBus？**：在那個沒有 LiveData、RxJava 尚未大行其道的年代，想要跨越 Activity 與背景網路傳輸資料，不用 Handler 就是用 EventBus。它以極度低廉的學習成本實現了組件解耦。
+- **為什麼用 ActiveAndroid / GreenDAO？**：手寫 SQLiteOpenHelper 和 SQL 語句極度容易出錯，ORM 映射成了當時實現「離線秒開」體驗的不二之選。
+
+### 當年留下的工程代價（後續重構的引線）：
+1. **EventBus 濫用導致「代碼迷蹤」**：全域廣播事件到處飛，按下一個按鈕，根本不知道全 App 有哪五個地方在默默監聽，追查 Bug 宛如偵探辦案。
+2. **Activity 既當爹又當媽 (God Activity)**：UI 動畫、生命週期、資料存取混在同一個類別，動輒一兩千行，改動一行代碼往往伴隨意想不到的副作用。
+3. **編譯期與運行期脫節**：EventBus 事件沒有強型別契約，傳錯參數在運行期才會靜默失效。
+
+---
+
 ## 🌿 各分支演進地圖 (Branch Evolutionary Roadmap)
 
 本分支作為整個專案十年間開枝散葉的**最根本原點**：
@@ -103,14 +118,22 @@ funnyvote/app/src/main/
 ```text
 [main] (★ Current) ──► 2016 經典 Java / ButterKnife / EventBus / SQLite 原版
    │
-   ├─► [kotlin-rewrite] ──► 語法現代化：Java 轉 Kotlin、引進 Coroutines 與基礎 Compose
+   ├─► [mvp] ──────────► 2017 初次解耦：導入 Google MVP Blueprint、Contract 契約設計
    │
-   ├─► [mvi-rewrite] ────► 架構規範化：探索嚴格 MVI 單向資料流 (UDF) 基礎
+   ├─► [mvp_rxjava] ────► 2017 響應式進化：引入 RxJava 切換執行緒、統一數據串流管線
    │
-   ├─► [modern-android] ─► 全面現代化：Compose 100% 畫面補全、Room 本地快取、Hilt 注入
+   ├─► [mvp_dagger] ────► 2017 依賴注入：引入 Dagger 2，實現編譯期依賴拓撲圖
+   │
+   ├─► [mvp_kotlin] ────► 2018 初探 Kotlin：Java 全盤轉 Kotlin 1.2、消滅 NPE
+   │
+   ├─► [kotlin-rewrite] ──► 2024 現代轉型：Kotlin 2.0 + Coroutines + 基礎 Compose
+   │
+   ├─► [mvi-rewrite] ────► 2024 架構規範：嚴格 MVI (UDF) 單向資料流
+   │
+   ├─► [modern-android] ─► 2026 現代完備：Compose 100% 畫面補全、Room 快取、Hilt 注入
    │
    └─► [feature/firebase-backend]
-                           └─► 雲原生躍遷：Firebase Serverless、Cloud Firestore、
+                           └─► 2026 雲原生旗艦版：Firebase Serverless、Cloud Firestore、
                                離線持久化、實體 Android 16 真機驗收
 ```
 
