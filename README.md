@@ -149,16 +149,24 @@ funnyvote/
 FunnyVote 記錄了 Android 開發十年來的重大架構演進：
 
 ```text
-[main] ───────────────► 2016 經典 Java / ButterKnife / EventBus / SQLite
+[main] ───────────────► 2016 經典 Java / ButterKnife / EventBus / SQLite 原版
    │
-   ├─► [kotlin-rewrite] ──► 語法現代化：Java 轉 Kotlin、引進 Coroutines 與基礎 Compose
+   ├─► [mvp] ──────────► 2017 初次解耦：導入 Google MVP Blueprint、Contract 契約設計
    │
-   ├─► [mvi-rewrite] ────► 架構規範化：探索嚴格 MVI 單向資料流 (UDF) 基礎
+   ├─► [mvp_rxjava] ────► 2017 響應式進化：引入 RxJava 切換執行緒、統一數據串流管線
    │
-   ├─► [modern-android] ─► 全面現代化：Compose 100% 畫面補全、Room 本地快取、Hilt 注入
+   ├─► [mvp_dagger] ────► 2017 依賴注入：引入 Dagger 2，實現編譯期依賴拓撲圖
+   │
+   ├─► [mvp_kotlin] ────► 2018 初探 Kotlin：Java 全盤轉 Kotlin 1.2、消滅 NPE
+   │
+   ├─► [kotlin-rewrite] ──► 2024 現代轉型：Kotlin 2.0 + Coroutines + 基礎 Compose
+   │
+   ├─► [mvi-rewrite] ────► 2024 架構規範：嚴格 MVI (UDF) 單向資料流
+   │
+   ├─► [modern-android] ─► 2026 現代完備：Compose 100% 畫面補全、Room 快取、Hilt 注入
    │
    └─► [feature/firebase-backend] (★ Current)
-                           └─► 雲原生旗艦版：Firebase Serverless、Cloud Firestore、
+                           └─► 2026 雲原生旗艦版：Firebase Serverless、Cloud Firestore、
                                Storage 壓圖快取、零信任密碼保護、實體 Android 16 真機驗收
 ```
 
@@ -179,7 +187,7 @@ FunnyVote 記錄了 Android 開發十年來的重大架構演進：
 # 1. 進入 Android 專案目錄
 cd funnyvote
 
-# 2. 執行單元測試 (22 項 ViewModel 狀態與零信任測試)
+# 2. 執行單元測試 (27 項 ViewModel 狀態、零信任與安全防禦測試)
 ./gradlew testDebugUnitTest
 
 # 3. 編譯 Debug APK
