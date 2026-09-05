@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -36,6 +37,8 @@ import com.heaton.funnyvote.data.local.entity.VoteEntity
 import com.heaton.funnyvote.data.local.entity.VoteWithDetails
 import com.heaton.funnyvote.ui.common.ShareBottomSheet
 import com.heaton.funnyvote.ui.theme.*
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -49,6 +52,7 @@ fun HomeScreenContent(
     onProfileClick: () -> Unit,
     onAboutClick: () -> Unit = {},
     onTutorialClick: () -> Unit = {},
+    onAuthorClick: (String, String, String?) -> Unit = { _, _, _ -> },
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -71,6 +75,12 @@ fun HomeScreenContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                scope.launch { drawerState.close() }
+                                onProfileClick()
+                            },
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -304,6 +314,22 @@ fun HomeScreenContent(
                 }
             }
 
+            val listState = rememberLazyListState()
+
+            val shouldLoadMore = remember {
+                derivedStateOf {
+                    val totalItems = listState.layoutInfo.totalItemsCount
+                    val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                    totalItems > 0 && lastVisibleItem >= totalItems - 3
+                }
+            }
+
+            LaunchedEffect(shouldLoadMore.value) {
+                if (shouldLoadMore.value && !uiState.isLoading && !uiState.isLoadingMore && uiState.hasMore && !uiState.isSearchActive) {
+                    onIntent(HomeIntent.LoadMore)
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -336,6 +362,7 @@ fun HomeScreenContent(
                     }
                 } else {
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -368,8 +395,27 @@ fun HomeScreenContent(
                                 },
                                 onShareClick = {
                                     shareTargetVote = item.vote
-                                }
+                                },
+                                onAuthorClick = onAuthorClick
                             )
+                        }
+
+                        // 3. 加載更多指示器
+                        if (uiState.isLoadingMore) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = FunnyVoteBlue,
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -500,7 +546,8 @@ fun ClassicVoteCard(
     item: VoteWithDetails,
     onClick: () -> Unit,
     onFavoriteToggle: () -> Unit,
-    onShareClick: () -> Unit = {}
+    onShareClick: () -> Unit = {},
+    onAuthorClick: (String, String, String?) -> Unit = { _, _, _ -> }
 ) {
     val totalCount = item.vote.totalVotedCount.coerceAtLeast(1)
     val maxVoteCount = item.options.maxOfOrNull { it.count } ?: 0
@@ -517,7 +564,10 @@ fun ClassicVoteCard(
         Column(modifier = Modifier.padding(10.dp)) {
             // 1. Author Bar (include_author.xml)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(4.dp))
+                    .clickable { onAuthorClick(item.vote.authorId, item.vote.authorName, item.vote.authorIcon) },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
@@ -525,13 +575,22 @@ fun ClassicVoteCard(
                     shape = CircleShape,
                     color = Color(0xFFE0E0E0)
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(24.dp)
+                    if (!item.vote.authorIcon.isNullOrBlank()) {
+                        AsyncImage(
+                            model = item.vote.authorIcon,
+                            contentDescription = "作者頭像",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
+                    } else {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = Color.Gray,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
 
@@ -588,6 +647,20 @@ fun ClassicVoteCard(
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
+
+            // 2.1 封面圖 (若有)
+            if (!item.vote.imageUrl.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                AsyncImage(
+                    model = item.vote.imageUrl,
+                    contentDescription = "投票封面",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 

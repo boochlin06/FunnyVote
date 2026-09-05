@@ -31,6 +31,8 @@ fun ProfileScreenContent(
     onIntent: (ProfileIntent) -> Unit,
     onNavigateBack: () -> Unit,
     onVoteClick: (String) -> Unit = {},
+    onGoogleSignInClick: () -> Unit = {},
+    onAvatarClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
     Scaffold(
@@ -81,12 +83,13 @@ fun ProfileScreenContent(
                                 .background(FunnyVoteBlue.copy(alpha = 0.85f))
                         )
 
-                        // 圓形頭像
+                        // 圓形頭像 (支援點擊選圖上傳與 Coil 快取展示)
                         Surface(
                             modifier = Modifier
                                 .size(76.dp)
                                 .offset(y = (-38).dp)
-                                .clip(CircleShape),
+                                .clip(CircleShape)
+                                .clickable { onAvatarClick() },
                             color = Color.White,
                             shadowElevation = 4.dp
                         ) {
@@ -97,12 +100,27 @@ fun ProfileScreenContent(
                                     .clip(CircleShape)
                                     .background(FunnyVoteBlue)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(50.dp),
-                                    tint = Color.White
-                                )
+                                if (uiState.isUploadingAvatar) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(32.dp),
+                                        color = Color.White,
+                                        strokeWidth = 3.dp
+                                    )
+                                } else if (!uiState.user?.userIcon.isNullOrBlank()) {
+                                    coil.compose.AsyncImage(
+                                        model = uiState.user?.userIcon,
+                                        contentDescription = "個人頭像",
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(50.dp),
+                                        tint = Color.White
+                                    )
+                                }
                             }
                         }
 
@@ -171,7 +189,92 @@ fun ProfileScreenContent(
                 }
             }
 
-            // 2. 雙 Tab 分頁選單 (PersonalActivity.TabsAdapter: 1. 我發起的投票, 2. 我的收藏)
+            // 2. Google 登入與帳號綁定狀態小卡
+            item {
+                if (uiState.isAnonymous) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 2.dp),
+                        colors = CardDefaults.cardColors(containerColor = FunnyVoteBlue.copy(alpha = 0.08f)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "目前為訪客身份",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPrimary
+                                )
+                                Text(
+                                    text = "綁定 Google 帳號，永久保存發起與投票紀錄",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextSecondary,
+                                    fontSize = 11.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(
+                                onClick = onGoogleSignInClick,
+                                colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue),
+                                shape = RoundedCornerShape(16.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                if (uiState.isGoogleSigningIn) {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                                } else {
+                                    Text("連結 Google", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 2.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF4CAF50),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "已連結永久 Google 帳號",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF2E7D32),
+                                    fontSize = 12.sp
+                                )
+                            }
+                            TextButton(onClick = { onIntent(ProfileIntent.SignOut) }) {
+                                Text("登出", color = TextSecondary, fontSize = 12.sp)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. 三 Tab 分頁選單 (1. 我發起的投票, 2. 我的收藏, 3. 我參與的投票)
             item {
                 TabRow(
                     selectedTabIndex = uiState.selectedTabIndex,
@@ -193,9 +296,10 @@ fun ProfileScreenContent(
                         onClick = { onIntent(ProfileIntent.SelectTab(0)) },
                         text = {
                             Text(
-                                text = "我發起的投票 (${uiState.createdVotes.size})",
+                                text = "我發起 (${uiState.createdVotes.size})",
                                 fontWeight = if (uiState.selectedTabIndex == 0) FontWeight.Bold else FontWeight.Normal,
-                                color = if (uiState.selectedTabIndex == 0) FunnyVoteBlue else TextSecondary
+                                color = if (uiState.selectedTabIndex == 0) FunnyVoteBlue else TextSecondary,
+                                fontSize = 13.sp
                             )
                         }
                     )
@@ -206,15 +310,32 @@ fun ProfileScreenContent(
                             Text(
                                 text = "我的收藏 (${uiState.favoriteVotes.size})",
                                 fontWeight = if (uiState.selectedTabIndex == 1) FontWeight.Bold else FontWeight.Normal,
-                                color = if (uiState.selectedTabIndex == 1) FunnyVoteBlue else TextSecondary
+                                color = if (uiState.selectedTabIndex == 1) FunnyVoteBlue else TextSecondary,
+                                fontSize = 13.sp
+                            )
+                        }
+                    )
+                    Tab(
+                        selected = uiState.selectedTabIndex == 2,
+                        onClick = { onIntent(ProfileIntent.SelectTab(2)) },
+                        text = {
+                            Text(
+                                text = "我參與 (${uiState.participatedVotes.size})",
+                                fontWeight = if (uiState.selectedTabIndex == 2) FontWeight.Bold else FontWeight.Normal,
+                                color = if (uiState.selectedTabIndex == 2) FunnyVoteBlue else TextSecondary,
+                                fontSize = 13.sp
                             )
                         }
                     )
                 }
             }
 
-            // 3. 渲染投票列表或空狀態
-            val currentList = if (uiState.selectedTabIndex == 0) uiState.createdVotes else uiState.favoriteVotes
+            // 4. 渲染投票列表或空狀態
+            val currentList = when (uiState.selectedTabIndex) {
+                0 -> uiState.createdVotes
+                1 -> uiState.favoriteVotes
+                else -> uiState.participatedVotes
+            }
             if (currentList.isEmpty()) {
                 item {
                     Box(
@@ -225,14 +346,22 @@ fun ProfileScreenContent(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
-                                imageVector = if (uiState.selectedTabIndex == 0) Icons.Default.HowToVote else Icons.Default.StarBorder,
+                                imageVector = when (uiState.selectedTabIndex) {
+                                    0 -> Icons.Default.HowToVote
+                                    1 -> Icons.Default.StarBorder
+                                    else -> Icons.Default.Poll
+                                },
                                 contentDescription = null,
                                 modifier = Modifier.size(54.dp),
                                 tint = Color.LightGray
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = if (uiState.selectedTabIndex == 0) "你尚未發起過任何投票" else "尚未加入任何收藏投票",
+                                text = when (uiState.selectedTabIndex) {
+                                    0 -> "你尚未發起過任何投票"
+                                    1 -> "尚未加入任何收藏投票"
+                                    else -> "尚未參與過任何投票"
+                                },
                                 color = TextSecondary,
                                 fontSize = 14.sp
                             )

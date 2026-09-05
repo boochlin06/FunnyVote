@@ -19,12 +19,16 @@ class CreateVoteViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private val context: android.content.Context = mockk(relaxed = true)
     private val repository: VoteRepository = mockk(relaxed = true)
+    private val userRepository: com.heaton.funnyvote.data.repository.UserRepository = mockk(relaxed = true)
+    private val imageUploadManager: com.heaton.funnyvote.util.ImageUploadManager = mockk(relaxed = true)
+    private val analyticsManager: com.heaton.funnyvote.util.AnalyticsManager = mockk(relaxed = true)
     private lateinit var viewModel: CreateVoteViewModel
 
     @Before
     fun setUp() {
-        viewModel = CreateVoteViewModel(repository)
+        viewModel = CreateVoteViewModel(context, repository, userRepository, imageUploadManager, analyticsManager)
     }
 
     @Test
@@ -46,12 +50,12 @@ class CreateVoteViewModelTest {
             assertNotNull(state.titleError)
             assertEquals("投票標題不能為空！", state.titleError)
         }
-        coVerify(exactly = 0) { repository.createNewVote(any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) { repository.createNewVote(any(), any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
     fun `submit with valid fields calls repository and emits success effect`() = runTest {
-        coEvery { repository.createNewVote(any(), any(), any(), any(), any()) } returns Result.success("new_vote_code")
+        coEvery { repository.createNewVote(any(), any(), any(), any(), any(), any(), any(), any()) } returns Result.success("new_vote_code")
 
         viewModel.handleIntent(CreateVoteIntent.UpdateTitle("新產品發表投票"))
         viewModel.handleIntent(CreateVoteIntent.UpdateOption(0, "方案 A"))
@@ -72,7 +76,10 @@ class CreateVoteViewModelTest {
                 options = listOf("方案 A", "方案 B"),
                 isPrivate = false,
                 password = null,
-                isMultiChoice = false
+                isMultiChoice = false,
+                description = any(),
+                imageUrl = any(),
+                endTime = any()
             )
         }
     }
@@ -89,6 +96,24 @@ class CreateVoteViewModelTest {
         viewModel.uiState.test {
             val state = awaitItem()
             assertEquals("私密投票必須設定密碼！", state.passwordError)
+        }
+    }
+
+    @Test
+    fun `select cover image when anonymous shows restriction snackbar`() = runTest {
+        coEvery { userRepository.isAnonymous() } returns true
+        val mockUri: android.net.Uri = mockk(relaxed = true)
+
+        viewModel.uiEffect.test {
+            viewModel.handleIntent(CreateVoteIntent.SelectCoverImage(mockUri))
+            val effect = awaitItem()
+            assert(effect is CreateVoteUiEffect.ShowSnackbar)
+            assertTrue((effect as CreateVoteUiEffect.ShowSnackbar).message.contains("Google 認證會員"))
+        }
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertNull(state.coverUri)
         }
     }
 }

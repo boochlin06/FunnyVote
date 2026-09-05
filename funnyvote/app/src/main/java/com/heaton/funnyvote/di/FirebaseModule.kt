@@ -39,6 +39,18 @@ object FirebaseModule {
     fun provideFirebaseStorage(): FirebaseStorage {
         return FirebaseStorage.getInstance()
     }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAnalytics(@dagger.hilt.android.qualifiers.ApplicationContext context: android.content.Context): com.google.firebase.analytics.FirebaseAnalytics {
+        return com.google.firebase.analytics.FirebaseAnalytics.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseCrashlytics(): com.google.firebase.crashlytics.FirebaseCrashlytics {
+        return com.google.firebase.crashlytics.FirebaseCrashlytics.getInstance()
+    }
 }
 
 @Module

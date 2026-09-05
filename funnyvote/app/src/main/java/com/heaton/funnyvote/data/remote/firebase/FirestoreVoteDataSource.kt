@@ -255,6 +255,16 @@ class FirestoreVoteDataSource @Inject constructor(
 
             // 3. 遞增主文檔 totalVotes
             transaction.update(pollRef, "totalVotes", FieldValue.increment(selectedOptionCodes.size.toLong()))
+
+            // 4. 同步寫入使用者參與歷史 users/{userId}/voted_polls/{voteCode}
+            val userVotedRef = firestore.collection("users").document(userId)
+                .collection("voted_polls").document(voteCode)
+            val userVotedData = hashMapOf(
+                "pollId" to voteCode,
+                "selectedOptionCodes" to selectedOptionCodes,
+                "votedAt" to System.currentTimeMillis()
+            )
+            transaction.set(userVotedRef, userVotedData)
         }.await()
     }
 
@@ -287,7 +297,10 @@ class FirestoreVoteDataSource @Inject constructor(
         password: String?,
         isMultiChoice: Boolean,
         authorId: String,
-        authorName: String
+        authorName: String,
+        description: String?,
+        imageUrl: String?,
+        endTime: Long?
     ): Result<String> = runCatching {
         val pollId = "poll_${UUID.randomUUID().toString().replace("-", "").take(10)}"
         val searchKeywords = NgramUtil.generateBiGrams(title)
@@ -305,10 +318,11 @@ class FirestoreVoteDataSource @Inject constructor(
         val pollDoc = hashMapOf(
             "pollId" to pollId,
             "title" to title,
+            "description" to description,
             "authorId" to authorId,
             "authorName" to authorName,
             "authorIcon" to null,
-            "imageUrl" to null,
+            "imageUrl" to imageUrl,
             "category" to "hot",
             "security" to if (isPrivate) "01" else "00",
             "isNeedPassword" to !password.isNullOrBlank(),
@@ -321,7 +335,7 @@ class FirestoreVoteDataSource @Inject constructor(
             "searchKeywords" to searchKeywords,
             "topOptions" to topOptions,
             "startTime" to now,
-            "endTime" to now + 86400000L * 30L,
+            "endTime" to (endTime ?: (now + 86400000L * 30L)),
             "createdAt" to now
         )
 
@@ -345,6 +359,18 @@ class FirestoreVoteDataSource @Inject constructor(
             )
         }
 
+        if (!password.isNullOrBlank()) {
+            val secretHash = hashPollPassword(pollId, password)
+            val secureRef = firestore.collection("secure_polls").document(secretHash)
+            batch.set(
+                secureRef,
+                hashMapOf(
+                    "pollId" to pollId,
+                    "createdAt" to now
+                )
+            )
+        }
+
         batch.commit().await()
         pollId
     }
@@ -363,10 +389,79 @@ class FirestoreVoteDataSource @Inject constructor(
         }
     }
 
+    override fun getUserParticipatedVotes(userId: String): Flow<List<VoteWithDetails>> = callbackFlow {
+        val votedRef = firestore.collection("users").document(userId).collection("voted_polls")
+        val registration = votedRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                trySend(emptyList())
+                return@addSnapshotListener
+            }
+            val pollIds = snapshot?.documents?.mapNotNull { it.id }.orEmpty()
+            if (pollIds.isEmpty()) {
+                trySend(emptyList())
+            } else {
+                pollsCollection.whereIn("pollId", pollIds.take(20)).get()
+                    .addOnSuccessListener { pollDocs ->
+                        val list = pollDocs.documents.mapNotNull { doc ->
+                            mapDocToVoteWithDetails(doc)?.let {
+                                it.copy(vote = it.vote.copy(isVoted = true))
+                            }
+                        }
+                        trySend(list)
+                    }
+                    .addOnFailureListener {
+                        trySend(emptyList())
+                    }
+            }
+        }
+        awaitClose { registration.remove() }
+    }
+
+    override suspend fun loadMoreVotes(
+        category: String,
+        lastVoteCode: String,
+        limit: Long
+    ): Result<List<VoteWithDetails>> = runCatching {
+        val lastDoc = pollsCollection.document(lastVoteCode).get().await()
+        if (!lastDoc.exists()) return@runCatching emptyList()
+
+        val query = if (category == "hot") {
+            pollsCollection
+                .whereEqualTo("security", "00")
+                .orderBy("totalVotes", Query.Direction.DESCENDING)
+                .startAfter(lastDoc)
+                .limit(limit)
+        } else {
+            pollsCollection
+                .whereEqualTo("security", "00")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .startAfter(lastDoc)
+                .limit(limit)
+        }
+        val snapshot = query.get().await()
+        snapshot.documents.mapNotNull { mapDocToVoteWithDetails(it) }
+    }
+
+    override fun getVotesByAuthor(authorId: String): Flow<List<VoteWithDetails>> = callbackFlow {
+        val registration = pollsCollection
+            .whereEqualTo("authorId", authorId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+                val votes = snapshot?.documents?.mapNotNull { mapDocToVoteWithDetails(it) }.orEmpty()
+                trySend(votes)
+            }
+        awaitClose { registration.remove() }
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun mapDocToVoteWithDetails(doc: com.google.firebase.firestore.DocumentSnapshot): VoteWithDetails? {
         val pollId = doc.getString("pollId") ?: doc.id
         val title = doc.getString("title") ?: return null
+        val authorId = doc.getString("authorId") ?: ""
         val authorName = doc.getString("authorName") ?: "匿名"
         val authorIcon = doc.getString("authorIcon")
         val category = doc.getString("category") ?: "hot"
@@ -377,10 +472,14 @@ class FirestoreVoteDataSource @Inject constructor(
         val isCanPreviewResult = doc.getBoolean("isCanPreviewResult") ?: true
         val totalVotes = doc.getLong("totalVotes")?.toInt() ?: 0
         val createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis()
+        val description = doc.getString("description")
+        val imageUrl = doc.getString("imageUrl")
+        val endTime = doc.getLong("endTime") ?: (createdAt + 86400000L * 30L)
 
         val voteEntity = VoteEntity(
             voteCode = pollId,
             title = title,
+            authorId = authorId,
             authorName = authorName,
             authorIcon = authorIcon,
             category = category,
@@ -392,6 +491,9 @@ class FirestoreVoteDataSource @Inject constructor(
             isFavorite = false,
             isVoted = false,
             totalVotedCount = totalVotes,
+            description = description,
+            imageUrl = imageUrl,
+            endTime = endTime,
             createdAt = createdAt
         )
 
@@ -411,5 +513,21 @@ class FirestoreVoteDataSource @Inject constructor(
             vote = voteEntity,
             options = options
         )
+    }
+
+    override suspend fun verifyPollPassword(voteCode: String, password: String): Boolean {
+        return try {
+            val secretHash = hashPollPassword(voteCode, password)
+            val doc = firestore.collection("secure_polls").document(secretHash).get().await()
+            doc.exists()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun hashPollPassword(pollId: String, password: String): String {
+        val input = "$pollId:$password"
+        val bytes = java.security.MessageDigest.getInstance("SHA-256").digest(input.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

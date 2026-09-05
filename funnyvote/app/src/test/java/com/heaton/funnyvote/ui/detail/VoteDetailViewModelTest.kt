@@ -106,4 +106,58 @@ class VoteDetailViewModelTest {
 
         coVerify { repository.submitVote("vote_101", listOf("opt_1")) }
     }
+
+    @Test
+    fun `cloud zero-trust password verification success unlocks vote`() = runTest {
+        val cloudVote = sampleVote.copy(
+            vote = sampleVote.vote.copy(voteCode = "vote_cloud", password = null)
+        )
+        coEvery { repository.getVoteDetail("vote_cloud") } returns flowOf(cloudVote)
+        coEvery { repository.verifyPollPassword("vote_cloud", "cloud_secret") } returns true
+
+        val vm = VoteDetailViewModel(repository, SavedStateHandle(mapOf("voteCode" to "vote_cloud")))
+        vm.uiState.test {
+            var state = awaitItem()
+            while (state.voteWithDetails == null) {
+                state = awaitItem()
+            }
+            assertFalse(state.isUnlocked)
+
+            vm.handleIntent(VoteDetailIntent.UpdatePasswordInput("cloud_secret"))
+            state = awaitItem()
+            assertEquals("cloud_secret", state.passwordInput)
+
+            vm.handleIntent(VoteDetailIntent.UnlockWithPassword)
+            state = awaitItem()
+            assertTrue(state.isUnlocked)
+            assertNull(state.passwordError)
+        }
+    }
+
+    @Test
+    fun `cloud zero-trust password verification failure shows error`() = runTest {
+        val cloudVote = sampleVote.copy(
+            vote = sampleVote.vote.copy(voteCode = "vote_cloud", password = null)
+        )
+        coEvery { repository.getVoteDetail("vote_cloud") } returns flowOf(cloudVote)
+        coEvery { repository.verifyPollPassword("vote_cloud", "wrong") } returns false
+
+        val vm = VoteDetailViewModel(repository, SavedStateHandle(mapOf("voteCode" to "vote_cloud")))
+        vm.uiState.test {
+            var state = awaitItem()
+            while (state.voteWithDetails == null) {
+                state = awaitItem()
+            }
+            assertFalse(state.isUnlocked)
+
+            vm.handleIntent(VoteDetailIntent.UpdatePasswordInput("wrong"))
+            state = awaitItem()
+            assertEquals("wrong", state.passwordInput)
+
+            vm.handleIntent(VoteDetailIntent.UnlockWithPassword)
+            state = awaitItem()
+            assertFalse(state.isUnlocked)
+            assertEquals("密碼錯誤，請重新輸入", state.passwordError)
+        }
+    }
 }

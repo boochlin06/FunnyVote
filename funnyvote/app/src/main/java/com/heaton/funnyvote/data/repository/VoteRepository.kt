@@ -8,6 +8,7 @@ import com.heaton.funnyvote.data.remote.firebase.FirebaseAuthDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -55,6 +56,22 @@ class VoteRepository @Inject constructor(
         return remoteDataSource.getVoteDetail(voteCode).catch {
             emitAll(voteDao.getVoteByCode(voteCode))
         }
+    }
+
+    fun getUserParticipatedVotes(userId: String): Flow<List<VoteWithDetails>> {
+        return remoteDataSource.getUserParticipatedVotes(userId).catch {
+            emitAll(voteDao.getAllVotes().map { list -> list.filter { it.vote.isVoted } })
+        }
+    }
+
+    fun getVotesByAuthor(authorId: String): Flow<List<VoteWithDetails>> {
+        return remoteDataSource.getVotesByAuthor(authorId).catch {
+            emitAll(voteDao.getAllVotes().map { list -> list.filter { it.vote.authorId == authorId } })
+        }
+    }
+
+    suspend fun loadMoreVotes(category: String, lastVoteCode: String, limit: Long = 20): Result<List<VoteWithDetails>> {
+        return remoteDataSource.loadMoreVotes(category, lastVoteCode, limit)
     }
 
     suspend fun toggleFavorite(voteCode: String, currentFavorite: Boolean) {
@@ -107,7 +124,10 @@ class VoteRepository @Inject constructor(
         options: List<String>,
         isPrivate: Boolean,
         password: String?,
-        isMultiChoice: Boolean
+        isMultiChoice: Boolean,
+        description: String? = null,
+        imageUrl: String? = null,
+        endTime: Long? = null
     ): Result<String> {
         return runCatching {
             val uid = authDataSource.ensureAuthenticated()
@@ -118,7 +138,10 @@ class VoteRepository @Inject constructor(
                 password = password,
                 isMultiChoice = isMultiChoice,
                 authorId = uid,
-                authorName = "FunnyVote 使用者"
+                authorName = "FunnyVote 使用者",
+                description = description,
+                imageUrl = imageUrl,
+                endTime = endTime
             )
 
             if (remoteResult.isSuccess) {
@@ -132,10 +155,14 @@ class VoteRepository @Inject constructor(
                     password = password,
                     isMultiChoice = isMultiChoice
                 )
-                voteDao.insertVote(created.vote)
+                voteDao.insertVote(created.vote.copy(description = description, imageUrl = imageUrl, endTime = endTime ?: 0L))
                 voteDao.insertOptions(created.options)
                 created.vote.voteCode
             }
         }
+    }
+
+    suspend fun verifyPollPassword(voteCode: String, password: String): Boolean {
+        return remoteDataSource.verifyPollPassword(voteCode, password)
     }
 }

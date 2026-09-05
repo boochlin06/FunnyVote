@@ -10,6 +10,7 @@ data class VoteEntity(
     @PrimaryKey
     val voteCode: String,
     val title: String,
+    val authorId: String = "",
     val authorName: String = "匿名",
     val authorIcon: String? = null,
     val category: String = "hot", // hot, new, favorite
@@ -22,5 +23,8 @@ data class VoteEntity(
     val isFavorite: Boolean = false,
     val isVoted: Boolean = false,
     val totalVotedCount: Int = 0,
+    val description: String? = null,
+    val imageUrl: String? = null,
+    val endTime: Long = 0L,
     val createdAt: Long = System.currentTimeMillis()
 )

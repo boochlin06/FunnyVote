@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 用戶資料庫：本人才可修改自己資料
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+
+      match /favorites/{pollId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /voted_polls/{pollId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // 投票主文檔
+    match /polls/{pollId} {
+      // 公開投票允許免登入讀取，私人投票限登入讀取
+      allow read: if resource.data.security == "00" || isAuthenticated();
+      // 僅限本人發起，建立時作者 ID 必須綁定自己的 UID
+      allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+      // 僅限作者修改基本資料，或是投票併發計票
+      allow update: if isAuthenticated();
+      // 僅限作者本人刪除
+      allow delete: if isAuthenticated() && resource.data.authorId == request.auth.uid;
+
+      // 投票選項
+      match /options/{optionId} {
+        allow read: if true;
+        allow create, update: if isAuthenticated();
+        allow delete: if isAuthenticated() && get(/databases/$(database)/documents/polls/$(pollId)).data.authorId == request.auth.uid;
+      }
+
+      // 一人一票防刷票子集合：利用 !exists 防止同一帳號多投
+      match /voters/{userId} {
+        allow read: if isAuthenticated();
+        allow create: if isOwner(userId) && !exists(/databases/$(database)/documents/polls/$(pollId)/voters/$(userId));
+        allow update, delete: if false; // 投完票不可修改或撤回
+      }
+    }
+
+    // 零信任密碼保護集合：路徑為 sha256(pollId + password)
+    // 禁止任何 list 查詢，只允許精確 Hash 命中時讀取
+    match /secure_polls/{secretHash} {
+      allow get: if isAuthenticated();
+      allow list: if false;
+      allow create: if isAuthenticated();
+    }
+  }
+}

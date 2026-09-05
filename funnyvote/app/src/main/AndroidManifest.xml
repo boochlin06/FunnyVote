@@ -3,10 +3,11 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".FunnyVoteApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
@@ -15,10 +16,30 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Custom scheme: funnyvote://poll/{voteCode} -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="funnyvote" android:host="poll" />
+            </intent-filter>
+
+            <!-- HTTPS App Links: https://www.funny-vote.com/link?code={voteCode} -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="www.funny-vote.com" android:pathPrefix="/link" />
+                <data android:scheme="https" android:host="funny-vote.com" android:pathPrefix="/link" />
+                <data android:scheme="https" android:host="www.funny-vote.com" android:pathPrefix="/poll" />
+                <data android:scheme="https" android:host="funny-vote.com" android:pathPrefix="/poll" />
             </intent-filter>
         </activity>
     </application>

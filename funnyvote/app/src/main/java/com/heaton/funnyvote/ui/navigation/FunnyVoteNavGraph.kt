@@ -1,6 +1,7 @@
 package com.heaton.funnyvote.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -15,6 +16,7 @@ import com.heaton.funnyvote.ui.about.sub.ProblemScreen
 import com.heaton.funnyvote.ui.create.CreateVoteScreen
 import com.heaton.funnyvote.ui.detail.VoteDetailScreen
 import com.heaton.funnyvote.ui.home.HomeScreen
+import com.heaton.funnyvote.ui.personal.PersonalScreen
 import com.heaton.funnyvote.ui.profile.ProfileScreen
 import com.heaton.funnyvote.ui.tutorial.TutorialScreen
 import com.heaton.funnyvote.ui.welcome.WelcomeScreen
@@ -34,6 +36,13 @@ object CreateVoteRoute
 
 @Serializable
 object ProfileRoute
+
+@Serializable
+data class PersonalRoute(
+    val authorId: String,
+    val authorName: String,
+    val authorIcon: String? = null
+)
 
 @Serializable
 object AboutRoute
@@ -56,8 +65,15 @@ object ProblemRoute
 @Composable
 fun FunnyVoteNavGraph(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    initialVoteCode: String? = null
 ) {
+    LaunchedEffect(initialVoteCode) {
+        if (!initialVoteCode.isNullOrBlank()) {
+            navController.navigate(VoteDetailRoute(voteCode = initialVoteCode))
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = WelcomeRoute,
@@ -89,6 +105,9 @@ fun FunnyVoteNavGraph(
                 },
                 onNavigateToTutorial = {
                     navController.navigate(TutorialRoute)
+                },
+                onNavigateToAuthor = { id, name, icon ->
+                    navController.navigate(PersonalRoute(authorId = id, authorName = name, authorIcon = icon))
                 }
             )
         }
@@ -113,6 +132,17 @@ fun FunnyVoteNavGraph(
 
         composable<ProfileRoute> {
             ProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onVoteClick = { code ->
+                    navController.navigate(VoteDetailRoute(voteCode = code))
+                }
+            )
+        }
+
+        composable<PersonalRoute> {
+            PersonalScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 },

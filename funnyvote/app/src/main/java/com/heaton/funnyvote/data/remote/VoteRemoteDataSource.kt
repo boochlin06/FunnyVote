@@ -17,7 +17,14 @@ interface VoteRemoteDataSource {
         password: String?,
         isMultiChoice: Boolean,
         authorId: String,
-        authorName: String
+        authorName: String,
+        description: String? = null,
+        imageUrl: String? = null,
+        endTime: Long? = null
     ): Result<String>
     suspend fun toggleFavorite(voteCode: String, isFavorite: Boolean, userId: String): Result<Unit>
+    fun getUserParticipatedVotes(userId: String): Flow<List<VoteWithDetails>>
+    suspend fun loadMoreVotes(category: String, lastVoteCode: String, limit: Long = 20): Result<List<VoteWithDetails>>
+    fun getVotesByAuthor(authorId: String): Flow<List<VoteWithDetails>>
+    suspend fun verifyPollPassword(voteCode: String, password: String): Boolean
 }

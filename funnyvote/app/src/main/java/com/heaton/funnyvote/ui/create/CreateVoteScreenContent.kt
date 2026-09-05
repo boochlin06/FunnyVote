@@ -28,15 +28,31 @@ import com.heaton.funnyvote.ui.theme.FunnyVoteBlue
 import com.heaton.funnyvote.ui.theme.FunnyVoteBlueLight
 import com.heaton.funnyvote.ui.theme.FunnyVoteWindowBg
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateVoteScreenContent(
     uiState: CreateVoteUiState,
     onIntent: (CreateVoteIntent) -> Unit,
     onNavigateBack: () -> Unit,
+    onSelectCoverClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) } // 0: 選項設定, 1: 高級規則
+    var selectedTab by remember { mutableIntStateOf(0) } // 0: 選項內容, 1: 規則與隱私
+    var showDatePicker by remember { androidx.compose.runtime.mutableStateOf(false) }
+    val dateFormatter = remember { SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault()) }
+
 
     Scaffold(
         containerColor = FunnyVoteWindowBg,
@@ -94,99 +110,188 @@ fun CreateVoteScreenContent(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             if (selectedTab == 0) {
-                // 標題輸入卡片
+                // 封面圖設定卡片
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
                 ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "1. 投票主題與標題",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    OutlinedTextField(
-                        value = uiState.title,
-                        onValueChange = { onIntent(CreateVoteIntent.UpdateTitle(it)) },
-                        label = { Text("請輸入吸引人的投票標題...") },
-                        placeholder = { Text("例如：大家週末想要去哪裡露營？") },
-                        isError = uiState.titleError != null,
-                        supportingText = uiState.titleError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-            // 選項設定卡片
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "2. 投票選項 (2-10 項)",
+                            text = "投票封面圖 (選填)",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        TextButton(
-                            onClick = { onIntent(CreateVoteIntent.AddOption) },
-                            enabled = uiState.options.size < 10
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("新增選項")
-                        }
-                    }
-
-                    if (uiState.optionsError != null) {
-                        Text(
-                            text = uiState.optionsError,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-
-                    uiState.options.forEachIndexed { index, optionText ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedTextField(
-                                value = optionText,
-                                onValueChange = { onIntent(CreateVoteIntent.UpdateOption(index, it)) },
-                                label = { Text("選項 ${index + 1}") },
-                                placeholder = { Text("輸入選項內容") },
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (uiState.options.size > 2) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        if (uiState.coverUri != null) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(160.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                            ) {
+                                AsyncImage(
+                                    model = uiState.coverUri,
+                                    contentDescription = "投票封面預覽",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
                                 IconButton(
-                                    onClick = { onIntent(CreateVoteIntent.RemoveOption(index)) }
+                                    onClick = { onIntent(CreateVoteIntent.SelectCoverImage(null)) },
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(6.dp)
+                                        .size(32.dp),
+                                    colors = IconButtonDefaults.iconButtonColors(
+                                        containerColor = Color.Black.copy(alpha = 0.6f),
+                                        contentColor = Color.White
+                                    )
+                                ) {
+                                    Icon(Icons.Default.Close, contentDescription = "移除封面", modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        } else {
+                            OutlinedCard(
+                                onClick = onSelectCoverClick,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(100.dp),
+                                shape = RoundedCornerShape(6.dp),
+                                colors = CardDefaults.outlinedCardColors(containerColor = FunnyVoteWindowBg.copy(alpha = 0.5f))
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.DeleteOutline,
-                                        contentDescription = "刪除選項",
-                                        tint = MaterialTheme.colorScheme.error
+                                        imageVector = Icons.Default.Image,
+                                        contentDescription = null,
+                                        tint = FunnyVoteBlue,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = if (uiState.isAnonymous) "🔒 封面圖為 Google 認證會員專屬 (防機器人)" else "點擊上傳封面圖 (建議 16:9)",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = if (uiState.isAnonymous) MaterialTheme.colorScheme.outline else FunnyVoteBlue,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
                         }
                     }
                 }
-            }
+
+                // 標題與描述輸入卡片
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "1. 投票主題與標題",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        OutlinedTextField(
+                            value = uiState.title,
+                            onValueChange = { onIntent(CreateVoteIntent.UpdateTitle(it)) },
+                            label = { Text("請輸入吸引人的投票標題...") },
+                            placeholder = { Text("例如：大家週末想要去哪裡露營？") },
+                            isError = uiState.titleError != null,
+                            supportingText = uiState.titleError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "補充說明 / 投票規則 (選填)",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        OutlinedTextField(
+                            value = uiState.description,
+                            onValueChange = { onIntent(CreateVoteIntent.UpdateDescription(it)) },
+                            placeholder = { Text("可詳細說明投票背景、計票規則或注意事項...") },
+                            minLines = 3,
+                            maxLines = 5,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                // 選項設定卡片
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "2. 投票選項 (2-10 項)",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            TextButton(
+                                onClick = { onIntent(CreateVoteIntent.AddOption) },
+                                enabled = uiState.options.size < 10
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("新增選項")
+                            }
+                        }
+
+                        if (uiState.optionsError != null) {
+                            Text(
+                                text = uiState.optionsError,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+
+                        uiState.options.forEachIndexed { index, optionText ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedTextField(
+                                    value = optionText,
+                                    onValueChange = { onIntent(CreateVoteIntent.UpdateOption(index, it)) },
+                                    label = { Text("選項 ${index + 1}") },
+                                    placeholder = { Text("輸入選項內容") },
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (uiState.options.size > 2) {
+                                    IconButton(
+                                        onClick = { onIntent(CreateVoteIntent.RemoveOption(index)) }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.DeleteOutline,
+                                            contentDescription = "刪除選項",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
                 // 高級設定卡片 (對應 fragment_create_vote_tab_settings.xml)
                 Card(
@@ -221,6 +326,54 @@ fun CreateVoteScreenContent(
                                 checked = uiState.isMultiChoice,
                                 onCheckedChange = { onIntent(CreateVoteIntent.ToggleMultiChoice(it)) }
                             )
+                        }
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+                        // 截止時間設定
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.CalendarToday,
+                                    contentDescription = null,
+                                    tint = FunnyVoteBlue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text("投票截止日期", fontWeight = FontWeight.Medium)
+                                    Text(
+                                        "截止時間：${dateFormatter.format(Date(uiState.expireDateMillis))}",
+                                        fontSize = 13.sp,
+                                        color = FunnyVoteBlue,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                val now = System.currentTimeMillis()
+                                val dayMillis = 24L * 60 * 60 * 1000
+                                listOf(
+                                    "3 天" to (now + 3 * dayMillis),
+                                    "7 天" to (now + 7 * dayMillis),
+                                    "14 天" to (now + 14 * dayMillis),
+                                    "30 天" to (now + 30 * dayMillis)
+                                ).forEach { (label, millis) ->
+                                    val isSelected = Math.abs(uiState.expireDateMillis - millis) < dayMillis / 2
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = { onIntent(CreateVoteIntent.UpdateExpireDate(millis)) },
+                                        label = { Text(label) }
+                                    )
+                                }
+                            }
                         }
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))

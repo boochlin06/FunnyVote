@@ -22,7 +22,21 @@ class UserRepository @Inject constructor(
 
     suspend fun saveUser(user: UserEntity) {
         userDao.insertUser(user)
-        authDataSource.updateNickname(user.userName)
+        authDataSource.updateUserProfile(user.userName, user.userIcon)
+    }
+
+    fun isAnonymous(): Boolean = authDataSource.isAnonymous()
+ 
+    suspend fun linkOrSignInWithGoogle(idToken: String): Result<UserEntity> {
+        val result = authDataSource.linkOrSignInWithGoogle(idToken)
+        result.onSuccess { userEntity ->
+            userDao.insertUser(userEntity)
+        }
+        return result
+    }
+
+    fun signOut() {
+        authDataSource.signOut()
     }
 
     suspend fun ensureAuthenticated(): String {

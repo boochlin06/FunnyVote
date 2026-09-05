@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 1. 投票封面圖：Google 認證登入專屬（非匿名）、限圖片、單檔嚴格限制 300KB (本機已壓至 800px 75% 約 80-150KB)
+    match /polls/{pollId}/{fileName} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+                            && request.auth.token.firebase.sign_in_provider != 'anonymous'
+                            && request.resource.contentType.matches('image/(jpeg|png|webp)')
+                            && request.resource.size < 300 * 1024;
+      allow delete: if request.auth != null;
+    }
+
+    // 2. 使用者頭像：所有人（含訪客）皆可上傳個人頭像，限本人、限圖片、單檔嚴格限制 200KB
+    match /users/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId
+                    && request.resource.contentType.matches('image/(jpeg|png|webp)')
+                    && request.resource.size < 200 * 1024;
+    }
+  }
+}

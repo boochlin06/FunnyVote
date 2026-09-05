@@ -29,10 +29,29 @@ fun CreateVoteScreen(
         }
     }
 
+    val coverPickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        viewModel.handleIntent(CreateVoteIntent.SelectCoverImage(uri))
+    }
+
+    val onSelectCoverClick = {
+        if (uiState.isAnonymous) {
+            viewModel.handleIntent(CreateVoteIntent.SelectCoverImage(android.net.Uri.EMPTY))
+        } else {
+            coverPickerLauncher.launch(
+                androidx.activity.result.PickVisualMediaRequest(
+                    androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+                )
+            )
+        }
+    }
+
     CreateVoteScreenContent(
         uiState = uiState,
         onIntent = viewModel::handleIntent,
         onNavigateBack = onNavigateBack,
+        onSelectCoverClick = onSelectCoverClick,
         snackbarHostState = snackbarHostState
     )
 }

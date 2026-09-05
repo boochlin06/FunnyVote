@@ -66,4 +66,22 @@ class HomeViewModelTest {
         }
         coVerify { repository.toggleFavorite("code1", false) }
     }
+
+    @Test
+    fun `intent LoadMore appends new votes to list`() = runTest {
+        val nextVotes = listOf(
+            VoteWithDetails(
+                vote = VoteEntity(voteCode = "code2", title = "分頁投票2", isFavorite = false),
+                options = emptyList()
+            )
+        )
+        coEvery { repository.loadMoreVotes("hot", "code1", 20) } returns Result.success(nextVotes)
+
+        viewModel.handleIntent(HomeIntent.LoadMore)
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertEquals(2, state.votes.size)
+            assertEquals("code2", state.votes[1].vote.voteCode)
+        }
+    }
 }

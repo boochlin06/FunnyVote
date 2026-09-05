@@ -67,9 +67,63 @@ class FirebaseAuthDataSource @Inject constructor(
         awaitClose { auth.removeAuthStateListener(listener) }
     }
 
-    suspend fun updateNickname(nickname: String): Result<Unit> = runCatching {
+    fun isAnonymous(): Boolean = auth.currentUser?.isAnonymous ?: true
+
+    suspend fun linkOrSignInWithGoogle(idToken: String): Result<UserEntity> = runCatching {
+        val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+        val currentUser = auth.currentUser
+        val authResult = if (currentUser != null && currentUser.isAnonymous) {
+            try {
+                currentUser.linkWithCredential(credential).await()
+            } catch (e: Exception) {
+                // 若該 Google 帳號已獨立存在，退回直接登入
+                auth.signInWithCredential(credential).await()
+            }
+        } else {
+            auth.signInWithCredential(credential).await()
+        }
+        val firebaseUser = authResult.user ?: throw IllegalStateException("無法取得 Google 使用者資訊")
+        val uid = firebaseUser.uid
+
+        val docRef = firestore.collection("users").document(uid)
+        val snap = docRef.get().await()
+        val currentNickname = snap.getString("userName")
+        val nickname = if (currentNickname.isNullOrBlank() || currentNickname == "FunnyVote 訪客") {
+            firebaseUser.displayName ?: "FunnyVote 使用者"
+        } else {
+            currentNickname
+        }
+        val icon = snap.getString("userIcon") ?: firebaseUser.photoUrl?.toString()
+
+        val updates = hashMapOf<String, Any?>(
+            "uid" to uid,
+            "userName" to nickname,
+            "userIcon" to icon,
+            "email" to firebaseUser.email,
+            "isAnonymous" to false,
+            "updatedAt" to System.currentTimeMillis()
+        )
+        docRef.set(updates, com.google.firebase.firestore.SetOptions.merge()).await()
+
+        UserEntity(
+            userId = uid,
+            userName = nickname,
+            userIcon = icon,
+            email = firebaseUser.email
+        )
+    }
+
+    fun signOut() {
+        auth.signOut()
+    }
+
+    suspend fun updateUserProfile(userName: String, userIcon: String? = null): Result<Unit> = runCatching {
         val uid = auth.currentUser?.uid ?: return@runCatching
+        val map = hashMapOf<String, Any>("userName" to userName)
+        if (userIcon != null) {
+            map["userIcon"] = userIcon
+        }
         firestore.collection("users").document(uid)
-            .update("userName", nickname).await()
+            .update(map).await()
     }
 }

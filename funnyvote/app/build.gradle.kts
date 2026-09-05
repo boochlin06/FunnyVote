@@ -92,13 +92,21 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // Firebase (Authentication, Firestore, Storage)
+    // Firebase (Authentication, Firestore, Storage, Analytics, Crashlytics)
     val firebaseBom = platform("com.google.firebase:firebase-bom:33.7.0")
     implementation(firebaseBom)
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // Image loading (Coil Compose)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // Unit Testing
     testImplementation("junit:junit:4.13.2")

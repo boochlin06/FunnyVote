@@ -71,13 +71,26 @@ class VoteDetailViewModel @Inject constructor(
 
             is VoteDetailIntent.UnlockWithPassword -> {
                 val vote = _uiState.value.voteWithDetails?.vote ?: return
-                if (vote.password == _uiState.value.passwordInput) {
-                    _uiState.update { it.copy(isUnlocked = true, passwordError = null) }
-                    viewModelScope.launch {
-                        _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("解鎖成功！"))
+                val input = _uiState.value.passwordInput
+                if (!vote.password.isNullOrBlank()) {
+                    if (vote.password == input) {
+                        _uiState.update { it.copy(isUnlocked = true, passwordError = null) }
+                        viewModelScope.launch {
+                            _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("解鎖成功！"))
+                        }
+                    } else {
+                        _uiState.update { it.copy(passwordError = "密碼錯誤，請重新輸入") }
                     }
                 } else {
-                    _uiState.update { it.copy(passwordError = "密碼錯誤，請重新輸入") }
+                    viewModelScope.launch {
+                        val isMatch = repository.verifyPollPassword(vote.voteCode, input)
+                        if (isMatch) {
+                            _uiState.update { it.copy(isUnlocked = true, passwordError = null) }
+                            _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("解鎖成功！"))
+                        } else {
+                            _uiState.update { it.copy(passwordError = "密碼錯誤，請重新輸入") }
+                        }
+                    }
                 }
             }
 

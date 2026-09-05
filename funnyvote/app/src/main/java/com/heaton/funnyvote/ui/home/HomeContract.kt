@@ -8,6 +8,8 @@ data class HomeUiState(
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
     val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val hasMore: Boolean = true,
     val message: String? = null
 )
 
@@ -17,6 +19,7 @@ sealed interface HomeIntent {
     data class ToggleSearch(val active: Boolean) : HomeIntent
     data class ToggleFavorite(val voteCode: String, val currentFavorite: Boolean) : HomeIntent
     data object Refresh : HomeIntent
+    data object LoadMore : HomeIntent
 }
 
 sealed interface HomeUiEffect {

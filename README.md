@@ -119,11 +119,28 @@ funnyvote/
 │           ├── home/                       # 首頁、焦點輪播橫幅、熱門/最新/收藏 Tab
 │           ├── detail/                     # 投票詳情、即時進度條、動態子選項加載
 │           ├── create/                     # 發起投票 (雙 Tab 內容與規則配置)
-│           ├── profile/                    # 個人中心與暱稱修改
+│           ├── profile/                    # 個人中心與暱稱修改 (3-Tab: 發起/收藏/參與)
+│           ├── personal/                   # 他人公開主頁瀏覽 (發起歷史與作者卡片)
 │           ├── about/                      # 關於頁面與四大子模組 (App, 作者, 授權, FAQ)
 │           └── welcome/                    # 啟動頁與平滑過渡動畫
-└── app/src/test/                           # 12 項單元測試 (Home, Detail, Create ViewModel)
+└── app/src/test/                           # 22 項單元測試 (Home, Detail, Create, Profile, Personal ViewModel)
 ```
+
+---
+
+## 🛡️ 資安與圖片傳輸防禦 (Security & Media Pipeline)
+
+* **零信任密碼保護 (Zero-Trust Polls)**：
+  * 客戶端不下載明文密碼，伺服器不存儲明文密碼。
+  * 密碼哈希映射至獨立集合 `secure_polls/{sha256(pollId:password)}`，雲端禁止 `list` 遍歷，僅允許雜湊命中精確查詢。
+* **客戶端智能壓圖與快取**：
+  * 上傳前統一透過 `ImageUploadManager` 壓縮至 800x800、JPEG 75%（單圖 80~130KB，節省 99% 頻寬）。
+  * 全局 Coil 磁碟快取，同一圖片絕不重複請求雲端 Storage。
+* **防機器人與防刷票門檻**：
+  * 封面圖限定 Google 認證登入專屬；個人頭像允許全體使用者上傳本人 UID 資料夾。
+  * `firestore.rules` 嚴格限制 `!exists()` 一人一票與作者專屬刪除。
+* **敏感憑證保護**：
+  * `google-services.json` 已脫敏並排除於 Git 追蹤之外，提供 `google-services.json.template` 供開源社群複製套用。
 
 ---
 
@@ -141,8 +158,8 @@ FunnyVote 記錄了 Android 開發十年來的重大架構演進：
    ├─► [modern-android] ─► 全面現代化：Compose 100% 畫面補全、Room 本地快取、Hilt 注入
    │
    └─► [feature/firebase-backend] (★ Current)
-                           └─► 雲原生躍遷：Firebase Serverless、Cloud Firestore、
-                               離線持久化、實體 Android 16 真機驗收
+                           └─► 雲原生旗艦版：Firebase Serverless、Cloud Firestore、
+                               Storage 壓圖快取、零信任密碼保護、實體 Android 16 真機驗收
 ```
 
 ---
@@ -154,12 +171,15 @@ FunnyVote 記錄了 Android 開發十年來的重大架構演進：
 * **JDK**：OpenJDK 18 (或相容 Java 17+)。
 * **測試裝置**：Android 8.0 (API 26) ~ Android 16 (API 36)。
 
-### 2. 編譯與測試指令
+### 2. Firebase 憑證設定
+將 `funnyvote/app/google-services.json.template` 複製為 `funnyvote/app/google-services.json`，並填入您的 Firebase 專案設定。
+
+### 3. 編譯與測試指令
 ```bash
 # 1. 進入 Android 專案目錄
 cd funnyvote
 
-# 2. 執行單元測試 (12 項 ViewModel 狀態測試)
+# 2. 執行單元測試 (22 項 ViewModel 狀態與零信任測試)
 ./gradlew testDebugUnitTest
 
 # 3. 編譯 Debug APK
@@ -168,8 +188,6 @@ cd funnyvote
 # 4. 安裝至連線之實體機或模擬器
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
-
-> **注意**：本分支已內建連線至官方演示資料庫 `funny-vote-2e6be` 之 `google-services.json`。若需部署至您專屬的 Firebase 專案，請參考後端倉庫說明。
 
 ---
 

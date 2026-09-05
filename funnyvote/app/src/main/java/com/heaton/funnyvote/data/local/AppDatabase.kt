@@ -10,7 +10,7 @@ import com.heaton.funnyvote.data.local.entity.VoteEntity
 
 @Database(
     entities = [VoteEntity::class, OptionEntity::class, UserEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

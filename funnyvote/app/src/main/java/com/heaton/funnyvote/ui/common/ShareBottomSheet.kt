@@ -76,11 +76,61 @@ fun ShareBottomSheet(
                 modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
             )
 
+            val shareText = if (isShareApp) {
+                "最有趣的投票社群 FunnyVote！快來下載體驗：$voteUrl"
+            } else {
+                "【FunnyVote 投票】$title\n快來發表你的意見：$voteUrl"
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // 1. 複製連結
+                // 1. LINE 分享
+                ShareItem(
+                    label = "LINE",
+                    icon = Icons.Default.Share,
+                    iconBg = Color(0xFF06C755).copy(alpha = 0.15f),
+                    iconTint = Color(0xFF06C755),
+                    onClick = {
+                        try {
+                            val lineIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                setPackage("jp.naver.line.android")
+                                putExtra(Intent.EXTRA_TEXT, shareText)
+                            }
+                            context.startActivity(lineIntent)
+                        } catch (e: Exception) {
+                            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://line.me/R/msg/text/?${android.net.Uri.encode(shareText)}"))
+                            context.startActivity(intent)
+                        }
+                        onDismiss()
+                    }
+                )
+
+                // 2. Facebook 分享
+                ShareItem(
+                    label = "Facebook",
+                    icon = Icons.Default.Share,
+                    iconBg = Color(0xFF1877F2).copy(alpha = 0.15f),
+                    iconTint = Color(0xFF1877F2),
+                    onClick = {
+                        try {
+                            val fbIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                setPackage("com.facebook.katana")
+                                putExtra(Intent.EXTRA_TEXT, voteUrl)
+                            }
+                            context.startActivity(fbIntent)
+                        } catch (e: Exception) {
+                            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://www.facebook.com/sharer/sharer.php?u=${android.net.Uri.encode(voteUrl)}"))
+                            context.startActivity(intent)
+                        }
+                        onDismiss()
+                    }
+                )
+
+                // 3. 複製連結
                 ShareItem(
                     label = "複製連結",
                     icon = Icons.Default.ContentCopy,
@@ -95,40 +145,19 @@ fun ShareBottomSheet(
                     }
                 )
 
-                // 2. 系統分享 (可選 LINE, FB, IG 等已安裝 App)
+                // 4. 更多選項 (系統分享)
                 ShareItem(
-                    label = "社群分享",
-                    icon = Icons.Default.Share,
-                    iconBg = Color(0xFF4CAF50).copy(alpha = 0.15f),
-                    iconTint = Color(0xFF2E7D32),
-                    onClick = {
-                        val shareText = if (isShareApp) {
-                            "最有趣的投票社群 FunnyVote！快來下載體驗：$voteUrl"
-                        } else {
-                            "【FunnyVote 投票】$title\n快來發表你的意見：$voteUrl"
-                        }
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_SUBJECT, if (isShareApp) "FunnyVote" else title)
-                            putExtra(Intent.EXTRA_TEXT, shareText)
-                        }
-                        context.startActivity(Intent.createChooser(intent, "分享投票"))
-                        onDismiss()
-                    }
-                )
-
-                // 3. 更多
-                ShareItem(
-                    label = "更多選項",
+                    label = "更多",
                     icon = Icons.Default.MoreHoriz,
                     iconBg = Color(0xFFFF9800).copy(alpha = 0.15f),
                     iconTint = Color(0xFFE65100),
                     onClick = {
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, voteUrl)
+                            putExtra(Intent.EXTRA_SUBJECT, if (isShareApp) "FunnyVote" else title)
+                            putExtra(Intent.EXTRA_TEXT, shareText)
                         }
-                        context.startActivity(Intent.createChooser(intent, "分享"))
+                        context.startActivity(Intent.createChooser(intent, "分享投票"))
                         onDismiss()
                     }
                 )
