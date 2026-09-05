@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="imageURL" translatable="false">
-        <item>"https://vinta.ws/booch/wp-content/uploads/2017/05/promotion_five_star.jpg"</item>
-    </string-array>
-</resources>
