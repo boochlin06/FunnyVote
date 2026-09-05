@@ -28,6 +28,9 @@ object ProfileRoute
 @Serializable
 object AboutRoute
 
+@Serializable
+object TutorialRoute
+
 @Composable
 fun FunnyVoteNavGraph(
     modifier: Modifier = Modifier,
@@ -51,6 +54,9 @@ fun FunnyVoteNavGraph(
                 },
                 onNavigateToAbout = {
                     navController.navigate(AboutRoute)
+                },
+                onNavigateToTutorial = {
+                    navController.navigate(TutorialRoute)
                 }
             )
         }
@@ -84,6 +90,17 @@ fun FunnyVoteNavGraph(
         composable<AboutRoute> {
             com.heaton.funnyvote.ui.about.AboutScreen(
                 onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToTutorial = {
+                    navController.navigate(TutorialRoute)
+                }
+            )
+        }
+
+        composable<TutorialRoute> {
+            com.heaton.funnyvote.ui.tutorial.TutorialScreen(
+                onFinish = {
                     navController.popBackStack()
                 }
             )

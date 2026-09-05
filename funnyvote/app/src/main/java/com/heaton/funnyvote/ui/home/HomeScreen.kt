@@ -14,7 +14,8 @@ fun HomeScreen(
     onNavigateToDetail: (String) -> Unit,
     onNavigateToCreate: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToAbout: () -> Unit
+    onNavigateToAbout: () -> Unit,
+    onNavigateToTutorial: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -39,6 +40,7 @@ fun HomeScreen(
         onCreateClick = onNavigateToCreate,
         onProfileClick = onNavigateToProfile,
         onAboutClick = onNavigateToAbout,
+        onTutorialClick = onNavigateToTutorial,
         snackbarHostState = snackbarHostState
     )
 }

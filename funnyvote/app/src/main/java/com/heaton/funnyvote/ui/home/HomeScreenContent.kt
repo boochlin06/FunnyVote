@@ -43,6 +43,7 @@ fun HomeScreenContent(
     onCreateClick: () -> Unit,
     onProfileClick: () -> Unit,
     onAboutClick: () -> Unit = {},
+    onTutorialClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -166,6 +167,17 @@ fun HomeScreenContent(
                     onClick = {
                         scope.launch { drawerState.close() }
                         onProfileClick()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.MenuBook, contentDescription = null, tint = FunnyVoteBlue) },
+                    label = { Text("導覽介紹 (Tutorial)", fontWeight = FontWeight.Medium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onTutorialClick()
                     },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )

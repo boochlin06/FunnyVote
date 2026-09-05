@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
@@ -26,7 +27,8 @@ import com.heaton.funnyvote.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreenContent(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToTutorial: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -116,22 +118,39 @@ fun AboutScreenContent(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 一鍵分享按鈕 (btnShareApp)
-                    Button(
-                        onClick = {
-                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_SUBJECT, "FunnyVote 趣投票")
-                                putExtra(Intent.EXTRA_TEXT, "最有趣的投票社群 FunnyVote！快來下載體驗：https://www.funny-vote.com")
-                            }
-                            context.startActivity(Intent.createChooser(shareIntent, "分享 FunnyVote"))
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue),
-                        shape = RoundedCornerShape(20.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("分享 FunnyVote 給朋友", color = Color.White)
+                        // 導覽介紹 (txtTutorial)
+                        OutlinedButton(
+                            onClick = onNavigateToTutorial,
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, modifier = Modifier.size(16.dp), tint = FunnyVoteBlue)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("功能導覽介紹", color = FunnyVoteBlue, fontSize = 13.sp)
+                        }
+
+                        // 一鍵分享按鈕 (btnShareApp)
+                        Button(
+                            onClick = {
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_SUBJECT, "FunnyVote 趣投票")
+                                    putExtra(Intent.EXTRA_TEXT, "最有趣的投票社群 FunnyVote！快來下載體驗：https://www.funny-vote.com")
+                                }
+                                context.startActivity(Intent.createChooser(shareIntent, "分享 FunnyVote"))
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue),
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("分享給好友", color = Color.White, fontSize = 13.sp)
+                        }
                     }
                 }
             }
