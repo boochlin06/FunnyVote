@@ -15,10 +15,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -288,31 +291,48 @@ fun HomeScreenContent(
                 }
             }
         ) { paddingValues ->
+            val pullRefreshState = rememberPullToRefreshState()
+            if (pullRefreshState.isRefreshing) {
+                LaunchedEffect(true) {
+                    onIntent(HomeIntent.Refresh)
+                }
+            }
+
+            LaunchedEffect(uiState.isLoading) {
+                if (!uiState.isLoading) {
+                    pullRefreshState.endRefresh()
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
+                    .padding(paddingValues)
+                    .nestedScroll(pullRefreshState.nestedScrollConnection)
             ) {
                 if (uiState.isLoading && uiState.votes.isEmpty()) {
-                    CircularProgressIndicator(color = FunnyVoteBlue)
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = FunnyVoteBlue)
+                    }
                 } else if (uiState.votes.isEmpty()) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.HourglassEmpty,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = TextSecondary
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = if (uiState.searchQuery.isNotEmpty()) "沒有找到符合的投票" else "目前暫無投票內容",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = TextSecondary
-                        )
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.HourglassEmpty,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = TextSecondary
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = if (uiState.searchQuery.isNotEmpty()) "沒有找到符合的投票" else "目前暫無投票內容",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextSecondary
+                            )
+                        }
                     }
                 } else {
                     LazyColumn(
@@ -353,6 +373,13 @@ fun HomeScreenContent(
                         }
                     }
                 }
+
+                PullToRefreshContainer(
+                    state = pullRefreshState,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    containerColor = Color.White,
+                    contentColor = FunnyVoteBlue
+                )
             }
 
             // 社群分享彈窗 (Share Bottom Sheet)
