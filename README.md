@@ -84,21 +84,44 @@ sealed interface HomeUiEffect : UiEffect {
 
 ---
 
+## 💡 當年時空背景與工程師決策復盤 (Retrospective)
+
+### 為什麼選擇跳過傳統 MVVM，直上 MVI？
+在 Jetpack Compose 全面普及後，聲明式 UI 的核心哲學是 `UI = f(State)`。然而傳統 MVVM 中，ViewModel 往往暴露出多個分散的狀態流（如 `isLoading`, `voteList`, `errorMsg`）。在非同步網路抖動或並發寫入時，極易出現「進度條在轉、錯誤訊息顯示、但列表卻有資料」的「狀態撕裂 (State Tearing)」怪異現象。
+
+### MVI (UDF) 帶來的工程革新：
+1. **單一事實來源 (Single Source of Truth)**：畫面在任何瞬間都由唯一的不可變 `UiState` 決定，杜絕狀態矛盾。
+2. **操作意圖顯式化 (Explicit Intent)**：所有的 UI 觸發動作（點擊投票、下拉刷新、切換 Tab）都必須包裝成強型別的 `UiIntent`，除錯時只需印出 Intent 即可精確重現所有行為軌跡。
+3. **副作用乾淨分離 (Side-effects Isolation)**：導航切頁、跳 Toast 等一次性動作走獨立的 `UiEffect (Channel)`，徹底杜絕螢幕旋轉導致 Toast 重複彈出的歷史沉痾。
+
+### 當年留下的工程代價：
+- **樣板代碼略有上升**：每次新增一個微小互動，都必須在 `UiIntent` 定義密封介面，對極端簡單的靜態頁面略顯繁瑣。但換來的可測試性與狀態確定性遠超代價。
+
+---
+
 ## 🌿 各分支演進地圖 (Branch Evolutionary Roadmap)
 
 ```text
 [main] ───────────────► 2016 經典 Java / ButterKnife / EventBus / SQLite
    │
-   ├─► [kotlin-rewrite] ──► 語法現代化：Java 轉 Kotlin、引進基礎 Coroutines 與 Compose
+   ├─► [mvp] ──────────► 2017 初次解耦：導入 Google MVP Blueprint、Contract 契約設計
+   │
+   ├─► [mvp_rxjava] ────► 2017 響應式進化：引入 RxJava 切換執行緒、統一數據串流管線
+   │
+   ├─► [mvp_dagger] ────► 2017 依賴注入：引入 Dagger 2，實現編譯期依賴拓撲圖
+   │
+   ├─► [mvp_kotlin] ────► 2018 初探 Kotlin：Java 全盤轉 Kotlin 1.2、消滅 NPE
+   │
+   ├─► [kotlin-rewrite] ──► 2024 現代轉型：Kotlin 2.0 + Coroutines + 基礎 Compose
    │
    ├─► [mvi-rewrite] (★ Current)
-   │                       └─► 架構規範化：建立嚴格 MVI 單向資料流 (UDF)、
+   │                       └─► 2024 架構規範：建立嚴格 MVI 單向資料流 (UDF)、
    │                           定義 UiState / UiIntent / UiEffect 核心管線
    │
-   ├─► [modern-android] ─► 全面現代化：Compose 100% 畫面補全、Room 本地快取、Hilt 注入
+   ├─► [modern-android] ─► 2026 現代完備：Compose 100% 畫面補全、Room 快取、Hilt 注入
    │
    └─► [feature/firebase-backend]
-                           └─► 雲原生躍遷：Firebase Serverless、Cloud Firestore、
+                           └─► 2026 雲原生旗艦版：Firebase Serverless、Cloud Firestore、
                                離線持久化、實體 Android 16 真機驗收
 ```
 
