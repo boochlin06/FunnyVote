@@ -13,7 +13,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToDetail: (String) -> Unit,
     onNavigateToCreate: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToAbout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -37,6 +38,7 @@ fun HomeScreen(
         onVoteClick = onNavigateToDetail,
         onCreateClick = onNavigateToCreate,
         onProfileClick = onNavigateToProfile,
+        onAboutClick = onNavigateToAbout,
         snackbarHostState = snackbarHostState
     )
 }

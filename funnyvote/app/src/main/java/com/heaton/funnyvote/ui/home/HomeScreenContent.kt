@@ -10,12 +10,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +31,7 @@ import com.heaton.funnyvote.data.local.entity.OptionEntity
 import com.heaton.funnyvote.data.local.entity.VoteEntity
 import com.heaton.funnyvote.data.local.entity.VoteWithDetails
 import com.heaton.funnyvote.ui.theme.*
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,20 +42,165 @@ fun HomeScreenContent(
     onVoteClick: (String) -> Unit,
     onCreateClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onAboutClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
-    Scaffold(
-        containerColor = FunnyVoteWindowBg,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            Column {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = FunnyVoteBlue,
-                        titleContentColor = Color.White,
-                        actionIconContentColor = Color.White
-                    ),
-                    title = {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = Color.White,
+                modifier = Modifier.width(300.dp)
+            ) {
+                // 原版風格之 navigation_header.xml
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .background(FunnyVoteBlue),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape),
+                            color = Color.White.copy(alpha = 0.2f)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(56.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "FunnyVote 熱血會員",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "dev@funnyvote.org",
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // 原版 menu/drawer.xml 清單
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = null, tint = FunnyVoteBlue) },
+                    label = { Text("首頁 (Home)", fontWeight = FontWeight.Medium) },
+                    selected = uiState.selectedTab == "hot",
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onIntent(HomeIntent.SelectTab("hot"))
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Archive, contentDescription = null, tint = FunnyVoteBlue) },
+                    label = { Text("我的投票箱 (My Box)", fontWeight = FontWeight.Medium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onProfileClick()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Star, contentDescription = null, tint = StarGold) },
+                    label = { Text("我的收藏 (Favorite)", fontWeight = FontWeight.Medium) },
+                    selected = uiState.selectedTab == "favorite",
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onIntent(HomeIntent.SelectTab("favorite"))
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.AddCircleOutline, contentDescription = null, tint = FunnyVoteBlue) },
+                    label = { Text("發起全新投票 (Create)", fontWeight = FontWeight.Medium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onCreateClick()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = null, tint = FunnyVoteBlue) },
+                    label = { Text("搜尋投票 (Search)", fontWeight = FontWeight.Medium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onIntent(HomeIntent.ToggleSearch(true))
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = null, tint = FunnyVoteBlue) },
+                    label = { Text("個人帳號 (Account)", fontWeight = FontWeight.Medium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onProfileClick()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Info, contentDescription = null, tint = FunnyVoteBlue) },
+                    label = { Text("關於 FunnyVote (About)", fontWeight = FontWeight.Medium) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onAboutClick()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+            }
+        }
+    ) {
+        Scaffold(
+            containerColor = FunnyVoteWindowBg,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                Column {
+                    TopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = FunnyVoteBlue,
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White,
+                            actionIconContentColor = Color.White
+                        ),
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "選單")
+                            }
+                        },
+                        title = {
                         if (uiState.isSearchActive) {
                             TextField(
                                 value = uiState.searchQuery,
@@ -192,6 +340,7 @@ fun HomeScreenContent(
             }
         }
     }
+}
 }
 
 /**

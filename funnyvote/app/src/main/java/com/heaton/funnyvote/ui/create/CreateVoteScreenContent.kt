@@ -10,7 +10,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heaton.funnyvote.ui.theme.FunnyVoteBlue
+import com.heaton.funnyvote.ui.theme.FunnyVoteBlueLight
 import com.heaton.funnyvote.ui.theme.FunnyVoteWindowBg
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,24 +36,53 @@ fun CreateVoteScreenContent(
     onNavigateBack: () -> Unit,
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
+    var selectedTab by remember { mutableIntStateOf(0) } // 0: 選項設定, 1: 高級規則
+
     Scaffold(
         containerColor = FunnyVoteWindowBg,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { Text("發起全新投票", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = FunnyVoteBlue,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
+            Column {
+                TopAppBar(
+                    title = { Text("發起全新投票", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = FunnyVoteBlue,
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    )
                 )
-            )
+
+                // 原版 tabLayoutCreateVote 風格之分頁標籤
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = FunnyVoteBlue,
+                    contentColor = Color.White,
+                    indicator = { tabPositions ->
+                        TabRowDefaults.SecondaryIndicator(
+                            Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                            height = 3.dp,
+                            color = FunnyVoteBlueLight
+                        )
+                    }
+                ) {
+                    Tab(
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 },
+                        text = { Text("1. 選項內容", fontWeight = FontWeight.Medium) }
+                    )
+                    Tab(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        text = { Text("2. 規則與隱私", fontWeight = FontWeight.Medium) }
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         Column(
@@ -55,16 +90,17 @@ fun CreateVoteScreenContent(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // 標題輸入卡片
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-            ) {
+            if (selectedTab == 0) {
+                // 標題輸入卡片
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "1. 投票主題與標題",
@@ -151,76 +187,77 @@ fun CreateVoteScreenContent(
                     }
                 }
             }
+            } else {
+                // 高級設定卡片 (對應 fragment_create_vote_tab_settings.xml)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "投票規則與隱私設定",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
 
-            // 高級設定卡片
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "3. 規則與隱私設定",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // 複選開關
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("允許多選 (複選投票)", fontWeight = FontWeight.Medium)
-                            Text(
-                                "開啟後參與者可選擇一個以上的選項",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.outline
+                        // 複選開關
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("允許多選 (複選投票)", fontWeight = FontWeight.Medium)
+                                Text(
+                                    "開啟後參與者可選擇一個以上的選項",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                            Switch(
+                                checked = uiState.isMultiChoice,
+                                onCheckedChange = { onIntent(CreateVoteIntent.ToggleMultiChoice(it)) }
                             )
                         }
-                        Switch(
-                            checked = uiState.isMultiChoice,
-                            onCheckedChange = { onIntent(CreateVoteIntent.ToggleMultiChoice(it)) }
-                        )
-                    }
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-                    // 私密密碼開關
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("私密加密投票", fontWeight = FontWeight.Medium)
-                            Text(
-                                "開啟後需輸入密碼才可檢視與投票",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.outline
+                        // 私密密碼開關
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("私密加密投票", fontWeight = FontWeight.Medium)
+                                Text(
+                                    "開啟後需輸入密碼才可檢視與投票",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                            Switch(
+                                checked = uiState.isPrivate,
+                                onCheckedChange = { onIntent(CreateVoteIntent.TogglePrivate(it)) }
                             )
                         }
-                        Switch(
-                            checked = uiState.isPrivate,
-                            onCheckedChange = { onIntent(CreateVoteIntent.TogglePrivate(it)) }
-                        )
-                    }
 
-                    AnimatedVisibility(visible = uiState.isPrivate) {
-                        Column(modifier = Modifier.padding(top = 12.dp)) {
-                            OutlinedTextField(
-                                value = uiState.password,
-                                onValueChange = { onIntent(CreateVoteIntent.UpdatePassword(it)) },
-                                label = { Text("設定投票通行密碼") },
-                                singleLine = true,
-                                visualTransformation = PasswordVisualTransformation(),
-                                isError = uiState.passwordError != null,
-                                supportingText = uiState.passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                        AnimatedVisibility(visible = uiState.isPrivate) {
+                            Column(modifier = Modifier.padding(top = 12.dp)) {
+                                OutlinedTextField(
+                                    value = uiState.password,
+                                    onValueChange = { onIntent(CreateVoteIntent.UpdatePassword(it)) },
+                                    label = { Text("設定投票通行密碼") },
+                                    singleLine = true,
+                                    visualTransformation = PasswordVisualTransformation(),
+                                    isError = uiState.passwordError != null,
+                                    supportingText = uiState.passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }

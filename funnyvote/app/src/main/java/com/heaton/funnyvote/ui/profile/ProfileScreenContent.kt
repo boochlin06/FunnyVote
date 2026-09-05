@@ -1,5 +1,6 @@
 package com.heaton.funnyvote.ui.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,65 +62,85 @@ fun ProfileScreenContent(
                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // 原版 activity_personal.xml 之視差橫幅效果 (imgProfileBackdrop)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(110.dp)
+                            .background(FunnyVoteBlue)
+                    )
+
+                    // 懸浮重疊大圓頭像
                     Surface(
                         modifier = Modifier
-                            .size(72.dp)
+                            .offset(y = (-45).dp)
+                            .size(90.dp)
                             .clip(CircleShape),
-                        color = FunnyVoteBlue
+                        color = Color.White,
+                        shadowElevation = 6.dp
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .clip(CircleShape)
+                                .background(FunnyVoteBlue)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = null,
-                                modifier = Modifier.size(44.dp),
+                                modifier = Modifier.size(54.dp),
                                 tint = Color.White
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Column(
+                        modifier = Modifier
+                            .offset(y = (-35).dp)
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        if (uiState.isEditingName) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                OutlinedTextField(
+                                    value = uiState.nameInput,
+                                    onValueChange = { onIntent(ProfileIntent.UpdateNameInput(it)) },
+                                    label = { Text("修改暱稱") },
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                IconButton(onClick = { onIntent(ProfileIntent.SaveName) }) {
+                                    Icon(Icons.Default.Check, contentDescription = "儲存", tint = FunnyVoteBlue)
+                                }
+                            }
+                        } else {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = uiState.user?.userName ?: "訪客",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextPrimary
+                                )
+                                IconButton(onClick = { onIntent(ProfileIntent.EditName(true)) }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "編輯暱稱", modifier = Modifier.size(18.dp), tint = FunnyVoteBlue)
+                                }
+                            }
+                        }
 
-                    if (uiState.isEditingName) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            OutlinedTextField(
-                                value = uiState.nameInput,
-                                onValueChange = { onIntent(ProfileIntent.UpdateNameInput(it)) },
-                                label = { Text("修改暱稱") },
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IconButton(onClick = { onIntent(ProfileIntent.SaveName) }) {
-                                Icon(Icons.Default.Check, contentDescription = "儲存", tint = FunnyVoteBlue)
-                            }
-                        }
-                    } else {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = uiState.user?.userName ?: "訪客",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = TextPrimary
-                            )
-                            IconButton(onClick = { onIntent(ProfileIntent.EditName(true)) }) {
-                                Icon(Icons.Default.Edit, contentDescription = "編輯暱稱", modifier = Modifier.size(18.dp), tint = FunnyVoteBlue)
-                            }
-                        }
+                        Text(
+                            text = uiState.user?.email ?: "未綁定電子郵件",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextSecondary
+                        )
                     }
-
-                    Text(
-                        text = uiState.user?.email ?: "未綁定電子郵件",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
-                    )
                 }
             }
 

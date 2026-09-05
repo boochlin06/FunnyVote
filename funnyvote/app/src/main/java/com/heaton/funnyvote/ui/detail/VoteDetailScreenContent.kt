@@ -27,7 +27,13 @@ import com.heaton.funnyvote.data.local.entity.OptionEntity
 import com.heaton.funnyvote.data.local.entity.VoteEntity
 import com.heaton.funnyvote.data.local.entity.VoteWithDetails
 import com.heaton.funnyvote.ui.theme.*
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +44,14 @@ fun VoteDetailScreenContent(
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
     val vote = uiState.voteWithDetails?.vote
-    val options = uiState.voteWithDetails?.options ?: emptyList()
+    val rawOptions = uiState.voteWithDetails?.options ?: emptyList()
+    var isSortedByCount by remember { mutableStateOf(false) }
+    var isPreviewResult by remember { mutableStateOf(false) }
+    val options = remember(rawOptions, isSortedByCount) {
+        if (isSortedByCount) rawOptions.sortedByDescending { it.count } else rawOptions
+    }
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = FunnyVoteWindowBg,
@@ -69,6 +82,43 @@ fun VoteDetailScreenContent(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (vote != null && uiState.isUnlocked) {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // 1. 浮動操作：回到頂部 (fabTop)
+                    SmallFloatingActionButton(
+                        onClick = { scope.launch { listState.animateScrollToItem(0) } },
+                        containerColor = Color.White,
+                        contentColor = FunnyVoteBlue
+                    ) {
+                        Icon(Icons.Default.VerticalAlignTop, contentDescription = "回到頂部", modifier = Modifier.size(20.dp))
+                    }
+
+                    // 2. 浮動操作：排序選項 (fabOptionSort)
+                    SmallFloatingActionButton(
+                        onClick = { isSortedByCount = !isSortedByCount },
+                        containerColor = if (isSortedByCount) FunnyVoteBlue else Color.White,
+                        contentColor = if (isSortedByCount) Color.White else FunnyVoteBlue
+                    ) {
+                        Icon(Icons.Default.Sort, contentDescription = "依票數排序", modifier = Modifier.size(20.dp))
+                    }
+
+                    // 3. 浮動操作：預覽結果/隱藏結果 (fabPreResult)
+                    if (!vote.isVoted) {
+                        ExtendedFloatingActionButton(
+                            onClick = { isPreviewResult = !isPreviewResult },
+                            containerColor = if (isPreviewResult) StarGold else Color.White,
+                            contentColor = if (isPreviewResult) Color.White else TextPrimary,
+                            icon = { Icon(Icons.Default.Poll, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                            text = { Text(if (isPreviewResult) "隱藏結果" else "預覽結果", fontSize = 12.sp) }
+                        )
+                    }
+                }
+            }
         },
         bottomBar = {
             if (vote != null && !vote.isVoted && uiState.isUnlocked) {
@@ -130,8 +180,9 @@ fun VoteDetailScreenContent(
                 )
             } else {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(12.dp),
+                    contentPadding = PaddingValues(top = 12.dp, start = 12.dp, end = 12.dp, bottom = 90.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     item {
@@ -217,7 +268,7 @@ fun VoteDetailScreenContent(
 
                         ClassicOptionDetailCard(
                             option = option,
-                            isVoted = vote.isVoted,
+                            isVoted = vote.isVoted || isPreviewResult,
                             isSelected = isSelected,
                             percentage = percentage,
                             ratio = ratio,
