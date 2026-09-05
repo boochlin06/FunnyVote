@@ -70,21 +70,45 @@ flowchart TD
 
 ---
 
+## 💡 當年時空背景與工程師決策復盤 (Retrospective)
+
+### 為什麼在 2024 年啟動全面重構？
+時隔多年，Android 生態早已發生翻天覆地的演進：Jetpack Compose 成為 UI 新標準、Coroutines/Flow 成為非同步霸主、Room 與 Hilt 統一了資料庫與依賴注入。面對過去歷史分支中留下的 GreenDAO、ButterKnife 與複雜 MVP，重寫比修補更具工程價值。
+
+### 當年解決之突破：
+1. **宣告式 UI (Compose) 初體驗**：徹底告別繁瑣的 XML 佈局與 `findViewById`，元件代碼量縮減 60% 以上。
+2. **協程 (Coroutines) 終結回呼地獄**：`suspend fun` 與 `viewModelScope` 讓非同步代碼宛如同步編程般直觀。
+3. **Room + Hilt 取代 GreenDAO + Dagger 2**：編譯期檢查與官方標準架構讓工程維護成本驟降。
+
+### 當年留下的工程遺憾（後續演進動機）：
+1. **傳統 MVVM 的狀態撕裂 (State Inconsistency)**：ViewModel 內部開出多個獨立的 `StateFlow`（如 `loadingState`, `dataState`, `errorState`），在複雜並發下容易發生狀態不同步，催生了 `mvi-rewrite` 的嚴格單向資料流 (UDF)。
+2. **頁面覆蓋度尚未完備**：此階段專注於核心主鏈路（首頁與投票詳情），原版的自訂分享彈窗、四個關於子頁面與個人頁面尚未全面復刻（留待 `modern-android` 全面補齊）。
+
+---
+
 ## 🌿 各分支演進地圖 (Branch Evolutionary Roadmap)
 
 ```text
 [main] ───────────────► 2016 經典 Java / ButterKnife / EventBus / SQLite
    │
+   ├─► [mvp] ──────────► 2017 初次解耦：導入 Google MVP Blueprint、Contract 契約設計
+   │
+   ├─► [mvp_rxjava] ────► 2017 響應式進化：引入 RxJava 切換執行緒、統一數據串流管線
+   │
+   ├─► [mvp_dagger] ────► 2017 依賴注入：引入 Dagger 2，實現編譯期依賴拓撲圖
+   │
+   ├─► [mvp_kotlin] ────► 2018 初探 Kotlin：Java 全盤轉 Kotlin 1.2、消滅 NPE
+   │
    ├─► [kotlin-rewrite] (★ Current)
-   │                       └─► 語法現代化：Java 轉 Kotlin、引進 Coroutines 與基礎 Compose、
+   │                       └─► 2024 現代轉型：Kotlin 2.0 + Coroutines + 基礎 Compose、
    │                           確立 MVVM + Room + Hilt 現代工程基礎
    │
-   ├─► [mvi-rewrite] ────► 架構規範化：探索嚴格 MVI 單向資料流 (UDF) 基礎
+   ├─► [mvi-rewrite] ────► 2024 架構規範：嚴格 MVI (UDF) 單向資料流
    │
-   ├─► [modern-android] ─► 全面現代化：Compose 100% 畫面補全、Room 本地快取、Hilt 注入
+   ├─► [modern-android] ─► 2026 現代完備：Compose 100% 畫面補全、Room 快取、Hilt 注入
    │
    └─► [feature/firebase-backend]
-                           └─► 雲原生躍遷：Firebase Serverless、Cloud Firestore、
+                           └─► 2026 雲原生旗艦版：Firebase Serverless、Cloud Firestore、
                                離線持久化、實體 Android 16 真機驗收
 ```
 
