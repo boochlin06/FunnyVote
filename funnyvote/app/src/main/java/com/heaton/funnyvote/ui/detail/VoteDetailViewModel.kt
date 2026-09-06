@@ -70,25 +70,64 @@ class VoteDetailViewModel @Inject constructor(
             }
 
             is VoteDetailIntent.UnlockWithPassword -> {
-                val vote = _uiState.value.voteWithDetails?.vote ?: return
-                val input = _uiState.value.passwordInput
-                if (!vote.password.isNullOrBlank()) {
-                    if (vote.password == input) {
-                        _uiState.update { it.copy(isUnlocked = true, passwordError = null) }
-                        viewModelScope.launch {
-                            _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("解鎖成功！"))
-                        }
-                    } else {
-                        _uiState.update { it.copy(passwordError = "密碼錯誤，請重新輸入") }
-                    }
-                } else {
+                val state = _uiState.value
+                if (state.isPasswordLockedOut) {
                     viewModelScope.launch {
-                        val isMatch = repository.verifyPollPassword(vote.voteCode, input)
-                        if (isMatch) {
-                            _uiState.update { it.copy(isUnlocked = true, passwordError = null) }
-                            _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("解鎖成功！"))
+                        _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("密碼嘗試次數已達上限，請稍後再試"))
+                    }
+                    return
+                }
+
+                val vote = state.voteWithDetails?.vote ?: return
+                val input = state.passwordInput.trim()
+
+                if (input.isEmpty()) {
+                    _uiState.update { it.copy(passwordError = "請輸入密碼") }
+                    return
+                }
+
+                viewModelScope.launch {
+                    val isMatch = if (!vote.password.isNullOrBlank()) {
+                        vote.password == input
+                    } else {
+                        repository.verifyPollPassword(vote.voteCode, input)
+                    }
+
+                    if (isMatch) {
+                        _uiState.update {
+                            it.copy(
+                                isUnlocked = true,
+                                passwordError = null,
+                                passwordFailedAttempts = 0
+                            )
+                        }
+                        _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("解鎖成功！"))
+                    } else {
+                        val newAttempts = state.passwordFailedAttempts + 1
+                        val lockedOut = newAttempts >= MAX_PASSWORD_ATTEMPTS
+                        val errMsg = if (lockedOut) {
+                            "密碼錯誤已達上限（${MAX_PASSWORD_ATTEMPTS}次），請 30 秒後再試"
                         } else {
-                            _uiState.update { it.copy(passwordError = "密碼錯誤，請重新輸入") }
+                            "密碼錯誤，請重新輸入"
+                        }
+                        _uiState.update {
+                            it.copy(
+                                passwordError = errMsg,
+                                passwordFailedAttempts = newAttempts,
+                                isPasswordLockedOut = lockedOut
+                            )
+                        }
+                        if (lockedOut) {
+                            viewModelScope.launch {
+                                kotlinx.coroutines.delay(30_000L)
+                                _uiState.update {
+                                    it.copy(
+                                        isPasswordLockedOut = false,
+                                        passwordFailedAttempts = 0,
+                                        passwordError = null
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -125,6 +164,10 @@ class VoteDetailViewModel @Inject constructor(
                     viewModelScope.launch {
                         _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("請輸入選項內容！"))
                     }
+                } else if (input.length > MAX_OPTION_INPUT_LENGTH) {
+                    viewModelScope.launch {
+                        _uiEffect.send(VoteDetailUiEffect.ShowSnackbar("選項長度不能超過 $MAX_OPTION_INPUT_LENGTH 個字元！"))
+                    }
                 } else {
                     viewModelScope.launch {
                         val res = repository.addNewOption(activeVoteCode, input)
@@ -141,8 +184,12 @@ class VoteDetailViewModel @Inject constructor(
     }
 
     private fun loadVoteDetail(code: String) {
+        if (!code.matches(VOTE_CODE_REGEX)) {
+            _uiState.update { it.copy(isLoading = false, errorMessage = "無效的投票代碼格式") }
+            return
+        }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             repository.getVoteDetail(code)
                 .catch { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
@@ -157,6 +204,12 @@ class VoteDetailViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    companion object {
+        private val VOTE_CODE_REGEX = Regex("^[a-zA-Z0-9_-]{1,64}$")
+        private const val MAX_OPTION_INPUT_LENGTH = 50
+        private const val MAX_PASSWORD_ATTEMPTS = 5
     }
 
     private fun submitVote() {

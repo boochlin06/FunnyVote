@@ -109,17 +109,28 @@ class CreateVoteViewModel @Inject constructor(
         if (state.title.isBlank()) {
             _uiState.update { it.copy(titleError = "投票標題不能為空！") }
             hasError = true
+        } else if (state.title.length > 100) {
+            _uiState.update { it.copy(titleError = "標題長度不能超過 100 字！") }
+            hasError = true
         }
 
         val validOptions = state.options.map { it.trim() }.filter { it.isNotEmpty() }
         if (validOptions.size < 2) {
             _uiState.update { it.copy(optionsError = "請至少填寫 2 個有效選項！") }
             hasError = true
+        } else if (validOptions.any { it.length > 50 }) {
+            _uiState.update { it.copy(optionsError = "單一選項長度不能超過 50 字！") }
+            hasError = true
         }
 
-        if (state.isPrivate && state.password.isBlank()) {
-            _uiState.update { it.copy(passwordError = "私密投票必須設定密碼！") }
-            hasError = true
+        if (state.isPrivate) {
+            if (state.password.isBlank()) {
+                _uiState.update { it.copy(passwordError = "私密投票必須設定密碼！") }
+                hasError = true
+            } else if (state.password.length > 32) {
+                _uiState.update { it.copy(passwordError = "密碼長度不能超過 32 字！") }
+                hasError = true
+            }
         }
 
         if (hasError) return

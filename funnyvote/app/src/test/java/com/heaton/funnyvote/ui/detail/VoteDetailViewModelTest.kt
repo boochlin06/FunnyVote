@@ -160,4 +160,35 @@ class VoteDetailViewModelTest {
             assertEquals("密碼錯誤，請重新輸入", state.passwordError)
         }
     }
+
+    @Test
+    fun `invalid voteCode format rejects query and displays error`() = runTest {
+        val vm = VoteDetailViewModel(repository, SavedStateHandle(mapOf("voteCode" to "invalid!code@#$%^&*()")))
+        vm.uiState.test {
+            val state = awaitItem()
+            assertFalse(state.isLoading)
+            assertEquals("無效的投票代碼格式", state.errorMessage)
+        }
+    }
+
+    @Test
+    fun `exceeding password attempts locks out user`() = runTest {
+        viewModel.uiState.test {
+            var state = awaitItem()
+            while (state.voteWithDetails == null) {
+                state = awaitItem()
+            }
+
+            repeat(5) {
+                viewModel.handleIntent(VoteDetailIntent.UpdatePasswordInput("wrong_pass"))
+                state = awaitItem()
+                viewModel.handleIntent(VoteDetailIntent.UnlockWithPassword)
+                state = awaitItem()
+            }
+
+            assertTrue(state.isPasswordLockedOut)
+            assertEquals(5, state.passwordFailedAttempts)
+            assertTrue(state.passwordError?.contains("密碼錯誤已達上限") == true)
+        }
+    }
 }

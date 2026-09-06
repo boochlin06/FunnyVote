@@ -16,7 +16,21 @@
 
 # --- Room Database ---
 -keep class * extends androidx.room.RoomDatabase
+-keep class com.heaton.funnyvote.data.local.entity.** { *; }
+-keep class com.heaton.funnyvote.data.local.dao.** { *; }
 -dontwarn androidx.room.paging.**
+
+# --- Navigation Compose Type-Safe Routes & ViewModels ---
+-keep class com.heaton.funnyvote.ui.navigation.** { *; }
+-keep class com.heaton.funnyvote.ui.**UiState { *; }
+-keep class com.heaton.funnyvote.ui.**UiEffect { *; }
+-keep class com.heaton.funnyvote.ui.**Intent { *; }
+-keep class com.heaton.funnyvote.ui.**Contract* { *; }
+
+# --- Remote Models, Repository & Utility Keep ---
+-keep class com.heaton.funnyvote.data.remote.** { *; }
+-keep class com.heaton.funnyvote.data.repository.** { *; }
+-keep class com.heaton.funnyvote.util.** { *; }
 
 # --- Coil ---
 -keep class coil.** { *; }

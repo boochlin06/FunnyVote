@@ -10,6 +10,8 @@ data class VoteDetailUiState(
     val passwordInput: String = "",
     val isUnlocked: Boolean = false,
     val passwordError: String? = null,
+    val passwordFailedAttempts: Int = 0,
+    val isPasswordLockedOut: Boolean = false,
     val errorMessage: String? = null,
     val showInfoDialog: Boolean = false,
     val showAddOptionDialog: Boolean = false,
