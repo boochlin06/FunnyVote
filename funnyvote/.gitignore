@@ -9,3 +9,5 @@
 /build
 /captures
 .externalNativeBuild
+/.masvs_reports
+google-services.json
