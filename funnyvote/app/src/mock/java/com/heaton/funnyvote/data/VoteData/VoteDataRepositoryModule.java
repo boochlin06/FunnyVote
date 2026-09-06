@@ -4,33 +4,25 @@ import android.app.Application;
 
 import com.heaton.funnyvote.data.Local;
 import com.heaton.funnyvote.data.Remote;
-import com.heaton.funnyvote.database.DaoMaster;
-import com.heaton.funnyvote.database.DaoSession;
-import com.heaton.funnyvote.database.OptionDao;
-import com.heaton.funnyvote.database.VoteDataDao;
+import com.heaton.funnyvote.data.local.AppDatabase;
+import com.heaton.funnyvote.data.local.dao.OptionDao;
+import com.heaton.funnyvote.data.local.dao.VoteDataDao;
 import com.heaton.funnyvote.utils.AppExecutors;
-
-import org.greenrobot.greendao.database.Database;
-import org.greenrobot.greendao.identityscope.IdentityScopeType;
-
-import java.util.concurrent.Executors;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 
-import static com.heaton.funnyvote.FunnyVoteApplication.ENCRYPTED;
-
 @Module
 public class VoteDataRepositoryModule {
-    private static final int THREAD_COUNT = 3;
 
     @Singleton
     @Provides
     @Local
-    VoteDataSource provideVoteDataLocalDataSource(VoteDataDao voteDataDao
-            , OptionDao optionDao, AppExecutors appExecutors) {
+    VoteDataSource provideVoteDataLocalDataSource(VoteDataDao voteDataDao,
+                                                  OptionDao optionDao,
+                                                  AppExecutors appExecutors) {
         return new LocalVoteDataSource(voteDataDao, optionDao, appExecutors);
     }
 
@@ -43,29 +35,25 @@ public class VoteDataRepositoryModule {
 
     @Singleton
     @Provides
-    DaoSession provideDaoSession(Application context) {
-        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(context, ENCRYPTED ? "votes-db-encrypted" : "votes-db");
-        Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
-        return new DaoMaster(db).newSession(IdentityScopeType.Session);
+    AppDatabase provideAppDatabase(Application context) {
+        return AppDatabase.getInstance(context);
     }
 
     @Singleton
     @Provides
-    static VoteDataDao provideVoteDataDao(DaoSession daoSession) {
-        return daoSession.getVoteDataDao();
+    static VoteDataDao provideVoteDataDao(AppDatabase database) {
+        return database.voteDataDao();
     }
 
     @Singleton
     @Provides
-    static OptionDao provideOptionDao(DaoSession session) {
-        return session.getOptionDao();
+    static OptionDao provideOptionDao(AppDatabase database) {
+        return database.optionDao();
     }
 
     @Singleton
     @Provides
     static AppExecutors provideAppExecutors() {
-        return new AppExecutors(Executors.newSingleThreadExecutor()
-                , Executors.newFixedThreadPool(THREAD_COUNT),
-                new AppExecutors.MainThreadExecutor());
+        return AppExecutors.getInstance();
     }
 }

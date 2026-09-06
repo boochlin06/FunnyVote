@@ -1,23 +1,18 @@
 package com.heaton.funnyvote.ui.about.licence;
 
-
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import com.heaton.funnyvote.R;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.heaton.funnyvote.databinding.CardViewItemLicenceBinding;
 
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Created by heaton on 2017/3/4.
  */
-
 public class LicenceItemAdapter extends RecyclerView.Adapter<LicenceItemAdapter.VHLicenceItem> {
     private List<LicenceActivity.LicenceItem> licenceList;
 
@@ -25,23 +20,19 @@ public class LicenceItemAdapter extends RecyclerView.Adapter<LicenceItemAdapter.
         this.licenceList = licenceList;
     }
 
-    private void setLicenceList(List<LicenceActivity.LicenceItem> licenceList) {
-        this.licenceList = licenceList;
+    @NonNull
+    @Override
+    public VHLicenceItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        CardViewItemLicenceBinding binding = CardViewItemLicenceBinding.inflate(
+                LayoutInflater.from(parent.getContext()), parent, false);
+        return new VHLicenceItem(binding);
     }
 
     @Override
-    public VHLicenceItem onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_licence
-                , parent, false);
-        return new VHLicenceItem(v);
+    public void onBindViewHolder(@NonNull VHLicenceItem holder, int position) {
+        holder.binding.txtLicenceTitle.setText(licenceList.get(position).getTitle());
+        holder.binding.txtLicenceDesc.setText(licenceList.get(position).getDesc());
     }
-
-    @Override
-    public void onBindViewHolder(VHLicenceItem holder, int position) {
-        holder.txtLicenceTitle.setText(licenceList.get(position).getTitle());
-        holder.txtLicenceDesc.setText(licenceList.get(position).getDesc());
-    }
-
 
     @Override
     public int getItemCount() {
@@ -49,14 +40,11 @@ public class LicenceItemAdapter extends RecyclerView.Adapter<LicenceItemAdapter.
     }
 
     static class VHLicenceItem extends RecyclerView.ViewHolder {
-        @BindView(R.id.txtLicenceTitle)
-        TextView txtLicenceTitle;
-        @BindView(R.id.txtLicenceDesc)
-        TextView txtLicenceDesc;
+        final CardViewItemLicenceBinding binding;
 
-        VHLicenceItem(View view) {
-            super(view);
-            ButterKnife.bind(this, view);
+        VHLicenceItem(CardViewItemLicenceBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 }

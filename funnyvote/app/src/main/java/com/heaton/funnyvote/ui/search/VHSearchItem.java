@@ -1,78 +1,66 @@
 package com.heaton.funnyvote.ui.search;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.VoteData;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import com.heaton.funnyvote.databinding.ItemListSearchBinding;
 
 /**
  * Created by heaton on 2017/1/22.
  */
-
 public class VHSearchItem extends RecyclerView.ViewHolder implements View.OnClickListener {
-    @BindView(R.id.imgMain)
-    ImageView imgMain;
-    @BindView(R.id.txtTitle)
-    TextView txtTitle;
-    @BindView(R.id.imgPollCount)
-    ImageView imgPollCount;
-    @BindView(R.id.txtBarPollCount)
-    TextView txtBarPollCount;
-    @BindView(R.id.relBarPollCount)
-    RelativeLayout relBarPollCount;
-    @BindView(R.id.txtHint)
-    TextView txtHint;
-    @BindView(R.id.txtAuthorName)
-    TextView txtAuthorName;
+    final ItemListSearchBinding binding;
     private VoteData data;
     private SearchFragment.VoteSearchItemListener itemListener;
 
     public VHSearchItem(View itemView, SearchFragment.VoteSearchItemListener itemListener) {
         super(itemView);
-        ButterKnife.bind(this, itemView);
+        this.binding = ItemListSearchBinding.bind(itemView);
         this.itemListener = itemListener;
         itemView.setOnClickListener(this);
     }
 
+    public VHSearchItem(ItemListSearchBinding binding, SearchFragment.VoteSearchItemListener itemListener) {
+        super(binding.getRoot());
+        this.binding = binding;
+        this.itemListener = itemListener;
+        binding.getRoot().setOnClickListener(this);
+    }
+
     @Override
     public void onClick(View v) {
-        itemListener.onVoteItemClick(data);
-
-        //VHVoteWallItem.startActivityToVoteDetail(itemView.getContext().getApplicationContext(), data.getVoteCode());
+        if (itemListener != null && data != null) {
+            itemListener.onVoteItemClick(data);
+        }
     }
 
     public void setLayout(VoteData data) {
         this.data = data;
-        txtTitle.setText(data.getTitle());
-        txtAuthorName.setText(data.getAuthorName());
-        txtBarPollCount.setText(String.format(itemView.getContext()
+        binding.txtTitle.setText(data.getTitle());
+        binding.txtAuthorName.setText(data.getAuthorName());
+        binding.txtBarPollCount.setText(String.format(itemView.getContext()
                 .getString(R.string.wall_item_bar_vote_count), data.getPollCount()));
         if (data.getVoteImage() == null || data.getVoteImage().isEmpty()) {
-            imgMain.setImageResource(data.getLocalImage());
+            binding.imgMain.setImageResource(data.getLocalImage());
         } else {
             Glide.with(itemView.getContext())
                     .load(data.getVoteImage())
                     .override((int) itemView.getResources().getDimension(R.dimen.search_image_width)
                             , (int) itemView.getResources().getDimension(R.dimen.search_image_high))
                     .centerCrop()
-                    .crossFade()
-                    .into(imgMain);
+                    .into(binding.imgMain);
         }
         if (data.getEndTime() < System.currentTimeMillis()) {
-            txtHint.setText(R.string.search_item_time_end);
-            txtHint.setTextColor(itemView.getContext().getResources().getColor(R.color.md_red_500));
+            binding.txtHint.setText(R.string.search_item_time_end);
+            binding.txtHint.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.md_red_500));
         } else {
-            txtHint.setTextColor(itemView.getContext().getResources().getColor(R.color.md_blue_500));
-            txtHint.setText(R.string.search_item_time_voting);
+            binding.txtHint.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.md_blue_500));
+            binding.txtHint.setText(R.string.search_item_time_voting);
         }
     }
-
 }

@@ -18,8 +18,8 @@ package com.heaton.funnyvote.utils;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -54,7 +54,8 @@ public class AppExecutors {
         return INSTANCE;
     }
 
-    public AppExecutors(Executor diskIO, Executor networkIO, Executor mainThread) {
+    @VisibleForTesting
+    AppExecutors(Executor diskIO, Executor networkIO, Executor mainThread) {
         this.diskIO = diskIO;
         this.networkIO = networkIO;
         this.mainThread = mainThread;
@@ -78,7 +79,7 @@ public class AppExecutors {
         return mainThread;
     }
 
-    public static class MainThreadExecutor implements Executor {
+    private static class MainThreadExecutor implements Executor {
         private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
         @Override

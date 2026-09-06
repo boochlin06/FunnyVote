@@ -2,9 +2,9 @@ package com.heaton.funnyvote.ui.about.problem;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -18,7 +18,7 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
  * Created by heaton on 2017/3/2.
  */
 
-public class ProblemActivity extends AppCompatActivity implements ProblemContract.View {
+public class ProblemActivity extends AppCompatActivity implements ProblemContract.View{
     private Toolbar mainToolbar;
     private Tracker tracker;
     private ProblemContract.Presenter presenter;
@@ -68,4 +68,7 @@ public class ProblemActivity extends AppCompatActivity implements ProblemContrac
         return super.onOptionsItemSelected(item);
     }
 
+    public void setPresenter(ProblemContract.Presenter presenter) {
+        this.presenter = presenter;
+    }
 }

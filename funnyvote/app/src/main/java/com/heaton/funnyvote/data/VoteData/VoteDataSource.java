@@ -1,6 +1,6 @@
 package com.heaton.funnyvote.data.VoteData;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;

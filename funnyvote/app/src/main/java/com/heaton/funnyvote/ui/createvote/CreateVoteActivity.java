@@ -1,5 +1,7 @@
 package com.heaton.funnyvote.ui.createvote;
 
+import com.heaton.funnyvote.databinding.ActivityCteateVoteBinding;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -9,14 +11,15 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.core.content.ContextCompat;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,7 +34,6 @@ import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.database.VoteData;
-import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.utils.FileUtils;
 import com.heaton.funnyvote.utils.Util;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -39,72 +41,52 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import java.io.File;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import at.grabner.circleprogress.CircleProgressView;
 import at.grabner.circleprogress.TextMode;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import dagger.Lazy;
 import dagger.android.support.DaggerAppCompatActivity;
+import javax.inject.Inject;
+import com.heaton.funnyvote.di.ActivityScoped;
 
-/**
- * Created by heaton on 16/1/10.
- */
 @ActivityScoped
 public class CreateVoteActivity extends DaggerAppCompatActivity implements CreateVoteContract.ActivityView {
 
-    public static String TAG = CreateVoteActivity.class.getSimpleName();
-    @BindView(R.id.txtTitle)
-    TextView txtTitle;
-    @BindView(R.id.edtTitle)
-    EditText edtTitle;
-    @BindView(R.id.tabLayoutCreateVote)
-    TabLayout tabLayoutCreateVote;
-    @BindView(R.id.vpSubArea)
-    ViewPager vpSubArea;
-    @BindView(R.id.circleLoad)
-    CircleProgressView circleLoad;
+    private ActivityCteateVoteBinding binding;
     Toolbar mainToolbar;
-    @Inject
-    Lazy<CreateVoteTabSettingFragment> settingFragmentProvider;
-    @Inject
-    Lazy<CreateVoteTabOptionFragment> optionFragmentProvider;
-    @Inject
-    CreateVoteContract.Presenter presenter;
+
+    public static String TAG = CreateVoteActivity.class.getSimpleName();
+    private CreateVoteTabSettingFragment settingFragment;
+    private CreateVoteTabOptionFragment optionFragment;
     private Uri cropImageUri;
     private Tracker tracker;
+
+    @Inject
+    public CreateVoteContract.Presenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cteate_vote);
-        ButterKnife.bind(this);
+        binding = ActivityCteateVoteBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
-        mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        mainToolbar = binding.mainToolbar;
 
         mainToolbar.setTitle(getString(R.string.create_vote_toolbar_title));
         mainToolbar.setTitleTextColor(Color.WHITE);
         mainToolbar.setElevation(10);
 
-        circleLoad.setTextMode(TextMode.TEXT);
-        circleLoad.setShowTextWhileSpinning(true);
-        circleLoad.setFillCircleColor(ContextCompat.getColor(this, R.color.md_amber_50));
+        binding.circleLoad.setTextMode(TextMode.TEXT);
+        binding.circleLoad.setShowTextWhileSpinning(true);
+        binding.circleLoad.setFillCircleColor(ContextCompat.getColor(this, R.color.md_amber_50));
 
-        mainToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        mainToolbar.setNavigationOnClickListener(v -> finish());
         setSupportActionBar(mainToolbar);
 
         tracker.setScreenName(AnalyzticsTag.SCREEN_CREATE_VOTE_OPTIONS);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
-        vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
-        vpSubArea.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        binding.vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
+        binding.vpSubArea.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -125,10 +107,24 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
 
             }
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        tabLayoutCreateVote.setupWithViewPager(vpSubArea);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        binding.tabLayoutCreateVote.setupWithViewPager(binding.vpSubArea);
         presenter.takeView(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (presenter != null) {
+            presenter.dropView();
+        }
+    }
+
+    public void setPresenter(CreateVoteContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 
     @Override
@@ -144,7 +140,7 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
     @Override
     public void IntentToVoteDetail(final VoteData voteData) {
         Util.startActivityToVoteDetail(getApplicationContext(), voteData.getVoteCode());
-        circleLoad.postDelayed(new Runnable() {
+        binding.circleLoad.postDelayed(new Runnable() {
             @Override
             public void run() {
                 Util.sendShareIntent(getApplicationContext(), voteData);
@@ -156,6 +152,47 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
                 .setLabel(voteData.getVoteCode())
                 .build());
         finish();
+    }
+
+    private class TabsAdapter extends FragmentPagerAdapter {
+        public TabsAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Override
+        public Fragment getItem(int i) {
+            switch (i) {
+                case 0:
+                    if (optionFragment == null) {
+                        optionFragment = CreateVoteTabOptionFragment.newTabFragment();
+                        optionFragment.setPresenter(presenter);
+                    }
+                    return optionFragment;
+                case 1:
+                    if (settingFragment == null) {
+                        settingFragment = CreateVoteTabSettingFragment.newTabFragment();
+                        settingFragment.setPresenter(presenter);
+                    }
+                    return settingFragment;
+            }
+            return null;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return getString(R.string.create_vote_tab_options);
+                case 1:
+                    return getString(R.string.create_vote_tab_settings);
+            }
+            return "";
+        }
     }
 
     @Override
@@ -177,7 +214,7 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
         int id = item.getItemId();
 
         if (id == R.id.menu_submit) {
-            presenter.updateVoteTitle(edtTitle.getText().toString());
+            presenter.updateVoteTitle(binding.edtTitle.getText().toString());
             presenter.submitCreateVote();
             return true;
         } else if (id == android.R.id.home) {
@@ -201,7 +238,7 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
                 Log.d(TAG, "onActivityResult PICK_IMAGE_CHOOSER_REQUEST_CODE:" + cropImageUri);
                 requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE);
             } else {
-                // no permissions required or already grunted, can startwithSearch crop image activity
+                // no permissions required or already grunted, can start crop image activity
                 Log.d(TAG, "onActivityResult PICK_IMAGE_CHOOSER_REQUEST_CODE no permission:" + imageUri);
                 startCropImageActivity(imageUri);
 
@@ -212,12 +249,12 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
                 Uri resultUri = result.getUri();
                 Log.d(TAG, "CROP_IMAGE_ACTIVITY_REQUEST_CODE ok:" + resultUri);
                 cropImageUri = resultUri;
-                if (optionFragmentProvider.get() == null) {
-                    vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
+                if (optionFragment == null) {
+                    binding.vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
                 }
                 File file = cropImageUri == null ? null : FileUtils.getFile(this, cropImageUri);
                 presenter.updateVoteImage(file);
-                optionFragmentProvider.get().setVoteImage(resultUri);
+                optionFragment.setVoteImage(resultUri);
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
@@ -234,7 +271,7 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
         }
         if (requestCode == CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE) {
             if (cropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // required permissions granted, startwithSearch crop image activity
+                // required permissions granted, start crop image activity
                 startCropImageActivity(cropImageUri);
             } else {
                 Toast.makeText(this, R.string.create_vote_toast_image_permission, Toast.LENGTH_LONG).show();
@@ -252,7 +289,7 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
 
     @Override
     public void onBackPressed() {
-        if (edtTitle.getText().toString().length() > 0) {
+        if (binding.edtTitle.getText().toString().length() > 0) {
             showExitCheckDialog();
         } else {
             super.onBackPressed();
@@ -283,15 +320,15 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
 
     @Override
     public void showLoadingCircle() {
-        circleLoad.setVisibility(View.VISIBLE);
-        circleLoad.setText(getString(R.string.vote_detail_circle_updating));
-        circleLoad.spin();
+        binding.circleLoad.setVisibility(View.VISIBLE);
+        binding.circleLoad.setText(getString(R.string.vote_detail_circle_updating));
+        binding.circleLoad.spin();
     }
 
     @Override
     public void hideLoadingCircle() {
-        circleLoad.stopSpinning();
-        circleLoad.setVisibility(View.GONE);
+        binding.circleLoad.stopSpinning();
+        binding.circleLoad.setVisibility(View.GONE);
     }
 
     @Override
@@ -349,38 +386,5 @@ public class CreateVoteActivity extends DaggerAppCompatActivity implements Creat
         builder.setMessage(sb.toString());
         builder.setPositiveButton(R.string.create_vote_dialog_error_done, null);
         builder.show();
-    }
-
-    private class TabsAdapter extends FragmentPagerAdapter {
-        public TabsAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public int getCount() {
-            return 2;
-        }
-
-        @Override
-        public Fragment getItem(int i) {
-            switch (i) {
-                case 0:
-                    return optionFragmentProvider.get();
-                case 1:
-                    return settingFragmentProvider.get();
-            }
-            return null;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getString(R.string.create_vote_tab_options);
-                case 1:
-                    return getString(R.string.create_vote_tab_settings);
-            }
-            return "";
-        }
     }
 }

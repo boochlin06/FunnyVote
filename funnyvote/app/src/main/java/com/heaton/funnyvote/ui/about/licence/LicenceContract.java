@@ -4,7 +4,7 @@ import com.heaton.funnyvote.BasePresenter;
 import com.heaton.funnyvote.BaseView;
 
 public interface LicenceContract {
-    interface Presenter extends BasePresenter {
+    interface Presenter extends BasePresenter<View> {
 
     }
 

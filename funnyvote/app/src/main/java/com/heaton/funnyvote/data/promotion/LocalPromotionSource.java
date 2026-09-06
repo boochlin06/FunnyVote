@@ -1,28 +1,26 @@
 package com.heaton.funnyvote.data.promotion;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import com.heaton.funnyvote.database.Promotion;
-import com.heaton.funnyvote.database.PromotionDao;
+import com.heaton.funnyvote.data.local.dao.PromotionDao;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.utils.AppExecutors;
 
 import java.util.List;
-
-import javax.inject.Inject;
 
 public class LocalPromotionSource implements PromotionDataSource {
     private PromotionDao promotionDao;
     private static volatile LocalPromotionSource INSTANCE;
     private AppExecutors mAppExecutors;
 
-    @Inject
-    public LocalPromotionSource(PromotionDao promotionDao, AppExecutors appExecutors) {
+    public LocalPromotionSource(@NonNull PromotionDao promotionDao, AppExecutors appExecutors) {
         this.promotionDao = promotionDao;
         this.mAppExecutors = appExecutors;
     }
 
-    public static LocalPromotionSource getInstance(PromotionDao promotionDao
+    public static LocalPromotionSource getInstance(@NonNull PromotionDao promotionDao
             , AppExecutors appExecutors) {
         if (INSTANCE == null) {
             synchronized (LocalPromotionSource.class) {

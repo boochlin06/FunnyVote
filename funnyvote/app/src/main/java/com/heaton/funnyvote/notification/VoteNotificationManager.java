@@ -1,38 +1,40 @@
 package com.heaton.funnyvote.notification;
 
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
+import android.os.Build;
+
+import androidx.core.app.NotificationCompat;
 
 import com.heaton.funnyvote.FunnyVoteApplication;
+import com.heaton.funnyvote.ui.mainactivity.MainActivity;
 import com.heaton.funnyvote.R;
-import com.heaton.funnyvote.data.user.LocalUserDataSource;
+import com.heaton.funnyvote.data.local.AppDatabase;
+import com.heaton.funnyvote.data.local.dao.VoteDataDao;
 import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
-import com.heaton.funnyvote.database.VoteDataDao;
-import com.heaton.funnyvote.ui.mainactivity.MainActivity;
 import com.heaton.funnyvote.ui.personal.UserActivity;
+import com.heaton.funnyvote.utils.AppExecutors;
 
 import java.util.Calendar;
-
-import javax.inject.Inject;
 
 /**
  * Created by heaton on 2017/4/29.
  */
-
 public class VoteNotificationManager {
     public static int NOTIFICATION_EVERY_DAY_HOUR = 19;
     public static int NOTIFICATION_EVERY_DAY_MINUTE = 30;
     public static String ACTION_NOTIFICATION_USER_ACTIVITY_START = "com.heaton.notification.send";
+    private static final String CHANNEL_ID = "funnyvote_channel";
+    private static final String CHANNEL_NAME = "FunnyVote Notifications";
+
     private Context context;
     private static VoteNotificationManager INSTANCE = null;
-    @Inject
-    public UserDataRepository userDataRepository;
 
     public static VoteNotificationManager getInstance(Context context) {
         if (INSTANCE == null) {
@@ -46,13 +48,32 @@ public class VoteNotificationManager {
     }
 
     public VoteNotificationManager(Context context) {
-        this.context = context;
+        this.context = context.getApplicationContext();
+        createNotificationChannel();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
     }
 
     public void startNotificationAlarm() {
+        int flags = PendingIntent.FLAG_NO_CREATE;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
         boolean alarmUp = (PendingIntent.getBroadcast(context, 0,
                 new Intent(context, AlarmReceiver.class),
-                PendingIntent.FLAG_NO_CREATE) != null);
+                flags) != null);
 
         if (!alarmUp) {
             Calendar calendar = Calendar.getInstance();
@@ -60,25 +81,31 @@ public class VoteNotificationManager {
             calendar.set(Calendar.HOUR_OF_DAY, NOTIFICATION_EVERY_DAY_HOUR);
             calendar.set(Calendar.MINUTE, NOTIFICATION_EVERY_DAY_MINUTE);
             calendar.set(Calendar.SECOND, 10);
-            PendingIntent alarmIntent;
+
+            int broadcastFlags = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                broadcastFlags |= PendingIntent.FLAG_IMMUTABLE;
+            }
             Intent intent = new Intent(context, AlarmReceiver.class);
-            alarmIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+            PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent, broadcastFlags);
 
             AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
-                    AlarmManager.INTERVAL_DAY, alarmIntent);
+            if (am != null) {
+                am.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+                        AlarmManager.INTERVAL_DAY, alarmIntent);
+            }
         }
     }
 
     public void sendNotification() {
-        LocalUserDataSource userDataRepository = LocalUserDataSource.getInstance(context);
+        UserDataRepository userDataRepository = ((FunnyVoteApplication) context.getApplicationContext()).userDataRepository;
         userDataRepository.getUser(new UserDataSource.GetUserCallback() {
             @Override
             public void onResponse(User user) {
                 if (((int) (Math.random() * 4)) % 4 == 1) {
                     sendMainNotification();
                 } else {
-                    sendUserVoteChange(user.getUserCode());
+                    sendUserVoteChange(user != null ? user.getUserCode() : "");
                 }
             }
 
@@ -89,65 +116,72 @@ public class VoteNotificationManager {
         }, false);
     }
 
-    public void sendUserVoteChange(String authorCode) {
-        VoteDataDao voteDataDao = ((FunnyVoteApplication) (context.getApplicationContext()))
-                .getDaoSession().getVoteDataDao();
-        long count = voteDataDao.queryBuilder().whereOr(VoteDataDao.Properties.IsPolled.eq(true)
-                , VoteDataDao.Properties.AuthorCode.eq(authorCode))
-                .where(VoteDataDao.Properties.StartTime.le(System.currentTimeMillis())).count();
-        if (count > 0) {
-
-            Intent resultIntent = new Intent(context, UserActivity.class);
-            resultIntent.setAction(ACTION_NOTIFICATION_USER_ACTIVITY_START);
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
+    public void sendUserVoteChange(final String authorCode) {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                VoteDataDao voteDataDao = AppDatabase.getInstance(context).voteDataDao();
+                long count = voteDataDao.countUserVoteChanges(authorCode, System.currentTimeMillis());
+                if (count > 0) {
+                    Intent resultIntent = new Intent(context, UserActivity.class);
+                    resultIntent.setAction(ACTION_NOTIFICATION_USER_ACTIVITY_START);
+                    int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        flags |= PendingIntent.FLAG_IMMUTABLE;
+                    }
+                    PendingIntent resultPendingIntent = PendingIntent.getActivity(
                             context,
                             0,
                             resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
+                            flags
                     );
 
-            NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(context)
-                            .setSmallIcon(R.mipmap.ic_launcher)
-                            .setContentTitle(context.getString(R.string.notification_title))
-                            .setContentText(context.getString(R.string.notification_content_updated))
-                            .setContentIntent(resultPendingIntent)
-                            .setAutoCancel(true);
-            // Sets an ID for the notification
-            int mNotificationId = 001;
-            // Gets an instance of the NotificationManager service
-            NotificationManager mNotifyMgr =
-                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
-        } else {
-            sendMainNotification();
-        }
+                    NotificationCompat.Builder mBuilder =
+                            new NotificationCompat.Builder(context, CHANNEL_ID)
+                                    .setSmallIcon(R.mipmap.ic_launcher)
+                                    .setContentTitle(context.getString(R.string.notification_title))
+                                    .setContentText(context.getString(R.string.notification_content_updated))
+                                    .setContentIntent(resultPendingIntent)
+                                    .setAutoCancel(true);
+
+                    int mNotificationId = 1;
+                    NotificationManager mNotifyMgr =
+                            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                    if (mNotifyMgr != null) {
+                        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+                    }
+                } else {
+                    sendMainNotification();
+                }
+            }
+        });
     }
 
     public void sendMainNotification() {
         Intent resultIntent = new Intent(context, MainActivity.class);
-        PendingIntent resultPendingIntent =
-                PendingIntent.getActivity(
-                        context,
-                        0,
-                        resultIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(
+                context,
+                0,
+                resultIntent,
+                flags
+        );
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(context)
+                new NotificationCompat.Builder(context, CHANNEL_ID)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(context.getString(R.string.notification_title))
                         .setContentText(context.getString(R.string.notification_content_nothing))
                         .setContentIntent(resultPendingIntent)
                         .setAutoCancel(true);
-        // Sets an ID for the notification
-        int mNotificationId = 001;
-        // Gets an instance of the NotificationManager service
+
+        int mNotificationId = 1;
         NotificationManager mNotifyMgr =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
-
+        if (mNotifyMgr != null) {
+            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        }
     }
-
 }

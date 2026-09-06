@@ -5,17 +5,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
-import android.transition.Slide;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -24,11 +13,22 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.transition.Slide;
+
 import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.android.material.navigation.NavigationView;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
@@ -53,7 +53,7 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
 
     private static final int ANIM_DURATION_TOOLBAR = 300;
     public static String TAG = MainActivity.class.getSimpleName();
-    public static boolean ENABLE_ADMOB = true;
+    public static boolean ENABLE_ADMOB = false;
     @Inject
     public MainActivityPresenter presenter;
     boolean doubleBackToExitPressedOnce = false;
@@ -102,20 +102,20 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
 
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
-        toolbar = (Toolbar) findViewById(R.id.toolbarMain);
-        adView = (AdView) findViewById(R.id.adView);
+        toolbar = findViewById(R.id.toolbarMain);
+        adView = findViewById(R.id.adView);
         toolbar.setTitle(getString(R.string.drawer_home));
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout = findViewById(R.id.drawer_layout);
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open,
                 R.string.drawer_close);
         drawerToggle.syncState();
 
         ENABLE_ADMOB = getResources().getBoolean(R.bool.enable_main_admob);
 
-        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        navigationView = findViewById(R.id.navigation_view);
         navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.getHeaderView(0).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,9 +143,12 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
 
     private void setUpAdmob() {
         if (ENABLE_ADMOB) {
-            AdRequest adRequest = new AdRequest.Builder()
-                    .build();
-            adView.loadAd(adRequest);
+            try {
+                AdRequest adRequest = new AdRequest.Builder().build();
+                adView.loadAd(adRequest);
+            } catch (Exception e) {
+                adView.setVisibility(View.GONE);
+            }
         } else {
             adView.setVisibility(View.GONE);
         }
@@ -153,26 +156,6 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
 
     private void setupDrawerContent(final NavigationView navigationView) {
         drawerLayout.addDrawerListener(drawerToggle);
-        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
-        });
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -202,39 +185,31 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
         drawerLayout.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (Build.VERSION.SDK_INT > 21) {
-                    toolbar.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.color_primary));
-                } else {
-                    toolbar.setBackgroundColor(getResources().getColor(R.color.color_primary));
-                }
-                switch (menuId) {
-                    case R.id.navigation_item_main:
-                        presenter.IntentToMainPage();
-                        currentPage = menuItem.getItemId();
-                        break;
-                    case R.id.navigation_item_create_vote:
-                        presenter.IntentToCreatePage();
-                        break;
-                    case R.id.navigation_item_list_my_box:
-                        presenter.IntentToUserPage();
-                        break;
-                    case R.id.navigation_item_search:
-                        presenter.IntentToSearchPage(searchKeyword);
-                        currentPage = menuItem.getItemId();
-                        break;
-                    case R.id.navigation_item_account:
-                        presenter.IntentToAccountPage();
-                        currentPage = menuItem.getItemId();
-                        break;
-                    case R.id.navigation_item_about:
-                        presenter.IntentToAboutPage();
-                        currentPage = menuItem.getItemId();
-                        break;
+                toolbar.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.color_primary));
+                int itemId = menuItem.getItemId();
+                if (itemId == R.id.navigation_item_main) {
+                    presenter.IntentToMainPage();
+                    currentPage = menuItem.getItemId();
+                } else if (itemId == R.id.navigation_item_create_vote) {
+                    presenter.IntentToCreatePage();
+                } else if (itemId == R.id.navigation_item_list_my_box) {
+                    presenter.IntentToUserPage();
+                } else if (itemId == R.id.navigation_item_search) {
+                    presenter.IntentToSearchPage(searchKeyword);
+                    currentPage = menuItem.getItemId();
+                } else if (itemId == R.id.navigation_item_account) {
+                    presenter.IntentToAccountPage();
+                    currentPage = menuItem.getItemId();
+                } else if (itemId == R.id.navigation_item_about) {
+                    presenter.IntentToAboutPage();
+                    currentPage = menuItem.getItemId();
                 }
                 navigationView.setCheckedItem(currentPage);
-                tracker.send(new HitBuilders.ScreenViewBuilder().build());
+                if (tracker != null) {
+                    tracker.send(new HitBuilders.ScreenViewBuilder().build());
+                }
             }
-        }, 500);
+        }, 300);
     }
 
     @Override
@@ -255,7 +230,6 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
             Toast.makeText(this, R.string.wall_item_toast_double_click_to_exit, Toast.LENGTH_SHORT).show();
 
             new Handler().postDelayed(new Runnable() {
-
                 @Override
                 public void run() {
                     doubleBackToExitPressedOnce = false;
@@ -266,14 +240,15 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-
-        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
-        if (searchView != null) {
-            searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
-            searchView.setSubmitButtonEnabled(true);
-            searchView.setOnQueryTextListener(queryListener);
+        MenuItem searchItem = menu.findItem(R.id.menu_search);
+        if (searchItem != null) {
+            searchView = (SearchView) searchItem.getActionView();
+            if (searchView != null) {
+                searchView.setQueryHint(getString(R.string.vote_detail_menu_search_hint));
+                searchView.setSubmitButtonEnabled(true);
+                searchView.setOnQueryTextListener(queryListener);
+            }
         }
         return true;
     }
@@ -281,19 +256,17 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.menu_add) {
             presenter.IntentToCreatePage();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        android.support.v4.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_content);
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_content);
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }
@@ -306,11 +279,12 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
         Slide slide = new Slide();
         slide.setDuration(400);
         slide.setSlideEdge(Gravity.RIGHT);
-        tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
+        if (tracker != null) {
+            tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
+        }
         Bundle searchArgument = new Bundle();
         searchArgument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
         fragment.setArguments(searchArgument);
-        fragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, fragment).commit();
         toolbar.setTitle(R.string.drawer_search);
     }
@@ -329,37 +303,31 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
     public void showMainPage() {
         Fragment fragment = mainPageFragmentProvider.get();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        Slide slide = new Slide();
-        slide.setDuration(400);
-        slide.setSlideEdge(Gravity.RIGHT);
-        //fragment = new MainPageFragment();
-        fragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, fragment).commit();
         toolbar.setTitle(getString(R.string.drawer_home));
-        tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN);
+        if (tracker != null) {
+            tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN);
+        }
     }
 
     @Override
     public void showAboutPage() {
         Fragment fragment = aboutFragmentProvider.get();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        Slide slide = new Slide();
-        slide.setDuration(400);
-        slide.setSlideEdge(Gravity.RIGHT);
-        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT);
-        fragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, fragment).commit();
         toolbar.setTitle(R.string.drawer_about);
+        if (tracker != null) {
+            tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT);
+        }
     }
 
     @Override
     public void showAccountPage() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        Slide slide = new Slide();
-        slide.setDuration(400);
-        tracker.setScreenName(AnalyzticsTag.SCREEN_ACCOUNT);
+        if (tracker != null) {
+            tracker.setScreenName(AnalyzticsTag.SCREEN_ACCOUNT);
+        }
         Fragment accountFragment = accountFragmentProvider.get();
-        accountFragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, accountFragment).commit();
         int bgColor = ContextCompat.getColor(getApplicationContext(), R.color.md_light_blue_100);
         toolbar.setBackgroundColor(bgColor);
@@ -369,8 +337,8 @@ public class MainActivity extends DaggerAppCompatActivity implements MainActivit
     @Override
     public void updateUserView(User user) {
         View header = navigationView.getHeaderView(0);
-        CircleImageView icon = (CircleImageView) header.findViewById(R.id.imgUserIcon);
-        TextView name = (TextView) header.findViewById(R.id.txtUserName);
+        CircleImageView icon = header.findViewById(R.id.imgUserIcon);
+        TextView name = header.findViewById(R.id.txtUserName);
         name.setText(user.getUserName());
         Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
                 .override((int) getResources().getDimension(R.dimen.drawer_image_width)

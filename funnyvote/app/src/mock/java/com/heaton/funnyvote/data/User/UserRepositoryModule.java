@@ -5,10 +5,8 @@ import android.content.Context;
 import com.heaton.funnyvote.data.Local;
 import com.heaton.funnyvote.data.Remote;
 import com.heaton.funnyvote.data.user.RemoteUserDataSource;
-import com.heaton.funnyvote.data.user.LocalUserDataSource;
+import com.heaton.funnyvote.data.user.SPUserDataSource;
 import com.heaton.funnyvote.data.user.UserDataSource;
-import com.heaton.funnyvote.database.DaoSession;
-import com.heaton.funnyvote.database.UserDao;
 
 import javax.inject.Singleton;
 
@@ -22,7 +20,7 @@ public class UserRepositoryModule {
     @Provides
     @Local
     UserDataSource provideUserLocalDataSource(Context context) {
-        return new LocalUserDataSource(context);
+        return new SPUserDataSource(context);
     }
 
     @Singleton
@@ -30,11 +28,5 @@ public class UserRepositoryModule {
     @Remote
     UserDataSource provideUserRemoteDataSource() {
         return new RemoteUserDataSource();
-    }
-
-    @Singleton
-    @Provides
-    UserDao provideUserDao(DaoSession session) {
-        return session.getUserDao();
     }
 }

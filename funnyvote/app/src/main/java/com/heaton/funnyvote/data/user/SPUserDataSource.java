@@ -15,7 +15,7 @@ import retrofit2.Callback;
  * Created by chiu_mac on 2016/12/6.
  */
 
-public class LocalUserDataSource implements UserDataSource {
+public class SPUserDataSource implements UserDataSource {
     private static final String SHARED_PREF_USER = "user";
     private static final String KEY_NAME = "name";
     private static final String KEY_USER_ID = "user_id";
@@ -30,20 +30,20 @@ public class LocalUserDataSource implements UserDataSource {
     private final String defaultGuestName;
     private SharedPreferences userSharedPref;
     private User user;
-    private static LocalUserDataSource INSTANCE;
+    private static SPUserDataSource INSTANCE;
 
-    public static LocalUserDataSource getInstance(@NonNull Context context) {
+    public static SPUserDataSource getInstance(@NonNull Context context) {
         if (INSTANCE == null) {
-            synchronized (LocalUserDataSource.class) {
+            synchronized (SPUserDataSource.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new LocalUserDataSource(context);
+                    INSTANCE = new SPUserDataSource(context);
                 }
             }
         }
         return INSTANCE;
     }
 
-    public LocalUserDataSource(Context context) {
+    public SPUserDataSource(Context context) {
         userSharedPref = context.getSharedPreferences(SHARED_PREF_USER, Context.MODE_PRIVATE);
         defaultGuestName = context.getString(R.string.account_default_name);
     }

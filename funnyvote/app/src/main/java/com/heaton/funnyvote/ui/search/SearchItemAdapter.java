@@ -1,7 +1,7 @@
 package com.heaton.funnyvote.ui.search;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +33,7 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private SearchFragment.VoteSearchItemListener itemListener;
 
     public SearchItemAdapter(Context context
-            , List<VoteData> datas, SearchFragment.VoteSearchItemListener itemListener) {
+            ,List<VoteData> datas, SearchFragment.VoteSearchItemListener itemListener) {
         this.context = context;
         this.itemListener = itemListener;
         this.voteList = datas;
@@ -43,10 +43,10 @@ public class SearchItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == ITEM_TYPE_VOTE) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_search, parent, false);
-            return new VHSearchItem(v, itemListener);
+            return new VHSearchItem(v,itemListener);
         } else if (viewType == ITEM_TYPE_RELOAD) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_reload, parent, false);
-            return new ReloadViewHolder(v, itemListener);
+            return new ReloadViewHolder(v,itemListener);
         } else if (viewType == ITEM_TYPE_NO_VOTE) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view_item_no_vote, parent, false);
             return new VHNoVote(v);

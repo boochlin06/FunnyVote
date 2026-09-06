@@ -9,17 +9,17 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.LinearLayoutCompat;
+import androidx.annotation.Nullable;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +38,7 @@ import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.NativeExpressAdView;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FirstTimePref;
@@ -231,11 +231,15 @@ public class MainPageFragment extends dagger.android.support.DaggerFragment
             final CardView btnFirstOption = (CardView) content.findViewById(R.id.btnFirstOption);
             final ImageView imgChampion1 = (ImageView) content.findViewById(R.id.imgChampion1);
             final ImageView imgChampion2 = (ImageView) content.findViewById(R.id.imgChampion2);
+            final ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
 
-            ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
-
-            TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
-                    .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+            TextDrawable drawable = new TextDrawable.Builder()
+                    .setWidth(36)
+                    .setHeight(36)
+                    .setShape(TextDrawable.SHAPE_ROUND)
+                    .setText(data.getAuthorName().substring(0, 1))
+                    .setColor(androidx.core.content.ContextCompat.getColor(getContext(), R.color.primary_light))
+                    .build();
             imgAuthorIcon.setImageDrawable(drawable);
 
             btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
@@ -537,7 +541,7 @@ public class MainPageFragment extends dagger.android.support.DaggerFragment
                             .override((int) getResources().getDimension(R.dimen.promotion_image_width)
                                     , (int) getResources().getDimension(R.dimen.promotion_image_high))
                             .fitCenter()
-                            .crossFade()
+                            .fitCenter()
                             .into(promotion);
                     final String actionURL = promotionTypeList.get(position).getPromotion().getActionURL();
                     promotion.setOnClickListener(new View.OnClickListener() {
@@ -559,7 +563,6 @@ public class MainPageFragment extends dagger.android.support.DaggerFragment
                             .override((int) getResources().getDimension(R.dimen.promotion_image_width)
                                     , (int) getResources().getDimension(R.dimen.promotion_image_high))
                             .fitCenter()
-                            .crossFade()
                             .into(promotion);
                     final String actionURL = "https://play.google.com/store/apps/details?id=com.heaton.funnyvote";
                     promotion.setOnClickListener(new View.OnClickListener() {
@@ -582,14 +585,14 @@ public class MainPageFragment extends dagger.android.support.DaggerFragment
             } else if (promotionTypeList.get(position).getPromotionType() == PromotionType.PROM0TION_TYPE_ADMOB) {
                 if (promotionADMOB == null) {
                     promotionADMOB = inflater.inflate(R.layout.item_promotion_admob, null);
-                    NativeExpressAdView adview = (NativeExpressAdView) promotionADMOB.findViewById(R.id.adViewPromotion);
-                    AdRequest adRequest = new AdRequest.Builder()
-                            .setGender(user != null && User.GENDER_MALE.equals(user.getGender()) ?
-                                    AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
-                            .build();
-                    adview.loadAd(adRequest);
+                    AdView adview = (AdView) promotionADMOB.findViewById(R.id.adViewPromotion);
+                    try {
+                        AdRequest adRequest = new AdRequest.Builder().build();
+                        adview.loadAd(adRequest);
+                    } catch (Exception e) {
+                        // ignore AdMob failure
+                    }
                 }
-                //container.removeView(promotionADMOB);
 
                 if (promotionADMOB.getParent() != null) {
                     ((ViewGroup) promotionADMOB.getParent()).removeView(promotionADMOB);

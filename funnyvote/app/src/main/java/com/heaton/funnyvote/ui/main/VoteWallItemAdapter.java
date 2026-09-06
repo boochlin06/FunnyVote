@@ -2,7 +2,7 @@ package com.heaton.funnyvote.ui.main;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,17 +25,19 @@ import java.util.List;
  */
 public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    public static String TAG = VoteWallItemAdapter.class.getSimpleName();
     public static final int ITEM_TYPE_VOTE = 41;
     public static final int ITEM_TYPE_RELOAD = 42;
     public static final int ITEM_TYPE_NO_VOTE = 43;
     public static final int ITEM_TYPE_ADMOB = 44;
+
     public static final String TAG_NO_VOTE_CREATE_NEW = "CREATE_NEW";
     public static final String TAG_NO_VOTE_CREATE_NEW_OTHER = "CREATE_NEW_OTHER";
     public static final String TAG_NO_VOTE_REFRESH = "REFRESH";
     public static final String TAG_NO_VOTE_NOPE = "CREATE_NOPE";
     public static final String TAG_NO_VOTE_PARTICIPATE = "PARTICIPATE";
     public static final String TAG_NO_VOTE_FAVORITE = "FAVORITE";
-    public static String TAG = VoteWallItemAdapter.class.getSimpleName();
+
     public static int ADMOB_FREQUENCE = 10;
     public static boolean ENABLE_ADMOB = false;
 
@@ -47,6 +49,48 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private String tagNoVote = TAG_NO_VOTE_NOPE;
     private View bannerAdmob;
     private VoteWallItemListener wallItemListener;
+
+    public interface VoteWallItemListener {
+        void onVoteFavoriteChange(VoteData voteData);
+
+        void onVoteItemClick(VoteData voteData);
+
+        void onVoteAuthorClick(VoteData voteData);
+
+        void onVoteShare(VoteData voteData);
+
+        void onVoteQuickPoll(VoteData voteData, String optionCode);
+
+        void onNoVoteCreateNew();
+
+        void onReloadVote();
+    }
+
+    private class ListTypeItem {
+        private int viewType;
+        private VoteData voteData;
+
+        public ListTypeItem(int viewType, VoteData voteData) {
+            this.viewType = viewType;
+            this.voteData = voteData;
+        }
+
+        public void setViewType(int viewType) {
+            this.viewType = viewType;
+        }
+
+        public void setVoteData(VoteData voteData) {
+            this.voteData = voteData;
+        }
+
+        public VoteData getVoteData() {
+            return this.voteData;
+        }
+
+        public int getViewType() {
+            return this.viewType;
+        }
+    }
 
     public VoteWallItemAdapter(Context context, VoteWallItemListener wallItemListener
             , List<VoteData> datas) {
@@ -116,7 +160,7 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof VHVoteWallItem) {
-            Log.d(TAG, "favorite:" + itemTypeList.get(position).getVoteData().getIsFavorite());
+            Log.d(TAG,"favorite:"+itemTypeList.get(position).getVoteData().getIsFavorite());
             ((VHVoteWallItem) holder).setLayout(itemTypeList.get(position).getVoteData());
         } else if (holder instanceof VHAdMob) {
             ((VHAdMob) holder).setLayout();
@@ -131,48 +175,6 @@ public class VoteWallItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public int getItemViewType(int position) {
         return itemTypeList.get(position).getViewType();
-    }
-
-    public interface VoteWallItemListener {
-        void onVoteFavoriteChange(VoteData voteData);
-
-        void onVoteItemClick(VoteData voteData);
-
-        void onVoteAuthorClick(VoteData voteData);
-
-        void onVoteShare(VoteData voteData);
-
-        void onVoteQuickPoll(VoteData voteData, String optionCode);
-
-        void onNoVoteCreateNew();
-
-        void onReloadVote();
-    }
-
-    private class ListTypeItem {
-        private int viewType;
-        private VoteData voteData;
-
-        public ListTypeItem(int viewType, VoteData voteData) {
-            this.viewType = viewType;
-            this.voteData = voteData;
-        }
-
-        public VoteData getVoteData() {
-            return this.voteData;
-        }
-
-        public void setVoteData(VoteData voteData) {
-            this.voteData = voteData;
-        }
-
-        public int getViewType() {
-            return this.viewType;
-        }
-
-        public void setViewType(int viewType) {
-            this.viewType = viewType;
-        }
     }
 
     private class ReloadViewHolder extends RecyclerView.ViewHolder {

@@ -6,18 +6,18 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FunnyVoteApplication;
-import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
+import com.heaton.funnyvote.databinding.FragmentAboutBinding;
 import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.ui.about.aboutapp.AboutAppActivity;
 import com.heaton.funnyvote.ui.about.authorinfo.AuthorInfoActivity;
@@ -28,91 +28,66 @@ import com.heaton.funnyvote.utils.Util;
 
 import javax.inject.Inject;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
+import dagger.android.support.DaggerFragment;
 
 /**
  * Created by heaton on 2017/3/2.
  */
-
 @ActivityScoped
-public class AboutFragment extends dagger.android.support.DaggerFragment implements AboutContract.View {
-    @BindView(R.id.txtTutorial)
-    TextView txtTutorial;
-    @BindView(R.id.txtAuthorInfo)
-    TextView txtAuthorInfo;
-    @BindView(R.id.txtLicence)
-    TextView txtLicence;
-    @BindView(R.id.txtProblem)
-    TextView txtProblem;
-    @BindView(R.id.txtVersionName)
-    TextView txtVersionName;
-    @BindView(R.id.txtUpdate)
-    TextView txtUpdate;
-    @BindView(R.id.btnShareApp)
-    CardView btnShareApp;
-    @Inject
-    AboutPresenter presenter;
+public class AboutFragment extends DaggerFragment implements AboutContract.View {
+    private FragmentAboutBinding binding;
     private Tracker tracker;
 
     @Inject
-    public AboutFragment() {
+    AboutPresenter presenter;
 
+    @Inject
+    public AboutFragment() {
     }
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_about, null);
-        ButterKnife.bind(this, view);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = FragmentAboutBinding.inflate(inflater, container, false);
+        if (presenter != null) {
+            presenter.takeView(this);
+        }
 
-        FunnyVoteApplication application = (FunnyVoteApplication) getActivity().getApplication();
+        FunnyVoteApplication application = (FunnyVoteApplication) requireActivity().getApplication();
         tracker = application.getDefaultTracker();
-        PackageInfo pinfo = null;
         try {
-            pinfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
+            PackageInfo pinfo = requireActivity().getPackageManager().getPackageInfo(requireActivity().getPackageName(), 0);
             String versionName = pinfo.versionName;
-            txtVersionName.setText(versionName);
+            binding.txtVersionName.setText(versionName);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        return view;
+
+        binding.txtTutorial.setOnClickListener(v -> presenter.IntentToIntroduction());
+        binding.txtAuthorInfo.setOnClickListener(v -> presenter.IntentToAuthorInfo());
+        binding.txtLicence.setOnClickListener(v -> presenter.IntentToLicence());
+        binding.txtProblem.setOnClickListener(v -> presenter.IntentToProblem());
+        binding.txtUpdate.setOnClickListener(v -> presenter.IntentToAppStore());
+        binding.txtAppIntroduction.setOnClickListener(v -> presenter.IntentToAbout());
+        binding.btnShareApp.setOnClickListener(v -> presenter.IntentToShareApp());
+
+        return binding.getRoot();
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        presenter.takeView(this);
-        //presenter = new AboutPresenter(this);
+        if (presenter != null) {
+            presenter.takeView(this);
+        }
     }
 
-    @OnClick({R.id.txtTutorial, R.id.txtAuthorInfo, R.id.txtLicence, R.id.txtProblem, R.id.txtAppIntroduction
-            , R.id.txtUpdate, R.id.btnShareApp})
-    public void onClick(View v) {
-        int id = v.getId();
-        switch (id) {
-            case R.id.txtTutorial:
-                presenter.IntentToIntroduction();
-                break;
-            case R.id.txtAuthorInfo:
-                presenter.IntentToAuthorInfo();
-                break;
-            case R.id.txtLicence:
-                presenter.IntentToLicence();
-                break;
-            case R.id.txtProblem:
-                presenter.IntentToProblem();
-                break;
-            case R.id.txtUpdate:
-                presenter.IntentToAppStore();
-                break;
-            case R.id.txtAppIntroduction:
-                presenter.IntentToAbout();
-                break;
-            case R.id.btnShareApp:
-                presenter.IntentToShareApp();
-                break;
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+        if (presenter != null) {
+            presenter.dropView();
         }
     }
 
@@ -138,18 +113,18 @@ public class AboutFragment extends dagger.android.support.DaggerFragment impleme
 
     @Override
     public void showAppStore() {
-        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_UPDATE_APP);
-        tracker.send(new HitBuilders.ScreenViewBuilder().build());
-        final String appPackageName = getActivity().getPackageName();
+        if (tracker != null) {
+            tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT_UPDATE_APP);
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
+        }
+        final String appPackageName = requireActivity().getPackageName();
 
         try {
-            Intent intent = new Intent(new Intent(Intent.ACTION_VIEW
-                    , Uri.parse("market://details?id=" + appPackageName)));
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         } catch (ActivityNotFoundException anfe) {
-            Intent intent = new Intent(new Intent(Intent.ACTION_VIEW
-                    , Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         }
@@ -165,4 +140,8 @@ public class AboutFragment extends dagger.android.support.DaggerFragment impleme
         Util.sendShareAppIntent(getActivity());
     }
 
+
+    public void setPresenter(AboutPresenter presenter) {
+        this.presenter = presenter;
+    }
 }

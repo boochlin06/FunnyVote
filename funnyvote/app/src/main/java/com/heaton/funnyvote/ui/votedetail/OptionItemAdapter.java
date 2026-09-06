@@ -1,7 +1,7 @@
 package com.heaton.funnyvote.ui.votedetail;
 
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.Adapter;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.Adapter;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -34,6 +34,18 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
     private boolean isSearchMode = false;
     private VoteDetailContentActivity.OptionItemListener itemListener;
 
+    public void setOptionList(List<Option> optionList) {
+        this.optionList = optionList;
+    }
+
+    public void setChoiceList(List<Long> choiceList) {
+        this.choiceList = choiceList;
+    }
+
+    public void setExpandOptionList(List<String> expandOptionList) {
+        this.expandOptionList = expandOptionList;
+    }
+
     public OptionItemAdapter(int optionType, List<Option> optionList, VoteData data
             , VoteDetailContentActivity.OptionItemListener itemListener) {
         this.optionList = optionList;
@@ -45,14 +57,6 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
         this.searchList = new ArrayList<>();
         this.data = data;
         this.itemListener = itemListener;
-    }
-
-    public void setOptionList(List<Option> optionList) {
-        this.optionList = optionList;
-    }
-
-    public void setExpandOptionList(List<String> expandOptionList) {
-        this.expandOptionList = expandOptionList;
     }
 
     public void setSearchList(List<Option> searchList) {
@@ -149,10 +153,6 @@ public class OptionItemAdapter extends Adapter<RecyclerView.ViewHolder> {
 
     public List<Long> getChoiceList() {
         return choiceList;
-    }
-
-    public void setChoiceList(List<Long> choiceList) {
-        this.choiceList = choiceList;
     }
 
     public List<String> getChoiceCodeList() {

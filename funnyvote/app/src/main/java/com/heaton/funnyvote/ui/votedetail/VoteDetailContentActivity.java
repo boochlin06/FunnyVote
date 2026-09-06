@@ -1,5 +1,6 @@
 package com.heaton.funnyvote.ui.votedetail;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,14 +8,16 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import androidx.core.view.MenuItemCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +40,7 @@ import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.github.amlcurran.showcaseview.OnShowcaseEventListener;
@@ -54,6 +58,7 @@ import com.heaton.funnyvote.analytics.AnalyzticsTag;
 import com.heaton.funnyvote.database.Option;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.database.VoteData;
+import com.heaton.funnyvote.databinding.ActivityVoteDetailBinding;
 import com.heaton.funnyvote.di.ActivityScoped;
 import com.heaton.funnyvote.ui.HidingScrollListener;
 import com.heaton.funnyvote.utils.Util;
@@ -64,9 +69,6 @@ import javax.inject.Inject;
 
 import at.grabner.circleprogress.CircleProgressView;
 import at.grabner.circleprogress.TextMode;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import dagger.android.support.DaggerAppCompatActivity;
 
 /**
@@ -79,102 +81,124 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
     private static final int TITLE_EXTEND_MAX_LINE = 5;
     private static final String TAG = VoteDetailContentActivity.class.getSimpleName();
     public static boolean ENABLE_ADMOB = true;
-    @BindView(R.id.imgAuthorIcon)
+
+    private ActivityVoteDetailBinding binding;
     ImageView imgAuthorIcon;
-    @BindView(R.id.txtAuthorName)
     TextView txtAuthorName;
-    @BindView(R.id.txtPubTime)
     TextView txtPubTime;
-    @BindView(R.id.txtTitle)
     TextView txtTitle;
-    @BindView(R.id.imgMain)
     ImageView imgMain;
-    @BindView(R.id.ryOptionArea)
     RecyclerView ryOptionArea;
-    @BindView(R.id.main_toolbar)
     Toolbar mainToolbar;
-    @BindView(R.id.collapsing_toolbar)
     CollapsingToolbarLayout collapsingToolbar;
-    @BindView(R.id.circleLoad)
     CircleProgressView circleLoad;
-    @BindView(R.id.fabTop)
     FloatingActionButton fabTop;
-    @BindView(R.id.fabPreResult)
     FloatingActionButton fabPreResult;
-    @BindView(R.id.famOther)
     FloatingActionsMenu famOther;
-    @BindView(R.id.txtBarShare)
     TextView txtBarShare;
-    @BindView(R.id.txtBarPollCount)
     TextView txtBarPollCount;
-    @BindView(R.id.imgBarFavorite)
     ImageView imgBarFavorite;
-    @BindView(R.id.fabOptionSort)
     FloatingActionButton fabOptionSort;
-    @BindView(R.id.imgBarPollCount)
     ImageView imgBarPollCount;
-    @BindView(R.id.relBarPollCount)
     RelativeLayout relBarPollCount;
-    @BindView(R.id.imgBarShare)
     ImageView imgBarShare;
-    @BindView(R.id.relBarShare)
     RelativeLayout relBarShare;
-    @BindView(R.id.txtBarFavorite)
     TextView txtBarFavorite;
-    @BindView(R.id.relBarFavorite)
     RelativeLayout relBarFavorite;
-    @BindView(R.id.appBarMain)
     AppBarLayout appBarMain;
-    @BindView(R.id.imgTitleExtend)
     ImageView imgTitleExtend;
-    @BindView(R.id.adView)
     AdView adView;
-    @BindView(R.id.imgLock)
     ImageView imgLock;
-    //@Inject
-    String voteCode = "";
-    @Inject
-    VoteDetailContract.Presenter presenter;
     private Menu menu;
     private SearchView searchView;
     private AlertDialog newOptionPasswordDialog;
     private AlertDialog pollPasswordDialog;
     private OptionItemAdapter optionItemAdapter;
     private VoteData data;
-    //private Activity context;
+    private Activity context;
     private int sortType = 0;
     private Tracker tracker;
-    final private SearchView.OnQueryTextListener queryListener =
-            new SearchView.OnQueryTextListener() {
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    presenter.searchOption(newText);
-                    tracker.send(new HitBuilders.EventBuilder()
-                            .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
-                            .setAction(AnalyzticsTag.ACTION_SEARCH_OPTION)
-                            .setLabel(newText).build());
-                    return false;
-                }
-
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    return false;
-                }
-            };
     private ShowcaseView showcaseView;
+
+    @Inject
+    VoteDetailContract.Presenter presenter;
     private OptionItemListener optionItemListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_vote_detail);
-        ButterKnife.bind(this);
+        binding = ActivityVoteDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        imgAuthorIcon = binding.authorBar.imgAuthorIcon;
+        txtAuthorName = binding.authorBar.txtAuthorName;
+        txtPubTime = binding.authorBar.txtPubTime;
+        imgLock = binding.authorBar.imgLock;
+        txtTitle = binding.txtTitle;
+        imgMain = binding.imgMain;
+        ryOptionArea = binding.ryOptionArea;
+        mainToolbar = binding.mainToolbar.getRoot();
+        collapsingToolbar = binding.collapsingToolbar;
+        circleLoad = binding.circleLoad;
+        fabTop = binding.fabTop;
+        fabPreResult = binding.fabPreResult;
+        famOther = binding.famOther;
+        txtBarShare = binding.functionBar.txtBarShare;
+        txtBarPollCount = binding.functionBar.txtBarPollCount;
+        imgBarFavorite = binding.functionBar.imgBarFavorite;
+        fabOptionSort = binding.fabOptionSort;
+        imgBarPollCount = binding.functionBar.imgBarPollCount;
+        relBarPollCount = binding.functionBar.relBarPollCount;
+        imgBarShare = binding.functionBar.imgBarShare;
+        relBarShare = binding.functionBar.relBarShare;
+        txtBarFavorite = binding.functionBar.txtBarFavorite;
+        relBarFavorite = binding.functionBar.relBarFavorite;
+        appBarMain = binding.appBarMain;
+        imgTitleExtend = binding.imgTitleExtend;
+        adView = binding.adView;
+
+        imgTitleExtend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onTitleExtendClick();
+            }
+        });
+        relBarFavorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBarFavoriteClick();
+            }
+        });
+        relBarShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBarShareClick();
+            }
+        });
+        View.OnClickListener authorClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onAuthorClick();
+            }
+        };
+        imgAuthorIcon.setOnClickListener(authorClickListener);
+        txtAuthorName.setOnClickListener(authorClickListener);
+
+        View.OnClickListener fabClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onFabClick((FloatingActionButton) v);
+            }
+        };
+        fabOptionSort.setOnClickListener(fabClickListener);
+        fabTop.setOnClickListener(fabClickListener);
+        fabPreResult.setOnClickListener(fabClickListener);
 
 
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
-        //context = this;
+        context = this;
         data = new VoteData();
 
         mainToolbar.setTitle(getString(R.string.vote_detail_title));
@@ -184,9 +208,10 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        String voteCode = "";
         Intent intent = getIntent();
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-            //voteCode = intent.getData().getLastPathSegment();
+            voteCode = intent.getData().getLastPathSegment();
             if (TextUtils.isEmpty(voteCode)) {
                 Util.sendShareAppIntent(getApplicationContext());
                 finish();
@@ -200,7 +225,7 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
                         .build());
             }
         } else {
-            //voteCode = intent.getExtras().getString(Util.BUNDLE_KEY_VOTE_CODE);
+            voteCode = intent.getExtras().getString(Util.BUNDLE_KEY_VOTE_CODE);
             Log.d(TAG, "Start activity vote code:" + voteCode);
             tracker.send(new HitBuilders.EventBuilder()
                     .setCategory("VOTE_DETAIL")
@@ -254,8 +279,8 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
         circleLoad.setShowTextWhileSpinning(true);
         circleLoad.setFillCircleColor(getResources().getColor(R.color.md_amber_50));
         ENABLE_ADMOB = getResources().getBoolean(R.bool.enable_detail_admob);
-        Log.d("test", "123VOTE CODE:" + voteCode);
         presenter.takeView(this);
+
     }
 
     @Override
@@ -279,7 +304,7 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
                         return new ViewTarget(mainToolbar.findViewById(R.id.menu_submit)).getPoint();
                     }
                 };
-                final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext()).getPreferences();
+                final SharedPreferences firstTimePref = FirstTimePref.getInstance(this).getPreferences();
 
                 if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
                     showcaseView = new ShowcaseView.Builder(this)
@@ -324,24 +349,24 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
 
     @Override
     public void showHintToast(int res) {
-        Toast.makeText(getApplicationContext(), res, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, res, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void showMultiChoiceToast(int max, int min) {
-        Toast.makeText(getApplicationContext(), String.format(getString(R.string.vote_detail_dialog_multi_option)
+        Toast.makeText(context, String.format(getString(R.string.vote_detail_dialog_multi_option)
                 , min, max), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void showMultiChoiceAtLeast(int min) {
-        Toast.makeText(getApplicationContext(), String.format(getString(R.string.vote_detail_toast_option_at_least_min)
+        Toast.makeText(this, String.format(getString(R.string.vote_detail_toast_option_at_least_min)
                 , min), Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void showMultiChoiceOverMaxToast(int max) {
-        Toast.makeText(getApplicationContext()
+        Toast.makeText(context
                 , String.format(this.getString(R.string.vote_detail_toast_option_over_max)
                         , max), Toast.LENGTH_SHORT).show();
     }
@@ -395,6 +420,7 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
         }
     }
 
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -405,7 +431,6 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
         super.onStop();
     }
 
-    @OnClick(R.id.imgTitleExtend)
     public void onTitleExtendClick() {
         presenter.IntentToTitleDetail();
     }
@@ -428,10 +453,13 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
                 + " ~ " + Util.getDate(data.getEndTime(), "yyyy/MM/dd hh:mm"));
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
             if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
-                TextDrawable drawable = TextDrawable.builder().beginConfig()
-                        .width((int) getResources().getDimension(R.dimen.vote_image_author_size))
-                        .height((int) getResources().getDimension(R.dimen.vote_image_author_size)).endConfig()
-                        .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+                TextDrawable drawable = new TextDrawable.Builder()
+                        .setWidth((int) getResources().getDimension(R.dimen.vote_image_author_size))
+                        .setHeight((int) getResources().getDimension(R.dimen.vote_image_author_size))
+                        .setShape(TextDrawable.SHAPE_ROUND)
+                        .setText(data.getAuthorName().substring(0, 1))
+                        .setColor(ContextCompat.getColor(this, R.color.primary_light))
+                        .build();
                 imgAuthorIcon.setImageDrawable(drawable);
             } else {
                 imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
@@ -442,7 +470,7 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
                     .override((int) getResources().getDimension(R.dimen.vote_image_author_size)
                             , (int) getResources().getDimension(R.dimen.vote_image_author_size))
                     .fitCenter()
-                    .crossFade()
+                    .transition(DrawableTransitionOptions.withCrossFade())
                     .into(imgAuthorIcon);
         }
         ImageView imgCross = (ImageView) content.findViewById(R.id.imgCross);
@@ -459,7 +487,7 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
 
     @Override
     public void showCaseView() {
-        final SharedPreferences firstTimePref = FirstTimePref.getInstance(getApplicationContext()).getPreferences();
+        final SharedPreferences firstTimePref = FirstTimePref.getInstance(this).getPreferences();
 
         if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_ENTER_UNPOLL_VOTE, true)) {
             Target homeTarget = new Target() {
@@ -515,10 +543,7 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
     @Override
     public void setUpAdMob(User user) {
         if (ENABLE_ADMOB) {
-            AdRequest adRequest = new AdRequest.Builder()
-                    .setGender(user != null && User.GENDER_MALE.equals(user.getGender()) ?
-                            AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
-                    .build();
+            AdRequest adRequest = new AdRequest.Builder().build();
             adView.loadAd(adRequest);
         } else {
             adView.setVisibility(View.GONE);
@@ -535,10 +560,13 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
 
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
             if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
-                TextDrawable drawable = TextDrawable.builder().beginConfig()
-                        .width((int) getResources().getDimension(R.dimen.vote_image_author_size))
-                        .height((int) getResources().getDimension(R.dimen.vote_image_author_size)).endConfig()
-                        .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+                TextDrawable drawable = new TextDrawable.Builder()
+                        .setWidth((int) getResources().getDimension(R.dimen.vote_image_author_size))
+                        .setHeight((int) getResources().getDimension(R.dimen.vote_image_author_size))
+                        .setShape(TextDrawable.SHAPE_ROUND)
+                        .setText(data.getAuthorName().substring(0, 1))
+                        .setColor(ContextCompat.getColor(this, R.color.primary_light))
+                        .build();
                 imgAuthorIcon.setImageDrawable(drawable);
             } else {
                 imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
@@ -549,7 +577,7 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
                     .override((int) getResources().getDimension(R.dimen.vote_image_author_size)
                             , (int) getResources().getDimension(R.dimen.vote_image_author_size))
                     .fitCenter()
-                    .crossFade()
+                    .transition(DrawableTransitionOptions.withCrossFade())
                     .into(imgAuthorIcon);
         }
         if (VoteData.SECURITY_PUBLIC.equals(data.getSecurity())) {
@@ -567,8 +595,7 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
                 .load(data.getVoteImage())
                 .override((int) getResources().getDimension(R.dimen.vote_detail_image_width)
                         , (int) getResources().getDimension(R.dimen.vote_detail_image_high))
-                .dontAnimate()
-                .crossFade()
+                .transition(DrawableTransitionOptions.withCrossFade())
                 .into(imgMain);
 
         if (txtTitle.getLineCount() >= TITLE_EXTEND_MAX_LINE) {
@@ -600,7 +627,6 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
         });
     }
 
-    @OnClick(R.id.relBarFavorite)
     public void onBarFavoriteClick() {
         presenter.favoriteVote();
         tracker.send(new HitBuilders.EventBuilder()
@@ -611,17 +637,14 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
                 .build());
     }
 
-    @OnClick(R.id.relBarShare)
     public void onBarShareClick() {
         presenter.IntentToShareDialog();
     }
 
-    @OnClick({R.id.imgAuthorIcon, R.id.txtAuthorName})
     public void onAuthorClick() {
         presenter.IntentToAuthorDetail();
     }
 
-    @OnClick({R.id.fabOptionSort, R.id.fabTop, R.id.fabPreResult})
     public void onFabClick(FloatingActionButton button) {
         int id = button.getId();
         if (id == R.id.fabTop) {
@@ -834,6 +857,25 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
         return super.onCreateOptionsMenu(menu);
     }
 
+    final private SearchView.OnQueryTextListener queryListener =
+            new SearchView.OnQueryTextListener() {
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    presenter.searchOption(newText);
+                    tracker.send(new HitBuilders.EventBuilder()
+                            .setCategory(AnalyzticsTag.CATEGORY_VOTE_DETAIL)
+                            .setAction(AnalyzticsTag.ACTION_SEARCH_OPTION)
+                            .setLabel(newText).build());
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+            };
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -892,9 +934,9 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
     @Override
     public void showVoteInfoDialog(VoteData data) {
         View content = LayoutInflater.from(this).inflate(R.layout.dialog_vote_detail_info, null);
-        TextView option = ButterKnife.findById(content, R.id.txtOptionInfo);
-        TextView time = ButterKnife.findById(content, R.id.txtTime);
-        TextView security = ButterKnife.findById(content, R.id.txtSecurity);
+        TextView option = content.findViewById(R.id.txtOptionInfo);
+        TextView time = content.findViewById(R.id.txtTime);
+        TextView security = content.findViewById(R.id.txtSecurity);
         if (!data.isMultiChoice()) {
             option.setText(getString(R.string.vote_detail_dialog_single_option));
         } else {
@@ -921,6 +963,18 @@ public class VoteDetailContentActivity extends DaggerAppCompatActivity implement
                     }
                 });
         dialog.show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (presenter != null) {
+            presenter.dropView();
+        }
+    }
+
+    public void setPresenter(VoteDetailContract.Presenter presenter) {
+        this.presenter = presenter;
     }
 
     public interface OptionItemListener {
