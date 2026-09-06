@@ -18,6 +18,7 @@ sealed interface HomeIntent {
     data class UpdateSearchQuery(val query: String) : HomeIntent
     data class ToggleSearch(val active: Boolean) : HomeIntent
     data class ToggleFavorite(val voteCode: String, val currentFavorite: Boolean) : HomeIntent
+    data class QuickVote(val voteCode: String, val optionCode: String) : HomeIntent
     data object Refresh : HomeIntent
     data object LoadMore : HomeIntent
 }

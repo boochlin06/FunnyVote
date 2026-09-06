@@ -5,6 +5,7 @@ import com.heaton.funnyvote.MainDispatcherRule
 import com.heaton.funnyvote.data.local.entity.VoteEntity
 import com.heaton.funnyvote.data.local.entity.VoteWithDetails
 import com.heaton.funnyvote.data.repository.VoteRepository
+import com.heaton.funnyvote.util.AnalyticsManager
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -23,6 +24,7 @@ class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val repository: VoteRepository = mockk(relaxed = true)
+    private val analyticsManager: AnalyticsManager = mockk(relaxed = true)
     private lateinit var viewModel: HomeViewModel
 
     @Before
@@ -34,7 +36,7 @@ class HomeViewModelTest {
             )
         )
         coEvery { repository.getVotesByCategory(any()) } returns flowOf(testVotes)
-        viewModel = HomeViewModel(repository)
+        viewModel = HomeViewModel(repository, analyticsManager)
     }
 
     @Test
@@ -83,5 +85,19 @@ class HomeViewModelTest {
             assertEquals(2, state.votes.size)
             assertEquals("code2", state.votes[1].vote.voteCode)
         }
+    }
+
+    @Test
+    fun `intent QuickVote calls repository submitVote and logs analytics`() = runTest {
+        coEvery { repository.submitVote(any(), any()) } returns Result.success(Unit)
+
+        viewModel.uiEffect.test {
+            viewModel.handleIntent(HomeIntent.QuickVote("code1", "opt1"))
+            val effect = awaitItem()
+            assert(effect is HomeUiEffect.ShowSnackbar)
+            assertEquals("已快速完成投票！", (effect as HomeUiEffect.ShowSnackbar).message)
+        }
+        coVerify { repository.submitVote("code1", listOf("opt1")) }
+        io.mockk.verify { analyticsManager.logQuickVote("code1", "opt1") }
     }
 }

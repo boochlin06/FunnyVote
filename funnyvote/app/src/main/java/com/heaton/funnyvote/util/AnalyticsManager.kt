@@ -42,6 +42,37 @@ class AnalyticsManager @Inject constructor(
         analytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle)
     }
 
+    fun logShare(platform: String, voteCode: String) {
+        val bundle = Bundle().apply {
+            putString("platform", platform)
+            putString("vote_code", voteCode)
+        }
+        analytics.logEvent(FirebaseAnalytics.Event.SHARE, bundle)
+    }
+
+    fun logSearch(keyword: String, resultCount: Int) {
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.SEARCH_TERM, keyword)
+            putInt("result_count", resultCount)
+        }
+        analytics.logEvent(FirebaseAnalytics.Event.SEARCH, bundle)
+    }
+
+    fun logTabSelect(tabName: String) {
+        val bundle = Bundle().apply {
+            putString("tab_name", tabName)
+        }
+        analytics.logEvent("select_tab", bundle)
+    }
+
+    fun logQuickVote(voteCode: String, optionId: String) {
+        val bundle = Bundle().apply {
+            putString("vote_code", voteCode)
+            putString("option_id", optionId)
+        }
+        analytics.logEvent("quick_vote", bundle)
+    }
+
     fun recordException(throwable: Throwable) {
         crashlytics.recordException(throwable)
     }

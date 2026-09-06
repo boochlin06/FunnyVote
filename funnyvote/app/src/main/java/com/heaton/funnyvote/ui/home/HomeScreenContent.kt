@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -396,7 +397,10 @@ fun HomeScreenContent(
                                 onShareClick = {
                                     shareTargetVote = item.vote
                                 },
-                                onAuthorClick = onAuthorClick
+                                onAuthorClick = onAuthorClick,
+                                onQuickVote = { voteCode, optionCode ->
+                                    onIntent(HomeIntent.QuickVote(voteCode, optionCode))
+                                }
                             )
                         }
 
@@ -541,13 +545,15 @@ fun PromotionCarousel(
 /**
  * 完美還原原版 card_view_wall_item.xml 經典視覺
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ClassicVoteCard(
     item: VoteWithDetails,
     onClick: () -> Unit,
     onFavoriteToggle: () -> Unit,
     onShareClick: () -> Unit = {},
-    onAuthorClick: (String, String, String?) -> Unit = { _, _, _ -> }
+    onAuthorClick: (String, String, String?) -> Unit = { _, _, _ -> },
+    onQuickVote: (String, String) -> Unit = { _, _ -> }
 ) {
     val totalCount = item.vote.totalVotedCount.coerceAtLeast(1)
     val maxVoteCount = item.options.maxOfOrNull { it.count } ?: 0
@@ -730,10 +736,24 @@ fun ClassicVoteCard(
                 val ratio = (option.count.toFloat() / totalCount.toFloat()).coerceIn(0f, 1f)
                 val isChampion = option.count > 0 && option.count == maxVoteCount
 
+                val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+                val isSingleChoice = item.vote.maxOption == 1 && item.vote.minOption == 1
+                val canQuickVote = isSingleChoice && !item.vote.isVoted && !item.vote.isNeedPassword
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .combinedClickable(
+                            onClick = onClick,
+                            onLongClick = if (canQuickVote) {
+                                {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                    onQuickVote(item.vote.voteCode, option.optionCode)
+                                }
+                            } else null
+                        ),
                     shape = RoundedCornerShape(4.dp),
                     colors = CardDefaults.cardColors(containerColor = bgColor),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

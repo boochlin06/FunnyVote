@@ -12,7 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +35,8 @@ fun ProfileScreenContent(
     onAvatarClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
+    var showMergeDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = FunnyVoteWindowBg,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -222,7 +224,7 @@ fun ProfileScreenContent(
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Button(
-                                onClick = onGoogleSignInClick,
+                                onClick = { showMergeDialog = true },
                                 colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue),
                                 shape = RoundedCornerShape(16.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
@@ -407,6 +409,37 @@ fun ProfileScreenContent(
                 },
                 dismissButton = {
                     TextButton(onClick = { onIntent(ProfileIntent.EditName(false)) }) {
+                        Text("取消", color = Color.Gray)
+                    }
+                }
+            )
+        }
+
+        // 5. 訪客資料合併確認對話框 (dialog_merge_account)
+        if (showMergeDialog) {
+            AlertDialog(
+                onDismissRequest = { showMergeDialog = false },
+                title = { Text("合併訪客投票資料", fontWeight = FontWeight.Bold) },
+                text = {
+                    Text(
+                        "是否將您以訪客身份發起、收藏及參與的投票資料合併至新登入的 Google 帳號？\n\n合併後所有紀錄將同步保存至雲端，避免因更換裝置或清除應用程式而遺失。",
+                        fontSize = 14.sp,
+                        color = TextPrimary
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showMergeDialog = false
+                            onGoogleSignInClick()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = FunnyVoteBlue)
+                    ) {
+                        Text("確認合併並登入")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showMergeDialog = false }) {
                         Text("取消", color = Color.Gray)
                     }
                 }

@@ -12,8 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import java.util.Locale
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +41,8 @@ fun VoteDetailScreenContent(
     uiState: VoteDetailUiState,
     onIntent: (VoteDetailIntent) -> Unit,
     onNavigateBack: () -> Unit,
+    onAuthorClick: (String, String, String?) -> Unit = { _, _, _ -> },
+    autoShare: Boolean = false,
     snackbarHostState: SnackbarHostState = SnackbarHostState()
 ) {
     val vote = uiState.voteWithDetails?.vote
@@ -48,6 +50,13 @@ fun VoteDetailScreenContent(
     var isSortedByCount by remember { mutableStateOf(false) }
     var isPreviewResult by remember { mutableStateOf(false) }
     var showShareSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(autoShare) {
+        if (autoShare) {
+            delay(800)
+            showShareSheet = true
+        }
+    }
     val options = remember(rawOptions, isSortedByCount) {
         if (isSortedByCount) rawOptions.sortedByDescending { it.count } else rawOptions
     }
@@ -209,7 +218,10 @@ fun VoteDetailScreenContent(
                         ) {
                             Column(modifier = Modifier.padding(14.dp)) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .clickable { onAuthorClick(vote.authorId, vote.authorName, vote.authorIcon) },
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Surface(

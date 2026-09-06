@@ -29,7 +29,7 @@ object WelcomeRoute
 object HomeRoute
 
 @Serializable
-data class VoteDetailRoute(val voteCode: String)
+data class VoteDetailRoute(val voteCode: String, val autoShare: Boolean = false)
 
 @Serializable
 object CreateVoteRoute
@@ -116,8 +116,12 @@ fun FunnyVoteNavGraph(
             val route = backStackEntry.toRoute<VoteDetailRoute>()
             VoteDetailScreen(
                 voteCode = route.voteCode,
+                autoShare = route.autoShare,
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateToAuthor = { id, name, icon ->
+                    navController.navigate(PersonalRoute(authorId = id, authorName = name, authorIcon = icon))
                 }
             )
         }
@@ -126,6 +130,11 @@ fun FunnyVoteNavGraph(
             CreateVoteScreen(
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateToDetail = { voteCode, autoShare ->
+                    navController.navigate(VoteDetailRoute(voteCode = voteCode, autoShare = autoShare)) {
+                        popUpTo<CreateVoteRoute> { inclusive = true }
+                    }
                 }
             )
         }

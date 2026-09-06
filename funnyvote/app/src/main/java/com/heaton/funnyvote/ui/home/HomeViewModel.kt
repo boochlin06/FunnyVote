@@ -3,6 +3,7 @@ package com.heaton.funnyvote.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heaton.funnyvote.data.repository.VoteRepository
+import com.heaton.funnyvote.util.AnalyticsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -11,7 +12,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: VoteRepository
+    private val repository: VoteRepository,
+    private val analyticsManager: AnalyticsManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState(isLoading = true))
@@ -28,11 +30,13 @@ class HomeViewModel @Inject constructor(
         when (intent) {
             is HomeIntent.SelectTab -> {
                 _uiState.update { it.copy(selectedTab = intent.tab) }
+                analyticsManager.logTabSelect(intent.tab)
                 loadVotes()
             }
             is HomeIntent.UpdateSearchQuery -> {
                 _uiState.update { it.copy(searchQuery = intent.query) }
                 if (intent.query.isNotBlank()) {
+                    analyticsManager.logSearch(intent.query, 0)
                     performSearch(intent.query)
                 } else {
                     loadVotes()
@@ -49,6 +53,18 @@ class HomeViewModel @Inject constructor(
                     repository.toggleFavorite(intent.voteCode, intent.currentFavorite)
                     val msg = if (intent.currentFavorite) "已取消收藏" else "已加入收藏"
                     _uiEffect.send(HomeUiEffect.ShowSnackbar(msg))
+                }
+            }
+            is HomeIntent.QuickVote -> {
+                viewModelScope.launch {
+                    val result = repository.submitVote(intent.voteCode, listOf(intent.optionCode))
+                    result.onSuccess {
+                        analyticsManager.logQuickVote(intent.voteCode, intent.optionCode)
+                        _uiEffect.send(HomeUiEffect.ShowSnackbar("已快速完成投票！"))
+                        loadVotes()
+                    }.onFailure { e ->
+                        _uiEffect.send(HomeUiEffect.ShowSnackbar("投票失敗：${e.message ?: "未知錯誤"}"))
+                    }
                 }
             }
             is HomeIntent.Refresh -> {

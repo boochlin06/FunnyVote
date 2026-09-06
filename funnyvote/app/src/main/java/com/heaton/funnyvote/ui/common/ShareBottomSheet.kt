@@ -14,7 +14,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.heaton.funnyvote.R
 import com.heaton.funnyvote.ui.theme.FunnyVoteBlue
 import com.heaton.funnyvote.ui.theme.TextPrimary
@@ -36,10 +37,21 @@ fun ShareBottomSheet(
     title: String,
     voteUrl: String,
     isShareApp: Boolean = false,
+    voteCode: String = "",
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val modalBottomSheetState = rememberModalBottomSheetState()
+    val analytics = remember { FirebaseAnalytics.getInstance(context) }
+
+    fun logShareClick(platform: String) {
+        val bundle = android.os.Bundle().apply {
+            putString("platform", platform)
+            putString("vote_code", voteCode)
+            putBoolean("is_share_app", isShareApp)
+        }
+        analytics.logEvent(FirebaseAnalytics.Event.SHARE, bundle)
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -93,6 +105,7 @@ fun ShareBottomSheet(
                     iconBg = Color(0xFF06C755).copy(alpha = 0.15f),
                     iconTint = Color(0xFF06C755),
                     onClick = {
+                        logShareClick("LINE")
                         try {
                             val lineIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
@@ -115,6 +128,7 @@ fun ShareBottomSheet(
                     iconBg = Color(0xFF1877F2).copy(alpha = 0.15f),
                     iconTint = Color(0xFF1877F2),
                     onClick = {
+                        logShareClick("Facebook")
                         try {
                             val fbIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
@@ -137,6 +151,7 @@ fun ShareBottomSheet(
                     iconBg = FunnyVoteBlue.copy(alpha = 0.1f),
                     iconTint = FunnyVoteBlue,
                     onClick = {
+                        logShareClick("CopyLink")
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("FunnyVote Link", voteUrl)
                         clipboard.setPrimaryClip(clip)
@@ -152,6 +167,7 @@ fun ShareBottomSheet(
                     iconBg = Color(0xFFFF9800).copy(alpha = 0.15f),
                     iconTint = Color(0xFFE65100),
                     onClick = {
+                        logShareClick("SystemMore")
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_SUBJECT, if (isShareApp) "FunnyVote" else title)
