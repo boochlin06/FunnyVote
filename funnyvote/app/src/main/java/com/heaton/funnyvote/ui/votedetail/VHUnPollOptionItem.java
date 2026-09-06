@@ -1,33 +1,19 @@
 package com.heaton.funnyvote.ui.votedetail;
 
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.Option;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnLongClick;
-
+import com.heaton.funnyvote.databinding.CardViewItemUnpollOptionsBinding;
 
 /**
  * Created by heaton on 2016/8/22.
  */
 
 public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.OnClickListener {
-    @BindView(R.id.txtOptionNumber)
-    TextView txtOptionNumber;
-    @BindView(R.id.imgChoice)
-    ImageView imgChoice;
-    @BindView(R.id.txtOptionTitle)
-    TextView txtOptionTitle;
-    @BindView(R.id.cardOption)
-    CardView cardOption;
+    private final CardViewItemUnpollOptionsBinding binding;
     private Option option;
     private boolean isChoice = false;
     private boolean isMultiChoice = false;
@@ -36,50 +22,67 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
 
     public VHUnPollOptionItem(View itemView, boolean isMultiChoice
             , VoteDetailContentActivity.OptionItemListener itemListener) {
-        super(itemView);
+        this(CardViewItemUnpollOptionsBinding.bind(itemView), isMultiChoice, itemListener);
+    }
+
+    public VHUnPollOptionItem(CardViewItemUnpollOptionsBinding binding, boolean isMultiChoice
+            , VoteDetailContentActivity.OptionItemListener itemListener) {
+        super(binding.getRoot());
+        this.binding = binding;
         this.isMultiChoice = isMultiChoice;
         this.itemListener = itemListener;
-        ButterKnife.bind(this, itemView);
+
+        binding.imgChoice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionChoice();
+            }
+        });
+
+        binding.cardOption.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return VHUnPollOptionItem.this.onLongClick(v);
+            }
+        });
     }
 
     public void setLayout(boolean isChoice, boolean isExpand, Option option) {
         this.option = option;
         this.isChoice = isChoice;
         this.isExpand = isExpand;
-        txtOptionTitle.setText(option.getTitle());
-        txtOptionNumber.setText(Integer.toString(getAdapterPosition() + 1));
+        binding.txtOptionTitle.setText(option.getTitle());
+        binding.txtOptionNumber.setText(Integer.toString(getAdapterPosition() + 1));
         setUpOptionExpandLayout();
         setUpImgChoiceLayout();
         this.itemView.setOnClickListener(this);
     }
 
-    @OnClick(R.id.imgChoice)
     public void onOptionChoice() {
         itemListener.onOptionChoice(option.getId(), option.getCode());
     }
 
     private void setUpImgChoiceLayout() {
         if (!isMultiChoice) {
-            imgChoice.setImageResource(isChoice ? R.drawable.ic_radio_button_checked_40dp
+            binding.imgChoice.setImageResource(isChoice ? R.drawable.ic_radio_button_checked_40dp
                     : R.drawable.ic_radio_button_unchecked_40dp);
         } else {
-            imgChoice.setImageResource(isChoice ? R.drawable.ic_check_box_40dp
+            binding.imgChoice.setImageResource(isChoice ? R.drawable.ic_check_box_40dp
                     : R.drawable.ic_check_box_outline_blank_40dp);
         }
-        cardOption.setCardBackgroundColor(itemView.getResources()
-                .getColor(isChoice ? R.color.md_red_100 : R.color.md_blue_100));
+        binding.cardOption.setCardBackgroundColor(ContextCompat.getColor(itemView.getContext(),
+                isChoice ? R.color.md_red_100 : R.color.md_blue_100));
     }
 
     @Override
     public void onClick(View v) {
-        if (txtOptionTitle.getLineCount() == 1) {
+        if (binding.txtOptionTitle.getLineCount() == 1) {
             onOptionChoice();
         } else {
             itemListener.onOptionExpand(option.getCode());
         }
     }
 
-    @OnLongClick(R.id.cardOption)
     public boolean onLongClick(View v) {
         if (!isMultiChoice) {
             itemListener.onOptionQuickPoll(option.getId(), option.getCode());
@@ -91,9 +94,9 @@ public class VHUnPollOptionItem extends RecyclerView.ViewHolder implements View.
 
     private void setUpOptionExpandLayout() {
         if (isExpand) {
-            txtOptionTitle.setMaxLines(20);
+            binding.txtOptionTitle.setMaxLines(20);
         } else {
-            txtOptionTitle.setMaxLines(1);
+            binding.txtOptionTitle.setMaxLines(1);
         }
     }
 }

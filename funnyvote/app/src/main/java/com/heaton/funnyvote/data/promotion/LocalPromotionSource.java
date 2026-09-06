@@ -1,10 +1,10 @@
 package com.heaton.funnyvote.data.promotion;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import com.heaton.funnyvote.database.Promotion;
-import com.heaton.funnyvote.database.PromotionDao;
+import com.heaton.funnyvote.data.local.dao.PromotionDao;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.utils.AppExecutors;
 

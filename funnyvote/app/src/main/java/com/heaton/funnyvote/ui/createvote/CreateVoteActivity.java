@@ -9,15 +9,15 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.core.content.ContextCompat;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,24 +42,14 @@ import java.util.Map;
 
 import at.grabner.circleprogress.CircleProgressView;
 import at.grabner.circleprogress.TextMode;
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import com.heaton.funnyvote.databinding.ActivityCteateVoteBinding;
 
 /**
  * Created by heaton on 16/1/10.
  */
 public class CreateVoteActivity extends AppCompatActivity implements CreateVoteContract.ActivityView {
 
-    @BindView(R.id.txtTitle)
-    TextView txtTitle;
-    @BindView(R.id.edtTitle)
-    EditText edtTitle;
-    @BindView(R.id.tabLayoutCreateVote)
-    TabLayout tabLayoutCreateVote;
-    @BindView(R.id.vpSubArea)
-    ViewPager vpSubArea;
-    @BindView(R.id.circleLoad)
-    CircleProgressView circleLoad;
+    private ActivityCteateVoteBinding binding;
     Toolbar mainToolbar;
 
     public static String TAG = CreateVoteActivity.class.getSimpleName();
@@ -72,33 +62,28 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cteate_vote);
-        ButterKnife.bind(this);
+        binding = ActivityCteateVoteBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
         tracker = application.getDefaultTracker();
-        mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        mainToolbar = binding.mainToolbar;
 
         mainToolbar.setTitle(getString(R.string.create_vote_toolbar_title));
         mainToolbar.setTitleTextColor(Color.WHITE);
         mainToolbar.setElevation(10);
 
-        circleLoad.setTextMode(TextMode.TEXT);
-        circleLoad.setShowTextWhileSpinning(true);
-        circleLoad.setFillCircleColor(ContextCompat.getColor(this, R.color.md_amber_50));
+        binding.circleLoad.setTextMode(TextMode.TEXT);
+        binding.circleLoad.setShowTextWhileSpinning(true);
+        binding.circleLoad.setFillCircleColor(ContextCompat.getColor(this, R.color.md_amber_50));
 
-        mainToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        mainToolbar.setNavigationOnClickListener(v -> finish());
         setSupportActionBar(mainToolbar);
 
         tracker.setScreenName(AnalyzticsTag.SCREEN_CREATE_VOTE_OPTIONS);
         tracker.send(new HitBuilders.ScreenViewBuilder().build());
-        vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
-        vpSubArea.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        binding.vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
+        binding.vpSubArea.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -119,9 +104,11 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
 
             }
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        tabLayoutCreateVote.setupWithViewPager(vpSubArea);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        binding.tabLayoutCreateVote.setupWithViewPager(binding.vpSubArea);
         presenter = new CreateVoteActivityPresenter(
                 Injection.provideVoteDataRepository(getApplicationContext())
                 , Injection.provideUserRepository(getApplicationContext())
@@ -149,7 +136,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
     @Override
     public void IntentToVoteDetail(final VoteData voteData) {
         Util.startActivityToVoteDetail(getApplicationContext(), voteData.getVoteCode());
-        circleLoad.postDelayed(new Runnable() {
+        binding.circleLoad.postDelayed(new Runnable() {
             @Override
             public void run() {
                 Util.sendShareIntent(getApplicationContext(), voteData);
@@ -223,7 +210,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
         int id = item.getItemId();
 
         if (id == R.id.menu_submit) {
-            presenter.updateVoteTitle(edtTitle.getText().toString());
+            presenter.updateVoteTitle(binding.edtTitle.getText().toString());
             presenter.submitCreateVote();
             return true;
         } else if (id == android.R.id.home) {
@@ -259,7 +246,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
                 Log.d(TAG, "CROP_IMAGE_ACTIVITY_REQUEST_CODE ok:" + resultUri);
                 cropImageUri = resultUri;
                 if (optionFragment == null) {
-                    vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
+                    binding.vpSubArea.setAdapter(new TabsAdapter(getSupportFragmentManager()));
                 }
                 File file = cropImageUri == null ? null : FileUtils.getFile(this, cropImageUri);
                 presenter.updateVoteImage(file);
@@ -298,7 +285,7 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
 
     @Override
     public void onBackPressed() {
-        if (edtTitle.getText().toString().length() > 0) {
+        if (binding.edtTitle.getText().toString().length() > 0) {
             showExitCheckDialog();
         } else {
             super.onBackPressed();
@@ -329,15 +316,15 @@ public class CreateVoteActivity extends AppCompatActivity implements CreateVoteC
 
     @Override
     public void showLoadingCircle() {
-        circleLoad.setVisibility(View.VISIBLE);
-        circleLoad.setText(getString(R.string.vote_detail_circle_updating));
-        circleLoad.spin();
+        binding.circleLoad.setVisibility(View.VISIBLE);
+        binding.circleLoad.setText(getString(R.string.vote_detail_circle_updating));
+        binding.circleLoad.spin();
     }
 
     @Override
     public void hideLoadingCircle() {
-        circleLoad.stopSpinning();
-        circleLoad.setVisibility(View.GONE);
+        binding.circleLoad.stopSpinning();
+        binding.circleLoad.setVisibility(View.GONE);
     }
 
     @Override

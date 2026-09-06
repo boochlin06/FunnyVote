@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -49,7 +49,7 @@
             android:id="@+id/function_bar"
             layout="@layout/include_function_bar" />
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/btnFirstOption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -135,9 +135,9 @@
                     android:textSize="14sp"
                     tools:text="15.0%" />
             </RelativeLayout>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/btnSecondOption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -228,9 +228,9 @@
                     tools:text="75.0%" />
 
             </RelativeLayout>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
-        <android.support.v7.widget.CardView
+        <androidx.cardview.widget.CardView
             android:id="@+id/btnThirdOption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -279,8 +279,8 @@
                     android:scaleType="fitCenter" />
 
             </LinearLayout>
-        </android.support.v7.widget.CardView>
+        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 
-</android.support.v7.widget.CardView>
+</androidx.cardview.widget.CardView>

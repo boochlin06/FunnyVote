@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.FunnyVoteApplication;
@@ -15,8 +15,9 @@ import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.Injection;
 import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.data.user.UserDataSource;
+import com.heaton.funnyvote.data.local.AppDatabase;
+import com.heaton.funnyvote.data.local.dao.PromotionDao;
 import com.heaton.funnyvote.database.Promotion;
-import com.heaton.funnyvote.database.PromotionDao;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.ui.introduction.IntroductionActivity;
 
@@ -86,20 +87,21 @@ public class WelcomeActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             if (firstTimePref.getBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, true)) {
-                PromotionDao promotionDao = ((FunnyVoteApplication) (contextWeakReference.get().getApplicationContext()))
-                        .getDaoSession().getPromotionDao();
-                String imageURL[] = contextWeakReference.get().getResources().getStringArray(R.array.imageURL);
-                List<Promotion> promotions = new ArrayList<>();
-                for (int i = 0; i < 1; i++) {
-                    Promotion promotion = new Promotion();
-                    promotion.setImageURL(imageURL[i % imageURL.length]);
-                    promotion.setActionURL("https://play.google.com/store/apps/details?id=com.heaton.funnyvote");
-                    promotion.setTitle("title:" + i);
-                    promotions.add(promotion);
+                if (contextWeakReference.get() != null) {
+                    PromotionDao promotionDao = AppDatabase.getInstance(contextWeakReference.get().getApplicationContext()).promotionDao();
+                    String imageURL[] = contextWeakReference.get().getResources().getStringArray(R.array.imageURL);
+                    List<Promotion> promotions = new ArrayList<>();
+                    for (int i = 0; i < 1; i++) {
+                        Promotion promotion = new Promotion();
+                        promotion.setImageURL(imageURL[i % imageURL.length]);
+                        promotion.setActionURL("https://play.google.com/store/apps/details?id=com.heaton.funnyvote");
+                        promotion.setTitle("title:" + i);
+                        promotions.add(promotion);
+                    }
+                    promotionDao.deleteAll();
+                    promotionDao.insertAll(promotions);
+                    firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, false).apply();
                 }
-                promotionDao.deleteAll();
-                promotionDao.insertInTx(promotions);
-                firstTimePref.edit().putBoolean(FirstTimePref.SP_FIRST_MOCK_DATA, false).apply();
             }
             return null;
         }

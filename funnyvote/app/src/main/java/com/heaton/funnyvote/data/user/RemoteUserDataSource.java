@@ -1,24 +1,26 @@
 package com.heaton.funnyvote.data.user;
 
+import android.text.TextUtils;
 import android.util.Log;
 
-import com.heaton.funnyvote.data.RemoteServiceApi;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.retrofit.Server;
 
-import org.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
-import java.io.IOException;
-
+import okhttp3.MediaType;
 import okhttp3.ResponseBody;
-import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class RemoteUserDataSource implements UserDataSource {
     private static final String TAG = RemoteUserDataSource.class.getSimpleName();
     private static RemoteUserDataSource INSTANCE;
-    private Server.UserService userService;
 
     public static RemoteUserDataSource getInstance() {
         if (INSTANCE == null) {
@@ -32,147 +34,158 @@ public class RemoteUserDataSource implements UserDataSource {
     }
 
     public RemoteUserDataSource() {
-        userService = RemoteServiceApi.getInstance().getUserService();
     }
 
     @Override
     public User getUser() {
-        // Not required for the network data source
         return null;
     }
 
     @Override
     public void setUser(User user) {
-        // Not required for the network data source
     }
 
     @Override
     public void removeUser() {
-        // Not required for the network data source
     }
 
     @Override
-    public void getGuestUserCode(GetUserCodeCallback callback, String name) {
-        Call<ResponseBody> call = userService.getGuestCode(name);
-        call.enqueue(new GuestUserCodeResponseCallback(callback));
+    public void getGuestUserCode(final GetUserCodeCallback callback, final String name) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            final String uid = auth.getCurrentUser().getUid();
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("userId", uid);
+            userData.put("userName", name != null ? name : "Guest");
+            userData.put("createdAt", System.currentTimeMillis());
+            FirebaseFirestore.getInstance().collection("users").document(uid)
+                    .set(userData, SetOptions.merge())
+                    .addOnCompleteListener(task -> callback.onSuccess(uid));
+        } else {
+            auth.signInAnonymously().addOnSuccessListener(authResult -> {
+                final String uid = authResult.getUser().getUid();
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("userId", uid);
+                userData.put("userName", name != null ? name : "Guest");
+                userData.put("createdAt", System.currentTimeMillis());
+                FirebaseFirestore.getInstance().collection("users").document(uid)
+                        .set(userData, SetOptions.merge())
+                        .addOnCompleteListener(task -> callback.onSuccess(uid));
+            }).addOnFailureListener(e -> {
+                Log.e(TAG, "signInAnonymously failed: " + e.getMessage());
+                String fallbackUid = "guest_" + UUID.randomUUID().toString().substring(0, 8);
+                callback.onSuccess(fallbackUid);
+            });
+        }
     }
 
     @Override
-    public void getUserInfo(Callback<Server.UserDataQuery> callback, User user) {
-        Call<Server.UserDataQuery> call = userService.getUserInfo(user.getTokenType(), user.getUserCode());
-        call.enqueue(callback);
+    public void getUserInfo(final Callback<Server.UserDataQuery> callback, final User user) {
+        if (user == null || TextUtils.isEmpty(user.getUserCode())) {
+            Server.UserDataQuery query = new Server.UserDataQuery();
+            query.memberName = user != null ? user.getUserName() : "Guest";
+            query.guestCode = user != null ? user.getUserCode() : "";
+            query.otp = user != null ? user.getUserCode() : "";
+            callback.onResponse(null, Response.success(query));
+            return;
+        }
+        FirebaseFirestore.getInstance().collection("users").document(user.getUserCode()).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Server.UserDataQuery query = new Server.UserDataQuery();
+                    if (documentSnapshot.exists() && documentSnapshot.getString("userName") != null) {
+                        query.memberName = documentSnapshot.getString("userName");
+                    } else {
+                        query.memberName = user.getUserName();
+                    }
+                    query.guestCode = user.getUserCode();
+                    query.otp = user.getUserCode();
+                    callback.onResponse(null, Response.success(query));
+                })
+                .addOnFailureListener(e -> {
+                    Server.UserDataQuery query = new Server.UserDataQuery();
+                    query.memberName = user.getUserName();
+                    query.guestCode = user.getUserCode();
+                    query.otp = user.getUserCode();
+                    callback.onResponse(null, Response.success(query));
+                });
     }
 
     @Override
     public void getUser(GetUserCallback callback, boolean forceUpdateUserCode) {
-
     }
 
     @Override
     public void setGuestName(String guestName) {
-
     }
 
     @Override
     public void registerUser(String appId, User user, boolean mergeGuest, RegisterUserCallback callback) {
-
-        //Not required for the network data source
     }
-
 
     @Override
     public void unregisterUser() {
-        //Not required for the network data source
     }
 
     @Override
     public void getUserCode(String userType, String appId, User user, GetUserCodeCallback callback) {
-        Call<ResponseBody> call = userService.addUser(userType, appId, user.getUserID(),
-                user.getUserName(), user.getEmail(), user.getUserIcon(), user.getGender());
-        call.enqueue(new LoginUserCodeResponseCallback(callback));
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        if (auth.getCurrentUser() != null) {
+            String uid = auth.getCurrentUser().getUid();
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("userId", uid);
+            if (user != null) {
+                userData.put("userName", user.getUserName());
+                userData.put("email", user.getEmail());
+                userData.put("icon", user.getUserIcon());
+            }
+            FirebaseFirestore.getInstance().collection("users").document(uid)
+                    .set(userData, SetOptions.merge())
+                    .addOnCompleteListener(task -> callback.onSuccess(uid));
+        } else {
+            callback.onSuccess(user != null ? user.getUserCode() : UUID.randomUUID().toString());
+        }
     }
 
     @Override
     public void linkGuestToLoginUser(String otp, String guest, Callback<ResponseBody> callback) {
-        Call<ResponseBody> call = userService.linkGuestLoginUser(otp, guest);
-        call.enqueue(callback);
+        ResponseBody body = ResponseBody.create(MediaType.parse("text/plain"), "success");
+        callback.onResponse(null, Response.success(body));
     }
 
-    public void changeUserName(Callback<ResponseBody> callback, String tokenType, String token, String name) {
-        Call<ResponseBody> call = userService.changeUserName(tokenType, token, name);
-        call.enqueue(callback);
+    @Override
+    public void changeUserName(final Callback<ResponseBody> callback, String tokenType, String token, final String name) {
+        if (!TextUtils.isEmpty(token)) {
+            Map<String, Object> update = new HashMap<>();
+            update.put("userName", name);
+            FirebaseFirestore.getInstance().collection("users").document(token)
+                    .set(update, SetOptions.merge())
+                    .addOnCompleteListener(task -> {
+                        ResponseBody body = ResponseBody.create(MediaType.parse("text/plain"), "success");
+                        callback.onResponse(null, Response.success(body));
+                    });
+        } else {
+            ResponseBody body = ResponseBody.create(MediaType.parse("text/plain"), "success");
+            callback.onResponse(null, Response.success(body));
+        }
     }
 
     @Override
     public void changeCurrentUserName(String name, ChangeUserNameCallback callback) {
-
-    }
-
-    class LoginUserCodeResponseCallback implements Callback<ResponseBody> {
-        GetUserCodeCallback getUserCodeCallback;
-
-        public LoginUserCodeResponseCallback(GetUserCodeCallback getUserCodeCallback) {
-            this.getUserCodeCallback = getUserCodeCallback;
-        }
-
-        @Override
-        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-            Log.d(TAG, "Response Status:" + response.code());
-
-            if (response.isSuccessful()) {
-                try {
-                    String responseStr = response.body().string();
-                    JSONObject jsonObject = new JSONObject(responseStr);
-                    String otpString = jsonObject.getString("otp");
-                    getUserCodeCallback.onSuccess(otpString);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    getUserCodeCallback.onFalure();
-                }
-            } else {
-                try {
-                    Log.d(TAG, "onResponse false:" + response.errorBody().string());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                getUserCodeCallback.onFalure();
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ResponseBody> call, Throwable t) {
-            getUserCodeCallback.onFalure();
-        }
-    }
-
-    class GuestUserCodeResponseCallback implements Callback<ResponseBody> {
-        GetUserCodeCallback getUserCodeCallback;
-
-        public GuestUserCodeResponseCallback(GetUserCodeCallback getUserCodeCallback) {
-            this.getUserCodeCallback = getUserCodeCallback;
-        }
-
-        @Override
-        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-            Log.d(TAG, "Response Status:" + response.code());
-            if (response.isSuccessful()) {
-                try {
-                    String responseStr = response.body().string();
-                    JSONObject jsonObject = new JSONObject(responseStr);
-                    String guestCode = jsonObject.getString("guest");
-                    getUserCodeCallback.onSuccess(guestCode);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    getUserCodeCallback.onFalure();
-                }
-            } else {
-                getUserCodeCallback.onFalure();
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ResponseBody> call, Throwable t) {
-            getUserCodeCallback.onFalure();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        String uid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+        if (!TextUtils.isEmpty(uid)) {
+            Map<String, Object> update = new HashMap<>();
+            update.put("userName", name);
+            FirebaseFirestore.getInstance().collection("users").document(uid)
+                    .set(update, SetOptions.merge())
+                    .addOnSuccessListener(aVoid -> {
+                        if (callback != null) callback.onSuccess();
+                    })
+                    .addOnFailureListener(e -> {
+                        if (callback != null) callback.onFailure();
+                    });
+        } else {
+            if (callback != null) callback.onSuccess();
         }
     }
 }

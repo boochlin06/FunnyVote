@@ -1,6 +1,6 @@
 package com.heaton.funnyvote.ui.about.aboutapp;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.ui.about.aboutapp.AboutAppContract;
 

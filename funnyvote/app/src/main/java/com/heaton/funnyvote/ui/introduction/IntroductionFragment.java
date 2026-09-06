@@ -1,43 +1,31 @@
 package com.heaton.funnyvote.ui.introduction;
 
 import android.os.Bundle;
-import android.support.annotation.ColorInt;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.ISlideBackgroundColorHolder;
 import com.github.paolorotolo.appintro.ISlideSelectionListener;
-import com.heaton.funnyvote.R;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import com.heaton.funnyvote.databinding.FragmentIntroductionBinding;
 
 /**
  * Created by heaton on 2017/2/25.
  */
-
 public class IntroductionFragment extends Fragment implements ISlideSelectionListener,
         ISlideBackgroundColorHolder {
     public static final String ARG_TITLE = "title";
     protected static final String ARG_DESC = "desc";
     protected static final String ARG_DRAWABLE = "drawable";
     protected static final String ARG_BG_COLOR = "bg_color";
-    @BindView(R.id.txtTitle)
-    TextView txtTitle;
-    @BindView(R.id.txtDescription)
-    TextView txtDescription;
-    @BindView(R.id.imgFragment)
-    ImageView imgFragment;
-    @BindView(R.id.main)
-    LinearLayout main;
 
+    private FragmentIntroductionBinding binding;
     private int drawable, bgColor;
     private String title, description;
 
@@ -57,8 +45,6 @@ public class IntroductionFragment extends Fragment implements ISlideSelectionLis
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-
         if (getArguments() != null && getArguments().size() != 0) {
             drawable = getArguments().getInt(ARG_DRAWABLE);
             title = getArguments().getString(ARG_TITLE);
@@ -67,38 +53,39 @@ public class IntroductionFragment extends Fragment implements ISlideSelectionLis
         }
     }
 
+    @Nullable
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        binding = FragmentIntroductionBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         if (savedInstanceState != null) {
             drawable = savedInstanceState.getInt(ARG_DRAWABLE);
             title = savedInstanceState.getString(ARG_TITLE);
             description = savedInstanceState.getString(ARG_DESC);
             bgColor = savedInstanceState.getInt(ARG_BG_COLOR);
         }
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_introduction, container, false);
-        ButterKnife.bind(this, view);
-        return view;
+        if (binding != null) {
+            binding.txtTitle.setText(title);
+            binding.txtDescription.setText(description);
+            binding.imgFragment.setImageResource(drawable);
+            binding.main.setBackgroundColor(bgColor);
+        }
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        txtTitle.setText(title);
-        txtDescription.setText(description);
-        imgFragment.setImageResource(drawable);
-        main.setBackgroundColor(bgColor);
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putInt(ARG_DRAWABLE, drawable);
         outState.putString(ARG_TITLE, title);
         outState.putString(ARG_DESC, description);
@@ -113,7 +100,9 @@ public class IntroductionFragment extends Fragment implements ISlideSelectionLis
 
     @Override
     public void setBackgroundColor(@ColorInt int backgroundColor) {
-        main.setBackgroundColor(backgroundColor);
+        if (binding != null) {
+            binding.main.setBackgroundColor(backgroundColor);
+        }
     }
 
     @Override

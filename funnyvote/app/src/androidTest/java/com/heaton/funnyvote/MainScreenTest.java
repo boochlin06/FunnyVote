@@ -2,7 +2,7 @@ package com.heaton.funnyvote;
 
 import android.app.Activity;
 import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.support.test.espresso.IdlingRegistry;
 import android.support.test.espresso.IdlingResource;
 import android.support.test.espresso.NoActivityResumedException;
@@ -11,7 +11,7 @@ import android.support.test.espresso.contrib.NavigationViewActions;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Gravity;
 import android.view.KeyEvent;
 
