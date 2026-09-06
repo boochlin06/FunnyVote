@@ -1,7 +1,8 @@
 package com.heaton.funnyvote.ui.main;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
@@ -17,11 +18,9 @@ import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.Observable;
-import rx.Observer;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.subscriptions.CompositeSubscription;
+import io.reactivex.Observer;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 
 public class MainPagePresenter implements MainPageContract.Presenter {
     public static String TAG = MainPagePresenter.class.getSimpleName();
@@ -37,7 +36,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     private List<VoteData> hotVoteDataList, newVoteDataList;
 
     @NonNull
-    private CompositeSubscription mSubscriptions;
+    private CompositeDisposable mSubscriptions;
 
     public List<VoteData> getHotVoteDataList() {
         return hotVoteDataList;
@@ -60,9 +59,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     }
 
     private User user;
-
     private List<Promotion> promotionList;
-    //private List<MainPageFragment.PromotionType> promotionTypeList;
 
     public MainPagePresenter(VoteDataRepository voteDataRepository
             , UserDataRepository userDataRepository, PromotionRepository promotionRepository
@@ -74,7 +71,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         this.voteDataRepository = voteDataRepository;
         hotVoteDataList = new ArrayList<>();
         newVoteDataList = new ArrayList<>();
-        mSubscriptions = new CompositeSubscription();
+        mSubscriptions = new CompositeDisposable();
         mainPageView.setPresenter(this);
         this.schedulerProvider = schedulerProvider;
     }
@@ -85,25 +82,14 @@ public class MainPagePresenter implements MainPageContract.Presenter {
             mSubscriptions.add(promotionRepository.getPromotionList(user)
                     .subscribeOn(schedulerProvider.computation())
                     .observeOn(schedulerProvider.ui())
-                    .subscribe(new Observer<List<Promotion>>() {
-                        @Override
-                        public void onCompleted() {
-
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            mainPageView.setupPromotionAdmob(new ArrayList<>(), user);
-                        }
-
-                        @Override
-                        public void onNext(List<Promotion> promotionList) {
-                            MainPagePresenter.this.promotionList = promotionList;
-                            mainPageView.setupPromotionAdmob(promotionList, user);
-                            Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size()
-                                    + ",type list size:");
-                        }
-                    }));
+                    .subscribe(
+                            promotionList -> {
+                                MainPagePresenter.this.promotionList = promotionList;
+                                mainPageView.setupPromotionAdmob(promotionList, user);
+                                Log.d(TAG, "GET_PROMOTION_LIST:" + promotionList.size());
+                            },
+                            throwable -> mainPageView.setupPromotionAdmob(new ArrayList<>(), user)
+                    ));
         }
     }
 
@@ -123,53 +109,41 @@ public class MainPagePresenter implements MainPageContract.Presenter {
 
     @Override
     public void setCreateFragmentView(MainPageContract.TabPageFragment fragmentView) {
-
     }
 
     @Override
     public void setParticipateFragmentView(MainPageContract.TabPageFragment fragmentView) {
-
     }
 
     @Override
     public void setFavoriteFragmentView(MainPageContract.TabPageFragment fragmentView) {
-
     }
 
     @Override
     public void favoriteVote(VoteData voteData) {
         Log.d(TAG, "favoriteVote before!:" + voteData.getIsFavorite());
-        mSubscriptions.add(voteDataRepository.favoriteVote(voteData.getVoteCode(), voteData.getIsFavorite()
-                , user)
+        mSubscriptions.add(voteDataRepository.favoriteVote(voteData.getVoteCode(), voteData.getIsFavorite(), user)
                 .subscribeOn(schedulerProvider.computation())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer<Boolean>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "favoriteVote onFailure");
-                        mainPageView.showHintToast(R.string.toast_network_connect_error_favorite, 0);
-                    }
-
-                    @Override
-                    public void onNext(Boolean aBoolean) {
-                        voteData.setIsFavorite(aBoolean);
-                        updateVoteDataToList(hotVoteDataList, voteData);
-                        updateVoteDataToList(newVoteDataList, voteData);
-                        hotsFragment.refreshFragment(hotVoteDataList);
-                        newsFragment.refreshFragment(newVoteDataList);
-                        Log.d(TAG, "favoriteVote onNext:" + aBoolean);
-                        if (voteData.getIsFavorite()) {
-                            mainPageView.showHintToast(R.string.vote_detail_toast_add_favorite, 0);
-                        } else {
-                            mainPageView.showHintToast(R.string.vote_detail_toast_remove_favorite, 0);
+                .subscribe(
+                        aBoolean -> {
+                            voteData.setIsFavorite(aBoolean);
+                            updateVoteDataToList(hotVoteDataList, voteData);
+                            updateVoteDataToList(newVoteDataList, voteData);
+                            hotsFragment.refreshFragment(hotVoteDataList);
+                            newsFragment.refreshFragment(newVoteDataList);
+                            Log.d(TAG, "favoriteVote onNext:" + aBoolean);
+                            if (voteData.getIsFavorite()) {
+                                mainPageView.showHintToast(R.string.vote_detail_toast_add_favorite, 0);
+                            } else {
+                                mainPageView.showHintToast(R.string.vote_detail_toast_remove_favorite, 0);
+                            }
+                        },
+                        throwable -> {
+                            Log.d(TAG, "favoriteVote onFailure");
+                            mainPageView.showHintToast(R.string.toast_network_connect_error_favorite, 0);
                         }
-                    }
-                }));
+                ));
     }
 
     @Override
@@ -205,8 +179,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
                     .pollVote(voteData.getVoteCode(), password, choiceCodeList, user)
                     .subscribeOn(schedulerProvider.io())
                     .observeOn(schedulerProvider.ui())
-                    .subscribe(new PasswordObserver<VoteData>() {
-
+                    .subscribeWith(new PasswordObserver<VoteData>() {
                         @Override
                         public void onSuccess(VoteData voteData) {
                             mainPageView.hideLoadingCircle();
@@ -243,11 +216,10 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         mSubscriptions.add(voteDataRepository.getHotVoteList(offset, user)
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new VoteListObserver<List<VoteData>>() {
+                .subscribeWith(new VoteListObserver<List<VoteData>>() {
                     @Override
                     public void onVoteListLoaded(List<VoteData> voteDataList) {
                         Log.d("test", "rx onVoteListLoaded votelist:" + voteDataList.size());
-                        //hotVoteDataList = voteDataList;
                         updateHotList(voteDataList, offset);
                         if (hotsFragment != null) {
                             hotsFragment.refreshFragment(hotVoteDataList);
@@ -277,10 +249,9 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         mSubscriptions.add(voteDataRepository.getNewVoteList(offset, user)
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new VoteListObserver<List<VoteData>>() {
+                .subscribeWith(new VoteListObserver<List<VoteData>>() {
                     @Override
                     public void onVoteListLoaded(List<VoteData> voteDataList) {
-                        //newVoteDataList = voteDataList;
                         updateNewList(voteDataList, offset);
                         Log.d(TAG, "NEW LIST offset:" + offset + " , size;" + newVoteDataList.size());
                         if (newsFragment != null) {
@@ -358,37 +329,30 @@ public class MainPagePresenter implements MainPageContract.Presenter {
 
     @Override
     public void reloadCreateList(int offset) {
-
     }
 
     @Override
     public void reloadParticipateList(int offset) {
-
     }
 
     @Override
     public void reloadFavoriteList(int offset) {
-
     }
 
     @Override
     public void refreshCreateList() {
-
     }
 
     @Override
     public void refreshParticipateList() {
-
     }
 
     @Override
     public void refreshFavoriteList() {
-
     }
 
     @Override
     public void setTargetUser(User targetUser) {
-
     }
 
     @Override
@@ -415,53 +379,35 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         mSubscriptions.add(userDataRepository.getUser(false)
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
-                .doOnNext(new Action1<User>() {
-                    @Override
-                    public void call(User user) {
-                        MainPagePresenter.this.user = user;
-                        mainPageView.setUpTabsAdapter(user);
-                        System.out.println("load user");
-                        reloadNewList(0);
-                        reloadHotList(0);
-                    }
+                .doOnNext(user -> {
+                    MainPagePresenter.this.user = user;
+                    mainPageView.setUpTabsAdapter(user);
+                    System.out.println("load user");
+                    reloadNewList(0);
+                    reloadHotList(0);
                 })
-                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.io())
+                .flatMap(user -> {
+                    Log.d("test", "get promotion list user:" + user.getUserName());
+                    return promotionRepository.getPromotionList(user);
+                })
                 .observeOn(schedulerProvider.ui())
-                .flatMap(new Func1<User, Observable<List<Promotion>>>() {
-                    @Override
-                    public Observable<List<Promotion>> call(User user) {
-                        Log.d("test", "get promotion list user:" + user.getUserName());
-                        return promotionRepository.getPromotionList(user);
-                    }
-                })
-                .subscribeOn(schedulerProvider.io())
-                .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer<List<Promotion>>() {
-
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        mainPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
-                        mainPageView.setUpTabsAdapter(user);
-                        mainPageView.hideLoadingCircle();
-                        mainPageView.setupPromotionAdmob(new ArrayList<>(), user);
-                        Log.d(TAG, "get promotion onError:" + e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(List<Promotion> promotionList) {
-                        MainPagePresenter.this.promotionList = promotionList;
-                        mainPageView.setupPromotionAdmob(promotionList, user);
-                        Log.d(TAG, "get promotion onNext:" + promotionList.size());
-                    }
-                })
+                .subscribe(
+                        promotionList -> {
+                            MainPagePresenter.this.promotionList = promotionList;
+                            mainPageView.setupPromotionAdmob(promotionList, user);
+                            Log.d(TAG, "get promotion onNext:" + promotionList.size());
+                        },
+                        throwable -> {
+                            throwable.printStackTrace();
+                            mainPageView.showHintToast(R.string.toast_network_connect_error_get_list, 0);
+                            mainPageView.setUpTabsAdapter(user);
+                            mainPageView.hideLoadingCircle();
+                            mainPageView.setupPromotionAdmob(new ArrayList<>(), user);
+                            Log.d(TAG, "get promotion onError:" + throwable.getMessage());
+                        }
+                )
         );
-
     }
 
     @Override

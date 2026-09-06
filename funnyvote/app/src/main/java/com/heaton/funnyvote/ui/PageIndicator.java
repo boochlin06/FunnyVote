@@ -17,7 +17,7 @@
 
 package com.heaton.funnyvote.ui;
 
-import android.support.v4.view.ViewPager;
+import androidx.viewpager.widget.ViewPager;
 
 /**
  * A PageIndicator is responsible to show an visual indicator on the total views
@@ -43,7 +43,7 @@ public interface PageIndicator extends ViewPager.OnPageChangeListener {
      * <p>Set the current page of both the ViewPager and indicator.</p>
      *
      * <p>This <strong>must</strong> be used if you need to set the page before
-     * the views are drawn on screen (e.g., default subscribe page).</p>
+     * the views are drawn on screen (e.g., default start page).</p>
      *
      * @param item
      */

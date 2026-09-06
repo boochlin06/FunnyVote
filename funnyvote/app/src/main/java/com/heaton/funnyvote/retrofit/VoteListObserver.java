@@ -1,35 +1,21 @@
 package com.heaton.funnyvote.retrofit;
 
-import android.text.TextUtils;
-
 import com.heaton.funnyvote.database.VoteData;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.ResponseBody;
-import retrofit2.HttpException;
-import rx.Observer;
+import io.reactivex.observers.DisposableObserver;
 
-public abstract class VoteListObserver<T> implements Observer<List<VoteData>> {
+public abstract class VoteListObserver<T> extends DisposableObserver<List<VoteData>> {
     @Override
-    public void onCompleted() {
-
+    public void onComplete() {
     }
 
     @Override
     public void onError(Throwable e) {
-        String errorMessage = "";
-        if (e instanceof HttpException) {
-            ResponseBody body = ((HttpException) e).response().errorBody();
-            try {
-                errorMessage = body.string();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-        if (!TextUtils.isEmpty(errorMessage) && errorMessage.equals("error_no_poll_event")) {
+        if (e != null && ("error_no_poll_event".equals(e.getMessage()) ||
+                (e.getMessage() != null && e.getMessage().contains("error_no_poll_event")))) {
             onVoteListLoaded(new ArrayList<VoteData>());
         } else {
             onVoteListNotAvailable(e);
@@ -44,6 +30,4 @@ public abstract class VoteListObserver<T> implements Observer<List<VoteData>> {
     public abstract void onVoteListNotAvailable(Throwable e);
 
     public abstract void onVoteListLoaded(List<VoteData> voteDataList);
-
-
 }

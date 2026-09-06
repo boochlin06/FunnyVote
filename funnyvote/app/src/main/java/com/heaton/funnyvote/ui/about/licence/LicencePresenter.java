@@ -8,12 +8,7 @@ public class LicencePresenter implements LicenceContract.Presenter {
     }
 
     @Override
-    public void subscribe() {
-
-    }
-
-    @Override
-    public void unsubscribe() {
+    public void start() {
 
     }
 }

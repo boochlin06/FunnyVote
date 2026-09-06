@@ -9,17 +9,18 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.LinearLayoutCompat;
+import androidx.annotation.Nullable;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.cardview.widget.CardView;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,8 +38,9 @@ import android.widget.Toast;
 import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.NativeExpressAdView;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.heaton.funnyvote.FirstTimePref;
@@ -63,7 +65,7 @@ import cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager;
 /**
  * Created by heaton on 16/4/1.
  */
-public class MainPageFragment extends android.support.v4.app.Fragment
+public class MainPageFragment extends androidx.fragment.app.Fragment
         implements MainPageContract.MainPageView {
 
     public static String TAG = MainPageFragment.class.getSimpleName();
@@ -110,9 +112,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         super.onViewCreated(view, savedInstanceState);
         pagePresenter = new MainPagePresenter(Injection.provideVoteDataRepository(context)
                 , Injection.provideUserRepository(context)
-                , Injection.providePromotionRepository(context)
-                , this
-                , Injection.provideSchedulerProvider());
+                , Injection.providePromotionRepository(context), this, Injection.provideSchedulerProvider());
 
         pagePresenter.subscribe();
     }
@@ -247,8 +247,13 @@ public class MainPageFragment extends android.support.v4.app.Fragment
 
             ImageView imgAuthorIcon = (ImageView) content.findViewById(R.id.imgAuthorIcon);
 
-            TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
-                    .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+            TextDrawable drawable = new TextDrawable.Builder()
+                    .setWidth(36)
+                    .setHeight(36)
+                    .setShape(TextDrawable.SHAPE_ROUND)
+                    .setText(data.getAuthorName().substring(0, 1))
+                    .setColor(ContextCompat.getColor(getContext(), R.color.primary_light))
+                    .build();
             imgAuthorIcon.setImageDrawable(drawable);
 
             btnFirstOption.setCardBackgroundColor(getResources().getColor(R.color.md_blue_100));
@@ -342,6 +347,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
     public void onStop() {
         super.onStop();
         vpHeader.stopAutoScroll();
+        //EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -349,20 +355,21 @@ public class MainPageFragment extends android.support.v4.app.Fragment
         super.onStart();
         pagePresenter.resetPromotion();
         vpHeader.startAutoScroll();
+        //EventBus.getDefault().register(this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        //TODO,WHY NO RESPONSE ON HERE
-        pagePresenter.refreshAllFragment();
-        //pagePresenter.subscribe();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         pagePresenter.unsubscribe();
+        //TODO,WHY NO RESPONSE ON HERE
+        pagePresenter.refreshAllFragment();
+        //pagePresenter.subscribe();
     }
 
     @Override
@@ -501,7 +508,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
                             .override((int) getResources().getDimension(R.dimen.promotion_image_width)
                                     , (int) getResources().getDimension(R.dimen.promotion_image_high))
                             .fitCenter()
-                            .crossFade()
+                            .transition(DrawableTransitionOptions.withCrossFade())
                             .into(promotion);
                     final String actionURL = promotionTypeList.get(position).getPromotion().getActionURL();
                     promotion.setOnClickListener(new View.OnClickListener() {
@@ -523,7 +530,7 @@ public class MainPageFragment extends android.support.v4.app.Fragment
                             .override((int) getResources().getDimension(R.dimen.promotion_image_width)
                                     , (int) getResources().getDimension(R.dimen.promotion_image_high))
                             .fitCenter()
-                            .crossFade()
+                            .transition(DrawableTransitionOptions.withCrossFade())
                             .into(promotion);
                     final String actionURL = "https://play.google.com/store/apps/details?id=com.heaton.funnyvote";
                     promotion.setOnClickListener(new View.OnClickListener() {
@@ -545,11 +552,8 @@ public class MainPageFragment extends android.support.v4.app.Fragment
             } else if (promotionTypeList.get(position).getPromotionType() == PromotionType.PROM0TION_TYPE_ADMOB) {
                 if (promotionADMOB == null) {
                     promotionADMOB = inflater.inflate(R.layout.item_promotion_admob, null);
-                    NativeExpressAdView adview = (NativeExpressAdView) promotionADMOB.findViewById(R.id.adViewPromotion);
-                    AdRequest adRequest = new AdRequest.Builder()
-                            .setGender(user != null && User.GENDER_MALE.equals(user.getGender()) ?
-                                    AdRequest.GENDER_MALE : AdRequest.GENDER_FEMALE)
-                            .build();
+                    AdView adview = (AdView) promotionADMOB.findViewById(R.id.adViewPromotion);
+                    AdRequest adRequest = new AdRequest.Builder().build();
                     adview.loadAd(adRequest);
                 }
                 container.addView(promotionADMOB);

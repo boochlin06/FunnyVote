@@ -1,6 +1,10 @@
 package com.heaton.funnyvote;
 
 public interface BasePresenter {
-    void subscribe();
-    void unsubscribe();
+    default void subscribe() {}
+    default void unsubscribe() {}
+
+    default void start() {
+        subscribe();
+    }
 }

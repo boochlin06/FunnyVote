@@ -2,13 +2,14 @@ package com.heaton.funnyvote.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.FirstTimePref;
 import com.heaton.funnyvote.FunnyVoteApplication;
 import com.heaton.funnyvote.data.VoteData.LocalVoteDataSource;
 import com.heaton.funnyvote.data.VoteData.RemoteVoteDataSource;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
+import com.heaton.funnyvote.data.local.AppDatabase;
 import com.heaton.funnyvote.data.promotion.LocalPromotionSource;
 import com.heaton.funnyvote.data.promotion.PromotionRepository;
 import com.heaton.funnyvote.data.promotion.RemotePromotionSource;
@@ -24,11 +25,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class Injection {
     public static VoteDataRepository provideVoteDataRepository(@NonNull Context context) {
         checkNotNull(context);
+        AppDatabase db = ((FunnyVoteApplication) (context.getApplicationContext())).getDatabase();
         return VoteDataRepository.getInstance(LocalVoteDataSource.getInstance(
-                ((FunnyVoteApplication) (context.getApplicationContext()))
-                        .getDaoSession().getVoteDataDao()
-                , ((FunnyVoteApplication) (context.getApplicationContext()))
-                        .getDaoSession().getOptionDao(), AppExecutors.getInstance()
+                db.voteDataDao(), db.optionDao(), AppExecutors.getInstance()
         ), RemoteVoteDataSource.getInstance());
     }
 
@@ -40,9 +39,9 @@ public class Injection {
 
     public static PromotionRepository providePromotionRepository(@NonNull Context context) {
         checkNotNull(context);
+        AppDatabase db = ((FunnyVoteApplication) (context.getApplicationContext())).getDatabase();
         return PromotionRepository.getInstance(RemotePromotionSource.getInstance()
-                , LocalPromotionSource.getInstance(((FunnyVoteApplication) (context.getApplicationContext()))
-                        .getDaoSession().getPromotionDao(), AppExecutors.getInstance()));
+                , LocalPromotionSource.getInstance(db.promotionDao(), AppExecutors.getInstance()));
     }
 
     public static SharedPreferences provideFirstTimePref(@NonNull Context context) {
@@ -54,3 +53,4 @@ public class Injection {
         return SchedulerProvider.getInstance();
     }
 }
+

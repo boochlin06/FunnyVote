@@ -3,11 +3,10 @@ package com.heaton.funnyvote.data.promotion;
 import com.heaton.funnyvote.database.Promotion;
 import com.heaton.funnyvote.database.User;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-import rx.Observable;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
 
 public class PromotionRepository implements PromotionDataSource {
 
@@ -33,27 +32,20 @@ public class PromotionRepository implements PromotionDataSource {
         INSTANCE = null;
     }
 
-
     @Override
     public Observable<List<Promotion>> getPromotionList(User user) {
         Observable<List<Promotion>> localVote = localPromotionSource
-                .getPromotionList(user).first();
+                .getPromotionList(user);
         Observable<List<Promotion>> remoteVote = remotePromotionSource
                 .getPromotionList(user)
-                //.subscribeOn(Schedulers.io())
-                .map(promotionList -> {
-                    localPromotionSource.savePromotionList(promotionList);
-                    return promotionList;
-                })
-                .onErrorResumeNext((Throwable e) -> localVote);
+                .doOnNext(promotionList -> localPromotionSource.savePromotionList(promotionList))
+                .onErrorResumeNext(localVote);
 
-        return Observable.concat(remoteVote, localVote).first()
-                .map(promotionList -> {
-                    if (promotionList == null) {
-                        throw new NoSuchElementException("no promotion data");
-                    }
-                    return promotionList;
-                });
+        return Observable.concat(remoteVote, localVote)
+                .filter(list -> list != null && !list.isEmpty())
+                .firstOrError()
+                .toObservable()
+                .onErrorResumeNext(Observable.just(new ArrayList<>()));
     }
 
     @Override

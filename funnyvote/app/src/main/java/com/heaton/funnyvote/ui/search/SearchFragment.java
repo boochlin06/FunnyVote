@@ -1,12 +1,12 @@
 package com.heaton.funnyvote.ui.search;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -130,16 +130,9 @@ public class SearchFragment extends Fragment implements SearchContract.View {
         }
 
         presenter = new SearchPresenter(Injection.provideVoteDataRepository(getContext())
-                , Injection.provideUserRepository(getContext()), this
-                , Injection.provideSchedulerProvider());
+                , Injection.provideUserRepository(getContext()), this, Injection.provideSchedulerProvider());
         presenter.start(keyword);
 
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        presenter.unsubscribe();
     }
 
     private void initRecyclerView() {
@@ -185,7 +178,7 @@ public class SearchFragment extends Fragment implements SearchContract.View {
 
     @Override
     public void showHintToast(int res, long arg) {
-        if (isAdded())
+        if(isAdded())
             Toast.makeText(getActivity(), getString(res, arg), Toast.LENGTH_SHORT).show();
     }
 

@@ -1,6 +1,6 @@
 package com.heaton.funnyvote.ui.search;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
@@ -12,8 +12,7 @@ import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.Observer;
-import rx.subscriptions.CompositeSubscription;
+import io.reactivex.disposables.CompositeDisposable;
 
 public class SearchPresenter implements SearchContract.Presenter {
 
@@ -44,8 +43,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     private String keyword;
     private BaseSchedulerProvider schedulerProvider;
     @NonNull
-    private CompositeSubscription mSubscriptions;
-
+    private CompositeDisposable mSubscriptions;
 
     public SearchPresenter(VoteDataRepository voteDataRepository
             , UserDataRepository userDataRepository
@@ -57,7 +55,7 @@ public class SearchPresenter implements SearchContract.Presenter {
         this.searchVoteDataList = new ArrayList<>();
         this.view.setPresenter(this);
         this.schedulerProvider = schedulerProvider;
-        mSubscriptions = new CompositeSubscription();
+        mSubscriptions = new CompositeDisposable();
     }
 
     @Override
@@ -66,30 +64,18 @@ public class SearchPresenter implements SearchContract.Presenter {
         reloadSearchList(0);
     }
 
-
     @Override
     public void reloadSearchList(final int offset) {
         mSubscriptions.add(voteDataRepository.getSearchVoteList(keyword, offset, user)
                 .subscribeOn(schedulerProvider.computation())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer<List<VoteData>>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        view.showHintToast(R.string.toast_network_connect_error, 0);
-
-                    }
-
-                    @Override
-                    public void onNext(List<VoteData> voteDataList) {
-                        updateSearchList(voteDataList, offset);
-                        view.refreshFragment(searchVoteDataList);
-                    }
-                }));
+                .subscribe(
+                        voteDataList -> {
+                            updateSearchList(voteDataList, offset);
+                            view.refreshFragment(searchVoteDataList);
+                        },
+                        throwable -> view.showHintToast(R.string.toast_network_connect_error, 0)
+                ));
     }
 
     @Override
@@ -109,7 +95,6 @@ public class SearchPresenter implements SearchContract.Presenter {
         } else if (offset >= this.searchVoteDataList.size()) {
             this.searchVoteDataList.addAll(voteDataList);
         }
-        //Log.d(TAG, "searchVoteDataList:" + searchVoteDataList.size() + ",offset :" + offset);
         if (this.searchVoteDataList.size() < VoteDataRepository.PAGE_COUNT * (pageNumber + 1)) {
             view.setMaxCount(this.searchVoteDataList.size());
             if (offset != 0) {
@@ -126,25 +111,15 @@ public class SearchPresenter implements SearchContract.Presenter {
         mSubscriptions.add(userDataRepository.getUser(false)
                 .subscribeOn(schedulerProvider.computation())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer<User>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(User user) {
-                        SearchPresenter.this.user = user;
-                        if (!(keyword == null || keyword.length() == 0)) {
-                            searchVote(keyword);
-                        }
-                    }
-                }));
+                .subscribe(
+                        user -> {
+                            SearchPresenter.this.user = user;
+                            if (!(keyword == null || keyword.length() == 0)) {
+                                searchVote(keyword);
+                            }
+                        },
+                        throwable -> {}
+                ));
     }
 
     @Override

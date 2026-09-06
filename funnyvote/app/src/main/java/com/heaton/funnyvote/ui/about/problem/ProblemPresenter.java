@@ -8,12 +8,7 @@ public class ProblemPresenter implements ProblemContract.Presenter {
     }
 
     @Override
-    public void subscribe() {
-
-    }
-
-    @Override
-    public void unsubscribe() {
+    public void start() {
 
     }
 }

@@ -3,16 +3,13 @@ package com.heaton.funnyvote.ui.account;
 import android.util.Log;
 
 import com.heaton.funnyvote.data.user.UserDataRepository;
-import com.heaton.funnyvote.data.user.UserDataSource;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
 
-import rx.Observer;
-import rx.subscriptions.CompositeSubscription;
+import io.reactivex.disposables.CompositeDisposable;
 
 public class AccountPresenter implements AccountContract.Presenter {
 
-    private static final int RC_GOOGLE_SIGN_IN = 101;
     public static final int LOGIN_FB = 111;
     public static final int LOGIN_GOOGLE = 112;
     public static final int LOGIN_TWITTER = 113;
@@ -20,7 +17,7 @@ public class AccountPresenter implements AccountContract.Presenter {
     private UserDataRepository userDataRepository;
     private AccountContract.View view;
     private BaseSchedulerProvider schedulerProvider;
-    private CompositeSubscription subscription;
+    private CompositeDisposable subscription;
 
     public User getUser() {
         return user;
@@ -40,7 +37,7 @@ public class AccountPresenter implements AccountContract.Presenter {
         this.view = view;
         this.view.setPresenter(this);
         this.schedulerProvider = schedulerProvider;
-        this.subscription = new CompositeSubscription();
+        this.subscription = new CompositeDisposable();
     }
 
     @Override
@@ -58,22 +55,10 @@ public class AccountPresenter implements AccountContract.Presenter {
         subscription.add(userDataRepository.registerUser(appId, newUser, mergeGuest)
                 .subscribeOn(schedulerProvider.computation())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        updateUser();
-                    }
-
-                    @Override
-                    public void onNext(Object o) {
-                        updateUser();
-                    }
-                }));
+                .subscribe(
+                        o -> updateUser(),
+                        e -> updateUser()
+                ));
     }
 
     @Override
@@ -86,27 +71,17 @@ public class AccountPresenter implements AccountContract.Presenter {
         subscription.add(userDataRepository.getUser(false)
                 .subscribeOn(schedulerProvider.computation())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer<User>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        view.showLoginView("Heaton");
-                    }
-
-                    @Override
-                    public void onNext(User user) {
-                        AccountPresenter.this.user = user;
-                        if (AccountPresenter.this.user.getType() != User.TYPE_GUEST) {
-                            view.showUser(user);
-                        } else {
-                            view.showLoginView(user.getUserName());
-                        }
-                    }
-                }));
+                .subscribe(
+                        user -> {
+                            AccountPresenter.this.user = user;
+                            if (AccountPresenter.this.user.getType() != User.TYPE_GUEST) {
+                                view.showUser(user);
+                            } else {
+                                view.showLoginView(user.getUserName());
+                            }
+                        },
+                        throwable -> view.showLoginView("Heaton")
+                ));
     }
 
     @Override
@@ -114,27 +89,15 @@ public class AccountPresenter implements AccountContract.Presenter {
         subscription.add(userDataRepository.changeCurrentUserName(userName)
                 .subscribeOn(schedulerProvider.computation())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(TAG, "ChangeUserNameCallback onFailure");
-                    }
-
-                    @Override
-                    public void onNext(Object o) {
-                        updateUser();
-                    }
-                }));
-
+                .subscribe(
+                        o -> updateUser(),
+                        e -> Log.d(TAG, "ChangeUserNameCallback onFailure")
+                ));
     }
 
     @Override
     public void logout() {
+        if (user == null) return;
         switch (user.getType()) {
             case User.TYPE_FACEBOOK:
                 view.facebookLogout();

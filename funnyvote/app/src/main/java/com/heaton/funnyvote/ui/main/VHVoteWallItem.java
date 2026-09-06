@@ -4,9 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
+import androidx.core.content.ContextCompat;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -17,15 +17,13 @@ import android.widget.Toast;
 import com.akexorcist.roundcornerprogressbar.RoundCornerProgressBar;
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.VoteData;
 import com.heaton.funnyvote.ui.votedetail.VoteDetailContentActivity;
 import com.heaton.funnyvote.utils.Util;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnLongClick;
+import com.heaton.funnyvote.databinding.CardViewWallItemBinding;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class VHVoteWallItem extends RecyclerView.ViewHolder {
@@ -37,74 +35,88 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
             wallItemListener.onVoteItemClick(data);
         }
     };
-    @BindView(R.id.imgAuthorIcon)
     CircleImageView imgAuthorIcon;
-    @BindView(R.id.txtAuthorName)
     TextView txtAuthorName;
-    @BindView(R.id.txtPubTime)
     TextView txtPubTime;
-    @BindView(R.id.txtTitle)
     TextView txtTitle;
-    @BindView(R.id.imgMain)
     ImageView imgMain;
-    @BindView(R.id.imgBarPollCount)
     ImageView imgBarPollCount;
-    @BindView(R.id.txtBarPollCount)
     TextView txtBarPollCount;
-    @BindView(R.id.relBarPollCount)
     RelativeLayout relBarPollCount;
-    @BindView(R.id.imgBarFavorite)
     ImageView imgBarFavorite;
-    @BindView(R.id.txtBarFavorite)
     TextView txtBarFavorite;
-    @BindView(R.id.relBarFavorite)
     RelativeLayout relBarFavorite;
-    @BindView(R.id.imgBarShare)
     ImageView imgBarShare;
-    @BindView(R.id.txtBarShare)
     TextView txtBarShare;
-    @BindView(R.id.relBarShare)
     RelativeLayout relBarShare;
-    @BindView(R.id.txtOptionNumber1)
     TextView txtOptionNumber1;
-    @BindView(R.id.txtFirstOptionTitle)
     TextView txtFirstOptionTitle;
-    @BindView(R.id.imgChampion1)
     ImageView imgChampion1;
-    @BindView(R.id.progressFirstOption)
     RoundCornerProgressBar progressFirstOption;
-    @BindView(R.id.txtFirstPollCountPercent)
     TextView txtFirstPollCountPercent;
-    @BindView(R.id.btnFirstOption)
     CardView btnFirstOption;
-    @BindView(R.id.txtOptionNumber2)
     TextView txtOptionNumber2;
-    @BindView(R.id.txtSecondOptionTitle)
     TextView txtSecondOptionTitle;
-    @BindView(R.id.imgChampion2)
     ImageView imgChampion2;
-    @BindView(R.id.progressSecondOption)
     RoundCornerProgressBar progressSecondOption;
-    @BindView(R.id.txtSecondPollCountPercent)
     TextView txtSecondPollCountPercent;
-    @BindView(R.id.btnSecondOption)
     CardView btnSecondOption;
-    @BindView(R.id.txtOptionNumber3)
     TextView txtOptionNumber3;
-    @BindView(R.id.imgThirdOption)
     ImageView imgThirdOption;
-    @BindView(R.id.txtThirdOption)
     TextView txtThirdOption;
-    @BindView(R.id.btnThirdOption)
     CardView btnThirdOption;
-    @BindView(R.id.imgLock)
     ImageView imgLock;
     private MainPageTabFragment.VoteWallItemListener wallItemListener;
 
     public VHVoteWallItem(View v, MainPageTabFragment.VoteWallItemListener wallItemListener) {
         super(v);
-        ButterKnife.bind(this, v);
+        CardViewWallItemBinding binding = CardViewWallItemBinding.bind(v);
+        this.imgAuthorIcon = binding.authorBar.imgAuthorIcon;
+        this.txtAuthorName = binding.authorBar.txtAuthorName;
+        this.txtPubTime = binding.authorBar.txtPubTime;
+        this.imgLock = binding.authorBar.imgLock;
+        this.txtTitle = binding.txtTitle;
+        this.imgMain = binding.imgMain;
+        this.imgBarPollCount = binding.functionBar.imgBarPollCount;
+        this.txtBarPollCount = binding.functionBar.txtBarPollCount;
+        this.relBarPollCount = binding.functionBar.relBarPollCount;
+        this.imgBarFavorite = binding.functionBar.imgBarFavorite;
+        this.txtBarFavorite = binding.functionBar.txtBarFavorite;
+        this.relBarFavorite = binding.functionBar.relBarFavorite;
+        this.imgBarShare = binding.functionBar.imgBarShare;
+        this.txtBarShare = binding.functionBar.txtBarShare;
+        this.relBarShare = binding.functionBar.relBarShare;
+        this.txtOptionNumber1 = binding.txtOptionNumber1;
+        this.txtFirstOptionTitle = binding.txtFirstOptionTitle;
+        this.imgChampion1 = binding.imgChampion1;
+        this.progressFirstOption = binding.progressFirstOption;
+        this.txtFirstPollCountPercent = binding.txtFirstPollCountPercent;
+        this.btnFirstOption = binding.btnFirstOption;
+        this.txtOptionNumber2 = binding.txtOptionNumber2;
+        this.txtSecondOptionTitle = binding.txtSecondOptionTitle;
+        this.imgChampion2 = binding.imgChampion2;
+        this.progressSecondOption = binding.progressSecondOption;
+        this.txtSecondPollCountPercent = binding.txtSecondPollCountPercent;
+        this.btnSecondOption = binding.btnSecondOption;
+        this.txtOptionNumber3 = binding.txtOptionNumber3;
+        this.imgThirdOption = binding.imgThirdOption;
+        this.txtThirdOption = binding.txtThirdOption;
+        this.btnThirdOption = binding.btnThirdOption;
+
         this.wallItemListener = wallItemListener;
+
+        relBarFavorite.setOnClickListener(v1 -> onBarFavoriteClick());
+        relBarShare.setOnClickListener(v1 -> onBarShareClick());
+        imgAuthorIcon.setOnClickListener(v1 -> onAuthorClick());
+        txtAuthorName.setOnClickListener(v1 -> onAuthorClick());
+        txtTitle.setOnClickListener(MoveToVoteDetailOnClickListener);
+        imgMain.setOnClickListener(MoveToVoteDetailOnClickListener);
+        btnFirstOption.setOnClickListener(MoveToVoteDetailOnClickListener);
+        btnSecondOption.setOnClickListener(MoveToVoteDetailOnClickListener);
+        btnThirdOption.setOnClickListener(MoveToVoteDetailOnClickListener);
+        btnFirstOption.setOnLongClickListener(v1 -> onOptionLongClick(btnFirstOption));
+        btnSecondOption.setOnLongClickListener(v1 -> onOptionLongClick(btnSecondOption));
+        btnThirdOption.setOnLongClickListener(v1 -> onOptionLongClick(btnThirdOption));
     }
 
     @SuppressLint("SetTextI18n")
@@ -116,8 +128,13 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
 
         if (data.getAuthorIcon() == null || data.getAuthorIcon().isEmpty()) {
             if (data.getAuthorName() != null && !data.getAuthorName().isEmpty()) {
-                TextDrawable drawable = TextDrawable.builder().beginConfig().width(36).height(36).endConfig()
-                        .buildRound(data.getAuthorName().substring(0, 1), R.color.primary_light);
+                TextDrawable drawable = new TextDrawable.Builder()
+                        .setWidth(36)
+                        .setHeight(36)
+                        .setShape(TextDrawable.SHAPE_ROUND)
+                        .setText(data.getAuthorName().substring(0, 1))
+                        .setColor(ContextCompat.getColor(itemView.getContext(), R.color.primary_light))
+                        .build();
                 imgAuthorIcon.setImageDrawable(drawable);
             } else {
                 imgAuthorIcon.setImageResource(R.drawable.ic_person_black_24dp);
@@ -130,7 +147,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                             , (int) itemView.getContext().getResources()
                                     .getDimension(R.dimen.vote_image_author_size))
                     .fitCenter()
-                    .crossFade()
+                    .transition(DrawableTransitionOptions.withCrossFade())
                     .into(imgAuthorIcon);
         }
 
@@ -151,7 +168,7 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
                                     .getDimension(R.dimen.vote_image_main_width)
                             , (int) (itemView.getContext().getResources()
                                     .getDimension(R.dimen.vote_image_main_height)))
-                    .crossFade()
+                    .transition(DrawableTransitionOptions.withCrossFade())
                     .into(imgMain);
         }
 
@@ -441,7 +458,6 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
     }
 
 
-    @OnClick(R.id.relBarFavorite)
     public void onBarFavoriteClick() {
         if (!Util.isNetworkConnected(itemView.getContext())) {
             Toast.makeText(itemView.getContext(), R.string.toast_network_connect_error_favorite
@@ -452,17 +468,14 @@ public class VHVoteWallItem extends RecyclerView.ViewHolder {
         wallItemListener.onVoteFavoriteChange(data);
     }
 
-    @OnClick(R.id.relBarShare)
     public void onBarShareClick() {
         wallItemListener.onVoteShare(data);
     }
 
-    @OnClick({R.id.imgAuthorIcon, R.id.txtAuthorName})
     public void onAuthorClick() {
         wallItemListener.onVoteAuthorClick(data);
     }
 
-    @OnLongClick({R.id.btnFirstOption, R.id.btnSecondOption, R.id.btnThirdOption})
     public boolean onOptionLongClick(CardView optionButton) {
         if (!(data.getMinOption() == 1 && data.getMaxOption() == 1)
                 || data.getIsPolled() || data.getEndTime() < System.currentTimeMillis()

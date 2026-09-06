@@ -1,8 +1,9 @@
 package com.heaton.funnyvote.ui.createvote;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository;
@@ -18,8 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import rx.Observer;
-import rx.subscriptions.CompositeSubscription;
+import io.reactivex.disposables.CompositeDisposable;
 
 public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter {
 
@@ -42,10 +42,7 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
     private CreateVoteContract.OptionFragmentView optionFragmentView;
     private CreateVoteContract.SettingFragmentView settingFragmentView;
 
-
     private List<Option> optionList;
-
-
     private VoteData voteSettings;
     private User user;
     private VoteDataRepository voteDataRepository;
@@ -53,7 +50,7 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
     @NonNull
     private final BaseSchedulerProvider schedulerProvider;
     @NonNull
-    private CompositeSubscription mSubscriptions;
+    private CompositeDisposable mSubscriptions;
 
     private long newOptionIdAuto = 2;
 
@@ -71,14 +68,11 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
         this.voteDataRepository = voteDataRepository;
         this.userDataRepository = userDataRepository;
         this.activityView.setPresenter(this);
-        //this.settingFragmentView.setPresenter(this);
-        //this.optionFragmentView.setPresenter(this);
 
-        mSubscriptions = new CompositeSubscription();
+        mSubscriptions = new CompositeDisposable();
         user = new User();
         this.schedulerProvider = schedulerProvider;
     }
-
 
     public VoteData getVoteSettings() {
         return voteSettings;
@@ -118,36 +112,25 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
         mSubscriptions.add(userDataRepository.getUser(false)
                 .subscribeOn(schedulerProvider.computation())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer<User>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(User user) {
-                        CreateVoteActivityPresenter.this.user = user;
-                        voteSettings.author = user;
-                        String name = user.getUserName();
-                        String code = user.getUserCode();
-                        String icon = user.getUserIcon();
-                        getVoteSettings().setAuthorName(name);
-                        getVoteSettings().setAuthorCode(code);
-                        getVoteSettings().setAuthorIcon(icon);
-                    }
-                }));
+                .subscribe(
+                        user -> {
+                            CreateVoteActivityPresenter.this.user = user;
+                            voteSettings.author = user;
+                            String name = user.getUserName();
+                            String code = user.getUserCode();
+                            String icon = user.getUserIcon();
+                            getVoteSettings().setAuthorName(name);
+                            getVoteSettings().setAuthorCode(code);
+                            getVoteSettings().setAuthorIcon(icon);
+                        },
+                        throwable -> {}
+                ));
     }
 
     @Override
     public void unsubscribe() {
         mSubscriptions.clear();
     }
-
 
     @Override
     public void submitCreateVote() {
@@ -203,7 +186,7 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
             errorNumber++;
             errorCheckMap.put(ERROR_ENDTIME_MORE_THAN_NOW, true);
         }
-        if (getVoteSettings().getIsNeedPassword() && getVoteSettings().password.length() <= 0) {
+        if (getVoteSettings().getIsNeedPassword() && (getVoteSettings().password == null || getVoteSettings().password.length() <= 0)) {
             errorNumber++;
             errorCheckMap.put(ERROR_PASSWORD_EMPTY, true);
         }
@@ -212,28 +195,20 @@ public class CreateVoteActivityPresenter implements CreateVoteContract.Presenter
             mSubscriptions.add(voteDataRepository.createVote(getVoteSettings(), optionTitles, getVoteSettings().getImageFile())
                     .subscribeOn(schedulerProvider.computation())
                     .observeOn(schedulerProvider.ui())
-                    .subscribe(new Observer<VoteData>() {
-                        @Override
-                        public void onCompleted() {
-
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            activityView.showHintToast(R.string.create_vote_toast_create_fail);
-                            activityView.hideLoadingCircle();
-                            Log.d(TAG, "create vote false:");
-                        }
-
-                        @Override
-                        public void onNext(VoteData voteData) {
-                            activityView.showHintToast(R.string.create_vote_create_successful);
-                            activityView.hideLoadingCircle();
-                            activityView.IntentToVoteDetail(voteData);
-                            Log.d(TAG, "create vote success:" + voteData.getVoteCode()
-                                    + " image:" + getVoteSettings().getVoteImage());
-                        }
-                    }));
+                    .subscribe(
+                            voteData -> {
+                                activityView.showHintToast(R.string.create_vote_create_successful);
+                                activityView.hideLoadingCircle();
+                                activityView.IntentToVoteDetail(voteData);
+                                Log.d(TAG, "create vote success:" + voteData.getVoteCode()
+                                        + " image:" + getVoteSettings().getVoteImage());
+                            },
+                            throwable -> {
+                                activityView.showHintToast(R.string.create_vote_toast_create_fail);
+                                activityView.hideLoadingCircle();
+                                Log.d(TAG, "create vote false: " + throwable.getMessage());
+                            }
+                    ));
         } else {
             activityView.hideLoadingCircle();
             activityView.showCreateVoteError(errorCheckMap);

@@ -5,17 +5,17 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.navigation.NavigationView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.core.view.MenuItemCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import android.transition.Slide;
 import android.util.Log;
 import android.view.Gravity;
@@ -169,29 +169,22 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
                 } else {
                     toolbar.setBackgroundColor(getResources().getColor(R.color.color_primary));
                 }
-                switch (menuId) {
-                    case R.id.navigation_item_main:
-                        presenter.IntentToMainPage();
-                        currentPage = menuItem.getItemId();
-                        break;
-                    case R.id.navigation_item_create_vote:
-                        presenter.IntentToCreatePage();
-                        break;
-                    case R.id.navigation_item_list_my_box:
-                        presenter.IntentToUserPage();
-                        break;
-                    case R.id.navigation_item_search:
-                        presenter.IntentToSearchPage(searchKeyword);
-                        currentPage = menuItem.getItemId();
-                        break;
-                    case R.id.navigation_item_account:
-                        presenter.IntentToAccountPage();
-                        currentPage = menuItem.getItemId();
-                        break;
-                    case R.id.navigation_item_about:
-                        presenter.IntentToAboutPage();
-                        currentPage = menuItem.getItemId();
-                        break;
+                if (menuId == R.id.navigation_item_main) {
+                    presenter.IntentToMainPage();
+                    currentPage = menuItem.getItemId();
+                } else if (menuId == R.id.navigation_item_create_vote) {
+                    presenter.IntentToCreatePage();
+                } else if (menuId == R.id.navigation_item_list_my_box) {
+                    presenter.IntentToUserPage();
+                } else if (menuId == R.id.navigation_item_search) {
+                    presenter.IntentToSearchPage(searchKeyword);
+                    currentPage = menuItem.getItemId();
+                } else if (menuId == R.id.navigation_item_account) {
+                    presenter.IntentToAccountPage();
+                    currentPage = menuItem.getItemId();
+                } else if (menuId == R.id.navigation_item_about) {
+                    presenter.IntentToAboutPage();
+                    currentPage = menuItem.getItemId();
                 }
                 navigationView.setCheckedItem(currentPage);
                 tracker.send(new HitBuilders.ScreenViewBuilder().build());
@@ -277,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        android.support.v4.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_content);
+        androidx.fragment.app.Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame_content);
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }
@@ -293,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements MainPageContract.
         tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
         fragment = new SearchFragment();
         Bundle searchArgument = new Bundle();
-        searchArgument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
+        searchArgument.putString(SearchFragment.KEY_SEARCH_KEYWORD,searchKeyword);
         fragment.setArguments(searchArgument);
         fragment.setEnterTransition(slide);
         ft.replace(R.id.frame_content, fragment).commit();

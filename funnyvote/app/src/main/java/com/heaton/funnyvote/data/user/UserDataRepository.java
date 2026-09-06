@@ -8,10 +8,9 @@ import com.heaton.funnyvote.retrofit.Server;
 
 import java.io.IOException;
 
+import io.reactivex.Observable;
 import okhttp3.ResponseBody;
 import retrofit2.Callback;
-import rx.Observable;
-import rx.functions.Func1;
 
 public class UserDataRepository implements UserDataSource {
 
@@ -43,15 +42,14 @@ public class UserDataRepository implements UserDataSource {
         this.remoteUserSource = remoteUserSource;
     }
 
-
     @Override
     public Observable<User> getUser(boolean forceUpdateUserCode) {
         final User user = localUserDataSource.getUser();
-        if (user.getType() == User.TYPE_GUEST && user.getUserCode().isEmpty()) {
-            final String guestName = "Guest" + (int) (Math.random() * 1000);//Util.randomUserName(context);
+        if (user.getType() == User.TYPE_GUEST && (user.getUserCode() == null || user.getUserCode().isEmpty())) {
+            final String guestName = "Guest" + (int) (Math.random() * 1000);
             Log.d(TAG, "Guest!" + user.getUserCode() + " name:" + guestName);
             return remoteUserSource.getGuestUserCode(guestName)
-                    .flatMap((Func1<String, Observable<User>>) userCode -> {
+                    .flatMap(userCode -> {
                         user.setUserName(guestName);
                         user.setUserCode(userCode);
                         localUserDataSource.setUser(user);
@@ -60,7 +58,7 @@ public class UserDataRepository implements UserDataSource {
         } else {
             if (forceUpdateUserCode) {
                 return remoteUserSource.getUserInfo(user)
-                        .flatMap((Func1<Server.UserDataQuery, Observable<User>>) userDataQuery -> {
+                        .flatMap(userDataQuery -> {
                             String userCode = "";
                             if (user.getType() == User.TYPE_GUEST) {
                                 userCode = userDataQuery.guestCode;
@@ -72,7 +70,7 @@ public class UserDataRepository implements UserDataSource {
                                 localUserDataSource.setUser(user);
                                 return Observable.just(localUserDataSource.getUser());
                             }
-                            return Observable.error(new IOException());
+                            return Observable.error(new IOException("userCode is null"));
                         });
             } else {
                 return Observable.just(user);
@@ -81,7 +79,7 @@ public class UserDataRepository implements UserDataSource {
     }
 
     @Override
-    public Observable registerUser(String appId, User user, boolean mergeGuest) {
+    public Observable<?> registerUser(String appId, User user, boolean mergeGuest) {
         String userType = "";
         switch (user.getType()) {
             case User.TYPE_FACEBOOK:
@@ -92,43 +90,37 @@ public class UserDataRepository implements UserDataSource {
                 break;
             case User.TYPE_TWITTER:
                 userType = RemoteServiceApi.USER_TYPE_TWITTER;
+                break;
             default:
+                break;
         }
         if (!userType.isEmpty()) {
             final String guestCode = localUserDataSource.getUser().getUserCode();
             return remoteUserSource.getUserCode(userType, appId, user)
-                    .flatMap(new Func1<String, Observable<?>>() {
-                        @Override
-                        public Observable<?> call(String userCode) {
-                            if (mergeGuest) {
-                                return remoteUserSource.linkGuestToLoginUser(userCode, guestCode)
-                                        .map(new Func1<ResponseBody, Object>() {
-                                            @Override
-                                            public Object call(ResponseBody responseBody) {
-                                                user.setUserCode(userCode);
-                                                localUserDataSource.setUser(user);
-                                                return Observable.just(userCode);
-                                            }
-                                        });
-                            } else {
-                                user.setUserCode(userCode);
-                                localUserDataSource.setUser(user);
-                                return Observable.just(userCode);
-                            }
+                    .flatMap(userCode -> {
+                        if (mergeGuest) {
+                            return remoteUserSource.linkGuestToLoginUser(userCode, guestCode)
+                                    .map(responseBody -> {
+                                        user.setUserCode(userCode);
+                                        localUserDataSource.setUser(user);
+                                        return userCode;
+                                    });
+                        } else {
+                            user.setUserCode(userCode);
+                            localUserDataSource.setUser(user);
+                            return Observable.just(userCode);
                         }
                     });
         } else {
-            Observable.error(new Exception("registerUser onFailure"));
-            Log.e(TAG, "registerUser onFailure");
+            Log.e(TAG, "registerUser onFailure: empty userType");
+            return Observable.error(new Exception("registerUser onFailure"));
         }
-        return null;
     }
 
     @Override
     public void unregisterUser() {
         localUserDataSource.removeUser();
     }
-
 
     @Override
     public Observable<String> getUserCode(String userType, String appId, User user) {
@@ -142,30 +134,26 @@ public class UserDataRepository implements UserDataSource {
 
     @Override
     public Observable<ResponseBody> linkGuestToLoginUser(String otp, String guest) {
-        return null;
+        return remoteUserSource.linkGuestToLoginUser(otp, guest);
     }
 
     @Override
     public void changeUserName(Callback<ResponseBody> callback, String tokenType, String token, String name) {
-        // only for remote
+        remoteUserSource.changeUserName(callback, tokenType, token, name);
     }
 
     @Override
     public Observable<ResponseBody> changeUserName(String tokenType, String token, String name) {
-        // only for remote
-        return Observable.empty();
+        return remoteUserSource.changeUserName(tokenType, token, name);
     }
 
     @Override
-    public Observable changeCurrentUserName(String name) {
+    public Observable<?> changeCurrentUserName(String name) {
         return getUser(false)
-                .flatMap(new Func1<User, Observable<ResponseBody>>() {
-                    @Override
-                    public Observable<ResponseBody> call(User user) {
-                        user.setUserName(name);
-                        localUserDataSource.setUser(user);
-                        return remoteUserSource.changeUserName(user.getTokenType(), user.getUserCode(), name);
-                    }
+                .flatMap(user -> {
+                    user.setUserName(name);
+                    localUserDataSource.setUser(user);
+                    return remoteUserSource.changeUserName(user.getTokenType(), user.getUserCode(), name);
                 });
     }
 
@@ -186,7 +174,7 @@ public class UserDataRepository implements UserDataSource {
 
     @Override
     public Observable<String> getGuestUserCode(String name) {
-        return null;
+        return remoteUserSource.getGuestUserCode(name);
     }
 
     @Override
@@ -201,6 +189,6 @@ public class UserDataRepository implements UserDataSource {
 
     @Override
     public void setGuestName(String guestName) {
-
+        localUserDataSource.setGuestName(guestName);
     }
 }

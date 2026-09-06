@@ -1,16 +1,16 @@
 package com.heaton.funnyvote.data.promotion;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
+import com.heaton.funnyvote.data.local.dao.PromotionDao;
 import com.heaton.funnyvote.database.Promotion;
-import com.heaton.funnyvote.database.PromotionDao;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.utils.AppExecutors;
 
 import java.util.List;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class LocalPromotionSource implements PromotionDataSource {
     private PromotionDao promotionDao;
@@ -34,20 +34,14 @@ public class LocalPromotionSource implements PromotionDataSource {
         return INSTANCE;
     }
 
-
     @Override
     public Observable<List<Promotion>> getPromotionList(User user) {
-        return promotionDao.rx().loadAll();
+        return Observable.fromCallable(() -> promotionDao.loadAll());
     }
 
     @Override
     public void savePromotionList(final List<Promotion> promotionList) {
-        mAppExecutors.diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                promotionDao.insertOrReplaceInTx(promotionList);
-            }
-        });
+        mAppExecutors.diskIO().execute(() -> promotionDao.insertOrReplaceInTx(promotionList));
     }
 
     @VisibleForTesting

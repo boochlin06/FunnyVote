@@ -1,13 +1,12 @@
 package com.heaton.funnyvote;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.data.user.UserDataRepository;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.utils.schedulers.BaseSchedulerProvider;
 
-import rx.Observer;
-import rx.subscriptions.CompositeSubscription;
+import io.reactivex.disposables.CompositeDisposable;
 
 public class MainPagePresenter implements MainPageContract.Presenter {
 
@@ -15,7 +14,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
     private UserDataRepository userDataRepository;
     private BaseSchedulerProvider schedulerProvider;
     @NonNull
-    private CompositeSubscription mSubscriptions;
+    private CompositeDisposable mSubscriptions;
 
     public MainPagePresenter(UserDataRepository userDataRepository
             , MainPageContract.View view
@@ -24,7 +23,7 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         this.view = view;
         this.view.setPresenter(this);
         this.schedulerProvider = schedulerProvider;
-        this.mSubscriptions = new CompositeSubscription();
+        this.mSubscriptions = new CompositeDisposable();
     }
 
     @Override
@@ -62,22 +61,10 @@ public class MainPagePresenter implements MainPageContract.Presenter {
         mSubscriptions.add(userDataRepository.getUser(false)
                 .subscribeOn(schedulerProvider.computation())
                 .observeOn(schedulerProvider.ui())
-                .subscribe(new Observer<User>() {
-                    @Override
-                    public void onCompleted() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onNext(User user) {
-                        view.updateUserView(user);
-                    }
-                }));
+                .subscribe(
+                        user -> view.updateUserView(user),
+                        throwable -> {}
+                ));
     }
 
     @Override

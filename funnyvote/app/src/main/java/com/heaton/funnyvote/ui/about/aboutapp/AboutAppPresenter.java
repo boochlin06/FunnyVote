@@ -1,6 +1,6 @@
 package com.heaton.funnyvote.ui.about.aboutapp;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.ui.about.aboutapp.AboutAppContract;
 
@@ -17,12 +17,7 @@ public class AboutAppPresenter implements AboutAppContract.Presenter{
     }
 
     @Override
-    public void subscribe() {
-
-    }
-
-    @Override
-    public void unsubscribe() {
+    public void start() {
 
     }
 }

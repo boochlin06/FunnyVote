@@ -2,20 +2,16 @@ package com.heaton.funnyvote.data.user;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.heaton.funnyvote.R;
 import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.retrofit.Server;
 
+import io.reactivex.Observable;
 import okhttp3.ResponseBody;
 import retrofit2.Callback;
-import rx.Observable;
-import rx.Observer;
-
-/**
- * Created by chiu_mac on 2016/12/6.
- */
 
 public class SPUserDataSource implements UserDataSource {
     private static final String SHARED_PREF_USER = "user";
@@ -98,22 +94,20 @@ public class SPUserDataSource implements UserDataSource {
         this.user = null;
     }
 
-
     @Override
     public Observable<String> getGuestUserCode(String name) {
-        return null;
+        return Observable.empty();
     }
 
     @Override
     public void getUserInfo(Callback<Server.UserDataQuery> callback, User user) {
-        // Not required for the local data source
+        // Not required for local
     }
 
     @Override
     public Observable<Server.UserDataQuery> getUserInfo(User user) {
-        return null;
+        return Observable.empty();
     }
-
 
     @Override
     public Observable<User> getUser(boolean forceUpdateUserCode) {
@@ -122,51 +116,43 @@ public class SPUserDataSource implements UserDataSource {
 
     @Override
     public void setGuestName(String guestName) {
-
     }
-
 
     @Override
-    public Observable registerUser(String appId, User user, boolean mergeGuest) {
-        return null;
+    public Observable<?> registerUser(String appId, User user, boolean mergeGuest) {
+        return Observable.empty();
     }
-
 
     @Override
     public void unregisterUser() {
-
+        removeUser();
     }
-
 
     @Override
     public Observable<String> getUserCode(String userType, String appId, User user) {
-        return null;
+        return Observable.empty();
     }
 
     @Override
     public void linkGuestToLoginUser(String otp, String guest, Callback<ResponseBody> callback) {
-
     }
 
     @Override
     public Observable<ResponseBody> linkGuestToLoginUser(String otp, String guest) {
-        return null;
+        return Observable.empty();
     }
 
     @Override
     public void changeUserName(Callback<ResponseBody> callback, String tokenType, String token, String name) {
-
     }
 
     @Override
     public Observable<ResponseBody> changeUserName(String tokenType, String token, String name) {
-        return null;
+        return Observable.empty();
     }
-
 
     @Override
-    public Observable changeCurrentUserName(String name) {
-        return null;
+    public Observable<?> changeCurrentUserName(String name) {
+        return Observable.empty();
     }
-
 }

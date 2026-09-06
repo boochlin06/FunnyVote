@@ -2,16 +2,16 @@ package com.heaton.funnyvote.database;
 
 import com.google.gson.annotations.SerializedName;
 
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.Generated;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
 /**
  * Created by heaton on 2016/11/4.
  */
-@Entity
+@Entity(tableName = "promotions")
 public class Promotion {
-    @Id
+    @PrimaryKey(autoGenerate = true)
     private Long id;
     @SerializedName("imgurl")
     private String imageURL;
@@ -19,14 +19,15 @@ public class Promotion {
     private String actionURL;
     @SerializedName("title")
     private String title;
-    @Generated(hash = 148763577)
+
+    @Ignore
     public Promotion(Long id, String imageURL, String actionURL, String title) {
         this.id = id;
         this.imageURL = imageURL;
         this.actionURL = actionURL;
         this.title = title;
     }
-    @Generated(hash = 1959537984)
+
     public Promotion() {
     }
     public Long getId() {

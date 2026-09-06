@@ -5,10 +5,11 @@ import com.heaton.funnyvote.database.User;
 
 import java.util.List;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public interface PromotionDataSource {
     Observable<List<Promotion>> getPromotionList(User user);
 
     void savePromotionList(List<Promotion> promotionList);
 }
+
