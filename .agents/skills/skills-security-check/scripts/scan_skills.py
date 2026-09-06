@@ -544,12 +544,13 @@ def generate_html(data, template_path, output_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Scan Skills and generate a security dashboard")
-    parser.add_argument("--root", default=os.getcwd(), help="Root directory containing skills")
+    parser.add_argument("--root", nargs="+", default=[os.getcwd()], help="Root directory or directories containing skills")
     # --out and --json are now optional/overridden by the new structure, but kept for compatibility or advanced use
     parser.add_argument("--out", help="Optional: Override output path") 
     args = parser.parse_args()
 
-    root = os.path.abspath(args.root)
+    roots = [os.path.abspath(r) for r in (args.root if isinstance(args.root, list) else [args.root])]
+    root_desc = ", ".join(roots) if len(roots) > 1 else roots[0]
     
     # Define Report Output Directory
     # Default: skill-security-audit-dashboard/reports/YYYYMMDD_HHMMSS/
@@ -557,10 +558,6 @@ def main():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     if args.out:
-        # If user explicitly specifies output, follow it (but still separate prompts? User asked for auto-folder)
-        # To strictly follow user request: "Always create a timestamp folder inside the scan folder"
-        # Let's pivot: Ignore --out or use it as base. 
-        # Let's stick to the requested behavior as default.
         report_dir = os.path.dirname(os.path.abspath(args.out))
         html_path = os.path.abspath(args.out)
         json_path = os.path.splitext(html_path)[0] + ".json"
@@ -576,11 +573,19 @@ def main():
     prompts_dir = os.path.join(report_dir, "prompts")
     os.makedirs(prompts_dir, exist_ok=True)
 
-    skill_dirs = iter_skill_dirs(root)
+    skill_dirs = []
+    for r in roots:
+        skill_dirs.extend(iter_skill_dirs(r))
+    skill_dirs = sorted(set(skill_dirs))
     
     items = []
     for skill_dir in skill_dirs:
-        item = scan_skill(skill_dir, root)
+        matched_root = roots[0]
+        for r in roots:
+            if skill_dir.startswith(r):
+                matched_root = r
+                break
+        item = scan_skill(skill_dir, matched_root)
         if item is None:
             continue
             
@@ -617,7 +622,7 @@ def main():
 
     data = {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "root": root,
+        "root": root_desc,
         "workspace_summary": workspace_summary,
         "items": items,
     }

@@ -1,0 +1,6 @@
+{
+  "summary": "AI Agent 技能安全掃描引擎，本體包含掃描正則特徵故引發自檢誤報，已確認無惡意代碼。",
+  "risk_level": "low",
+  "reasoning": "該技能為資安掃描工具本身，代碼中出現的敏感特徵（如錢包、密鑰、反彈 Shell）皆為靜態規則特徵庫，屬於典型掃描器自檢誤報 (Self-detection False Positive)。",
+  "recommendation": "✅ 安全：專屬資安分析工具，可放心調用。"
+}
