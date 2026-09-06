@@ -1,5 +1,6 @@
 package com.heaton.funnyvote.ui.profile
 
+import com.heaton.funnyvote.R
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +43,7 @@ fun ProfileScreen(
         val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
             com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
         )
-            .requestIdToken("444957524197-l1en4gq9quhhtu8hee8plcnss5kd146h.apps.googleusercontent.com")
+            .requestIdToken(context.getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
         val client = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(context, gso)
