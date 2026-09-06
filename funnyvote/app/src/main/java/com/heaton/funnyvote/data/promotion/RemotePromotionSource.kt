@@ -1,69 +1,67 @@
 package com.heaton.funnyvote.data.promotion
 
 import android.util.Log
-import com.heaton.funnyvote.data.RemoteServiceApi
+import com.google.firebase.firestore.FirebaseFirestore
 import com.heaton.funnyvote.database.Promotion
 import com.heaton.funnyvote.database.User
-import com.heaton.funnyvote.retrofit.Server
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.io.IOException
 
-class RemotePromotionSource : PromotionDataSource {
-    private val promotionService: Server.PromotionService = RemoteServiceApi.getInstance().promotionService
+class RemotePromotionSource private constructor() : PromotionDataSource {
 
     override fun getPromotionList(user: User, callback: PromotionDataSource.GetPromotionsCallback) {
-        if (user.userCode.isNullOrBlank()) {
-            callback.onPromotionsNotAvailable()
-            return
-        }
-        val call = promotionService.getPromotionList(1, PAGE_COUNT, user.userCode, user.tokenType)
-        call.enqueue(GetPromotionListResponseCallback(callback))
-    }
-
-    override fun savePromotionList(promotionList: List<Promotion>) {
-        // Nothing to do
-    }
-
-    inner class GetPromotionListResponseCallback(private val callback: PromotionDataSource.GetPromotionsCallback) : Callback<List<Promotion>> {
-
-        override fun onResponse(call: Call<List<Promotion>>, response: Response<List<Promotion>>) {
-            if (response.isSuccessful) {
-                callback.onPromotionsLoaded(response.body())
-            } else {
-                try {
-                    val errorMessage = response.errorBody().string()
-                    Log.d(TAG, "GetPromotionListResponseCallback onResponse false:$errorMessage")
-                } catch (e: IOException) {
-                    e.printStackTrace()
+        FirebaseFirestore.getInstance().collection("promotions").limit(PAGE_COUNT.toLong()).get()
+            .addOnSuccessListener { snapshot ->
+                val list = mutableListOf<Promotion>()
+                if (snapshot != null && !snapshot.isEmpty) {
+                    for (doc in snapshot.documents) {
+                        val p = Promotion().apply {
+                            title = doc.getString("title")
+                            imageURL = doc.getString("imageUrl") ?: doc.getString("imgurl")
+                            actionURL = doc.getString("link")
+                        }
+                        list.add(p)
+                    }
                 }
-
-                callback.onPromotionsNotAvailable()
+                if (list.isEmpty()) {
+                    list.addAll(createDefaultPromotions())
+                }
+                callback.onPromotionsLoaded(list)
             }
-        }
-
-        override fun onFailure(call: Call<List<Promotion>>, t: Throwable) {
-            Log.d(TAG, "GetPromotionListResponseCallback onFailure:" + t.message)
-            callback.onPromotionsNotAvailable()
-        }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Failed to load promotions from Firestore, using defaults: ${e.message}")
+                callback.onPromotionsLoaded(createDefaultPromotions())
+            }
     }
+
+    private fun createDefaultPromotions(): List<Promotion> {
+        return listOf(
+            Promotion(1L, "https://picsum.photos/800/400?random=1", "https://github.com/boochlin06/FunnyVote", "歡迎來到 FunnyVote 投票平台！"),
+            Promotion(2L, "https://picsum.photos/800/400?random=2", "https://firebase.google.com", "全面串接 Firebase Firestore 後端架構")
+        )
+    }
+
+    override fun savePromotionList(promotionList: List<Promotion>) {}
 
     companion object {
-        @JvmField
-        val TAG: String? = RemotePromotionSource::class.java.simpleName
-        var INSTANCE: RemotePromotionSource? = null
+        private const val TAG = "RemotePromotionSource"
+        private var INSTANCE: RemotePromotionSource? = null
         const val PAGE_COUNT = 10
 
         @JvmStatic
         fun getInstance(): RemotePromotionSource {
-            return INSTANCE
-                    ?: RemotePromotionSource()
-                            .apply { INSTANCE = this }
+            if (INSTANCE == null) {
+                synchronized(RemotePromotionSource::class.java) {
+                    if (INSTANCE == null) {
+                        INSTANCE = RemotePromotionSource()
+                    }
+                }
+            }
+            return INSTANCE!!
         }
 
+        @JvmStatic
         fun destroyInstance() {
             INSTANCE = null
         }
     }
 }
+

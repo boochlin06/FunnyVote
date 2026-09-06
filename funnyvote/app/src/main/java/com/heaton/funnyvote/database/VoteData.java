@@ -5,14 +5,9 @@ import android.content.Context;
 import com.google.gson.annotations.SerializedName;
 import com.heaton.funnyvote.R;
 
-import org.greenrobot.greendao.DaoException;
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.Keep;
-import org.greenrobot.greendao.annotation.OrderBy;
-import org.greenrobot.greendao.annotation.ToMany;
-import org.greenrobot.greendao.annotation.Transient;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
 import java.io.File;
 import java.util.List;
@@ -20,16 +15,15 @@ import java.util.List;
 /**
  * Created by heaton on 2016/10/25.
  */
-@Entity
+@Entity(tableName = "vote_data")
 public class VoteData {
     public static final String SECURITY_PRIVATE = "01";
     public static final String SECURITY_PUBLIC = "00";
 
     public static final String CATEGORY_HOT = "hot";
-    @Id
+    @PrimaryKey(autoGenerate = true)
     private Long id;
-    @ToMany(referencedJoinProperty = "voteCode")
-    @OrderBy("id ASC")
+    @Ignore
     private List<Option> options;
     @SerializedName("c")
     private String voteCode;
@@ -86,7 +80,7 @@ public class VoteData {
     private boolean isUserCanAddOption;
     @SerializedName("p")
     private boolean isNeedPassword;
-    @Transient
+    @Ignore
     public String password;
     @SerializedName("sec")
     private String security = SECURITY_PUBLIC;
@@ -100,23 +94,23 @@ public class VoteData {
     /**
      * gson used.
      */
-    @Transient
+    @Ignore
     @SerializedName("os")
     private List<Option> netOptions;
 
-    @Transient
+    @Ignore
     @SerializedName("first")
     private Option firstOption;
 
-    @Transient
+    @Ignore
     @SerializedName("second")
     private Option secondOption;
 
-    @Transient
+    @Ignore
     @SerializedName("top")
     private Option topOption;
 
-    @Transient
+    @Ignore
     @SerializedName("user")
     private Option userOption;
 
@@ -132,19 +126,35 @@ public class VoteData {
         return this.firstOption;
     }
 
+    public void setFirstOption(Option firstOption) {
+        this.firstOption = firstOption;
+    }
+
     public Option getSecondOption() {
         return this.secondOption;
+    }
+
+    public void setSecondOption(Option secondOption) {
+        this.secondOption = secondOption;
     }
 
     public Option getTopOption() {
         return this.topOption;
     }
 
+    public void setTopOption(Option topOption) {
+        this.topOption = topOption;
+    }
+
     public Option getUserOption() {
         return this.userOption;
     }
 
-    @Transient
+    public void setUserOption(Option userOption) {
+        this.userOption = userOption;
+    }
+
+    @Ignore
     private File image;
 
     public File getImageFile() { return this.image;}
@@ -152,22 +162,11 @@ public class VoteData {
         this.image = file;
     }
 
-
     /**
      * UI temp used
      */
-    @Transient
+    @Ignore
     public User author;
-    /**
-     * Used to resolve relations
-     */
-    @Generated(hash = 2040040024)
-    private transient DaoSession daoSession;
-    /**
-     * Used for active entity operations.
-     */
-    @Generated(hash = 621134322)
-    private transient VoteDataDao myDao;
 
     public static String getSecurityString(Context context, String security) {
         if (security.equals(SECURITY_PUBLIC)) {
@@ -177,7 +176,7 @@ public class VoteData {
         }
     }
 
-    @Generated(hash = 1572690698)
+    @Ignore
     public VoteData(Long id, String voteCode, String title, String authorName, String authorCode, String authorCodeType, String authorIcon, String voteImage, int localImage,
             long startTime, long endTime, String option1Title, String option1Code, int option1Count, boolean option1Polled, String option2Title, String option2Code, int option2Count,
             boolean option2Polled, String optionTopTitle, String optionTopCode, int optionTopCount, boolean optionTopPolled, String optionUserChoiceTitle, String optionUserChoiceCode,
@@ -224,7 +223,6 @@ public class VoteData {
         this.pollType = pollType;
     }
 
-    @Generated(hash = 1720963510)
     public VoteData() {
     }
 
@@ -505,78 +503,16 @@ public class VoteData {
         this.pollType = pollType;
     }
 
-    /**
-     * To-many relationship, resolved on first access (and after reset).
-     * Changes to to-many relations are not persisted, make changes to the target entity.
-     */
-    @Keep
     public List<Option> getOptions() {
-        if (options == null) {
-            final DaoSession daoSession = this.daoSession;
-            if (daoSession == null) {
-                throw new DaoException("Entity is detached from DAO context");
-            }
-            OptionDao targetDao = daoSession.getOptionDao();
-            List<Option> optionsNew = targetDao._queryVoteData_Options(voteCode);
-            synchronized (this) {
-                if (options == null) {
-                    options = optionsNew;
-                }
-            }
-        }
         return options;
     }
 
-    /**
-     * Resets a to-many relationship, making the next get call to query for a fresh result.
-     */
-    @Generated(hash = 37457025)
-    public synchronized void resetOptions() {
-        options = null;
-    }
-
-    /**
-     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#delete(Object)}.
-     * Entity must attached to an entity context.
-     */
-    @Generated(hash = 128553479)
-    public void delete() {
-        if (myDao == null) {
-            throw new DaoException("Entity is detached from DAO context");
-        }
-        myDao.delete(this);
-    }
-
-    /**
-     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#refresh(Object)}.
-     * Entity must attached to an entity context.
-     */
-    @Generated(hash = 1942392019)
-    public void refresh() {
-        if (myDao == null) {
-            throw new DaoException("Entity is detached from DAO context");
-        }
-        myDao.refresh(this);
-    }
-
-    /**
-     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#update(Object)}.
-     * Entity must attached to an entity context.
-     */
-    @Generated(hash = 713229351)
-    public void update() {
-        if (myDao == null) {
-            throw new DaoException("Entity is detached from DAO context");
-        }
-        myDao.update(this);
+    public void setOptions(List<Option> options) {
+        this.options = options;
     }
 
     public int getDisplayOrder() {
         return this.displayOrder;
-    }
-
-    public void setDisplayOrder(Integer displayOrder) {
-        this.displayOrder = displayOrder;
     }
 
     public void setDisplayOrder(int displayOrder) {
@@ -613,12 +549,5 @@ public class VoteData {
 
     public void setOptionTopPolled(boolean optionTopPolled) {
         this.optionTopPolled = optionTopPolled;
-    }
-
-    /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 1087745195)
-    public void __setDaoSession(DaoSession daoSession) {
-        this.daoSession = daoSession;
-        myDao = daoSession != null ? daoSession.getVoteDataDao() : null;
     }
 }

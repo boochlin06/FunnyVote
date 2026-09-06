@@ -4,18 +4,18 @@ import android.util.Log;
 
 import com.google.gson.annotations.SerializedName;
 
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.Id;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
 /**
  * Created by heaton on 2016/10/25.
  */
-@Entity
+@Entity(tableName = "options")
 public class Option {
     private static final String TAG = Option.class.getSimpleName();
 
-    @Id
+    @PrimaryKey(autoGenerate = true)
     private Long id;
     private String voteCode;
 
@@ -28,7 +28,7 @@ public class Option {
     @SerializedName("voted")
     private boolean isUserChoiced;
 
-    @Generated(hash = 259294054)
+    @Ignore
     public Option(Long id, String voteCode, String title, Integer count,
                   String code, boolean isUserChoiced) {
         this.id = id;
@@ -44,7 +44,6 @@ public class Option {
                 + count + " code:" + code + " userchoice:" + isUserChoiced);
     }
 
-    @Generated(hash = 104107376)
     public Option() {
     }
 

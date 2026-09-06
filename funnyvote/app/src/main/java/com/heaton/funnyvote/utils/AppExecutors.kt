@@ -18,7 +18,7 @@ package com.heaton.funnyvote.utils
 
 import android.os.Handler
 import android.os.Looper
-import android.support.annotation.VisibleForTesting
+import androidx.annotation.VisibleForTesting
 import com.heaton.funnyvote.data.VoteData.LocalVoteDataSource
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors

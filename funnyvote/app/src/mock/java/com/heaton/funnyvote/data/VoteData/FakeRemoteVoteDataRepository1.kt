@@ -1,6 +1,6 @@
 package com.heaton.funnyvote.data.VoteData
 
-import android.support.annotation.NonNull
+import androidx.annotation.NonNull
 import android.util.Log
 import com.google.common.collect.Lists
 import com.heaton.funnyvote.database.Option

@@ -44,9 +44,9 @@ class UserDataRepository(
                     override fun onResponse(call: Call<Server.UserDataQuery>, response: Response<Server.UserDataQuery>) {
                         if (response.isSuccessful) {
                             val userCode = if (user.type == User.TYPE_GUEST) {
-                                response.body().guestCode
+                                response.body()?.guestCode
                             } else {
-                                response.body().otp
+                                response.body()?.otp
                             }
 
                             if (userCode != null) {
@@ -56,7 +56,7 @@ class UserDataRepository(
                             }
                         } else {
                             try {
-                                val errorMessage = response.errorBody().string()
+                                val errorMessage = response.errorBody()?.string()
                                 Log.e(TAG, "getUser onResponse false$errorMessage")
                             } catch (e: IOException) {
                                 e.printStackTrace()
@@ -98,7 +98,7 @@ class UserDataRepository(
                                 } else {
                                     callback.onFailure()
                                     try {
-                                        Log.e(TAG, "registerUser" + response.errorBody().string())
+                                        Log.e(TAG, "registerUser" + response.errorBody()?.string())
                                     } catch (e: Exception) {
                                         e.printStackTrace()
                                     }
@@ -155,7 +155,7 @@ class UserDataRepository(
                     callback.onSuccess()
                 } else {
                     try {
-                        Log.d(TAG, "changeUserName response status:" + response.code() + " ,message:" + response.errorBody().string())
+                        Log.d(TAG, "changeUserName response status:" + response.code() + " ,message:" + response.errorBody()?.string())
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }

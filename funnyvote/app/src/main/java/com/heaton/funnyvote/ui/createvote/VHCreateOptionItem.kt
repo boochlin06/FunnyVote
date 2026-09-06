@@ -1,62 +1,57 @@
 package com.heaton.funnyvote.ui.createvote
 
-import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-
+import androidx.recyclerview.widget.RecyclerView
 import com.heaton.funnyvote.database.Option
+import com.heaton.funnyvote.databinding.CardViewCreateVoteOptionBinding
 
-import kotlinx.android.synthetic.main.card_view_create_vote_option.view.*
+class VHCreateOptionItem(
+    val binding: CardViewCreateVoteOptionBinding,
+    private val itemListener: CreateVoteTabOptionFragment.OptionItemListener?
+) : RecyclerView.ViewHolder(binding.root) {
 
-/**
- * Created by heaton on 2016/9/2.
- */
-
-class VHCreateOptionItem(itemView: View
-                         , private val itemListener: CreateVoteTabOptionFragment.OptionItemListener?) : RecyclerView.ViewHolder(itemView) {
+    constructor(
+        itemView: View,
+        itemListener: CreateVoteTabOptionFragment.OptionItemListener?
+    ) : this(CardViewCreateVoteOptionBinding.bind(itemView), itemListener)
 
     private var optionEditTextListener: OptionEditTextListener? = null
     private lateinit var option: Option
 
-
     fun setLayout(viewType: Int, option: Option) {
         this.option = option
         if (viewType == OptionCreateItemAdapter.VIEW_TYPE_ADD_OPTION) {
-            itemView.relNormal.visibility = View.INVISIBLE
-            itemView.relAdd.visibility = View.VISIBLE
-            itemView.imgDeleteOption.visibility = View.GONE
-            itemView.edtOptionTitle.visibility = View.GONE
-            itemView.edtOptionTitle.removeTextChangedListener(optionEditTextListener)
+            binding.relNormal.visibility = View.INVISIBLE
+            binding.relAdd.visibility = View.VISIBLE
+            binding.imgDeleteOption.visibility = View.GONE
+            binding.edtOptionTitle.visibility = View.GONE
+            binding.edtOptionTitle.removeTextChangedListener(optionEditTextListener)
         } else if (viewType == OptionCreateItemAdapter.VIEW_TYPE_NORMAL_OPTION) {
-            itemView.relNormal.visibility = View.VISIBLE
-            itemView.relAdd.visibility = View.INVISIBLE
-            itemView.imgDeleteOption.visibility = View.VISIBLE
-            itemView.txtOptionNumber.text = ((adapterPosition + 1).toString())
-            itemView.edtOptionTitle.visibility = View.VISIBLE
-            itemView.edtOptionTitle.removeTextChangedListener(optionEditTextListener)
-            itemView.edtOptionTitle.setText(option.title)
+            binding.relNormal.visibility = View.VISIBLE
+            binding.relAdd.visibility = View.INVISIBLE
+            binding.imgDeleteOption.visibility = View.VISIBLE
+            binding.txtOptionNumber.text = (adapterPosition + 1).toString()
+            binding.edtOptionTitle.visibility = View.VISIBLE
+            binding.edtOptionTitle.removeTextChangedListener(optionEditTextListener)
+            binding.edtOptionTitle.setText(option.title)
             if (optionEditTextListener == null) {
-                optionEditTextListener = OptionEditTextListener(itemListener!!)
+                optionEditTextListener = OptionEditTextListener(itemListener)
             }
-            itemView.edtOptionTitle.addTextChangedListener(optionEditTextListener)
+            binding.edtOptionTitle.addTextChangedListener(optionEditTextListener)
         }
-        itemView.relAdd.setOnClickListener { itemListener!!.onOptionAddNew() }
-        itemView.imgDeleteOption.setOnClickListener { itemListener!!.onOptionRemove(option.id) }
+        binding.relAdd.setOnClickListener { itemListener?.onOptionAddNew() }
+        binding.imgDeleteOption.setOnClickListener { itemListener?.onOptionRemove(option.id) }
     }
 
     private inner class OptionEditTextListener(
-            internal var itemListener: CreateVoteTabOptionFragment.OptionItemListener?) : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-
-        }
-
+        internal var itemListener: CreateVoteTabOptionFragment.OptionItemListener?
+    ) : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
         override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-            itemListener!!.onOptionTextChange(option.id, s.toString())
+            itemListener?.onOptionTextChange(option.id, s.toString())
         }
-
-        override fun afterTextChanged(s: Editable) {
-
-        }
+        override fun afterTextChanged(s: Editable) {}
     }
 }

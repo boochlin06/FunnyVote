@@ -7,71 +7,62 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-
-import com.facebook.CallbackManager
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.analytics.HitBuilders
 import com.google.android.gms.analytics.Tracker
 import com.heaton.funnyvote.FunnyVoteApplication
 import com.heaton.funnyvote.R
 import com.heaton.funnyvote.analytics.AnalyzticsTag
-import kotlinx.android.synthetic.main.dialog_share.*
-
-/**
- * Created by chiu_mac on 2016/11/10.
- */
+import com.heaton.funnyvote.databinding.DialogShareBinding
 
 class ShareDialogActivity : AppCompatActivity(), View.OnClickListener {
-
-    private lateinit var mCallbackManager: CallbackManager
+    private lateinit var binding: DialogShareBinding
     private lateinit var voteURL: String
-    private lateinit var title: String
+    private var title: String = ""
     private var isShareApp: Boolean = false
-
     private var tracker: Tracker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.dialog_share)
+        binding = DialogShareBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val application = application as FunnyVoteApplication
         tracker = application.defaultTracker
-        mCallbackManager = CallbackManager.Factory.create()
-        if (intent != null) {
-            voteURL = intent.getStringExtra(EXTRA_VOTE_URL)
 
+        if (intent != null) {
+            voteURL = intent.getStringExtra(EXTRA_VOTE_URL) ?: ""
             isShareApp = intent.getBooleanExtra(EXTRA_IS_SHARE_APP, false)
             if (!isShareApp) {
-                title = intent.getStringExtra(EXTRA_TITLE)
+                title = intent.getStringExtra(EXTRA_TITLE) ?: ""
                 if (title.length > 80) {
-                    title = title.substring(0, 80)
-                    title = "$title ..."
+                    title = title.substring(0, 80) + " ..."
                 }
             }
-
             initShareOptions()
         } else {
             finish()
         }
+
         if (isShareApp) {
-            txtShareTo.setText(R.string.vote_share_app_via)
+            binding.shareTo.setText(R.string.vote_share_app_via)
         } else {
-            txtShareTo.setText(R.string.vote_share_vote_via)
+            binding.shareTo.setText(R.string.vote_share_vote_via)
         }
     }
 
     override fun onResume() {
         super.onResume()
         if (isShareApp) {
-            tracker!!.setScreenName(AnalyzticsTag.SCREEN_ABOUT_SHARE_APP)
+            tracker?.setScreenName(AnalyzticsTag.SCREEN_ABOUT_SHARE_APP)
         } else {
-            tracker!!.setScreenName(AnalyzticsTag.SCREEN_SHARE_VOTE)
+            tracker?.setScreenName(AnalyzticsTag.SCREEN_SHARE_VOTE)
         }
-        tracker!!.send(HitBuilders.ScreenViewBuilder().build())
+        tracker?.send(HitBuilders.ScreenViewBuilder().build())
     }
 
     private fun initShareOptions() {
@@ -81,54 +72,55 @@ class ShareDialogActivity : AppCompatActivity(), View.OnClickListener {
             try {
                 val info = pm.getActivityInfo(componentName, PackageManager.GET_META_DATA)
                 val view = layoutInflater.inflate(R.layout.btn_share, null)
-                val imageView = view.findViewById<View>(R.id.app_share_icon) as ImageView
+                val imageView = view.findViewById<ImageView>(R.id.app_share_icon)
                 imageView.setImageDrawable(info.loadIcon(pm))
-                val labelTextView = view.findViewById<View>(R.id.app_label) as TextView
+                val labelTextView = view.findViewById<TextView>(R.id.app_label)
                 labelTextView.text = info.loadLabel(pm)
                 view.tag = componentName
                 view.setOnClickListener(this)
-                flowShareOptions.addView(view)
+                binding.shareOptions.addView(view)
             } catch (e: PackageManager.NameNotFoundException) {
-                e.printStackTrace()
+                // app not installed
             }
-
         }
-        //copy link to clipboard
+
+        // Copy link
         val copy = layoutInflater.inflate(R.layout.btn_share, null)
-        val copyImage = copy.findViewById<View>(R.id.app_share_icon) as ImageView
+        val copyImage = copy.findViewById<ImageView>(R.id.app_share_icon)
         copyImage.setImageResource(R.drawable.ic_shortcut_content_copy)
-        val copyLabel = copy.findViewById<View>(R.id.app_label) as TextView
+        val copyLabel = copy.findViewById<TextView>(R.id.app_label)
         copyLabel.setText(R.string.vote_share_copy_url)
         copy.setOnClickListener { onCopyLinkClicked() }
-        flowShareOptions.addView(copy)
-        //more
+        binding.shareOptions.addView(copy)
+
+        // More
         val more = layoutInflater.inflate(R.layout.btn_share, null)
-        val moreImg = more.findViewById<View>(R.id.app_share_icon) as ImageView
+        val moreImg = more.findViewById<ImageView>(R.id.app_share_icon)
         moreImg.setImageResource(R.drawable.ic_navigation_more_horiz)
-        val moreLabel = more.findViewById<View>(R.id.app_label) as TextView
+        val moreLabel = more.findViewById<TextView>(R.id.app_label)
         moreLabel.setText(R.string.vote_share_more)
         more.setOnClickListener { onOtherShareClicked() }
-        flowShareOptions.addView(more)
+        binding.shareOptions.addView(more)
     }
 
     private fun onCopyLinkClicked() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("Link Copied", voteURL)
-        clipboard.primaryClip = clip
+        clipboard.setPrimaryClip(clip)
         Toast.makeText(applicationContext, R.string.vote_share_copied_msg, Toast.LENGTH_SHORT).show()
         finish()
     }
 
     private fun onOtherShareClicked() {
-        val sendIntent = Intent()
-        sendIntent.action = Intent.ACTION_SEND
-        sendIntent.type = "text/plain"
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+        }
         if (isShareApp) {
             sendIntent.putExtra(Intent.EXTRA_TEXT, String.format(getString(R.string.share_funny_vote_app), voteURL))
             startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.vote_share_app_via)))
         } else {
-            sendIntent.putExtra(Intent.EXTRA_TEXT, String.format(
-                    getString(R.string.vote_share_msg), title, voteURL))
+            sendIntent.putExtra(Intent.EXTRA_TEXT, String.format(getString(R.string.vote_share_msg), title, voteURL))
             startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.vote_share_vote_via)))
         }
         finish()
@@ -137,33 +129,38 @@ class ShareDialogActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(view: View) {
         val tag = view.tag
         if (tag != null && tag is ComponentName) {
-            val send = Intent()
-            send.component = tag
-            send.action = Intent.ACTION_SEND
-            send.type = "text/plain"
+            val send = Intent().apply {
+                component = tag
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+            }
             if (isShareApp) {
                 send.putExtra(Intent.EXTRA_TEXT, String.format(getString(R.string.share_funny_vote_app), voteURL))
             } else {
-                send.putExtra(Intent.EXTRA_TEXT, String.format(
-                        getString(R.string.vote_share_msg), title, voteURL))
+                send.putExtra(Intent.EXTRA_TEXT, String.format(getString(R.string.vote_share_msg), title, voteURL))
             }
-            tracker!!.send(HitBuilders.EventBuilder()
+            tracker?.send(
+                HitBuilders.EventBuilder()
                     .setCategory(send.component!!.packageName)
                     .setAction(if (isShareApp) AnalyzticsTag.ACTION_SHARE_APP else AnalyzticsTag.ACTION_SHARE_VOTE)
                     .setLabel(voteURL)
-                    .build())
+                    .build()
+            )
             startActivity(send)
             finish()
         }
     }
 
     companion object {
-        private val TAG = ShareDialogActivity::class.java.simpleName
-        private val APPS = arrayOf(arrayOf("com.facebook.katana", "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias"), arrayOf("jp.naver.line.android", "jp.naver.line.android.activity.selectchat.SelectChatActivity"), arrayOf("com.twitter.android", "com.twitter.android.composer.ComposerActivity"), arrayOf("com.google.android.apps.plus", "com.google.android.libraries.social.gateway.GatewayActivity"))
-
-        val EXTRA_VOTE_URL = "vote_url"
-        val EXTRA_TITLE = "title"
-        val EXTRA_IMG_URL = "image_url"
-        val EXTRA_IS_SHARE_APP = "is_share_app"
+        private val APPS = arrayOf(
+            arrayOf("com.facebook.katana", "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias"),
+            arrayOf("jp.naver.line.android", "jp.naver.line.android.activity.selectchat.SelectChatActivity"),
+            arrayOf("com.twitter.android", "com.twitter.android.composer.ComposerActivity"),
+            arrayOf("com.google.android.apps.plus", "com.google.android.libraries.social.gateway.GatewayActivity")
+        )
+        const val EXTRA_VOTE_URL = "vote_url"
+        const val EXTRA_TITLE = "title"
+        const val EXTRA_IMG_URL = "image_url"
+        const val EXTRA_IS_SHARE_APP = "is_share_app"
     }
 }

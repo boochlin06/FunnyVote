@@ -16,6 +16,7 @@
         android:orientation="vertical">
 
         <include
+            android:id="@+id/main_toolbar"
             layout="@layout/include_toolbar" />
 
         <include
@@ -41,20 +42,20 @@
             android:scaleType="centerInside"
             android:src="@drawable/ic_expand_more_24dp" />
 
-        <android.support.design.widget.CoordinatorLayout
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="4dp"
             android:background="@android:color/background_light">
 
-            <android.support.design.widget.AppBarLayout
+            <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/appBarMain"
                 android:background="@android:color/background_light"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <android.support.design.widget.CollapsingToolbarLayout
-                    android:id="@+id/collapsingToolbar"
+                <com.google.android.material.appbar.CollapsingToolbarLayout
+                    android:id="@+id/collapsing_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:fitsSystemWindows="true"
@@ -89,23 +90,23 @@
                             ads:adUnitId="@string/banner_ad_unit_id"/>
                     </RelativeLayout>
 
-                </android.support.design.widget.CollapsingToolbarLayout>
+                </com.google.android.material.appbar.CollapsingToolbarLayout>
 
                 <include
                     android:id="@+id/function_bar"
                     layout="@layout/include_function_bar" />
 
-            </android.support.design.widget.AppBarLayout>
+            </com.google.android.material.appbar.AppBarLayout>
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/ryOptionArea"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingTop="6dp"
-                app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        </android.support.design.widget.CoordinatorLayout>
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </LinearLayout>
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu

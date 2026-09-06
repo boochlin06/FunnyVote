@@ -2,30 +2,31 @@ package com.heaton.funnyvote.ui.createvote
 
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
-import com.heaton.funnyvote.R
 import com.heaton.funnyvote.database.Option
+import com.heaton.funnyvote.databinding.FragmentCreateVoteTabOptionsBinding
 import com.theartofdev.edmodo.cropper.CropImage
-import kotlinx.android.synthetic.main.fragment_create_vote_tab_options.*
-
-/**
- * Created by heaton on 2016/9/1.
- */
 
 class CreateVoteTabOptionFragment : Fragment(), CreateVoteContract.OptionFragmentView {
-    private lateinit var rootView: View
-    private lateinit var optionItemAdapter: OptionCreateItemAdapter
+    private var _binding: FragmentCreateVoteTabOptionsBinding? = null
+    private val binding get() = _binding!!
+
+    private var optionItemAdapter: OptionCreateItemAdapter? = null
     private var itemListener: OptionItemListener? = null
     private lateinit var presenter: CreateVoteContract.Presenter
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentCreateVoteTabOptionsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        rootView = inflater.inflate(R.layout.fragment_create_vote_tab_options, container, false)
-        return rootView
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -46,22 +47,26 @@ class CreateVoteTabOptionFragment : Fragment(), CreateVoteContract.OptionFragmen
         }
 
         val pickImageListener = View.OnClickListener { CropImage.startPickImageActivity(requireActivity()) }
-        imgMain.setOnClickListener(pickImageListener)
-        imgPick.setOnClickListener(pickImageListener)
+        binding.imgMain.setOnClickListener(pickImageListener)
+        binding.imgPick.setOnClickListener(pickImageListener)
         presenter.setOptionFragmentView(this)
     }
 
     override fun setUpOptionAdapter(optionList: List<Option>) {
-        optionItemAdapter = OptionCreateItemAdapter(optionList, itemListener!!)
-        ryOptions.adapter = optionItemAdapter
+        _binding?.let { b ->
+            optionItemAdapter = OptionCreateItemAdapter(optionList, itemListener!!)
+            b.ryOptions.adapter = optionItemAdapter
+        }
     }
 
     override fun setVoteImage(imageUri: Uri) {
-        imgMain.visibility = View.VISIBLE
-        imgPick.visibility = View.GONE
-        Glide.with(this)
+        _binding?.let { b ->
+            b.imgMain.visibility = View.VISIBLE
+            b.imgPick.visibility = View.GONE
+            Glide.with(this)
                 .load(imageUri)
-                .into(imgMain)
+                .into(b.imgMain)
+        }
     }
 
     override fun setPresenter(presenter: CreateVoteContract.Presenter) {
@@ -69,19 +74,16 @@ class CreateVoteTabOptionFragment : Fragment(), CreateVoteContract.OptionFragmen
     }
 
     override fun refreshOptions() {
-        optionItemAdapter.notifyDataSetChanged()
+        optionItemAdapter?.notifyDataSetChanged()
     }
 
     interface OptionItemListener {
         fun onOptionTextChange(optionId: Long, newOptionText: String)
-
         fun onOptionAddNew()
-
         fun onOptionRemove(optionId: Long)
     }
 
     companion object {
-
         fun newTabFragment(): CreateVoteTabOptionFragment {
             return CreateVoteTabOptionFragment()
         }

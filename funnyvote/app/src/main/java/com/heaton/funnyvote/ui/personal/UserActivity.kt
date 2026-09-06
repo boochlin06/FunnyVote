@@ -1,29 +1,22 @@
 package com.heaton.funnyvote.ui.personal
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.AppBarLayout
-import android.support.design.widget.TabLayout
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentStatePagerAdapter
-import android.support.v4.view.ViewPager
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.View
-import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
-
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.Glide
 import com.google.android.gms.analytics.HitBuilders
 import com.google.android.gms.analytics.Tracker
+import com.google.android.material.appbar.AppBarLayout
 import com.heaton.funnyvote.FunnyVoteApplication
 import com.heaton.funnyvote.MainActivity
 import com.heaton.funnyvote.R
@@ -32,25 +25,19 @@ import com.heaton.funnyvote.data.Injection
 import com.heaton.funnyvote.database.Promotion
 import com.heaton.funnyvote.database.User
 import com.heaton.funnyvote.database.VoteData
+import com.heaton.funnyvote.databinding.ActivityPersonalBinding
 import com.heaton.funnyvote.notification.VoteNotificationManager
 import com.heaton.funnyvote.ui.createvote.CreateVoteActivity
 import com.heaton.funnyvote.ui.main.MainPageContract
 import com.heaton.funnyvote.ui.main.MainPageTabFragment
 import com.heaton.funnyvote.utils.Util
 
-import kotlinx.android.synthetic.main.activity_personal.*
-
-import de.hdodenhof.circleimageview.CircleImageView
-
 class UserActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener, PersonalContract.UserPageView {
-    private var isAvatarShown = true
 
-//    private var imgUserIcon: CircleImageView? = null
-//    private var txtUserName: TextView? = null
-//    private var txtSubTitle: TextView? = null
+    private lateinit var binding: ActivityPersonalBinding
+    private var isAvatarShown = true
     private var maxScrollSize: Int = 0
     private var tabsAdapter: TabsAdapter? = null
-    //private var viewPager: ViewPager? = null
     private var tracker: Tracker? = null
     private var isMainActivityNeedRestart = false
     private var passwordDialog: AlertDialog? = null
@@ -61,50 +48,44 @@ class UserActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener, 
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_personal)
+        binding = ActivityPersonalBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val application = application as FunnyVoteApplication
         tracker = application.defaultTracker
-        val tabLayout = findViewById<View>(R.id.tabLayoutPersonal) as TabLayout
-        //viewPager = findViewById<View>(R.id.vpMain) as ViewPager
-        //val appbarLayout = findViewById<View>(R.id.appBarMain) as AppBarLayout
 
-        //val toolbar = findViewById<View>(R.id.toolbarSub) as Toolbar
-        toolbarSub.setNavigationOnClickListener { onBackPressed() }
+        binding.toolbarSub.setNavigationOnClickListener { onBackPressed() }
 
-        appBarMain.addOnOffsetChangedListener(this)
-        maxScrollSize = appBarMain.totalScrollRange
+        binding.appBarMain.addOnOffsetChangedListener(this)
+        maxScrollSize = binding.appBarMain.totalScrollRange
 
         tabsAdapter = TabsAdapter(supportFragmentManager, User())
-        vpMain.adapter = tabsAdapter;
-        tabLayout.setupWithViewPager(vpMain)
-        tracker!!.setScreenName(AnalyzticsTag.SCREEN_BOX_CREATE)
-        tracker!!.send(HitBuilders.ScreenViewBuilder().build())
-        vpMain.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-
-            }
+        binding.vpMain.adapter = tabsAdapter
+        binding.tabLayoutPersonal.setupWithViewPager(binding.vpMain)
+        tracker?.setScreenName(AnalyzticsTag.SCREEN_BOX_CREATE)
+        tracker?.send(HitBuilders.ScreenViewBuilder().build())
+        binding.vpMain.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
 
             override fun onPageSelected(position: Int) {
-                if (position == 0) {
-                    tracker!!.setScreenName(AnalyzticsTag.SCREEN_BOX_CREATE)
-                } else if (position == 1) {
-                    tracker!!.setScreenName(AnalyzticsTag.SCREEN_BOX_PARTICIPATE)
-                } else if (position == 2) {
-                    tracker!!.setScreenName(AnalyzticsTag.SCREEN_BOX_FAVORITE)
+                when (position) {
+                    0 -> tracker?.setScreenName(AnalyzticsTag.SCREEN_BOX_CREATE)
+                    1 -> tracker?.setScreenName(AnalyzticsTag.SCREEN_BOX_PARTICIPATE)
+                    2 -> tracker?.setScreenName(AnalyzticsTag.SCREEN_BOX_FAVORITE)
                 }
-                tracker!!.send(HitBuilders.ScreenViewBuilder().build())
+                tracker?.send(HitBuilders.ScreenViewBuilder().build())
             }
 
-            override fun onPageScrollStateChanged(state: Int) {
-
-            }
+            override fun onPageScrollStateChanged(state: Int) {}
         })
 
         isMainActivityNeedRestart = VoteNotificationManager.ACTION_NOTIFICATION_USER_ACTIVITY_START == intent.action
-        presenter = UserPresenter(Injection.provideVoteDataRepository(applicationContext)
-                , Injection.provideUserRepository(applicationContext), this)
-        presenter.setTargetUser(User())
+        presenter = UserPresenter(
+            Injection.provideVoteDataRepository(applicationContext),
+            Injection.provideUserRepository(applicationContext),
+            this
+        )
+        (presenter as UserPresenter).setTargetUser(User())
         presenter.start()
     }
 
@@ -116,10 +97,9 @@ class UserActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener, 
 
     override fun onResume() {
         super.onResume()
-        //presenter.start();
         presenter.refreshAllFragment()
-        tracker!!.setScreenName(AnalyzticsTag.SCREEN_BOX)
-        tracker!!.send(HitBuilders.ScreenViewBuilder().build())
+        tracker?.setScreenName(AnalyzticsTag.SCREEN_BOX)
+        tracker?.send(HitBuilders.ScreenViewBuilder().build())
     }
 
     override fun onBackPressed() {
@@ -139,35 +119,36 @@ class UserActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener, 
 
         if (percentage >= PERCENTAGE_TO_ANIMATE_AVATAR && isAvatarShown) {
             isAvatarShown = false
-            imgUserIcon!!.animate().scaleY(0f).scaleX(0f).setDuration(200).start()
+            binding.imgUserIcon.animate().scaleY(0f).scaleX(0f).setDuration(200).start()
         }
 
         if (percentage <= PERCENTAGE_TO_ANIMATE_AVATAR && !isAvatarShown) {
             isAvatarShown = true
-            imgUserIcon!!.animate()
-                    .scaleY(1f).scaleX(1f)
-                    .start()
+            binding.imgUserIcon.animate().scaleY(1f).scaleX(1f).start()
         }
     }
 
     override fun setUpUserView(user: User) {
-        txtUserName!!.text = user.userName
-        txtSubTitle!!.text = User.getUserTypeString(user.type) + ":" + user.email
-        if (user.userIcon == null || user.userIcon.isEmpty()) {
-            imgUserIcon!!.setImageResource(R.drawable.user_avatar)
+        binding.txtUserName.text = user.userName
+        binding.txtSubTitle.text = User.getUserTypeString(user.type) + ":" + user.email
+        if (user.userIcon.isNullOrEmpty()) {
+            binding.imgUserIcon.setImageResource(R.drawable.user_avatar)
         } else {
             Glide.with(this)
-                    .load(user.userIcon)
-                    .override(resources.getDimension(R.dimen.personal_image_width).toInt(), resources.getDimension(R.dimen.personal_image_high).toInt())
-                    .dontAnimate()
-                    .fitCenter()
-                    .crossFade()
-                    .into(imgUserIcon!!)
+                .load(user.userIcon)
+                .override(
+                    resources.getDimension(R.dimen.personal_image_width).toInt(),
+                    resources.getDimension(R.dimen.personal_image_high).toInt()
+                )
+                .fitCenter()
+                .into(binding.imgUserIcon)
         }
-        tracker!!.send(HitBuilders.EventBuilder()
+        tracker?.send(
+            HitBuilders.EventBuilder()
                 .setCategory(AnalyzticsTag.CATEGORY_USER)
                 .setAction(AnalyzticsTag.ACTION_ENTER_USER_INFO)
-                .setLabel(user.userCode).build())
+                .setLabel(user.userCode ?: "").build()
+        )
     }
 
     override fun showShareDialog(data: VoteData) {
@@ -179,38 +160,23 @@ class UserActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener, 
     }
 
     override fun showCreateVote() {
-        this.startActivity(Intent(this, CreateVoteActivity::class.java))
+        startActivity(Intent(this, CreateVoteActivity::class.java))
     }
 
     override fun showVoteDetail(data: VoteData) {
         Util.startActivityToVoteDetail(this, data.voteCode)
     }
 
-
-    override fun showIntroductionDialog() {
-        //nothing
-    }
-
-    override fun showLoadingCircle() {
-        //        circleLoad.setVisibility(View.VISIBLE);
-        //        circleLoad.setText(getString(R.string.vote_detail_circle_loading));
-        //        circleLoad.spin();
-    }
-
-    override fun hideLoadingCircle() {
-        //        circleLoad.stopSpinning();
-        //        circleLoad.setVisibility(View.GONE);
-    }
-
-    override fun setupPromotionAdmob(promotionList: List<Promotion>, user: User) {
-        //none
-    }
+    override fun showIntroductionDialog() {}
+    override fun showLoadingCircle() {}
+    override fun hideLoadingCircle() {}
+    override fun setupPromotionAdmob(promotionList: List<Promotion>, user: User) {}
 
     override fun setUpTabsAdapter(user: User) {
-        tabsAdapter = TabsAdapter(this@UserActivity.supportFragmentManager, user)
-        val currentItem = vpMain.currentItem
-        vpMain.adapter = tabsAdapter
-        vpMain.currentItem = currentItem
+        tabsAdapter = TabsAdapter(supportFragmentManager, user)
+        val currentItem = binding.vpMain.currentItem
+        binding.vpMain.adapter = tabsAdapter
+        binding.vpMain.currentItem = currentItem
     }
 
     override fun setUpTabsAdapter(user: User, targetUser: User) {
@@ -224,24 +190,17 @@ class UserActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener, 
     override fun showPollPasswordDialog(data: VoteData, optionCode: String) {
         val builder = AlertDialog.Builder(this)
         builder.setView(R.layout.password_dialog)
-        builder.setPositiveButton(this.resources
-                .getString(R.string.vote_detail_dialog_password_input), null)
-        builder.setNegativeButton(this.applicationContext.resources
-                .getString(R.string.account_dialog_cancel), null)
-        builder.setTitle(this.getString(R.string.vote_detail_dialog_password_title))
+        builder.setPositiveButton(resources.getString(R.string.vote_detail_dialog_password_input), null)
+        builder.setNegativeButton(applicationContext.resources.getString(R.string.account_dialog_cancel), null)
+        builder.setTitle(getString(R.string.vote_detail_dialog_password_title))
         passwordDialog = builder.create()
 
         passwordDialog!!.setOnShowListener { dialogInterface ->
-            val password = (dialogInterface as AlertDialog).findViewById<View>(R.id.edtEnterPassword) as EditText?
+            val password = (dialogInterface as AlertDialog).findViewById<EditText>(R.id.edtEnterPassword)
             val ok = dialogInterface.getButton(AlertDialog.BUTTON_POSITIVE)
             ok.setOnClickListener {
                 Log.d(TAG, "showPollPasswordDialog PW:")
-                presenter.pollVote(data, optionCode, password!!.text.toString())
-                //                        tracker.send(new HitBuilders.EventBuilder()
-                //                                .setCategory(tab)
-                //                                .setAction(AnalyzticsTag.ACTION_QUICK_POLL_VOTE)
-                //                                .setLabel(data.getVoteCode())
-                //                                .build());
+                presenter.pollVote(data, optionCode, password?.text?.toString() ?: "")
             }
         }
         passwordDialog!!.show()
@@ -255,69 +214,62 @@ class UserActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener, 
 
     override fun shakePollPasswordDialog() {
         if (passwordDialog != null && passwordDialog!!.isShowing) {
-            val password = passwordDialog!!.findViewById<View>(R.id.edtEnterPassword) as EditText?
-            password!!.selectAll()
+            val password = passwordDialog!!.findViewById<EditText>(R.id.edtEnterPassword)
+            password?.selectAll()
             val shake = AnimationUtils.loadAnimation(this, R.anim.edittext_shake)
-            password.startAnimation(shake)
+            password?.startAnimation(shake)
         }
     }
 
     override val isPasswordDialogShowing: Boolean
-        get() = passwordDialog!!.isShowing
+        get() = passwordDialog != null && passwordDialog!!.isShowing
 
     override fun setPresenter(presenter: MainPageContract.Presenter) {
         this.presenter = presenter
     }
 
-    private inner class TabsAdapter(fm: FragmentManager, private val user: User) : FragmentStatePagerAdapter(fm) {
+    private inner class TabsAdapter(fm: FragmentManager, private val user: User) :
+        FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
-        override fun getCount(): Int {
-            return 3
-        }
+        override fun getCount(): Int = 3
 
-        override fun getItem(i: Int): Fragment? {
-            val argument = Bundle()
-            argument.putParcelable(MainPageTabFragment.KEY_LOGIN_USER, user)
-            when (i) {
+        override fun getItem(i: Int): Fragment {
+            return when (i) {
                 0 -> {
                     if (createFragment == null) {
                         createFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_CREATE, user)
                         createFragment!!.setPresenter(presenter)
                     }
-                    return createFragment
+                    createFragment!!
                 }
                 1 -> {
                     if (participateFragment == null) {
                         participateFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_PARTICIPATE, user)
                         participateFragment!!.setPresenter(presenter)
                     }
-                    return participateFragment
+                    participateFragment!!
                 }
-                2 -> {
+                else -> {
                     if (favoriteFragment == null) {
                         favoriteFragment = MainPageTabFragment.newInstance(MainPageTabFragment.TAB_FAVORITE, user)
                         favoriteFragment!!.setPresenter(presenter)
                     }
-                    return favoriteFragment
+                    favoriteFragment!!
                 }
             }
-            return null
         }
 
-        override fun getPageTitle(position: Int): CharSequence? {
-            when (position) {
-                0 -> return getString(R.string.personal_tab_create)
-                1 -> return getString(R.string.personal_tab_participate)
-                2 -> return getString(R.string.personal_tab_favorite)
+        override fun getPageTitle(position: Int): CharSequence {
+            return when (position) {
+                0 -> getString(R.string.personal_tab_create)
+                1 -> getString(R.string.personal_tab_participate)
+                else -> getString(R.string.personal_tab_favorite)
             }
-            return ""
         }
     }
 
     companion object {
         private val TAG = UserActivity::class.java.simpleName
-
-        private val PERCENTAGE_TO_ANIMATE_AVATAR = 20
+        private const val PERCENTAGE_TO_ANIMATE_AVATAR = 20
     }
-
 }

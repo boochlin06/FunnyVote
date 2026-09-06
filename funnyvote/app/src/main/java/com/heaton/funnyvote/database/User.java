@@ -5,16 +5,9 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.Transient;
-
 /**
  * Created by chiu_mac on 2016/10/28.
  */
-
-@Entity
 public class User implements Parcelable {
     public static final int TYPE_FACEBOOK = 100;
     public static final int TYPE_GOOGLE = 101;
@@ -27,11 +20,10 @@ public class User implements Parcelable {
     public static final String TYPE_TOKEN_GUEST = "guest";
     public static final String TYPE_TOKEN_OTP = "otp";
 
-    @Id
     private Long id;
 
     @SerializedName("nickname")
-    public String userName;
+    private String userName;
 
     private String email;
 
@@ -43,7 +35,6 @@ public class User implements Parcelable {
 
     private int type;
     // For query the other person.
-    @Transient
     public String personalTokenType;
 
     private String gender;
@@ -64,8 +55,22 @@ public class User implements Parcelable {
         }
     }
 
-    @Generated(hash = 586692638)
     public User() {
+    }
+
+    public User(Long id, String userName, String email, String userID,
+                String userCode, String userIcon, int type, String gender, int minAge,
+                int maxAge) {
+        this.id = id;
+        this.userName = userName;
+        this.email = email;
+        this.userID = userID;
+        this.userCode = userCode;
+        this.userIcon = userIcon;
+        this.type = type;
+        this.gender = gender;
+        this.minAge = minAge;
+        this.maxAge = maxAge;
     }
 
     public String getTokenType() {
@@ -184,21 +189,6 @@ public class User implements Parcelable {
         this.gender = in.readString();
         this.minAge = in.readInt();
         this.maxAge = in.readInt();
-    }
-
-    @Generated(hash = 1947222936)
-    public User(Long id, String userName, String email, String userID, String userCode,
-            String userIcon, int type, String gender, int minAge, int maxAge) {
-        this.id = id;
-        this.userName = userName;
-        this.email = email;
-        this.userID = userID;
-        this.userCode = userCode;
-        this.userIcon = userIcon;
-        this.type = type;
-        this.gender = gender;
-        this.minAge = minAge;
-        this.maxAge = maxAge;
     }
 
     public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {

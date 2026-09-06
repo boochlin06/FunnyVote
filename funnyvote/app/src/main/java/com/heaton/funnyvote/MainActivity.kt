@@ -5,15 +5,15 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.NavigationView
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.SearchView
-import android.support.v7.widget.Toolbar
+import com.google.android.material.navigation.NavigationView
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
 import android.transition.Slide
 import android.util.Log
 import android.view.Gravity
@@ -224,7 +224,7 @@ class MainActivity : AppCompatActivity(), MainPageContract.View {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         val fragment = supportFragmentManager.findFragmentById(R.id.frame_content)
         fragment?.onActivityResult(requestCode, resultCode, data)

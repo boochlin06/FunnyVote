@@ -1,21 +1,24 @@
 package com.heaton.funnyvote.ui.votedetail
 
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.RecyclerView
 import android.view.View
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import com.heaton.funnyvote.R
 import com.heaton.funnyvote.database.Option
-import kotlinx.android.synthetic.main.card_view_item_unpoll_options.view.*
-
-/**
- * Created by heaton on 2016/8/22.
- */
+import com.heaton.funnyvote.databinding.CardViewItemUnpollOptionsBinding
 
 class VHUnPollOptionItem(
-        itemView: View
-        , private val isMultiChoice: Boolean
-        , private val itemListener: VoteDetailContentActivity.OptionItemListener
-) : RecyclerView.ViewHolder(itemView) {
+    val binding: CardViewItemUnpollOptionsBinding,
+    private val isMultiChoice: Boolean,
+    private val itemListener: VoteDetailContentActivity.OptionItemListener
+) : RecyclerView.ViewHolder(binding.root) {
+
+    constructor(
+        itemView: View,
+        isMultiChoice: Boolean,
+        itemListener: VoteDetailContentActivity.OptionItemListener
+    ) : this(CardViewItemUnpollOptionsBinding.bind(itemView), isMultiChoice, itemListener)
+
     private lateinit var option: Option
     private var isChoice = false
     private var isExpand = false
@@ -24,19 +27,19 @@ class VHUnPollOptionItem(
         this.option = option
         this.isChoice = isChoice
         this.isExpand = isExpand
-        itemView.txtOptionTitle.text = option.title
-        itemView.txtOptionNumber.text = (adapterPosition + 1).toString()
+        binding.txtOptionTitle.text = option.title
+        binding.txtOptionNumber.text = (adapterPosition + 1).toString()
         setUpOptionExpandLayout()
         setUpImgChoiceLayout()
-        itemView.imgChoice.setOnClickListener { itemListener.onOptionChoice(option.id, option.code) }
+        binding.imgChoice.setOnClickListener { itemListener.onOptionChoice(option.id, option.code) }
         itemView.setOnClickListener {
-            if (itemView.txtOptionTitle.lineCount == 1) {
+            if (binding.txtOptionTitle.lineCount == 1) {
                 itemListener.onOptionChoice(option.id, option.code)
             } else {
                 itemListener.onOptionExpand(option.code)
             }
         }
-        itemView.cardOption.setOnLongClickListener {
+        binding.cardOption.setOnLongClickListener {
             itemListener.onOptionQuickPoll(option.id, option.code)
             true
         }
@@ -44,24 +47,27 @@ class VHUnPollOptionItem(
 
     private fun setUpImgChoiceLayout() {
         if (!isMultiChoice) {
-            itemView.imgChoice.setImageResource(if (isChoice)
-                R.drawable.ic_radio_button_checked_40dp
-            else
-                R.drawable.ic_radio_button_unchecked_40dp)
+            binding.imgChoice.setImageResource(
+                if (isChoice) R.drawable.ic_radio_button_checked_40dp else R.drawable.ic_radio_button_unchecked_40dp
+            )
         } else {
-            itemView.imgChoice.setImageResource(if (isChoice)
-                R.drawable.ic_check_box_40dp
-            else
-                R.drawable.ic_check_box_outline_blank_40dp)
+            binding.imgChoice.setImageResource(
+                if (isChoice) R.drawable.ic_check_box_40dp else R.drawable.ic_check_box_outline_blank_40dp
+            )
         }
-        itemView.cardOption.setCardBackgroundColor(
-                ContextCompat.getColor(itemView.context
-                        , if (isChoice) R.color.md_red_100 else R.color.md_blue_100))
+        binding.cardOption.setCardBackgroundColor(
+            ContextCompat.getColor(
+                itemView.context,
+                if (isChoice) R.color.md_red_100 else R.color.md_blue_100
+            )
+        )
     }
 
-    private fun setUpOptionExpandLayout() = if (isExpand) {
-        itemView.txtOptionTitle.maxLines = 20
-    } else {
-        itemView.txtOptionTitle.maxLines = 1
+    private fun setUpOptionExpandLayout() {
+        if (isExpand) {
+            binding.txtOptionTitle.maxLines = 20
+        } else {
+            binding.txtOptionTitle.maxLines = 1
+        }
     }
 }

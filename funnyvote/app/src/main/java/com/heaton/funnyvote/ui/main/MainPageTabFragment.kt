@@ -6,26 +6,27 @@
 package com.heaton.funnyvote.ui.main
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import android.widget.RelativeLayout
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.gms.analytics.Tracker
 import com.heaton.funnyvote.FunnyVoteApplication
-import com.heaton.funnyvote.R
 import com.heaton.funnyvote.data.VoteData.VoteDataRepository
 import com.heaton.funnyvote.database.User
 import com.heaton.funnyvote.database.VoteData
+import com.heaton.funnyvote.databinding.FragmentMainPageTabBinding
 import com.heaton.funnyvote.ui.HidingScrollListener
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter
-import kotlinx.android.synthetic.main.fragment_main_page_tab.*
 
 class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
+
+    private var _binding: FragmentMainPageTabBinding? = null
+    private val binding get() = _binding!!
 
     private var tab: String = TAB_HOT
     private var adapter: VoteWallItemAdapter? = null
@@ -33,19 +34,18 @@ class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
     private lateinit var presenter: MainPageContract.Presenter
     private lateinit var wallItemListener: VoteWallItemListener
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
-        return inflater.inflate(R.layout.fragment_main_page_tab
-                , container, false) as RelativeLayout
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentMainPageTabBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val argument = arguments
-        this.tab = argument!!.getString(KEY_TAB)
+        this.tab = argument!!.getString(KEY_TAB) ?: TAB_HOT
         val application = requireActivity().application as FunnyVoteApplication
         tracker = application.defaultTracker
-        fabTop.visibility = View.GONE
+        binding.fabTop.visibility = View.GONE
         wallItemListener = object : VoteWallItemListener {
             override fun onVoteFavoriteChange(voteData: VoteData) = presenter.favoriteVote(voteData)
 
@@ -72,7 +72,7 @@ class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
                 }
             }
         }
-        swipeLayout.setOnRefreshListener(WallItemOnRefreshListener())
+        binding.swipeLayout.setOnRefreshListener(WallItemOnRefreshListener())
         this.setPresenter(presenter)
         when (tab) {
             TAB_HOT -> presenter.setHotsFragmentView(this)
@@ -83,22 +83,26 @@ class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        val manager = ryMainPage.layoutManager as LinearLayoutManager
-        val position = manager.findFirstVisibleItemPosition()
-        if (position == 0) {
-            // TODO:AUTO UPDATE .
-            //refreshData();
-        }
-        adapter!!.notifyDataSetChanged()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
+    override fun onResume() {
+        super.onResume()
+        _binding?.let { b ->
+            val manager = b.ryMainPage.layoutManager as? LinearLayoutManager
+            val position = manager?.findFirstVisibleItemPosition() ?: 0
+            if (position == 0) {
+                // TODO:AUTO UPDATE
+            }
+        }
+        adapter?.notifyDataSetChanged()
+    }
 
     override fun setUpRecycleView(voteDataList: List<VoteData>) {
-        //voteDataList = voteDataList;
+        val b = _binding ?: return
         adapter = VoteWallItemAdapter(requireContext(), wallItemListener, voteDataList)
-        // if max count is -1 , the list is init.
         adapter!!.setMaxCount(-1)
         when (tab) {
             TAB_HOT -> adapter!!.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_REFRESH)
@@ -108,27 +112,32 @@ class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
             TAB_FAVORITE -> adapter!!.setNoVoteTag(VoteWallItemAdapter.TAG_NO_VOTE_FAVORITE)
         }
         adapter!!.resetItemTypeList()
-        val scaleInAnimationAdapter = ScaleInAnimationAdapter(adapter)
+        val itemAdapter = adapter ?: return
+        val scaleInAnimationAdapter = ScaleInAnimationAdapter(itemAdapter)
         scaleInAnimationAdapter.setDuration(1000)
-        ryMainPage.adapter = adapter
-        ryMainPage.addOnScrollListener(object : HidingScrollListener() {
+        b.ryMainPage.adapter = itemAdapter
+        b.ryMainPage.addOnScrollListener(object : HidingScrollListener() {
             override fun onHide() {
-                fabTop.animate().translationY(
-                        (fabTop.height + 50).toFloat()).interpolator = AccelerateInterpolator(2f)
+                _binding?.let {
+                    it.fabTop.animate().translationY(
+                            (it.fabTop.height + 50).toFloat()).interpolator = AccelerateInterpolator(2f)
+                }
             }
 
             override fun onShow() {
                 this.resetScrollDistance()
-                fabTop.animate().translationY(0f).interpolator = DecelerateInterpolator(2f)
+                _binding?.let {
+                    it.fabTop.animate().translationY(0f).interpolator = DecelerateInterpolator(2f)
+                }
             }
         })
-        fabTop.setOnClickListener {
-            val manager = ryMainPage.layoutManager as LinearLayoutManager
-            val position = manager.findFirstVisibleItemPosition()
+        b.fabTop.setOnClickListener {
+            val manager = b.ryMainPage.layoutManager as? LinearLayoutManager
+            val position = manager?.findFirstVisibleItemPosition() ?: 0
             if (position > 5) {
-                ryMainPage.scrollToPosition(5)
+                b.ryMainPage.scrollToPosition(5)
             }
-            ryMainPage.smoothScrollToPosition(0)
+            b.ryMainPage.smoothScrollToPosition(0)
         }
     }
 
@@ -145,9 +154,7 @@ class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
     }
 
     private inner class WallItemOnRefreshListener : SwipeRefreshLayout.OnRefreshListener {
-
         override fun onRefresh() {
-
             when (tab) {
                 TAB_HOT -> presenter.reloadHotList(0)
                 TAB_NEW -> presenter.reloadNewList(0)
@@ -158,11 +165,8 @@ class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
         }
     }
 
-
     override fun setMaxCount(max: Int) {
-        if (adapter != null) {
-            adapter!!.setMaxCount(max.toLong())
-        }
+        adapter?.setMaxCount(max.toLong())
     }
 
     override fun setTab(tab: String) {
@@ -170,24 +174,20 @@ class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
     }
 
     override fun hideSwipeLoadView() {
-        if (swipeLayout.isRefreshing) {
-            swipeLayout.isRefreshing = false
+        _binding?.let {
+            if (it.swipeLayout.isRefreshing) {
+                it.swipeLayout.isRefreshing = false
+            }
         }
     }
 
     interface VoteWallItemListener {
         fun onVoteFavoriteChange(voteData: VoteData)
-
         fun onVoteItemClick(voteData: VoteData)
-
         fun onVoteAuthorClick(voteData: VoteData)
-
         fun onVoteShare(voteData: VoteData)
-
         fun onVoteQuickPoll(voteData: VoteData, optionCode: String)
-
         fun onNoVoteCreateNew()
-
         fun onReloadVote()
     }
 
@@ -201,7 +201,6 @@ class MainPageTabFragment : Fragment(), MainPageContract.TabPageFragment {
 
         const val TAB_HOT = "HOT"
         const val TAB_NEW = "NEW"
-
         const val TAB_CREATE = "CREATE"
         const val TAB_PARTICIPATE = "PARTICIPATE"
         const val TAB_FAVORITE = "FAVORITE"

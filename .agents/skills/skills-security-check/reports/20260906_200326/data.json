@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-09-06 20:03:26",
+  "root": "/Users/heaton/code/FunnyVote-master/.agents/skills",
+  "workspace_summary": {
+    "total": 1,
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "security_score": 80
+  },
+  "items": [
+    {
+      "skill": "skills-security-check",
+      "path": "skills-security-check",
+      "summary": "功能分析：共掃描 4 個檔案。偵測到 16 項敏感操作、12 個外部連線、7 個潛在混淆指標、12 個套件安裝指令。",
+      "sensitive_behaviors": [
+        "AWS/Cloud 設定檔：skills-security-check/SKILL.md",
+        "AWS/Cloud 設定檔：skills-security-check/scripts/scan_skills.py",
+        "SSH 金鑰/設定存取：skills-security-check/SKILL.md",
+        "SSH 金鑰/設定存取：skills-security-check/scripts/scan_skills.py",
+        "以太坊/比特幣路徑：skills-security-check/scripts/scan_skills.py",
+        "加密貨幣錢包相關 (Wallet/Seed/Mnemonic)：skills-security-check/scripts/scan_skills.py",
+        "動態模組/代碼載入 (Eval/Import)：skills-security-check/scripts/scan_skills.py",
+        "執行任意系統指令 (Shell/Subprocess)：skills-security-check/SKILL.md",
+        "執行任意系統指令 (Shell/Subprocess)：skills-security-check/scripts/scan_skills.py",
+        "存取環境變數 (Env Vars)：skills-security-check/scripts/scan_skills.py",
+        "瀏覽器機敏資料 (Cookies/Passwords)：skills-security-check/scripts/scan_skills.py",
+        "疑似 C2/下載並執行 (curl|wget -> shell)：skills-security-check/SKILL.md",
+        "疑似 C2/下載並執行 (curl|wget -> shell)：skills-security-check/scripts/scan_skills.py",
+        "硬編碼憑證關鍵字 (API Key/Token/Secret)：skills-security-check/SKILL.md",
+        "硬編碼憑證關鍵字 (API Key/Token/Secret)：skills-security-check/scripts/scan_skills.py",
+        "背景常駐/排程任務 (Persistence)：skills-security-check/scripts/scan_skills.py"
+      ],
+      "network_activity": [
+        "https://cdn.jsdelivr.net/npm/chart.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+        "https://fonts.googleapis.com",
+        "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+        "https://fonts.gstatic.com",
+        "https://github.com/YOUR_USERNAME/Skills-Security-Check.git",
+        "https://img.shields.io/badge/Patreon-Support-FF424D?style=flat&logo=patreon",
+        "https://img.shields.io/badge/Threads-@prompt__case-000000?style=flat&logo=threads",
+        "https://img.shields.io/badge/license-MIT-blue.svg",
+        "https://img.shields.io/badge/python-3.8+-green.svg",
+        "https://www.patreon.com/MattTrendsPromptEngineering",
+        "https://www.threads.com/@prompt_case"
+      ],
+      "obfuscation_signals": [
+        "反除錯/反沙盒 (Sleep/UserInteraction)：skills-security-check/README.md",
+        "反除錯/反沙盒 (Sleep/UserInteraction)：skills-security-check/SKILL.md",
+        "反除錯/反沙盒 (Sleep/UserInteraction)：skills-security-check/scripts/scan_skills.py",
+        "地區/時區規避偵測：skills-security-check/scripts/scan_skills.py",
+        "疑似混淆/編碼 (Base64/Hex/XOR)：skills-security-check/README.md",
+        "疑似混淆/編碼 (Base64/Hex/XOR)：skills-security-check/SKILL.md",
+        "疑似混淆/編碼 (Base64/Hex/XOR)：skills-security-check/scripts/scan_skills.py"
+      ],
+      "package_installs": [
+        "apt-get install 安裝 (Linux)：skills-security-check/scripts/scan_skills.py",
+        "brew install 安裝 (macOS)：skills-security-check/SKILL.md",
+        "brew install 安裝 (macOS)：skills-security-check/scripts/scan_skills.py",
+        "gem install 安裝 (Ruby)：skills-security-check/scripts/scan_skills.py",
+        "go get/install 安裝 (Go)：skills-security-check/SKILL.md",
+        "go get/install 安裝 (Go)：skills-security-check/scripts/scan_skills.py",
+        "npm install 安裝 (Node.js)：skills-security-check/SKILL.md",
+        "npm install 安裝 (Node.js)：skills-security-check/scripts/scan_skills.py",
+        "pip install 安裝 (Python)：skills-security-check/SKILL.md",
+        "pip install 安裝 (Python)：skills-security-check/scripts/scan_skills.py",
+        "pnpm add 安裝 (Node.js)：skills-security-check/scripts/scan_skills.py",
+        "yarn add 安裝 (Node.js)：skills-security-check/scripts/scan_skills.py"
+      ],
+      "risk_level": "high",
+      "reasoning": "偵測到「下載並執行」或遠端腳本危險行為； 偵測到系統駐留/開機啟動設定； 偵測到加密貨幣錢包或私鑰存取路徑； 包含任意系統指令執行 (Shell/Subprocess)； 使用動態代碼執行 (Eval/Import)； 嘗試讀取 SSH 金鑰或雲端憑證； 嘗試存取瀏覽器敏感資料； 代碼包含混淆或編碼跡象 (Base64/Hex)； 包含地區/時區判斷邏輯 (可能為逃避偵測)； 包含大量外部連線 (12 個)",
+      "recommendation": "⚠️ 高度危險：不建議在含真實憑證或資產的環境安裝！僅可在隔離 VM / 拋棄式沙盒中測試。",
+      "ai_audit": null
+    }
+  ]
+}

@@ -27,9 +27,9 @@ import android.graphics.Paint.Style
 import android.graphics.drawable.Drawable
 import android.os.Parcel
 import android.os.Parcelable
-import android.support.v4.view.MotionEventCompat
-import android.support.v4.view.ViewConfigurationCompat
-import android.support.v4.view.ViewPager
+import androidx.core.view.MotionEventCompat
+import androidx.core.view.ViewConfigurationCompat
+import androidx.viewpager.widget.ViewPager
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -480,7 +480,7 @@ class CirclePageIndicator @JvmOverloads constructor(context: Context, attrs: Att
     internal class SavedState : View.BaseSavedState {
         var currentPage: Int = 0
 
-        constructor(superState: Parcelable) : super(superState) {}
+        constructor(superState: Parcelable?) : super(superState) {}
 
         private constructor(`in`: Parcel) : super(`in`) {
             currentPage = `in`.readInt()

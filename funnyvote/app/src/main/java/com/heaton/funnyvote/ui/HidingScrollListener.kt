@@ -1,7 +1,7 @@
 package com.heaton.funnyvote.ui
 
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 /**
  * Created by heaton on 2016/11/9.
@@ -19,7 +19,7 @@ abstract class HidingScrollListener : RecyclerView.OnScrollListener {
 
     constructor() {}
 
-    override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+    override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
         super.onScrolled(recyclerView, dx, dy)
 
         val firstVisibleItem = (recyclerView!!.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()

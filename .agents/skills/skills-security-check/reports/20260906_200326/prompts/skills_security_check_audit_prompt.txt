@@ -1,0 +1,1922 @@
+
+# 資安專家 AI 審查任務
+
+請扮演一位資深資安工程師，針對以下 Skill 進行深度安全審查。
+你的目標是識別潛在惡意代碼、供應鏈攻擊風險以及隱私洩露問題。
+
+## 1. 專案基本資訊
+- **名稱**: skills-security-check
+- **路徑**: skills-security-check
+
+## 2. 檔案結構 (File Tree)
+```text
+    README.md
+    SKILL.md
+    scripts/
+        scan_skills.py
+    assets/
+        dashboard-preview.png
+        dashboard_template.html
+    reports/
+        20260906_200326/
+            prompts/
+```
+
+## 3. 供應鏈依賴 (Supply Chain Dependencies)
+請特別檢查以下外部套件是否存在已知惡意軟體或被濫用的歷史 (如 Typosquatting):
+此 Skill 未偵測到明確的套件依賴文件。
+
+## 4. 靜態掃描發現的可疑熱點 (Scanner Findings)
+以下是透過 Regex 腳本偵測到的可疑特徵，請重點檢查這些位置的上下文意圖：
+- AWS/Cloud 設定檔：skills-security-check/SKILL.md
+- AWS/Cloud 設定檔：skills-security-check/scripts/scan_skills.py
+- SSH 金鑰/設定存取：skills-security-check/SKILL.md
+- SSH 金鑰/設定存取：skills-security-check/scripts/scan_skills.py
+- https://cdn.jsdelivr.net/npm/chart.js
+- https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js
+- https://fonts.googleapis.com
+- https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap
+- https://fonts.gstatic.com
+- https://github.com/YOUR_USERNAME/Skills-Security-Check.git
+- https://img.shields.io/badge/Patreon-Support-FF424D?style=flat&logo=patreon
+- https://img.shields.io/badge/Threads-@prompt__case-000000?style=flat&logo=threads
+- https://img.shields.io/badge/license-MIT-blue.svg
+- https://img.shields.io/badge/python-3.8+-green.svg
+- https://www.patreon.com/MattTrendsPromptEngineering
+- https://www.threads.com/@prompt_case
+- 以太坊/比特幣路徑：skills-security-check/scripts/scan_skills.py
+- 加密貨幣錢包相關 (Wallet/Seed/Mnemonic)：skills-security-check/scripts/scan_skills.py
+- 動態模組/代碼載入 (Eval/Import)：skills-security-check/scripts/scan_skills.py
+- 反除錯/反沙盒 (Sleep/UserInteraction)：skills-security-check/README.md
+- 反除錯/反沙盒 (Sleep/UserInteraction)：skills-security-check/SKILL.md
+- 反除錯/反沙盒 (Sleep/UserInteraction)：skills-security-check/scripts/scan_skills.py
+- 地區/時區規避偵測：skills-security-check/scripts/scan_skills.py
+- 執行任意系統指令 (Shell/Subprocess)：skills-security-check/SKILL.md
+- 執行任意系統指令 (Shell/Subprocess)：skills-security-check/scripts/scan_skills.py
+- 存取環境變數 (Env Vars)：skills-security-check/scripts/scan_skills.py
+- 瀏覽器機敏資料 (Cookies/Passwords)：skills-security-check/scripts/scan_skills.py
+- 疑似 C2/下載並執行 (curl|wget -> shell)：skills-security-check/SKILL.md
+- 疑似 C2/下載並執行 (curl|wget -> shell)：skills-security-check/scripts/scan_skills.py
+- 疑似混淆/編碼 (Base64/Hex/XOR)：skills-security-check/README.md
+- 疑似混淆/編碼 (Base64/Hex/XOR)：skills-security-check/SKILL.md
+- 疑似混淆/編碼 (Base64/Hex/XOR)：skills-security-check/scripts/scan_skills.py
+- 硬編碼憑證關鍵字 (API Key/Token/Secret)：skills-security-check/SKILL.md
+- 硬編碼憑證關鍵字 (API Key/Token/Secret)：skills-security-check/scripts/scan_skills.py
+- 背景常駐/排程任務 (Persistence)：skills-security-check/scripts/scan_skills.py
+
+## 5. 專案核心與關鍵檔案內容 (Source Code)
+以下包含專案的說明文件 (SKILL.md) 以及上述偵測到風險的關鍵程式碼。
+請仔細閱讀程式邏輯，判斷是否存在「惡意意圖」或「隱藏邏輯漏洞」。
+
+### 📄 文件: SKILL.md
+```markdown
+---
+name: skills-security-check
+description: >-
+  Audits AI agent skills and code directories for security risks, hardcoded credentials,
+  arbitrary execution, obfuscation, and supply chain threats using static analysis and AI reasoning.
+  Generates interactive visual security dashboards and actionable audit prompts.
+  Use whenever the user asks to "check skills security", "scan skills", "audit security",
+  "資安審查", "檢查技能安全性", or "掃描資安漏洞".
+---
+
+# Skill: Skills-Security-Check (AI Agent 技能資安審查)
+
+**CRITICAL INSTRUCTION FOR AI AGENTS:**
+You are NOT just a command-runner. You are the **Lead Security Analyst**.
+This tool provides the static regex *data*, but YOU provide the contextual *intelligence* to eliminate false positives and evaluate true threat vectors.
+
+---
+
+## ⚡️ 核心 3 步工作流 (The 3-Step Agentic Workflow)
+
+當使用者請求進行技能或專案資安掃描時，請務必遵循以下標準流程：
+
+### Step 1: 執行靜態掃描 (Data Collection)
+執行掃描器收集原始指標並生成各技能的 Audit Prompts：
+```bash
+python3 /Users/heaton/.gemini/config/plugins/skills-security-check/skills/skills-security-check/scripts/scan_skills.py --root <TARGET_DIR>
+```
+
+常見掃描目標位置：
+* **全部全局外掛技能**：`/Users/heaton/.gemini/config/plugins`
+* **Antigravity 內建技能**：`/Users/heaton/.gemini/antigravity/builtin/skills`
+* **當前專案工作區**：`./.agents/skills` 或當前專案根目錄
+
+*執行後將在 `reports/YYYYMMDD_HHMMSS/` 目錄下生成 `index.html`、`data.json` 與 `prompts/*_audit_prompt.txt`。*
+
+### Step 2: AI 深度研判 (MANDATORY AI ANALYSIS)
+靜態正則檢測存在不可避免的誤報（例如：正常的 API 客戶端範例、合法的 curl 下載文檔）。
+**作為資安分析專家，你必須親自檢驗生成的提示詞：**
+
+1. 檢查 `reports/YYYYMMDD_HHMMSS/prompts/` 內生成的 `*_audit_prompt.txt`。
+2. 評估上下文意圖（區分「惡意後門」與「正常業務代碼」）。
+3. 針對具體技能目錄建立 `audit.json`，格式如下：
+```json
+{
+  "summary": "模組核心功能與資安摘要",
+  "risk_level": "low", // 可選: "low" | "medium" | "high"
+  "reasoning": "為什麼調整評級的技術論據（如：此處 eval 僅用於數學運算，非遠端代碼執行）",
+  "recommendation": "具體的安全加固建議（如：建議將金鑰抽離至環境變數）"
+}
+```
+
+### Step 3: 重新整合並發布視覺化儀表板 (Integrate & Present)
+再次執行掃描器，腳本將自動讀取 `audit.json`，將 AI 的專業裁決融合成最終的金標儀表板：
+```bash
+python3 /Users/heaton/.gemini/config/plugins/skills-security-check/skills/skills-security-check/scripts/scan_skills.py --root <TARGET_DIR>
+```
+將生成的 `file:///.../reports/YYYYMMDD_HHMMSS/index.html` 連結提供給使用者點擊查閱。
+
+---
+
+## 偵測維度與威脅模型
+
+| 類別 (Category) | 偵測指標 (Signatures) | 潛在攻擊情境 |
+| :--- | :--- | :--- |
+| 🔑 **敏感憑證與金鑰** | `api_key`, `private_key`, `token`, `bearer`, `.aws/credentials`, `~/.ssh` | 憑證洩漏、雲端資源被盜刷 |
+| ⚠️ **危險指令與代碼執行** | `curl \| sh`, `subprocess.Popen`, `os.system`, `child_process.exec`, `eval` | 遠端代碼執行 (RCE)、反向 Shell 後門 |
+| 🎭 **混淆與防禦規避** | `base64`, `rot13`, `fromCharCode`, `anti_analysis` (sleep/delay) | 隱藏惡意 Payload、規避沙盒檢測 |
+| 📦 **供應鏈依賴安裝** | `npm install`, `pip install`, `brew install`, `go get` | 惡意第三方依賴、Typosquatting 投毒 |
+| 🌐 **網路外聯活動** | 外部 HTTP/HTTPS URLs、硬編碼 IP 位址 | 資料外洩 (Data Exfiltration)、C2 外部通訊 |
+
+---
+
+## 命令列參數
+
+* `--root`：待掃描之根目錄（預設為當前目錄）。
+* `--out`：自訂 HTML 報告輸出路徑（選填，預設將自動於 `reports/時間戳記/` 生成）。
+
+```
+
+### 📄 文件: README.md
+```markdown
+# 🛡️ Skills-Security-Check
+
+A hybrid AI-powered security auditing tool for scanning skill directories and generating visual security dashboards.
+
+一款結合 AI 智慧分析的混合式安全審查工具，用於掃描技能目錄並生成視覺化安全儀表板。
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.8+-green.svg)
+
+## 📸 Dashboard Preview | 儀表板預覽
+
+![Dashboard Preview](assets/dashboard-preview.png)
+
+## 📖 Overview | 概述
+
+**Skills-Security-Check** is a security scanning tool designed for AI Agent skill repositories. It combines:
+
+**Skills-Security-Check** 是一款專為 AI Agent 技能倉庫設計的安全掃描工具，結合了：
+
+1. **Static Analysis | 靜態分析** - Regex-based pattern matching to identify potential risks | 使用正則表達式匹配潛在風險
+2. **AI Intelligence | AI 智慧分析** - Leverages AI agents to analyze findings and reduce false positives | 利用 AI 代理分析發現並減少誤報
+3. **Visual Dashboard | 視覺化儀表板** - Generates a beautiful, interactive HTML dashboard | 生成精美的互動式 HTML 儀表板
+
+### What It Detects | 偵測項目
+
+| Category | 類別 | Examples | 範例 |
+|----------|------|----------|------|
+| 🔑 **Sensitive Operations** | 敏感操作 | API keys, credentials, environment variables | API 金鑰、憑證、環境變數 |
+| 🌐 **Network Activity** | 網路活動 | External URLs, IP addresses, API endpoints | 外部連結、IP 位址、API 端點 |
+| 🎭 **Obfuscation Signals** | 混淆跡象 | Base64 encoding, eval(), dynamic imports | Base64 編碼、eval()、動態載入 |
+| 📦 **Package Installs** | 套件安裝 | npm, pip, apt, brew, yarn, pnpm, gem, go | npm, pip, apt, brew 等安裝指令 |
+| ⚠️ **High-Risk Patterns** | 高風險模式 | Shell execution, download-and-execute | Shell 執行、下載並執行 |
+
+---
+
+## 🚀 Quick Start | 快速開始
+
+### Prerequisites | 前置需求
+- Python 3.8+
+- No external dependencies required (uses standard library only)
+- 無需外部依賴（僅使用 Python 標準函式庫）
+
+### Installation | 安裝
+
+```bash
+# Clone the repository | 複製專案
+git clone https://github.com/YOUR_USERNAME/Skills-Security-Check.git
+
+# Navigate to the skill directory | 進入技能目錄
+cd Skills-Security-Check
+```
+
+### Usage | 使用方式
+
+```bash
+# Scan a directory of skills | 掃描技能目錄
+python3 scripts/scan_skills.py --root /path/to/your/skills
+
+# The dashboard will auto-open in your browser
+# 儀表板將自動在瀏覽器中開啟
+```
+
+### Output Structure | 輸出結構
+
+```
+reports/YYYYMMDD_HHMMSS/
+├── index.html          # Interactive dashboard | 互動式儀表板
+├── data.json           # Raw scan data | 原始掃描資料
+└── prompts/            # AI audit prompts | AI 審查提示詞
+    ├── skill1_audit_prompt.txt
+    └── skill2_audit_prompt.txt
+```
+
+---
+
+## 🤖 AI-Powered Workflow | AI 驅動工作流程
+
+This skill is designed to work with AI agents. The recommended workflow:
+
+此技能專為 AI 代理設計，建議的工作流程如下：
+
+1. **Run Scanner | 執行掃描** → Generates raw findings and audit prompts | 生成原始發現與審查提示詞
+2. **AI Analysis | AI 分析** → Agent reads prompts and creates `audit.json` for each skill | 代理讀取提示詞並為每個技能建立 `audit.json`
+3. **Integrate & Present | 整合呈現** → Re-run scanner to merge AI insights into final report | 重新執行掃描器以合併 AI 洞察至最終報告
+
+See [SKILL.md](SKILL.md) for detailed agent instructions.
+
+詳細的代理指示請參閱 [SKILL.md](SKILL.md)。
+
+---
+
+## 📊 Dashboard Features | 儀表板功能
+
+- **Executive Summary | 總覽摘要** - Overall security score and top risks at a glance | 一目了然的安全評分與高風險項目
+- **Risk Filtering | 風險篩選** - Filter by High/Medium/Low risk levels | 依高/中/低風險等級篩選
+- **Detailed Views | 詳細檢視** - Click any skill to see full breakdown | 點擊任何技能查看完整分析
+- **AI Insights Card | AI 洞察卡片** - Displays AI-generated analysis when available | 顯示 AI 生成的分析結果
+- **Responsive Design | 響應式設計** - Works on desktop and tablet | 支援桌面與平板裝置
+
+---
+
+## 🔧 Configuration | 設定
+
+### Command Line Arguments | 命令列參數
+
+| Argument | 參數 | Description | 說明 | Default | 預設值 |
+|----------|------|-------------|------|---------|--------|
+| `--root` | | Root directory containing skills to scan | 包含待掃描技能的根目錄 | Current directory | 當前目錄 |
+| `--out` | | Custom output path for HTML report | 自訂 HTML 報告輸出路徑 | Auto-generated | 自動生成 |
+
+---
+
+## 📁 Project Structure | 專案結構
+
+```
+Skills-Security-Check/
+├── SKILL.md                    # AI agent instructions | AI 代理指示
+├── README.md                   # This file | 本檔案
+├── scripts/
+│   └── scan_skills.py          # Main scanner script | 主掃描腳本
+├── assets/
+│   └── dashboard_template.html # Dashboard HTML template | 儀表板 HTML 模板
+└── reports/                    # Generated reports | 生成的報告 (gitignored)
+```
+
+---
+
+## 🤝 Contributing | 貢獻
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+歡迎貢獻！請隨時提交 Pull Request。
+
+---
+
+## 👤 Author | 作者
+
+**Prompt Case**
+
+[![Threads](https://img.shields.io/badge/Threads-@prompt__case-000000?style=flat&logo=threads)](https://www.threads.com/@prompt_case)
+[![Patreon](https://img.shields.io/badge/Patreon-Support-FF424D?style=flat&logo=patreon)](https://www.patreon.com/MattTrendsPromptEngineering)
+
+- 🧵 Threads: [@prompt_case](https://www.threads.com/@prompt_case)
+- 💖 Patreon: [MattTrendsPromptEngineering](https://www.patreon.com/MattTrendsPromptEngineering)
+
+---
+
+## 📄 License | 授權
+
+This project is licensed under the MIT License.
+
+本專案採用 MIT 授權條款。
+
+## 🙏 Acknowledgments | 致謝
+
+Built with ❤️ for the AI Agent ecosystem.
+
+為 AI Agent 生態系統用心打造 ❤️
+
+```
+
+### ⚠️ 關鍵檔案 (偵測到風險): skills-security-check/assets/dashboard_template.html
+```python
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Skill 資安審查 Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      /* Aurora Prism Palette */
+      --panel-bg: rgba(0, 0, 0, 0.2);
+      /* Very subtle to show grain */
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text-main: #ffffff;
+      --text-muted: #b0b0b0;
+
+      --accent: #FFFFFF;
+      --accent-glow: 0 0 15px rgba(255, 255, 255, 0.4);
+
+      --danger: #FF3366;
+      --warn: #FFCC00;
+      --safe: #00FFCC;
+
+      --bg-color: #030005;
+      /* Deep, deep purple/black */
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-color);
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    header {
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: transparent;
+      /* Transparent header to merge with beam */
+      position: absolute;
+      width: 100%;
+      top: 0;
+      z-index: 100;
+    }
+
+    .title {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .subtitle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 0.2rem;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    main {
+      padding: 6rem 3rem 2rem;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 2rem;
+      max-width: 1800px;
+      margin: 0 auto;
+      height: 100vh;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+      /* Lower blur to keep grain visible? Or high to smooth? */
+      /* Actually, glass usually needs blur. Let's keep it but subtle. */
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .sidebar-chart {
+      height: 200px;
+      margin-bottom: 2rem;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .canvas-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .total-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+      color: #fff;
+    }
+
+    .total-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .skill-list {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .skill-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .skill-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+
+    .skill-item {
+      margin-bottom: 0.8rem;
+      padding: 1rem;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .skill-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .skill-item.active {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent);
+      border-left: 3px solid #fff;
+      border-radius: 4px 16px 16px 4px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .skill-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.2rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .skill-path {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .risk-dot {
+      width: 10px;
+      /* Slightly bigger */
+      height: 10px;
+      border-radius: 50%;
+      /* Brighter & Stronger Glow */
+      box-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+      opacity: 1;
+      /* Ensure full opacity */
+    }
+
+    /* Content Area */
+    .content-area {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      height: 100%;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .content-area::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .content-area::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+
+    .dashboard-header {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 2rem;
+      backdrop-filter: blur(20px);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Elegant Underline */
+    .dashboard-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .detail-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      backdrop-filter: blur(20px);
+      transition: transform 0.3s;
+    }
+
+    .detail-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .detail-card h3 {
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.75rem;
+      margin-top: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .detail-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .detail-list li {
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      border-left: 2px solid transparent;
+      transition: all 0.2s;
+
+      /* Fix Long URLs Overflow */
+      overflow-wrap: break-word;
+      word-break: break-all;
+      white-space: normal;
+    }
+
+    .detail-list li:hover {
+      border-left-color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .risk-high {
+      color: var(--danger);
+      text-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
+    }
+
+    .risk-medium {
+      color: var(--warn);
+      text-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+    }
+
+    .risk-low {
+      color: var(--safe);
+      text-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+    }
+
+    /* --- New Features CSS --- */
+
+    /* Filters */
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0 1.5rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 1rem;
+    }
+
+    .filter-tab {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .filter-tab:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .filter-tab.active {
+      background: #fff;
+      color: #000;
+      font-weight: 600;
+    }
+
+    /* AI Insight Card */
+    .ai-card {
+      background: linear-gradient(145deg, rgba(16, 20, 30, 0.8), rgba(50, 20, 40, 0.4));
+      border: 1px solid rgba(255, 50, 100, 0.3);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+      animation: pulseBorder 4s infinite ease-in-out;
+    }
+
+    @keyframes pulseBorder {
+      0% {
+        border-color: rgba(255, 50, 100, 0.3);
+      }
+
+      50% {
+        border-color: rgba(255, 50, 100, 0.6);
+        box-shadow: 0 0 20px rgba(255, 50, 100, 0.1);
+      }
+
+      100% {
+        border-color: rgba(255, 50, 100, 0.3);
+      }
+    }
+
+    .ai-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 50, 100, 0.2);
+      color: #ff3366;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      border: 1px solid rgba(255, 50, 100, 0.4);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ai-content {
+      line-height: 1.7;
+      color: #ddd;
+      font-size: 0.95rem;
+    }
+
+    .ai-content h1,
+    .ai-content h2,
+    .ai-content h3 {
+      color: #fff;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .ai-content code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #ffcc00;
+    }
+
+    .ai-content pre {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    /* Executive Summary */
+    .exec-summary {
+      display: none;
+      /* Hidden by default */
+      flex-direction: column;
+      gap: 2rem;
+      color: #fff;
+    }
+
+    .score-container {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .score-big {
+      font-size: 5rem;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(180deg, #fff, #888);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="canvas-container"></div>
+
+  <header>
+    <div>
+      <div class="title">Skill 資安審查報告</div>
+      <div class="subtitle" id="dataInfo">資安分析儀表板</div>
+    </div>
+  </header>
+
+  <main>
+    <aside class="panel">
+      <div class="sidebar-chart">
+        <canvas id="riskDoughnut"></canvas>
+        <div class="canvas-center-text">
+          <div class="total-number" id="metricTotal">0</div>
+          <div class="total-label">總掃描數</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterSkills('all')">全部</button>
+        <button class="filter-tab" onclick="filterSkills('high')">高風險</button>
+        <button class="filter-tab" onclick="filterSkills('medium')">中風險</button>
+      </div>
+
+      <div class="skill-list" id="skillList"></div>
+    </aside>
+
+    <div class="content-area">
+      <!-- Executive Summary View -->
+      <div id="execSummary" class="exec-summary">
+        <div class="score-container">
+          <div>
+            <div style="text-transform:uppercase; color:var(--text-muted); letter-spacing:0.1em; margin-bottom:0.5rem;">
+              整體資安評分</div>
+            <div class="score-big" id="execScore">--</div>
+          </div>
+          <div style="flex:1;">
+            <h3 style="margin:0 0 0.5rem 0;">工作區狀態</h3>
+            <p style="color:var(--text-muted); margin:0;" id="execText">分析完成。</p>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <h3>高風險項目 (Top Risks)</h3>
+          <ul class="detail-list" id="execTopRisks"></ul>
+        </div>
+      </div>
+
+      <!-- Skill Detail View -->
+      <div id="skillDetailView" style="display:none;">
+        <div class="dashboard-header" id="detailHeader">
+          <h2 style="font-size:2.5rem; margin:0; color:#fff;" id="detailTitle">請選擇 Skill</h2>
+          <div style="margin-top:0.5rem; color:var(--text-muted); font-size:1.1rem;" id="detailSummary">檢視詳細發現與建議</div>
+        </div>
+
+        <!-- AI Insight Card -->
+        <div id="aiInsightCard" class="ai-card" style="display:none;">
+          <div class="ai-badge">
+            <span>🤖</span> AI 智慧分析員
+          </div>
+          <div class="ai-content" id="aiContent"></div>
+        </div>
+
+
+        <div class="detail-grid">
+          <div class="detail-card">
+            <h3>風險判斷 (Reasoning)</h3>
+            <div id="detailReasoning" style="line-height:1.6;">等待選擇...</div>
+          </div>
+          <div class="detail-card">
+            <h3>安全建議 (Recommendation)</h3>
+            <div id="detailRecommendation" style="line-height:1.6;">等待選擇...</div>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-card">
+            <h3>敏感行為 (Sensitives)</h3>
+            <ul class="detail-list" id="detailSensitive"></ul>
+          </div>
+          <div class="detail-card">
+            <h3>網路連線 (Network)</h3>
+            <ul class="detail-list" id="detailNetwork"></ul>
+          </div>
+          <div class="detail-card">
+            <h3>混淆跡象 (Obfuscation)</h3>
+            <ul class="detail-list" id="detailObfuscation"></ul>
+          </div>
+          <div class="detail-card">
+            <h3>套件安裝指令 (Package Install)</h3>
+            <ul class="detail-list" id="detailPackageInstalls"></ul>
+          </div>
+        </div>
+      </div>
+    </div> <!-- End Skill Detail View -->
+    </div>
+  </main>
+
+  <script>
+    window.__DATA__ = __DATA_PLACEHOLDER__;
+  </script>
+
+  <!-- Shader Code -->
+  <script id="vertexShader" type="x-shader/x-vertex">
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  </script>
+
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    // Aurora Prism Beam Shader (Refined based on ReactBits "Beams" inspiration)
+    
+    uniform float uTime;
+    uniform vec2 uResolution;
+    
+    varying vec2 vUv;
+
+    // --- Noise Functions ---
+    vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+    vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+    vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+    float snoise(vec2 v) {
+        const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
+                            0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
+                            -0.577350269189626, // -1.0 + 2.0 * C.x
+                            0.024390243902439); // 1.0 / 41.0
+        vec2 i  = floor(v + dot(v, C.yy) );
+        vec2 x0 = v -   i + dot(i, C.xx);
+        vec2 i1;
+        i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz;
+        x12.xy -= i1;
+        i = mod289(i); // Avoid truncation effects in permutation
+        vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+        m = m*m ;
+        m = m*m ;
+        vec3 x = 2.0 * fract(p * C.www) - 1.0;
+        vec3 h = abs(x) - 0.5;
+        vec3 ox = floor(x + 0.5);
+        vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+        vec3 g;
+        g.x  = a0.x  * x0.x  + h.x  * x0.y;
+        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+    }
+
+    // --- Color Palette (Spectral - Soft/Desaturated) ---
+    vec3 palette(float t) {
+        // Soft prism palette: Higher base (a), Lower amplitude (b) to reduce saturation
+        vec3 a = vec3(0.6, 0.6, 0.65); // Brighter/Whiter base
+        vec3 b = vec3(0.3, 0.3, 0.3);  // Lower saturation (was 0.5)
+        vec3 c = vec3(1.0, 1.0, 1.0);  // Frequency
+        vec3 d = vec3(0.00, 0.33, 0.67); // Phase
+        return a + b * cos(6.28318 * (c * t + d));
+    }
+
+    void main() {
+        vec2 uv = gl_FragCoord.xy / uResolution.xy;
+        float ratio = uResolution.x / uResolution.y;
+        uv.x *= ratio;
+        
+        // --- Breathing Effect ---
+        // Modulate time and intensity slowly
+        float breath = 0.5 * sin(uTime * 0.4) + 0.5; // 0.0 to 1.0
+        
+        // Very slow time for "breathing" movement
+        float time = uTime * 0.05; 
+        
+        vec2 beamUv = uv;
+        
+        // Rotate
+        float angle = -0.6; // Slightly steeper
+        float s = sin(angle);
+        float c = cos(angle);
+        mat2 rot = mat2(c, -s, s, c);
+        beamUv = rot * beamUv;
+        
+        // Warping
+        vec2 q = vec2(0.);
+        q.x = snoise(beamUv * 0.7 + vec2(0.0, time));
+        q.y = snoise(beamUv * 0.4 + vec2(0.0, time * 0.9));
+        
+        vec2 r = vec2(0.);
+        r.x = snoise(beamUv + 1.0 * q + vec2(1.7, 9.2) + 0.15 * time);
+        r.y = snoise(beamUv + 1.0 * q + vec2(8.3, 2.8) + 0.126 * time);
+        
+        float f = snoise(beamUv + r);
+        
+        // Beam Mask (Breathing Width)
+        float widthBase = 0.3;
+        // Breathing affects width slightly
+        float currentWidth = widthBase + 0.05 * sin(uTime * 0.8);
+        
+        float distFromCenter = abs(beamUv.y + 0.3);
+        float mask = smoothstep(1.2, 0.0, distFromCenter); 
+        
+        // Color Mapping (Reduced Variation)
+        // Multiply f by smaller number to reduce rainbow cycles
+        vec3 col = palette(f * 0.3 + beamUv.x * 0.15 + time * 0.1);
+        
+        // --- Saturation & Breathing Intensity ---
+        col *= mask;
+        
+        // Global Breathing Intensity
+        float intensity = 0.9 + 0.2 * breath; // 0.9 to 1.1 brightness wub
+        col *= intensity;
+
+        // Grain (Keep High)
+        float noiseVal = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+        col += (noiseVal - 0.5) * 0.12;
+        
+        // Vignette
+        float vig = 1.0 - length(uv / ratio - 0.5) * 0.8;
+        col *= vig;
+        
+        // Deep background
+        col = mix(vec3(0.01, 0.01, 0.02), col, mask * 1.0);
+
+        gl_FragColor = vec4(col, 1.0);
+    }
+  </script>
+
+  <script>
+    /* --- Three.js Background --- */
+    let scene, camera, renderer, uniforms;
+
+    function initThree() {
+      const container = document.getElementById('canvas-container');
+      scene = new THREE.Scene();
+      camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+      renderer = new THREE.WebGLRenderer({ alpha: true }); // Alpha true allowed
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(renderer.domElement);
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+
+      uniforms = {
+        uTime: { value: 0 },
+        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+      };
+
+      const material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: document.getElementById('vertexShader').textContent,
+        fragmentShader: document.getElementById('fragmentShader').textContent
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      window.addEventListener('resize', onWindowResize, false);
+      animate();
+    }
+
+    function onWindowResize() {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      const canvas = renderer.domElement;
+      uniforms.uResolution.value.x = canvas.width;
+      uniforms.uResolution.value.y = canvas.height;
+    }
+
+    function animate(time) {
+      requestAnimationFrame(animate);
+      uniforms.uTime.value = time * 0.001;
+      renderer.render(scene, camera);
+    }
+
+    initThree();
+
+    /* --- Dashboard Data & Logic --- */
+    const data = window.__DATA__ || { items: [] };
+    let allItems = Array.isArray(data.items) ? data.items : [];
+    let currentFilter = 'all';
+
+
+    // Updated colors for the Rainbow Beam theme
+    const COLORS = {
+      high: '#FF3366', // Hot Pink
+      medium: '#FFCC00', // Yellow
+      low: '#00FFCC'  // Cyan
+    };
+
+    function initDashboard() {
+      if (data.root) {
+        document.getElementById('dataInfo').textContent = `${data.root} • ${data.generated_at}`;
+      }
+      document.getElementById('metricTotal').textContent = allItems.length;
+
+      renderRiskChart();
+      renderSidebar();
+
+      // Default to Executive Summary if no items or on load
+      showExecutiveSummary();
+    }
+
+    // Markdown Parser (Simple)
+    function parseMarkdown(text) {
+      if (!text) return '';
+      let html = text
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>')
+        .replace(/\*(.*)\*/gim, '<i>$1</i>')
+        .replace(/`(.*?)`/gim, '<code>$1</code>')
+        .replace(/- (.*$)/gim, '<li>$1</li>');
+
+      // Wrap lists (very naive) - improved slightly
+      // html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>'); // often breaks with multiple lists. 
+      // Let's just keep lines for now or rely on <br>
+      html = html.replace(/\n/gim, '<br>');
+      return html;
+    }
+
+    /* === Executive Summary === */
+    function showExecutiveSummary() {
+      document.getElementById('skillDetailView').style.display = 'none';
+      document.getElementById('execSummary').style.display = 'flex';
+
+      // Update Score
+      const stats = data.workspace_summary || { security_score: 0 };
+      document.getElementById('execScore').textContent = stats.security_score || 'N/A';
+
+      let statusMsg = "System looks secure.";
+      if (stats.security_score < 60) statusMsg = "Critical attention needed.";
+      else if (stats.security_score < 85) statusMsg = "Several warnings detected.";
+      document.getElementById('execText').textContent = statusMsg;
+
+      // Top Risks
+      const topRisks = allItems.filter(i => i.risk_level === 'high').concat(allItems.filter(i => i.risk_level === 'medium')).slice(0, 5);
+      fillList('execTopRisks', topRisks.map(i => `${i.skill} (${i.risk_level.toUpperCase()}): ${i.summary}`));
+
+      // Clear active class
+      document.querySelectorAll('.skill-item').forEach(e => e.classList.remove('active'));
+    }
+
+    /* === Filters === */
+    function filterSkills(type) {
+      currentFilter = type;
+
+      // Update tabs
+      document.querySelectorAll('.filter-tab').forEach(b => {
+        b.classList.remove('active');
+        if (b.textContent.toLowerCase() === type || (type === 'all' && b.textContent === 'ALL')) b.classList.add('active');
+        if (type === 'medium' && b.textContent === 'MED') b.classList.add('active');
+      });
+
+      renderSidebar();
+    }
+
+    function renderRiskChart() {
+      const counts = {
+        high: allItems.filter(i => i.risk_level === 'high').length,
+        medium: allItems.filter(i => i.risk_level === 'medium').length,
+        low: allItems.filter(i => i.risk_level === 'low').length
+      };
+
+
+      const ctx = document.getElementById('riskDoughnut').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['High', 'Medium', 'Low'],
+          datasets: [{
+            data: [counts.high, counts.medium, counts.low],
+            backgroundColor: [COLORS.high, COLORS.medium, COLORS.low],
+            borderWidth: 0,
+            hoverOffset: 15
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '80%',
+          plugins: { legend: { display: false }, tooltip: { enabled: true } }
+        }
+      });
+    }
+
+    function renderSidebar() {
+      const list = document.getElementById('skillList');
+      list.innerHTML = ''; // Clear existing
+
+      const filtered = currentFilter === 'all'
+        ? allItems
+        : allItems.filter(i => i.risk_level === currentFilter);
+
+      filtered.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'skill-item';
+        const dotClass = `risk-${item.risk_level}`;
+
+        el.innerHTML = `
+                <div class="skill-name">
+                    ${item.skill}
+                    <div class="risk-dot ${dotClass}"></div>
+                </div>
+                <div class="skill-path">${item.path}</div>
+            `;
+        el.onclick = () => selectSkill(item, el);
+        list.appendChild(el);
+      });
+    }
+
+    function selectSkill(item, el) {
+      document.querySelectorAll('.skill-item').forEach(e => e.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      // Switch View
+      document.getElementById('execSummary').style.display = 'none';
+      document.getElementById('skillDetailView').style.display = 'block';
+
+      document.getElementById('detailTitle').textContent = item.skill;
+      document.getElementById('detailSummary').textContent = item.summary;
+
+      // AI Audit Content
+      const aiCard = document.getElementById('aiInsightCard');
+      const aiContent = document.getElementById('aiContent');
+      if (item.ai_audit && item.ai_audit.ai_insights) {
+        aiCard.style.display = 'block';
+        aiContent.innerHTML = parseMarkdown(item.ai_audit.ai_insights);
+
+        // Override text if AI exists
+        if (item.ai_audit.summary) document.getElementById('detailSummary').textContent = item.ai_audit.summary;
+      } else {
+        aiCard.style.display = 'none';
+      }
+
+      document.getElementById('detailReasoning').textContent = item.reasoning;
+      document.getElementById('detailRecommendation').textContent = item.recommendation;
+
+      fillList('detailSensitive', item.sensitive_behaviors);
+      fillList('detailNetwork', item.network_activity, true);
+      fillList('detailObfuscation', item.obfuscation_signals);
+      fillList('detailPackageInstalls', item.package_installs);
+    }
+
+
+    function fillList(id, arr, isLink = false) {
+      const el = document.getElementById(id);
+      el.innerHTML = '';
+      if (!arr || arr.length === 0) {
+        el.innerHTML = '<li style="opacity:0.5; font-style:italic;">None Detected</li>';
+        return;
+      }
+      arr.forEach(txt => {
+        const li = document.createElement('li');
+        if (isLink && (txt.startsWith('http'))) {
+          li.innerHTML = `<a href="${txt}" target="_blank" style="color:#00FFCC; text-decoration:none;">${txt}</a>`;
+        } else {
+          li.textContent = txt;
+        }
+        el.appendChild(li);
+      });
+    }
+
+    initDashboard();
+  </script>
+</body>
+
+</html>
+```
+
+### ⚠️ 關鍵檔案 (偵測到風險): skills-security-check/scripts/scan_skills.py
+```python
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import re
+from datetime import datetime
+
+SKIP_DIRS = {
+    ".git",
+    "node_modules",
+    "dist",
+    "build",
+    "__pycache__",
+    ".venv",
+    "venv",
+    ".idea",
+    ".vscode",
+    "coverage",
+}
+
+TEXT_EXTS = {
+    ".md", ".py", ".js", ".ts", ".tsx", ".sh", ".ps1", ".json", ".yaml", ".yml",
+    ".toml", ".txt", ".env", ".example", ".ini", ".conf", ".rb", ".go", ".java",
+    ".html", ".css", ".xml", ".jsx", ".mjs", ".cjs",
+}
+
+ENV_FILENAMES = {
+    ".env", ".env.local", ".env.production", ".env.development", ".env.test",
+    ".env.example", "config.json", "secrets.json",
+}
+
+# --- Improved Regex Rules based on Senior Security Engineer prompts ---
+
+URL_REGEX = re.compile(r"https?://[^\s\)\]\"'<>]+", re.IGNORECASE)
+IP_REGEX = re.compile(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b")
+
+# sensitive_behaviors
+SENSITIVE_RULES = [
+    # Credential/Key Access
+    ("硬編碼憑證關鍵字 (API Key/Token/Secret)", re.compile(r"\b(api[_-]?key|secret|token|private[_-]?key|access[_-]?key|auth[_-]?token|bearer)\b", re.IGNORECASE), "credential_keyword"),
+    ("存取環境變數 (Env Vars)", re.compile(r"\b(os\.environ|getenv|process\.env|dotenv|load_dotenv|os\.Getenv)\b", re.IGNORECASE), "credential_access"),
+    
+    # Wallet/Crypto
+    ("加密貨幣錢包相關 (Wallet/Seed/Mnemonic)", re.compile(r"\b(wallet\.dat|keystore|mnemonic|seed phrase|private key|ledger|trezor|metamask)\b", re.IGNORECASE), "crypto_wallet"),
+    ("以太坊/比特幣路徑", re.compile(r"(\.ethereum|\.bitcoin|\.gnupg)", re.IGNORECASE), "crypto_path"),
+    
+    # System/Cloud Credentials
+    ("SSH 金鑰/設定存取", re.compile(r"(~/.ssh|\\.ssh|id_rsa|id_ed25519|authorized_keys|known_hosts)", re.IGNORECASE), "ssh_access"),
+    ("AWS/Cloud 設定檔", re.compile(r"(\.aws/credentials|\.aws/config|\.config/gcloud|\.azure/)", re.IGNORECASE), "cloud_credentials"),
+    ("瀏覽器機敏資料 (Cookies/Passwords)", re.compile(r"(Login Data|Chrome/User Data|Firefox/Profiles|Brave/User Data|Library/Application Support)", re.IGNORECASE), "browser_data"),
+]
+
+# executing remote or arbitrary code
+EXEC_RULES = [
+    ("疑似 C2/下載並執行 (curl|wget -> shell)", re.compile(r"(curl\s+.*\|\s*(bash|sh)|wget\s+.*\|\s*(bash|sh)|powershell\s+.*-c|Invoke-Expression|IEX\s|System\.Net\.WebClient\.DownloadString)", re.IGNORECASE), "download_exec"),
+    ("執行任意系統指令 (Shell/Subprocess)", re.compile(r"\b(subprocess\.Popen|os\.system|popen|exec\(|spawn\(|child_process\.exec|Runtime\.getRuntime\(\)\.exec)\b", re.IGNORECASE), "shell_exec"),
+    ("動態模組/代碼載入 (Eval/Import)", re.compile(r"\b(eval\(|exec\(|\_\_import\_\_|importlib|require\(.*\)|dlopen)\b", re.IGNORECASE), "dynamic_exec"),
+]
+
+# persistence or background tasks
+BACKGROUND_RULES = [
+    ("背景常駐/排程任務 (Persistence)", re.compile(r"\b(cron|crontab|@reboot|systemd|launchd\.plist|schtasks|windows\\currentversion\\run)\b", re.IGNORECASE), "persistence"),
+]
+
+# obfuscation or evasion
+OBFUSCATION_RULES = [
+    ("疑似混淆/編碼 (Base64/Hex/XOR)", re.compile(r"\b(base64|atob|btoa|fromCharCode|rot13|xor|unescape|decodeURIComponent|eval\(atob)\b", re.IGNORECASE), "obfuscation_encoding"),
+    ("地區/時區規避偵測", re.compile(r"(timezone|Intl\.DateTimeFormat|locale|LANG=|getSystemDefault|user\.country)\b", re.IGNORECASE), "geo_evasion"),
+    ("反除錯/反沙盒 (Sleep/UserInteraction)", re.compile(r"\b(sleep|delay|setTimeout|mousemove|click)\b", re.IGNORECASE), "anti_analysis"), # Broad, can be false positive
+]
+
+# Package Installation Commands (Supply Chain Risk)
+# 這些指令會下載並執行第三方程式碼，需特別注意來源與版本鎖定
+PACKAGE_INSTALL_RULES = [
+    ("npm install 安裝 (Node.js)", re.compile(r"\b(npm\s+install|npm\s+i\s|npx\s)", re.IGNORECASE), "npm_install"),
+    ("yarn add 安裝 (Node.js)", re.compile(r"\b(yarn\s+add|yarn\s+install)\b", re.IGNORECASE), "yarn_install"),
+    ("pnpm add 安裝 (Node.js)", re.compile(r"\b(pnpm\s+add|pnpm\s+install)\b", re.IGNORECASE), "pnpm_install"),
+    ("pip install 安裝 (Python)", re.compile(r"\b(pip\s+install|pip3\s+install|python\s+-m\s+pip)\b", re.IGNORECASE), "pip_install"),
+    ("apt-get install 安裝 (Linux)", re.compile(r"\b(apt-get\s+install|apt\s+install)\b", re.IGNORECASE), "apt_install"),
+    ("brew install 安裝 (macOS)", re.compile(r"\b(brew\s+install)\b", re.IGNORECASE), "brew_install"),
+    ("gem install 安裝 (Ruby)", re.compile(r"\b(gem\s+install)\b", re.IGNORECASE), "gem_install"),
+    ("go get/install 安裝 (Go)", re.compile(r"\b(go\s+get|go\s+install)\b", re.IGNORECASE), "go_install"),
+]
+
+def parse_skill_name(skill_dir):
+    skill_md = os.path.join(skill_dir, "SKILL.md")
+    if not os.path.exists(skill_md):
+        return os.path.basename(skill_dir)
+
+    try:
+        with open(skill_md, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+    except OSError:
+        return os.path.basename(skill_dir)
+
+    # Simple frontmatter parsing
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            frontmatter = parts[1]
+            for line in frontmatter.splitlines():
+                if line.strip().startswith("name:"):
+                    return line.split(":", 1)[1].strip().strip('"').strip("'") or os.path.basename(skill_dir)
+            # If no name line, maybe second line?
+            # Fallback
+            
+    # Try Regex for Description
+    return os.path.basename(skill_dir)
+
+
+def iter_skill_dirs(root):
+    skill_dirs = []
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=True):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        if "SKILL.md" in filenames:
+            skill_dirs.append(dirpath)
+    return sorted(set(skill_dirs))
+
+
+def is_text_file(path):
+    name = os.path.basename(path)
+    if name in ENV_FILENAMES:
+        return True
+    _, ext = os.path.splitext(name)
+    return ext.lower() in TEXT_EXTS
+
+
+def scan_file(path, relpath, result):
+    try:
+        if os.path.getsize(path) > 2_000_000: # Increase limit slightly
+            return
+    except OSError:
+        return
+
+    if not is_text_file(path):
+        return
+
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+    except OSError:
+        return
+
+    if not content:
+        return
+
+    # Check .env existence clearly
+    if os.path.basename(path) in ENV_FILENAMES:
+        result["sensitive"].add(f"發現敏感設定檔：{relpath} (可能包含密鑰)")
+        result["flags"].add("sensitive_files")
+
+    # --- Match Rules ---
+    
+    # 1. Sensitive
+    for label, pattern, flag in SENSITIVE_RULES:
+        if pattern.search(content):
+            result["sensitive"].add(f"{label}：{relpath}")
+            result["flags"].add(flag)
+
+    # 2. Exec
+    for label, pattern, flag in EXEC_RULES:
+        if pattern.search(content):
+            result["sensitive"].add(f"{label}：{relpath}")
+            result["flags"].add(flag)
+
+    # 3. Background
+    for label, pattern, flag in BACKGROUND_RULES:
+        if pattern.search(content):
+            result["sensitive"].add(f"{label}：{relpath}")
+            result["flags"].add(flag)
+
+    # 4. Obfuscation
+    for label, pattern, flag in OBFUSCATION_RULES:
+        if pattern.search(content):
+            result["obfuscation"].add(f"{label}：{relpath}")
+            result["flags"].add(flag)
+
+    # 5. Package Install Commands (Supply Chain)
+    for label, pattern, flag in PACKAGE_INSTALL_RULES:
+        if pattern.search(content):
+            result["package_installs"].add(f"{label}：{relpath}")
+            result["flags"].add(flag)
+
+    # 6. Network (URLs + IPs)
+    for match in URL_REGEX.findall(content):
+        result["network"].add(match)
+    for match in IP_REGEX.findall(content):
+        # Filter local IPs ideally, but listing all is safer for audit
+        result["network"].add(match)
+
+    result["files"] += 1
+
+
+def determine_risk_level(flags, network_count):
+    # High Risk
+    if "download_exec" in flags: return "high"
+    if "persistence" in flags: return "high"
+    if "crypto_wallet" in flags: return "high" # Accessing wallet directly is very suspicious for a skill
+    
+    # Medium Risk
+    if "shell_exec" in flags or "dynamic_exec" in flags: return "medium"
+    if "ssh_access" in flags or "cloud_credentials" in flags: return "medium"
+    if "browser_data" in flags: return "medium"
+    if "obfuscation_encoding" in flags or "geo_evasion" in flags: return "medium"
+    if network_count > 0: return "medium" # Any network activity warrants review
+    
+    return "low"
+
+
+def build_reasoning(flags, network_items):
+    reasons = []
+    
+    # High Priority Reasons
+    if "download_exec" in flags:
+        reasons.append("偵測到「下載並執行」或遠端腳本危險行為")
+    if "persistence" in flags:
+        reasons.append("偵測到系統駐留/開機啟動設定")
+    if "crypto_wallet" in flags:
+        reasons.append("偵測到加密貨幣錢包或私鑰存取路徑")
+
+    # Medium Priority
+    if "shell_exec" in flags:
+        reasons.append("包含任意系統指令執行 (Shell/Subprocess)")
+    if "dynamic_exec" in flags:
+        reasons.append("使用動態代碼執行 (Eval/Import)")
+    if "ssh_access" in flags or "cloud_credentials" in flags:
+        reasons.append("嘗試讀取 SSH 金鑰或雲端憑證")
+    if "browser_data" in flags:
+        reasons.append("嘗試存取瀏覽器敏感資料")
+    if "obfuscation_encoding" in flags:
+        reasons.append("代碼包含混淆或編碼跡象 (Base64/Hex)")
+    if "geo_evasion" in flags:
+        reasons.append("包含地區/時區判斷邏輯 (可能為逃避偵測)")
+    
+    if len(network_items) > 0:
+        domains = [u for u in network_items if 'http' in u]
+        if len(domains) > 2:
+            reasons.append(f"包含大量外部連線 ({len(domains)} 個)")
+        else:
+            reasons.append("包含外部網路連線")
+
+    if not reasons:
+        reasons.append("未偵測到明顯已知惡意特徵")
+        
+    return "； ".join(reasons)
+
+
+def build_recommendation(risk_level):
+    if risk_level == "high":
+        return "⚠️ 高度危險：不建議在含真實憑證或資產的環境安裝！僅可在隔離 VM / 拋棄式沙盒中測試。"
+    if risk_level == "medium":
+        return "⚠️ 具可疑行為：建議僅在「隔離環境」或使用「小額測試錢包」進行測試，並檢查網路流量。"
+    return "✅ 相對安全：目前未發現明顯惡意特徵，但仍建議遵循最小權限原則使用。"
+
+
+def load_ai_audit(skill_dir):
+    """Checks for and loads external AI audit findings."""
+    # Priority 1: audit.json (Structured)
+    json_path = os.path.join(skill_dir, "audit.json")
+    if os.path.exists(json_path):
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+
+    # Priority 2: SECURITY_AUDIT.md (Markdown content)
+    md_path = os.path.join(skill_dir, "SECURITY_AUDIT.md")
+    if os.path.exists(md_path):
+        try:
+            with open(md_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                return {
+                    "summary": "AI Security Analyst Review",
+                    "risk_level": "manual_review", # Special flag? or let UI decide
+                    "ai_insights": content # Pass raw MD
+                }
+        except:
+            pass
+            
+    return None
+
+
+def parse_requirements(skill_dir):
+    """Parses requirements.txt for Python dependencies."""
+    req_path = os.path.join(skill_dir, "requirements.txt")
+    if not os.path.exists(req_path):
+        return None
+    
+    deps = []
+    try:
+        with open(req_path, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    deps.append(line)
+    except:
+        return None
+    return deps
+
+def parse_package_json(skill_dir):
+    """Parses package.json for Node.js dependencies."""
+    pkg_path = os.path.join(skill_dir, "package.json")
+    if not os.path.exists(pkg_path):
+        return None
+    
+    deps = []
+    try:
+        with open(pkg_path, "r", encoding="utf-8", errors="ignore") as f:
+            data = json.load(f)
+            # Combine dependencies and devDependencies
+            all_deps = {}
+            if "dependencies" in data: all_deps.update(data["dependencies"])
+            if "devDependencies" in data: all_deps.update(data["devDependencies"])
+            
+            for pkg, ver in all_deps.items():
+                deps.append(f"{pkg} ({ver})")
+    except:
+        return None
+    return deps
+
+def generate_audit_prompt(skill_dir, root, result, sensitive_files, context_files=None):
+    """Generates a detailed prompt for LLM security audit (Traditional Chinese)."""
+    if context_files is None:
+        context_files = ["SKILL.md", "README.md", "skill.json", "manifest.json"]
+    
+    skill_name = parse_skill_name(skill_dir)
+    rel_path = os.path.relpath(skill_dir, root)
+    
+    # 1. File Tree
+    tree_lines = []
+    for dirpath, dirnames, filenames in os.walk(skill_dir):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        level = dirpath.replace(skill_dir, '').count(os.sep)
+        indent = ' ' * 4 * (level)
+        if level > 0:
+            tree_lines.append(f"{indent}{os.path.basename(dirpath)}/")
+        subindent = ' ' * 4 * (level + 1)
+        for f in filenames:
+            tree_lines.append(f"{subindent}{f}")
+    file_tree = "\n".join(tree_lines)
+
+    # 2. Findings Summary
+    findings_list = sorted(list(result["sensitive"]) + list(result["network"]) + list(result["obfuscation"]))
+    findings_text = "\n".join([f"- {item}" for item in findings_list]) if findings_list else "- 未偵測到靜態異常"
+
+    # 2.5 Supply Chain
+    py_deps = parse_requirements(skill_dir)
+    node_deps = parse_package_json(skill_dir)
+    
+    supply_chain_text = []
+    if py_deps:
+        supply_chain_text.append(f"### Python 依賴 (requirements.txt):\n" + "\n".join([f"- {d}" for d in py_deps]))
+    if node_deps:
+        supply_chain_text.append(f"### Node.js 依賴 (package.json):\n" + "\n".join([f"- {d}" for d in node_deps]))
+        
+    supply_chain_section = "\n\n".join(supply_chain_text) if supply_chain_text else "此 Skill 未偵測到明確的套件依賴文件。"
+
+    # 3. Critical Content Gathering
+    content_blocks = []
+    
+    # Collect Context Files
+    for filename in context_files:
+        path = os.path.join(skill_dir, filename)
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                    content_blocks.append(f"### 📄 文件: {filename}\n```markdown\n{f.read()}\n```")
+            except:
+                pass
+                
+    # Collect Critical Files
+    processed_critical = set()
+    for rel_file in sensitive_files:
+        base_name = os.path.basename(rel_file)
+        if base_name in context_files: 
+            continue
+            
+        full_path = os.path.join(root, rel_file)
+        if os.path.exists(full_path) and full_path not in processed_critical:
+            try:
+                with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
+                    content_blocks.append(f"### ⚠️ 關鍵檔案 (偵測到風險): {rel_file}\n```python\n{f.read()}\n```")
+                processed_critical.add(full_path)
+            except:
+                pass
+
+    full_content = "\n\n".join(content_blocks)
+
+    prompt = f"""
+# 資安專家 AI 審查任務
+
+請扮演一位資深資安工程師，針對以下 Skill 進行深度安全審查。
+你的目標是識別潛在惡意代碼、供應鏈攻擊風險以及隱私洩露問題。
+
+## 1. 專案基本資訊
+- **名稱**: {skill_name}
+- **路徑**: {rel_path}
+
+## 2. 檔案結構 (File Tree)
+```text
+{file_tree}
+```
+
+## 3. 供應鏈依賴 (Supply Chain Dependencies)
+請特別檢查以下外部套件是否存在已知惡意軟體或被濫用的歷史 (如 Typosquatting):
+{supply_chain_section}
+
+## 4. 靜態掃描發現的可疑熱點 (Scanner Findings)
+以下是透過 Regex 腳本偵測到的可疑特徵，請重點檢查這些位置的上下文意圖：
+{findings_text}
+
+## 5. 專案核心與關鍵檔案內容 (Source Code)
+以下包含專案的說明文件 (SKILL.md) 以及上述偵測到風險的關鍵程式碼。
+請仔細閱讀程式邏輯，判斷是否存在「惡意意圖」或「隱藏邏輯漏洞」。
+
+{full_content}
+
+---
+
+## 你的任務 (Output Format)
+請根據以上資訊，分析此 Skill 是否安全。請回答：
+
+1.  **功能總結**：它到底是做什麼的？代碼邏輯是否符合 SKILL.md 的描述？
+2.  **供應鏈分析**：使用的外部庫是否合理？有無可疑或冷門的依賴項？
+3.  **風險驗證**：靜態掃描到的「熱點」是惡意的嗎？還是正常功能？(例如：eval 用於計算機是低風險，用於執行外部腳本是高風險)
+4.  **隱藏後門分析**：除了 regex 抓到的，你有看到其他奇怪邏輯嗎？(例如：特定條件下觸發、時間炸彈、寫死奇怪的變數)
+5.  **最終判決**：
+    *   🟢 **通過** (Safe)
+    *   🟡 **警告** (Suspicious - 需人工覆核)
+    *   🔴 **危險** (Malicious - 禁止安裝)
+
+請給出簡短有力的結論 (繁體中文)。
+"""
+    return prompt
+
+
+def scan_skill(skill_dir, root):
+    # Ignore self (The scanner skill itself)
+    if "skill-security-audit-dashboard" in skill_dir:
+        return None
+
+    result = {
+        "sensitive": set(),
+        "network": set(),
+        "obfuscation": set(),
+        "package_installs": set(),
+        "flags": set(),
+        "files": 0,
+    }
+    
+    # Track which files triggered findings to include them in the prompt
+    files_with_findings = set()
+
+    for dirpath, dirnames, filenames in os.walk(skill_dir, followlinks=True):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        for filename in filenames:
+            path = os.path.join(dirpath, filename)
+            relpath = os.path.relpath(path, root)
+            
+            # Snapshot scan result before processing file
+            len_before = len(result["sensitive"]) + len(result["network"]) + len(result["obfuscation"]) + len(result["package_installs"])
+            
+            scan_file(path, relpath, result)
+            
+            len_after = len(result["sensitive"]) + len(result["network"]) + len(result["obfuscation"]) + len(result["package_installs"])
+            if len_after > len_before:
+                files_with_findings.add(relpath)
+
+    sensitive = sorted(list(result["sensitive"]))
+    network = sorted(list(result["network"]))
+    obfuscation = sorted(list(result["obfuscation"]))
+    package_installs = sorted(list(result["package_installs"]))
+
+    flags = result["flags"]
+    risk = determine_risk_level(flags, len(network))
+
+    summary_text = (
+        f"功能分析：共掃描 {result['files']} 個檔案。偵測到 {len(sensitive)} 項敏感操作、"
+        f"{len(network)} 個外部連線、{len(obfuscation)} 個潛在混淆指標、{len(package_installs)} 個套件安裝指令。"
+    )
+    
+    # Generate Hybrid Audit Prompt
+    prompt_content = generate_audit_prompt(skill_dir, root, result, files_with_findings)
+    
+    # Check for Existing AI Audit
+    ai_audit = load_ai_audit(skill_dir)
+    
+    skill_data = {
+        "skill": parse_skill_name(skill_dir),
+        "path": os.path.relpath(skill_dir, root),
+        "summary": summary_text,
+        "sensitive_behaviors": sensitive,
+        "network_activity": network,
+        "obfuscation_signals": obfuscation,
+        "package_installs": package_installs,
+        "risk_level": risk,
+        "reasoning": build_reasoning(flags, network),
+        "recommendation": build_recommendation(risk),
+        "audit_prompt": prompt_content,
+        "ai_audit": ai_audit # Attach AI findings
+    }
+    
+    # AI Override Logic: deeply merge useful fields if they exist
+    if ai_audit:
+        if isinstance(ai_audit, dict):
+            # Override basic fields if provided in JSON
+            if "summary" in ai_audit: skill_data["summary"] = ai_audit["summary"]
+            if "risk_level" in ai_audit: skill_data["risk_level"] = ai_audit["risk_level"]
+            if "reasoning" in ai_audit: skill_data["reasoning"] = ai_audit["reasoning"]
+            if "recommendation" in ai_audit: skill_data["recommendation"] = ai_audit["recommendation"]
+            
+            # Merge lists if provided (AI might find more things or explain them better)
+            # If AI provides these lists, we trust AI more? Or we union them? 
+            # User wants AI view. Let's replacement if available, assuming AI is comprehensive.
+            # Merge lists (Union of Scanner + AI) to ensure we don't hide new scanner findings
+            # unless AI is strictly managing the list. But for safety, showing both is better.
+            if "sensitive_behaviors" in ai_audit: 
+                skill_data["sensitive_behaviors"] = sorted(list(set(skill_data["sensitive_behaviors"] + ai_audit["sensitive_behaviors"])))
+            if "network_activity" in ai_audit: 
+                skill_data["network_activity"] = sorted(list(set(skill_data["network_activity"] + ai_audit["network_activity"])))
+            if "obfuscation_signals" in ai_audit: 
+                skill_data["obfuscation_signals"] = sorted(list(set(skill_data["obfuscation_signals"] + ai_audit["obfuscation_signals"])))
+    
+    return skill_data
+
+
+def generate_html(data, template_path, output_path):
+    try:
+        with open(template_path, "r", encoding="utf-8") as f:
+            template = f.read()
+    except OSError as exc:
+        raise SystemExit(f"Failed to read template: {exc}")
+
+    data_json = json.dumps(data, ensure_ascii=False, indent=2)
+    # Escape script tags
+    data_json = data_json.replace("</", "<\\/")
+
+    html = template.replace("__DATA_PLACEHOLDER__", data_json)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Scan Skills and generate a security dashboard")
+    parser.add_argument("--root", default=os.getcwd(), help="Root directory containing skills")
+    # --out and --json are now optional/overridden by the new structure, but kept for compatibility or advanced use
+    parser.add_argument("--out", help="Optional: Override output path") 
+    args = parser.parse_args()
+
+    root = os.path.abspath(args.root)
+    
+    # Define Report Output Directory
+    # Default: skill-security-audit-dashboard/reports/YYYYMMDD_HHMMSS/
+    dashboard_skill_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    if args.out:
+        # If user explicitly specifies output, follow it (but still separate prompts? User asked for auto-folder)
+        # To strictly follow user request: "Always create a timestamp folder inside the scan folder"
+        # Let's pivot: Ignore --out or use it as base. 
+        # Let's stick to the requested behavior as default.
+        report_dir = os.path.dirname(os.path.abspath(args.out))
+        html_path = os.path.abspath(args.out)
+        json_path = os.path.splitext(html_path)[0] + ".json"
+    else:
+        report_dir = os.path.join(dashboard_skill_dir, "reports", timestamp)
+        os.makedirs(report_dir, exist_ok=True)
+        html_path = os.path.join(report_dir, "index.html")
+        json_path = os.path.join(report_dir, "data.json")
+
+    print(f"📂 Report Directory: {report_dir}")
+
+    # Create Prompts Directory
+    prompts_dir = os.path.join(report_dir, "prompts")
+    os.makedirs(prompts_dir, exist_ok=True)
+
+    skill_dirs = iter_skill_dirs(root)
+    
+    items = []
+    for skill_dir in skill_dirs:
+        item = scan_skill(skill_dir, root)
+        if item is None:
+            continue
+            
+        items.append(item)
+        
+        # Save prompt file
+        skill_slug = re.sub(r'[^a-zA-Z0-9]', '_', item['skill'])
+        prompt_filename = f"{skill_slug}_audit_prompt.txt"
+        prompt_path = os.path.join(prompts_dir, prompt_filename)
+        
+        if "audit_prompt" in item:
+            with open(prompt_path, "w", encoding="utf-8") as f:
+                f.write(item["audit_prompt"])
+            # Remove prompt from item before JSON dump to keep data small
+            del item["audit_prompt"] 
+            
+    # Compute Workspace Summary Stats
+    total_skills = len(items)
+    high_risk_count = len([i for i in items if i['risk_level'] == 'high'])
+    med_risk_count = len([i for i in items if i['risk_level'] == 'medium'])
+    low_risk_count = len([i for i in items if i['risk_level'] == 'low'])
+    
+    # Security Score: 100 - (High*20 + Med*5)
+    score = 100 - (high_risk_count * 20 + med_risk_count * 5 + low_risk_count * 1)
+    if score < 0: score = 0
+    
+    workspace_summary = {
+        "total": total_skills,
+        "high": high_risk_count,
+        "medium": med_risk_count,
+        "low": low_risk_count,
+        "security_score": score,
+    }
+
+    data = {
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "root": root,
+        "workspace_summary": workspace_summary,
+        "items": items,
+    }
+
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    template_path = os.path.join(os.path.dirname(__file__), "..", "assets", "dashboard_template.html")
+    template_path = os.path.abspath(template_path)
+    generate_html(data, template_path, html_path)
+
+    print(f"✅ Dashboard generated: {html_path}")
+    print(f"✅ Audit Prompts generated in: {prompts_dir}")
+    
+    # Clickable Markdown Link for Agent/User
+    print(f"\n[打開資安報告]({html_path})\n")
+    
+    # Auto-open in browser
+    try:
+        import webbrowser
+        from urllib.parse import quote
+        
+        # Open file:// URL
+        file_url = f"file://{quote(html_path)}"
+        print(f"🚀 Opening report in browser...")
+        webbrowser.open(file_url)
+    except Exception as e:
+        print(f"⚠️ Could not open browser automatically: {e}")
+        print(f"🔗 Please open this link manually: file://{html_path}")
+
+
+if __name__ == "__main__":
+    main()
+
+```
+
+---
+
+## 你的任務 (Output Format)
+請根據以上資訊，分析此 Skill 是否安全。請回答：
+
+1.  **功能總結**：它到底是做什麼的？代碼邏輯是否符合 SKILL.md 的描述？
+2.  **供應鏈分析**：使用的外部庫是否合理？有無可疑或冷門的依賴項？
+3.  **風險驗證**：靜態掃描到的「熱點」是惡意的嗎？還是正常功能？(例如：eval 用於計算機是低風險，用於執行外部腳本是高風險)
+4.  **隱藏後門分析**：除了 regex 抓到的，你有看到其他奇怪邏輯嗎？(例如：特定條件下觸發、時間炸彈、寫死奇怪的變數)
+5.  **最終判決**：
+    *   🟢 **通過** (Safe)
+    *   🟡 **警告** (Suspicious - 需人工覆核)
+    *   🔴 **危險** (Malicious - 禁止安裝)
+
+請給出簡短有力的結論 (繁體中文)。

@@ -10,9 +10,9 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.support.annotation.IdRes
-import android.support.v7.app.ActionBar
-import android.support.v7.app.AppCompatActivity
+import androidx.annotation.IdRes
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toolbar
 import com.heaton.funnyvote.R
@@ -151,10 +151,21 @@ object Util {
         context.startActivity(shareDialog)
     }
 
-    fun AppCompatActivity.setupActionBar(toolBar: android.support.v7.widget.Toolbar, action: ActionBar.() -> Unit) {
+    fun AppCompatActivity.setupActionBar(toolBar: androidx.appcompat.widget.Toolbar, action: ActionBar.() -> Unit) {
         setSupportActionBar(toolBar)
         supportActionBar?.run {
             action()
         }
+    }
+
+    @JvmStatic
+    fun createRoundTextDrawable(text: String, color: Int, size: Int = 36): com.amulyakhare.textdrawable.TextDrawable {
+        return com.amulyakhare.textdrawable.TextDrawable.Builder()
+            .setShape(com.amulyakhare.textdrawable.TextDrawable.SHAPE_ROUND)
+            .setWidth(size)
+            .setHeight(size)
+            .setText(text)
+            .setColor(color)
+            .build()
     }
 }
